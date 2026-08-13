@@ -1,7 +1,7 @@
 {
-  "name": "SIM EARTH 7.07 — Living Universe",
-  "short_name": "SIM EARTH 7.07",
-  "description": "Cosmic Synapse Living Universe Simulation Engine",
+  "name": "SIM EARTH 7.08 — Reality Body",
+  "short_name": "SIM EARTH 7.08",
+  "description": "Cosmic Synapse Living Universe Simulation Engine — WebGL2 Reality Body",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
