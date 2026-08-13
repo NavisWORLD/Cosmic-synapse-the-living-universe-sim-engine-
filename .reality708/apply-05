@@ -1,0 +1,39 @@
+);this.player.x=this.ship.x;this.player.z=this.ship.z;this.player.y=this.ship.y+1.5;this.player.speed=Math.abs(this.shipSpeed);this.player.onGround=false;return}let f=0,s=0;"
+assert old in s
+s=s.replace(old,new,1)
+
+# HUD readout includes walker/ship mode and ship distance.
+old="document.getElementById('s707-readout-b').textContent=`POS ${fmt(this.player.x,1)}, ${fmt(this.player.z,1)} // ALT ${fmt(this.player.y,1)} m // V ${fmt(this.player.speed,1)} m/s // ${biome}`;"
+new="const shipD=this.ship?Math.hypot(this.player.x-this.ship.x,this.player.z-this.ship.z):0;document.getElementById('s707-readout-b').textContent=this.flightMode?`LUNA-ARC // ${fmt(this.ship.y-groundH,1)} m AGL // ${fmt(this.player.speed,1)} m/s // ${biome}`:`POS ${fmt(this.player.x,1)}, ${fmt(this.player.z,1)} // V ${fmt(this.player.speed,1)} m/s // ${biome} // SHIP ${fmt(shipD,0)} m`;this.updateRealityStatus();"
+assert old in s
+s=s.replace(old,new,1)
+
+# Controls copy.
+old="WASD move • mouse / arrows look • SHIFT sprint • SPACE jump • E scan/interact • H control panel • G orbit/surface • R reality lens • M audio • T time warp."
+new="WASD move • mouse / arrows look • SHIFT sprint • SPACE jump • E scan • V first/third person • F board/exit LUNA-ARC • H control panel • G orbit/surface • R reality lens • M audio • T time warp."
+s=s.replace(old,new)
+
+# Render with WebGL2 in surface, Canvas fallback otherwise.
+old="loop(t){const dt=Math.min(.05,(t-this.last)/1000||.016);this.last=t;if(this.started){this.updatePlayer(dt);this.updateState(dt);this.renderer.render(t);this.updateUi(t)}requestAnimationFrame(tt=>this.loop(tt))}"
+new="loop(t){const dt=Math.min(.05,(t-this.last)/1000||.016);this.last=t;if(this.started){this.updatePlayer(dt);this.updateState(dt);if(this.mode==='surface'&&this.reality.enabled)this.reality.render(t);else this.renderer.render(t);this.updateUi(t)}requestAnimationFrame(tt=>this.loop(tt))}"
+assert old in s
+s=s.replace(old,new,1)
+
+# Versioned engineering note in title if present.
+s=s.replace('Reality Bridge // SIM EARTH 7.07','Reality Bridge // SIM EARTH 7.08')
+
+out.write_text(s,encoding='utf-8',newline='\n')
+import hashlib, shutil
+EXPECTED='68318f2fc640d49596c49a9a8d8532d378951c34a42d90a5d3f774ba8775d295'
+text=out.read_text(encoding='utf-8').replace('\r\n','\n')
+sha=hashlib.sha256(text.encode('utf-8')).hexdigest()
+if sha!=EXPECTED:
+    out.unlink(missing_ok=True)
+    raise SystemExit(f'REALITY_BODY_HASH_MISMATCH {sha}')
+# Rename canonical source only after exact reconstruction passes.
+src.unlink()
+# Remove transfer/reconstruction scaffolding from the final branch tree.
+shutil.rmtree('.reality708',ignore_errors=True)
+for disposable in [Path('scripts/apply_reality_708.py'),Path('.github/workflows/apply-reality-708.yml')]:
+    disposable.unlink(missing_ok=True)
+print(f'REALITY_BODY_APPLIED {sha} bytes={len(text.encode())}')
