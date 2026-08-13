@@ -1,0 +1,20 @@
+nesisCanvas=document.getElementById('universe-canvas');this.planet=makePlanet('Earth');this.save=new PersistentWorld();this.world=this.save.world(this.planet);this.sensors=new SensorFusion(()=>this.sensorChanged());this.audio=new AudioWorld();this.stateEngine=new CSTStateEngine();this.state=this.stateEngine.v54;this.mode='orbit';this.dimView=54;this.started=false;this.last=performance.now();this.simDate=Date.now();this.localDay=.5;this.timeWarp=1;this.lightFactor=.7;this.player={x:0,z:0,y:2.0,vy:0,heading:0,pitch:0,speed:0,onGround:true,sprint:false};this.keys={};this.touchMove={x:0,y:0};this.touchSprint=false;this.touchLook=null;this.stepClock=0;this.lastUi=0;this.renderer=new SimRenderer(this.canvas,this);this.bind();this.populateDestinations();this.loadWorldSpawn();this.loop(performance.now())}"
+new="constructor(){this.canvas=document.getElementById('sim707-canvas');this.root=document.getElementById('sim707-root');this.genesisCanvas=document.getElementById('universe-canvas');this.planet=makePlanet('Earth');this.save=new PersistentWorld();this.world=this.save.world(this.planet);this.sensors=new SensorFusion(()=>this.sensorChanged());this.audio=new AudioWorld();this.stateEngine=new CSTStateEngine();this.state=this.stateEngine.v54;this.mode='orbit';this.dimView=54;this.started=false;this.last=performance.now();this.simDate=Date.now();this.localDay=.5;this.timeWarp=1;this.lightFactor=.7;this.viewMode='first';this.flightMode=false;this.ship=null;this.shipSpeed=0;this.player={x:0,z:0,y:2.0,vy:0,heading:0,pitch:0,speed:0,onGround:true,sprint:false};this.keys={};this.touchMove={x:0,y:0};this.touchSprint=false;this.touchLook=null;this.stepClock=0;this.lastUi=0;this.renderer=new SimRenderer(this.canvas,this);this.reality=new RealityRenderer708(this);this.bind();this.populateDestinations();this.loadWorldSpawn();this.loop(performance.now())}"
+assert old in s
+s=s.replace(old,new,1)
+
+# Activation uses the 3D surface immediately when available.
+old="this.mode='surface';this.updateModeUi();this.toast('SIM EARTH 7.08 ONLINE // EARTH SURFACE LINK ESTABLISHED');"
+new="this.mode='surface';this.syncRendererSurface();this.updateModeUi();this.toast(`SIM EARTH 7.08 ONLINE // ${this.reality.enabled?'REALITY BODY WEBGL2':'CANVAS FALLBACK'} // EARTH LINK`);"
+assert old in s
+s=s.replace(old,new,1)
+
+# Add view/ship buttons.
+old="document.getElementById('sim707-audio-toggle').onclick=()=>{if(!this.audio.started)this.audio.start();else this.audio.set(!this.audio.on);this.toast(`AUDIO ${this.audio.on?'ONLINE':'MUTED'}`)};"
+new=old+"document.getElementById('sim708-view').onclick=()=>this.cycleView();document.getElementById('sim708-ship').onclick=()=>this.toggleShip();"
+assert old in s
+s=s.replace(old,new,1)
+
+# Keyboard controls F/V; preserve E scan.
+old="if(e.code==='KeyH')document.getElementById('sim707-panel').classList.toggle('closed');if(e.code==='KeyG')this.toggleOrbitSurface();if(e.code==='KeyR')this.toggleReality();if(e.code==='KeyM'){if(!this.audio.started)this.audio.start();else this.audio.set(!this.audio.on)}if(e.code==='KeyE')this.scan();if(e.code==='KeyT')this.cycleWarp();if(e.code==='Space'){e.preventDefault();this.jump()}"
+new="if(e.code==='KeyH')document.ge
