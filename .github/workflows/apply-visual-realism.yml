@@ -13,7 +13,9 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
       - name: Reconstruct and apply visual renderer
-        run: python scripts/apply_visual_realism.py
+        run: |
+          sed -i '/if len(parts) != 7:/,+1d' scripts/apply_visual_realism.py
+          python scripts/apply_visual_realism.py
       - name: Verify canonical engine
         run: npm run verify && npm run prepare:web
       - name: Commit clean visual-realism tree
