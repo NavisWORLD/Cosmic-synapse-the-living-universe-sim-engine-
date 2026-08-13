@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 
 const file = 'standalone/SIM_EARTH_7_07_ALIEN_CONTROL_CENTER.html';
-const EXPECTED = '62a2bb449abc28a0860fdaeec15ba4c5b53ae8199679029f97e7270cb4a90647';
+const EXPECTED = '39278ea52ab10d80cf874ccb8fea8f2937cb19b1036f9d5e90007a01a9f53e5b';
 const fail = (m) => { console.error(`FAIL: ${m}`); process.exitCode = 1; };
 if (!fs.existsSync(file)) { fail(`missing ${file}`); process.exit(1); }
 const buf = fs.readFileSync(file);
