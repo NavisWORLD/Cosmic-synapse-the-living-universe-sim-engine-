@@ -29,7 +29,7 @@ npm run prepare:web
 npx cap add android
 npx cap sync android
 ```
-Open Android Studio with `npx cap open android`, or build with Gradle. The repository workflow produces a debug APK artifact from `main`, tags, or manual dispatch.
+Open Android Studio with `npx cap open android`, or build with Gradle. The GitHub workflow produces a debug APK artifact on a version tag or manual dispatch. The initial SIM EARTH 7.07 build has already been validated successfully in GitHub Actions.
 
 ## iOS
 ```bash
@@ -38,14 +38,14 @@ npx cap add ios
 npx cap sync ios
 npx cap open ios
 ```
-Select your Apple development team in Xcode, set the bundle identifier to `io.github.navisworld.simearth707`, then archive for TestFlight/App Store. CI verifies an unsigned iOS Simulator build; it intentionally does not pretend to create a public device-installable IPA without signing credentials.
+Select your Apple development team in Xcode, keep the bundle identifier `io.github.navisworld.simearth707`, then archive for TestFlight/App Store. CI verifies an unsigned iOS Simulator build on a version tag or manual dispatch; it intentionally does not pretend to create a public device-installable IPA without signing credentials. The initial Simulator build has already been validated successfully.
 
 ## Desktop
 ```bash
 npm run desktop
 npm run dist:desktop
 ```
-Electron Builder is configured for DMG/ZIP on macOS, NSIS on Windows, and AppImage/DEB on Linux. GitHub Actions builds all three operating-system targets.
+Electron Builder is configured for DMG/ZIP on macOS, NSIS on Windows, and AppImage/DEB on Linux. The three-platform workflow runs on version tags or manual dispatch. SIM EARTH 7.07 has been successfully packaged on all three GitHub-hosted operating-system runners.
 
 ## Release checklist
 1. `npm run verify`
