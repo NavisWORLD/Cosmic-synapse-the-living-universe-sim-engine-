@@ -1,0 +1,27 @@
+name: Apply SIM EARTH 7.08 Reality Body
+on:
+  push:
+    branches: [agent/reality-body-708]
+    paths: ['.reality708/READY']
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Reconstruct Reality Body sources
+        run: |
+          cat .reality708/renderer-* > .reality708/reality708.js
+          cat .reality708/apply-* > scripts/apply_reality_708.py
+      - name: Apply exact Reality Body build
+        run: python scripts/apply_reality_708.py
+      - name: Commit clean 7.08 standalone
+        run: |
+          git config user.name "NavisWORLD"
+          git config user.email "200881305+NavisWORLD@users.noreply.github.com"
+          git add -A
+          git commit -m "build SIM EARTH 7.08 Reality Body"
+          git push
