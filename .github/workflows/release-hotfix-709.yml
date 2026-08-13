@@ -1,0 +1,167 @@
+name: Build and Release SIM EARTH 7.0.9 Hotfix
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-hotfix-709.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    name: desktop-${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: Windows
+          - os: macos-latest
+            label: macOS
+          - os: ubuntu-latest
+            label: Linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm run verify
+      - run: npm run prepare:web
+      - run: npx electron-builder --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hotfix-desktop-${{ matrix.label }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.zip
+            dist/*.AppImage
+            dist/*.deb
+          if-no-files-found: error
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm install --no-audit --no-fund
+      - run: npm run verify && npm run prepare:web
+      - run: npx cap add android
+      - run: npx cap sync android
+      - run: cd android && ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hotfix-Android
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+  ios-simulator:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm run verify && npm run prepare:web
+      - run: npx cap add ios
+      - run: npx cap sync ios
+      - name: Build release-configuration Simulator app
+        run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -sdk iphonesimulator -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
+      - name: Package Simulator app
+        run: ditto -c -k --sequesterRsrc --keepParent ios-build/Build/Products/Release-iphonesimulator/App.app SIM-EARTH-7.0.9-iOS-Simulator.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hotfix-iOS-Simulator
+          path: SIM-EARTH-7.0.9-iOS-Simulator.zip
+          if-no-files-found: error
+
+  release:
+    needs: [desktop, android, ios-simulator]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: v7.0.9
+      CANONICAL_SHA: cc6e1c116d703019f4b7a5dce6330897a0b47cdcf62a4018b95b2f24c2ac5084
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: hotfix-*
+          path: staging
+      - name: Normalize release files and checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+
+          copy_first() {
+            local pattern="$1"
+            local target="$2"
+            local src
+            src="$(find staging -type f -name "$pattern" | head -n 1)"
+            if [ -z "$src" ]; then
+              echo "Missing expected release payload: $pattern" >&2
+              exit 1
+            fi
+            cp "$src" "release/$target"
+          }
+
+          cp standalone/SIM_EARTH_7_08_REALITY_BODY.html release/SIM_EARTH_7_08_REALITY_BODY_7.0.9.html
+          copy_first '*.exe' SIM_EARTH_7_08_Windows_Setup_7.0.9.exe
+          copy_first '*.dmg' SIM_EARTH_7_08_macOS_ARM64_7.0.9.dmg
+          copy_first '*.zip' SIM_EARTH_7_08_macOS_ARM64_7.0.9.zip
+          copy_first '*.AppImage' SIM_EARTH_7_08_Linux_7.0.9.AppImage
+          copy_first '*.deb' SIM_EARTH_7_08_Linux_amd64_7.0.9.deb
+          copy_first '*.apk' SIM_EARTH_7_08_Android_Debug_7.0.9.apk
+          copy_first 'SIM-EARTH-7.0.9-iOS-Simulator.zip' SIM_EARTH_7_08_iOS_Simulator_7.0.9.zip
+
+          test "$(sha256sum release/SIM_EARTH_7_08_REALITY_BODY_7.0.9.html | cut -d' ' -f1)" = "$CANONICAL_SHA"
+
+          cat > release/BUILD_RECEIPT_7.0.9.txt <<EOF
+          SIM EARTH 7.08 // REALITY BODY — package 7.0.9
+          Git commit: ${GITHUB_SHA}
+          Canonical LF SHA-256: ${CANONICAL_SHA}
+          Build workflow run: ${GITHUB_RUN_ID}
+          All package jobs ran npm run verify and npm run prepare:web from this source tree.
+          Desktop outputs are unsigned unless publisher signing credentials are supplied.
+          Android asset is a debug APK for direct testing/sideloading.
+          iOS asset is an unsigned Simulator package, not a physical-device/App Store IPA.
+          EOF
+
+          find release -maxdepth 1 -type f ! -name SHA256SUMS.txt -print0 \
+            | sort -z \
+            | xargs -0 sha256sum > release/SHA256SUMS.txt
+          cat release/SHA256SUMS.txt
+
+      - name: Create or refresh v7.0.9 GitHub Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" \
+              --target "$GITHUB_SHA" \
+              --title 'SIM EARTH 7.08 // REALITY BODY — 7.0.9 Hotfix' \
+              --notes-file docs/RELEASE_NOTES_7_0_9.md
+            gh release upload "$TAG" release/* --clobber
+          else
+            gh release create "$TAG" release/* \
+              --target "$GITHUB_SHA" \
+              --title 'SIM EARTH 7.08 // REALITY BODY — 7.0.9 Hotfix' \
+              --notes-file docs/RELEASE_NOTES_7_0_9.md
+          fi
+      - name: Verify published release
+        run: gh release view "$TAG" --json tagName,name,isDraft,isPrerelease,url,assets
