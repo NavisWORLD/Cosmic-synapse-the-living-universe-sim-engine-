@@ -1,0 +1,19 @@
+f(sb)sb.textContent='EXIT';if(sbt)sbt.textContent='EXIT'}else{el.textContent=`LUNA // FIELD WALKER // ${this.viewMode==='third'?'THIRD PERSON':'FIRST PERSON'} // ${this.reality.enabled?'WEBGL2':'CANVAS'}`;el.classList.remove('flight');if(tj)tj.textContent='JUMP';if(ts)ts.textContent='SCAN';if(sb)sb.textContent='SHIP';if(sbt)sbt.textContent='SHIP'}}\n'''
+assert anchor in s
+s=s.replace(anchor,methods+anchor,1)
+
+# Spawn ship deterministically near Luna.
+old="loadWorldSpawn(){const rr=seeded(this.planet.seed,'spawn');this.player.x=(rr()-.5)*30;this.player.z=(rr()-.5)*30;this.player.y=this.renderer.terrain(this.player.x,this.player.z)+1.72;this.player.vy=0;this.player.onGround=true;}"
+new="loadWorldSpawn(){const rr=seeded(this.planet.seed,'spawn');this.player.x=(rr()-.5)*30;this.player.z=(rr()-.5)*30;this.player.y=this.renderer.terrain(this.player.x,this.player.z)+1.72;this.player.vy=0;this.player.onGround=true;this.flightMode=false;this.viewMode='first';const a=rr()*PI*2,d=10+rr()*5,sx=this.player.x+Math.cos(a)*d,sz=this.player.z+Math.sin(a)*d;this.ship={x:sx,z:sz,y:this.renderer.terrain(sx,sz)+2.15,yaw:a+PI};this.shipSpeed=0;if(this.reality){this.reality.gridCenter=[1e9,1e9];this.reality.floraCenter=[1e9,1e9]}this.updateRealityStatus?.();}"
+assert old in s
+s=s.replace(old,new,1)
+
+# Mode switching renderer visibility.
+old="setMode(m){if(m==='reality'&&!this.sensors.active.cam){this.toast('REALITY LENS REQUESTED // CAMERA NOT YET AVAILABLE')}this.mode=m;document.getElementById('sim707-reality-label').style.display=m==='reality'?'block':'none';document.getElementById('sim707-crosshair').style.display=m==='surface'?'block':'none';this.updateModeUi();if(m==='surface')this.loadWorldSpawn();}"
+new="setMode(m){if(m==='reality'&&!this.sensors.active.cam){this.toast('REALITY LENS REQUESTED // CAMERA NOT YET AVAILABLE')}this.mode=m;document.getElementById('sim707-reality-label').style.display=m==='reality'?'block':'none';document.getElementById('sim707-crosshair').style.display=m==='surface'?'block':'none';this.syncRendererSurface();this.updateModeUi();if(m==='surface')this.loadWorldSpawn();}"
+assert old in s
+s=s.replace(old,new,1)
+
+# Full flight controller before existing walker movement.
+old="updatePlayer(dt){if(this.mode!=='surface'){this.player.speed*=.9;return}let f=0,s=0;"
+new="updatePlayer(dt){if(this.mode!=='surface'){this.player.speed*=.9;return}if(this.flightMode){let f=0;if(this.keys.KeyW||this.keys.ArrowUp)f+=1;if(this.keys.KeyS||this.keys.ArrowDown)f-=1;f+=-this.touchMove.y;const yaw=(this.keys.KeyA?1:0)-(this.keys.KeyD?1:0)+(this.keys.ArrowLeft?1:0)-(this.keys.ArrowRight?1:0);this.player.heading+=yaw*dt*1.05;this.ship.yaw=this.player.heading;const fast=!!(this.keys.ShiftLeft||this.keys.ShiftRight||this.touchSprint),target=f*(fast?118:52);this.shipSpeed=lerp(this.shipSpeed,target,clamp(dt*1.9));this.ship.x+=Math.cos(this.player.heading)*this.shipSpeed*dt;this.ship.z+=Math.sin(this.player.heading)*this.shipSpeed*dt;const ground=this.renderer.terrain(this.ship.x,this.ship.z),up=(this.keys.Space?1:0)-(this.keys.ControlLeft||this.keys.ControlRight?1:0);this.ship.y+=up*dt*(fast?34:14);this.ship.y=Math.max(ground+3.2,Math.min(ground+260,this.ship.y)
