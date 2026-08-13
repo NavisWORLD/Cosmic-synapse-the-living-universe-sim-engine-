@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.0.9 — 7.08 Reality Body UI/graphics hotfix — 2026-08-13
+- added a dedicated close button to the SIM EARTH control panel plus a full HUD hide/restore flow that cannot trap the player behind an overlay;
+- added an active VISUALS tab for Reality Body quality, look, brightness, renderer switching and explicit world-visual refresh;
+- bridged legacy Genesis quality/filter/brightness controls into the active SIM EARTH Reality Body renderer;
+- fixed WebGL daylight so it derives live solar/day state instead of relying on the hidden Canvas renderer to refresh `lightFactor`;
+- corrected `day` and `night` commands to true noon/midnight phases and added smooth atmosphere transitions;
+- added visual invalidation so biosphere growth/reset immediately rebuilds terrain coloration and vegetation instead of waiting for movement;
+- made living-biome surface palettes respond to biosphere state, so ecological growth visibly greens the world over time.
+
 ## 7.08 — 2026-08-12
 - added the self-contained raw WebGL2 `RealityRenderer708` while preserving the Canvas renderer as world/terrain authority and fallback;
 - added a real 3D terrain mesh with derived normals, biome material shading, macro/micro surface breakup, soil/rock slope response, sun lighting and atmospheric fog;

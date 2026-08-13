@@ -233,3 +233,7 @@ The 7.08 renderer is a substantial 3D upgrade, but it is still a compact procedu
 ## 🌌 Design rule
 
 > **Preserve ancestry. Add capability. Label simulations honestly. Let the universe remember.**
+## 🛠 7.0.9 Reality Body hotfix
+
+The 7.08 engine now includes a closable/minimizable control HUD and active Reality Body visual controls. Use the panel `×` to close the control deck, `× UI` for a clean immersive view, and `☰ RESTORE UI` to bring the HUD back. The new **VISUALS** tab directly controls the WebGL/Canvas renderer, quality, look and brightness. Day/night, biosphere growth and renderer-state changes now propagate into the graphics immediately. See [`docs/HOTFIX_7_08_UI_GRAPHICS.md`](docs/HOTFIX_7_08_UI_GRAPHICS.md).
+
