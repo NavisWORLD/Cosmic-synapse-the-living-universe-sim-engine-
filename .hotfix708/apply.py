@@ -1,5 +1,6 @@
 from pathlib import Path
-import base64, zlib, json, hashlib
+from html.parser import HTMLParser
+import base64, zlib, json, hashlib, re
 
 root = Path('.')
 engine = root / 'standalone' / 'SIM_EARTH_7_08_REALITY_BODY.html'
@@ -103,4 +104,31 @@ The 7.08 engine now includes a closable/minimizable control HUD and active Reali
 if '## 🛠 7.0.9 Reality Body hotfix' not in readme:
     readme_path.write_text(readme.rstrip() + note + '\n', encoding='utf-8', newline='\n')
 
+# Static DOM/reference audit and script extraction for node --check.
+class IdParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.ids = []
+    def handle_starttag(self, tag, attrs):
+        for key, value in attrs:
+            if key == 'id' and value:
+                self.ids.append(value)
+
+parser = IdParser()
+parser.feed(new)
+duplicates = sorted({value for value in parser.ids if parser.ids.count(value) > 1})
+if duplicates:
+    raise SystemExit(f'duplicate DOM ids: {duplicates}')
+ids = set(parser.ids)
+refs = set(re.findall(r"getElementById\(['\"]([^'\"]+)", new))
+missing = sorted(refs - ids)
+if missing:
+    raise SystemExit(f'missing literal DOM references: {missing}')
+scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', new, re.S | re.I)
+js_dir = root / '.hotfix708' / 'js-check'
+js_dir.mkdir(exist_ok=True)
+for index, body in enumerate(scripts):
+    (js_dir / f'{index}.js').write_text(body, encoding='utf-8')
+
 print('HOTFIX_RECONSTRUCTED', sha)
+print('DOM_IDS', len(ids), 'LITERAL_REFS', len(refs), 'SCRIPTS', len(scripts))
