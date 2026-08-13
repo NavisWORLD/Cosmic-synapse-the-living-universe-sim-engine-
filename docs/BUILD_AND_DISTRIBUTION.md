@@ -23,7 +23,7 @@ npm install
 npm run verify
 ```
 
-The verifier checks the exact canonical hash, Genesis/state ancestry, WebGL2 Reality Body, Luna/LUNA-ARC controls, packaging surfaces, and cleanup invariants.
+The verifier checks the exact canonical hash, Genesis/state ancestry, WebGL2 Reality Body, Luna/LUNA-ARC controls, packaging surfaces, the 7.08 verification receipt, and cleanup invariants.
 
 ## Prepare PWA
 
@@ -59,7 +59,7 @@ npx cap open ios
 
 Keep the stable bundle/application identifier `io.github.navisworld.simearth707` so 7.08 remains the same application lineage. Select your Apple development team in Xcode for device/TestFlight/App Store distribution.
 
-CI intentionally validates an **unsigned iOS Simulator** build. It does not claim to produce a public device-installable `.ipa` without the publisher's signing certificate/profile.
+CI validates an **unsigned iOS Simulator** build. It does not claim to produce a public device-installable `.ipa` without the publisher's signing certificate/profile.
 
 ## Desktop
 
@@ -74,11 +74,23 @@ Electron Builder targets:
 - macOS — DMG + ZIP
 - Linux — AppImage + DEB
 
-The current macOS CI host determines the architecture of the produced package; signing/notarization are separate distribution steps.
+The verified 7.08 macOS package produced by the current runner is **ARM64/Apple Silicon**; the verified Linux packages are **x86-64/amd64**. Signing/notarization are separate public-distribution steps.
 
 ## Reality Body packaging rule
 
 All wrappers package the generated `app/index.html`, and that file is regenerated from the exact canonical 7.08 standalone before builds. Do not hand-edit `app/index.html` as a source of truth.
+
+## Verified 7.08 cross-platform build
+
+GitHub Actions run `31666407908` successfully built the 7.08 Reality Body source as:
+
+- Android debug APK;
+- universal x86_64 + arm64 iOS Simulator application;
+- Windows NSIS installer;
+- macOS ARM64 DMG + ZIP;
+- Linux x86-64 AppImage + amd64 DEB.
+
+Each platform job ran `npm run verify && npm run prepare:web` before packaging. Artifact IDs, GitHub archive digests, and hashes of the extracted distributable payloads are recorded in [`BUILD_VERIFICATION_7.08.md`](../BUILD_VERIFICATION_7.08.md).
 
 ## Release checklist
 
