@@ -14,8 +14,23 @@ jobs:
         with: { node-version: '20' }
       - name: Reconstruct and apply visual renderer
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64
+          raw = Path('.visual-raw')
+          chunks = sorted(raw.glob('render-*.js'))
+          if len(chunks) != 8:
+              raise SystemExit(f'expected 8 readable renderer chunks, found {len(chunks)}')
+          renderer = ''.join(p.read_text(encoding='utf-8') for p in chunks)
+          transfer = Path('.visual-transfer')
+          for p in transfer.glob('part-*'):
+              p.unlink()
+          (transfer / 'part-00').write_text(base64.b64encode(renderer.encode('utf-8')).decode('ascii'), encoding='utf-8')
+          print(f'READABLE_RENDERER_RECONSTRUCTED {len(renderer)} chars')
+          PY
           sed -i '/if len(parts) != 7:/,+1d' scripts/apply_visual_realism.py
           python scripts/apply_visual_realism.py
+          rm -rf .visual-raw
       - name: Verify canonical engine
         run: npm run verify && npm run prepare:web
       - name: Commit clean visual-realism tree
