@@ -1,0 +1,12 @@
+{
+  "name":"Cosmic Synapse Living Universe",
+  "short_name":"LivingUniverse",
+  "description":"Procedural living-universe simulator with CST state, persistence, NASA/USGS context and Memory Echo.",
+  "start_url":"./index.html",
+  "scope":"./",
+  "display":"fullscreen",
+  "background_color":"#02080d",
+  "theme_color":"#02080d",
+  "orientation":"any",
+  "icons":[{"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

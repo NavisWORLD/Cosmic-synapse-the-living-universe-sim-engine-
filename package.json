@@ -1,0 +1,12 @@
+{
+  "name":"cosmic-synapse-living-universe-monorepo",
+  "version":"0.1.0",
+  "private":true,
+  "type":"module",
+  "scripts":{
+    "test":"npm --prefix packages/cosmic-synapse-universe-core test",
+    "prepare:pwa":"node scripts/sync-engine.mjs",
+    "serve":"npm run prepare:pwa && python -m http.server 8080 -d apps/pwa",
+    "desktop":"npm --prefix apps/desktop start"
+  }
+}

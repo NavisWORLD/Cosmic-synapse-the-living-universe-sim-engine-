@@ -1,0 +1,9 @@
+{
+  "name":"cosmic-synapse-universe-desktop",
+  "version":"0.1.0",
+  "private":true,
+  "main":"main.js",
+  "scripts":{"sync:web":"node scripts/sync-web.mjs","start":"npm run sync:web && electron .","dist":"npm run sync:web && electron-builder --publish never"},
+  "devDependencies":{"electron":"43.2.0","electron-builder":"latest"},
+  "build":{"appId":"world.navis.cosmicsynapseuniverse","productName":"Cosmic Synapse Living Universe","files":["main.js","www/**/*"],"directories":{"output":"dist"},"linux":{"target":["AppImage"]},"win":{"target":["nsis","portable"]},"mac":{"target":["dmg","zip"]}}
+}

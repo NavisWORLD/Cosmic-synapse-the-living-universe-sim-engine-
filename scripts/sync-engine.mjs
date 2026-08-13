@@ -1,0 +1,13 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {resolve} from 'node:path';
+const root=resolve(import.meta.dirname,'..');
+const source=resolve(root,'REALITY_BRIDGE_UNIVERSE_ENGINE_ULTIMATE.html');
+const dest=resolve(root,'apps/pwa/index.html');
+let html=await readFile(source,'utf8');
+const head=`\n<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-color" content="#02080d">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n`;
+const sw=`\n<script>if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(console.warn);</script>\n`;
+if(!html.includes('manifest.webmanifest')) html=html.replace('</head>',head+'</head>');
+if(!html.includes("serviceWorker.register('./sw.js')")) html=html.replace('</body>',sw+'</body>');
+await mkdir(resolve(root,'apps/pwa'),{recursive:true});
+await writeFile(dest,html,'utf8');
+console.log('Generated apps/pwa/index.html from canonical Ultimate engine');

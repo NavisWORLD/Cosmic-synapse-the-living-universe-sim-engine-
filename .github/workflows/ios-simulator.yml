@@ -1,0 +1,17 @@
+name: Build iOS simulator app
+on: {workflow_dispatch: {}}
+jobs:
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - working-directory: apps/mobile
+        run: npm install
+      - working-directory: apps/mobile
+        run: npm run sync:web && npx cap add ios && npx cap sync ios
+      - working-directory: apps/mobile/ios/App
+        run: xcodebuild -project App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO -derivedDataPath build
+      - uses: actions/upload-artifact@v4
+        with: {name: cosmic-synapse-ios-simulator, path: apps/mobile/ios/App/build/Build/Products/Debug-iphonesimulator/App.app}
