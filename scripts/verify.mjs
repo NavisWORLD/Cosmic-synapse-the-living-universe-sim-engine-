@@ -33,11 +33,15 @@ for (const [label, token] of [
 
 if (fs.existsSync('standalone/SIM_EARTH_7_07_ALIEN_CONTROL_CENTER.html')) fail('legacy 7.07 canonical still present beside 7.08');
 if (fs.existsSync('.reality708')) fail('temporary Reality Body transfer directory survived cleanup');
+if (fs.existsSync('.build708')) fail('temporary 7.08 native-build trigger survived cleanup');
 if (fs.existsSync('scripts/apply_reality_708.py')) fail('temporary Reality Body reconstruction script survived cleanup');
+if (fs.existsSync('.github/workflows/apply-reality-708.yml')) fail('temporary Reality Body reconstruction workflow survived cleanup');
+if (fs.existsSync('.github/workflows/build-reality-708.yml')) fail('temporary one-shot Reality Body build workflow survived cleanup');
 
 for (const req of [
   'app/manifest.webmanifest','app/sw.js','desktop/main.cjs','capacitor.config.json',
-  'docs/TEACHER_GUIDE.md','docs/VISUAL_REALISM.md','paper/SIM_EARTH_7_07_TECHNICAL_PAPER.md'
+  'docs/TEACHER_GUIDE.md','docs/VISUAL_REALISM.md','docs/REALITY_BODY_7_08.md',
+  'BUILD_VERIFICATION_7.08.md','paper/SIM_EARTH_7_07_TECHNICAL_PAPER.md'
 ]) if (!fs.existsSync(req)) fail(`missing packaging/document surface: ${req}`);
 
-if (!process.exitCode) console.log(`PASS: SIM EARTH 7.08 Reality Body verified. Canonical LF SHA-256 ${sha}; WebGL2 Reality Body + LUNA-ARC + Luna field body + 12D/42D/54D surfaces present.`);
+if (!process.exitCode) console.log(`PASS: SIM EARTH 7.08 Reality Body verified. Canonical LF SHA-256 ${sha}; WebGL2 Reality Body + LUNA-ARC + Luna field body + 12D/42D/54D surfaces + 7.08 verification receipt present.`);
