@@ -1,8 +1,8 @@
 {
   "name": "sim-earth-7-08",
-  "version": "7.0.8",
+  "version": "7.0.9",
   "private": true,
-  "description": "Cosmic Synapse Living Universe Simulation Engine — SIM EARTH 7.08 Reality Body",
+  "description": "Cosmic Synapse Living Universe Simulation Engine \u2014 SIM EARTH 7.08 Reality Body UI/graphics hotfix",
   "author": "Cory Shane Davis",
   "license": "Apache-2.0",
   "main": "desktop/main.cjs",
