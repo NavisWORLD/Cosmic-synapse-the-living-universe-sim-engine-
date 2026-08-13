@@ -1,57 +1,106 @@
-# Build & Distribution Manual
+# Build & Distribution Manual — SIM EARTH 7.08
 
 ## Prerequisites
-- Standalone/PWA: any modern browser; Python is optional for local serving.
+
+- Standalone/PWA: a modern browser with WebGL2 for Reality Body; Canvas fallback remains available.
 - Packaging: Node.js 22+ and npm.
-- Android: Java/Android SDK are needed for local native builds; GitHub Actions provides a reproducible debug APK route.
+- Android: Java/Android SDK for local native builds; GitHub Actions provides the reproducible debug-APK route.
 - iOS: macOS + Xcode. TestFlight/App Store/device distribution requires Apple signing credentials.
+- Desktop: Electron/Electron Builder dependencies are installed by `npm install`.
+
+## Canonical source
+
+`standalone/SIM_EARTH_7_08_REALITY_BODY.html`
+
+LF-normalized SHA-256:
+
+`68318f2fc640d49596c49a9a8d8532d378951c34a42d90a5d3f774ba8775d295`
 
 ## Verify
+
 ```bash
 npm install
 npm run verify
 ```
 
+The verifier checks the exact canonical hash, Genesis/state ancestry, WebGL2 Reality Body, Luna/LUNA-ARC controls, packaging surfaces, the 7.08 verification receipt, and cleanup invariants.
+
 ## Prepare PWA
+
 ```bash
 npm run prepare:web
 python tools/serve.py
 ```
-`prepare:web` copies the canonical standalone game into `app/index.html` and injects only the manifest/service-worker/Apple PWA metadata.
+
+`prepare:web` copies the canonical Reality Body standalone into `app/index.html` and injects only manifest/service-worker/Apple PWA metadata.
 
 ## GitHub Pages — one-time repository switch
-For a brand-new repository, GitHub requires an administrator to enable Pages before the Actions token may deploy it. In **Settings → Pages → Build and deployment**, choose **GitHub Actions** once. Then open **Actions → Deploy PWA to Pages → Run workflow**. The workflow verifies the canonical engine before upload.
+
+For a brand-new repository, GitHub requires an administrator to enable Pages before the Actions token may deploy it. In **Settings → Pages → Build and deployment**, choose **GitHub Actions** once. Then open **Actions → Deploy PWA to Pages → Run workflow**.
 
 ## Android
-Local generation:
+
 ```bash
 npm run prepare:web
 npx cap add android
 npx cap sync android
 ```
-Open Android Studio with `npx cap open android`, or build with Gradle. The GitHub workflow produces a debug APK artifact on a version tag or manual dispatch. The initial SIM EARTH 7.07 build has already been validated successfully in GitHub Actions.
+
+Open Android Studio with `npx cap open android`, or run the Gradle debug build. The permanent GitHub workflow uploads `SIM-EARTH-7.08-Android-debug-APK` on manual dispatch/version tags. This is a debug package, not a Play Store release-signed AAB.
 
 ## iOS
+
 ```bash
 npm run prepare:web
 npx cap add ios
 npx cap sync ios
 npx cap open ios
 ```
-Select your Apple development team in Xcode, keep the bundle identifier `io.github.navisworld.simearth707`, then archive for TestFlight/App Store. CI verifies an unsigned iOS Simulator build on a version tag or manual dispatch; it intentionally does not pretend to create a public device-installable IPA without signing credentials. The initial Simulator build has already been validated successfully.
+
+Keep the stable bundle/application identifier `io.github.navisworld.simearth707` so 7.08 remains the same application lineage. Select your Apple development team in Xcode for device/TestFlight/App Store distribution.
+
+CI validates an **unsigned iOS Simulator** build. It does not claim to produce a public device-installable `.ipa` without the publisher's signing certificate/profile.
 
 ## Desktop
+
 ```bash
 npm run desktop
 npm run dist:desktop
 ```
-Electron Builder is configured for DMG/ZIP on macOS, NSIS on Windows, and AppImage/DEB on Linux. The three-platform workflow runs on version tags or manual dispatch. SIM EARTH 7.07 has been successfully packaged on all three GitHub-hosted operating-system runners.
+
+Electron Builder targets:
+
+- Windows — NSIS installer
+- macOS — DMG + ZIP
+- Linux — AppImage + DEB
+
+The verified 7.08 macOS package produced by the current runner is **ARM64/Apple Silicon**; the verified Linux packages are **x86-64/amd64**. Signing/notarization are separate public-distribution steps.
+
+## Reality Body packaging rule
+
+All wrappers package the generated `app/index.html`, and that file is regenerated from the exact canonical 7.08 standalone before builds. Do not hand-edit `app/index.html` as a source of truth.
+
+## Verified 7.08 cross-platform build
+
+GitHub Actions run `31666407908` successfully built the 7.08 Reality Body source as:
+
+- Android debug APK;
+- universal x86_64 + arm64 iOS Simulator application;
+- Windows NSIS installer;
+- macOS ARM64 DMG + ZIP;
+- Linux x86-64 AppImage + amd64 DEB.
+
+Each platform job ran `npm run verify && npm run prepare:web` before packaging. Artifact IDs, GitHub archive digests, and hashes of the extracted distributable payloads are recorded in [`BUILD_VERIFICATION_7.08.md`](../BUILD_VERIFICATION_7.08.md).
 
 ## Release checklist
-1. `npm run verify`
-2. update version/changelog
-3. confirm scientific labels and privacy text
-4. run all platform workflows
-5. tag the release
-6. attach validated build artifacts to a GitHub Release
-7. archive the release on Zenodo and update `CITATION.cff` with the SIM EARTH DOI
+
+1. run `npm run verify`;
+2. run `npm run prepare:web`;
+3. inspect Reality Body in a real WebGL2 browser;
+4. update version/changelog/citation metadata;
+5. run Android, iOS Simulator, Windows, macOS and Linux workflows;
+6. record run IDs/artifact digests in the 7.08 verification receipt;
+7. squash/review/merge the release branch;
+8. re-run the verifier on production `main`;
+9. tag/create a formal GitHub Release when desired;
+10. archive the release on Zenodo only through the actual Zenodo publication flow; never invent a DOI.

@@ -22,7 +22,7 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - uses: actions/upload-artifact@v4
         with:
-          name: SIM-EARTH-7.07-${{ runner.os }}
+          name: SIM-EARTH-7.08-${{ runner.os }}
           path: |
             dist/*.exe
             dist/*.dmg
