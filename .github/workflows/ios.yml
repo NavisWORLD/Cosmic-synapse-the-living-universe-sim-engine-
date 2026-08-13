@@ -1,8 +1,10 @@
-name: iOS Simulator Build
+name: iOS application
 on:
   workflow_dispatch:
   push:
     tags: ['v*']
+permissions:
+  contents: read
 jobs:
   ios:
     runs-on: macos-latest
@@ -14,11 +16,12 @@ jobs:
       - run: npm run verify && npm run prepare:web
       - run: npx cap add ios
       - run: npx cap sync ios
-      - name: Build unsigned simulator app
-        run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
-      - name: Package simulator build
-        run: ditto -c -k --sequesterRsrc --keepParent ios-build/Build/Products/Debug-iphonesimulator/App.app SIM-EARTH-7.08-iOS-Simulator.zip
+      - name: Build release-configuration Simulator application
+        run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -sdk iphonesimulator -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
+      - name: Package Simulator .app
+        run: ditto -c -k --sequesterRsrc --keepParent ios-build/Build/Products/Release-iphonesimulator/App.app SIM-EARTH-7.08-iOS-Simulator.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: SIM-EARTH-7.08-iOS-Simulator
+          name: SIM-EARTH-7.08-iOS-application
           path: SIM-EARTH-7.08-iOS-Simulator.zip
+          if-no-files-found: error
