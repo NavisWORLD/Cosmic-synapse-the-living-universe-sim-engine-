@@ -1,0 +1,38 @@
+{
+  "name": "sim-earth-7-07",
+  "version": "7.0.7",
+  "private": true,
+  "description": "Cosmic Synapse Living Universe Simulation Engine — SIM EARTH 7.07",
+  "author": "Cory Shane Davis",
+  "license": "Apache-2.0",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "verify": "node scripts/verify.mjs",
+    "prepare:web": "node scripts/prepare-web.mjs",
+    "serve": "python tools/serve.py",
+    "desktop": "npm run prepare:web && electron .",
+    "dist:desktop": "npm run prepare:web && electron-builder",
+    "native:android": "npm run prepare:web && npx cap sync android",
+    "native:ios": "npm run prepare:web && npx cap sync ios",
+    "cap:add:android": "npx cap add android",
+    "cap:add:ios": "npx cap add ios"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "io.github.navisworld.simearth707",
+    "productName": "SIM EARTH 7.07",
+    "directories": { "output": "dist" },
+    "files": ["desktop/**/*", "app/**/*", "standalone/**/*", "package.json", "LICENSE", "NOTICE"],
+    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.games" },
+    "win": { "target": ["nsis"] },
+    "linux": { "target": ["AppImage", "deb"], "category": "Game" }
+  }
+}

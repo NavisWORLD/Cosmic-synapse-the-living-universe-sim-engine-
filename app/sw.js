@@ -1,0 +1,10 @@
+const VERSION = 'sim-earth-7-07-v1';
+const CORE = ['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./offline.html'];
+self.addEventListener('install', event => event.waitUntil(caches.open(VERSION).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
+self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(fetch(event.request).then(resp => {
+    const copy = resp.clone(); caches.open(VERSION).then(c=>c.put(event.request, copy)); return resp;
+  }).catch(()=>caches.match(event.request).then(r=>r||caches.match('./offline.html'))));
+});

@@ -1,0 +1,10 @@
+{
+  "title": "SIM EARTH 7.07: A Browser-Native Living-Universe Simulation with 12D→42D→54D Adaptive State Fusion",
+  "upload_type": "software",
+  "description": "Release metadata template for SIM EARTH 7.07. Replace the placeholder version/release fields at archive time.",
+  "creators": [{"name": "Davis, Cory Shane"}],
+  "version": "7.07",
+  "license": "Apache-2.0",
+  "keywords": ["procedural simulation", "browser game", "CST", "sensor fusion", "PWA", "education", "computational state space"],
+  "related_identifiers": [{"identifier":"10.5281/zenodo.17574447","relation":"isDerivedFrom","resource_type":"publication-article"}]
+}
