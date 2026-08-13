@@ -32,6 +32,11 @@
     "files": ["desktop/**/*", "app/**/*", "standalone/**/*", "package.json", "LICENSE", "NOTICE"],
     "mac": { "target": ["dmg", "zip"], "category": "public.app-category.games" },
     "win": { "target": ["nsis"] },
-    "linux": { "target": ["AppImage", "deb"], "category": "Game" }
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Game",
+      "maintainer": "Cory Shane Davis <NavisWORLD@users.noreply.github.com>",
+      "desktopName": "sim-earth-7-07"
+    }
   }
 }
