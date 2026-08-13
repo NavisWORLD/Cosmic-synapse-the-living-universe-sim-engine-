@@ -22,7 +22,7 @@ for (const [label, token] of [
   ['Genesis Universe ancestry', 'class Universe']
 ]) if (!html.includes(token)) fail(`missing ${label}`);
 for (const req of [
-  'app/manifest.webmanifest','app/sw.js','desktop/main.cjs','capacitor.config.ts',
+  'app/manifest.webmanifest','app/sw.js','desktop/main.cjs','capacitor.config.json',
   'docs/TEACHER_GUIDE.md','paper/SIM_EARTH_7_07_TECHNICAL_PAPER.md'
 ]) if (!fs.existsSync(req)) fail(`missing packaging/document surface: ${req}`);
 if (!process.exitCode) console.log(`PASS: SIM EARTH 7.07 verified. SHA-256 ${sha}; 12D/42D/54D surfaces present.`);
