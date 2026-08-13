@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this engine or its research protocols, cite the repository and exact release/commit used."
+title: "Cosmic Synapse — The Living Universe Simulation Engine"
+type: software
+authors:
+  - family-names: Davis
+    given-names: Cory Shane
+repository-code: "https://github.com/NavisWORLD/Cosmic-synapse-the-living-universe-sim-engine-"
+license: Apache-2.0
+date-released: 2026-08-12
+version: 0.1.0

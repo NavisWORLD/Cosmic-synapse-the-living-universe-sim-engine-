@@ -1,0 +1,8 @@
+build/
+runtime/live_data.tsv
+runtime/worlds/
+runtime/ledger.jsonl
+assets/cache/*
+!assets/cache/.keep
+__pycache__/
+*.pyc

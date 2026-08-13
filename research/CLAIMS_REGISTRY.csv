@@ -1,0 +1,9 @@
+ID,Statement,Evidence label,Evidence/protocol,Boundary
+C-001,Ultimate single-file playable universe engine exists,IMPLEMENTED,REALITY_BRIDGE_UNIVERSE_ENGINE_ULTIMATE.html,Code existence is not a physical finding
+C-002,12D→42D→54D software state exists,IMPLEMENTED,Ultimate HTML and native/cpp/src/cst_state.cpp,Software features not physical dimensions
+C-003,NASA/USGS context can condition simulation behavior,IMPLEMENTED,Ultimate HTML and native/python,Authored software response not physical causation
+C-004,Deterministic replay meets declared tolerance,PROPOSED TEST — NOT YET RUN,research/protocols/01_deterministic_replay.md,Requires cross-run/platform evidence
+C-005,Sensor-conditioned state has value beyond controls,PROPOSED TEST — NOT YET RUN,research/protocols/02_sensor_coupling.md,Requires shuffled/time-shifted controls
+C-006,APOD context influence is reproducible,PROPOSED TEST — NOT YET RUN,research/protocols/03_apod_context_influence.md,Tests generation mechanics only
+C-007,Memory Echo preserves declared invariants,PROPOSED TEST — NOT YET RUN,research/protocols/04_memory_echo_replay.md,Visual similarity alone is insufficient
+C-008,The simulation demonstrates consciousness or new fundamental physics,NOT CLAIMED,docs/SCIENTIFIC_BOUNDARIES.md,Requires independent evidence outside this software

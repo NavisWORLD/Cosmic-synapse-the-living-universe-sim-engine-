@@ -1,0 +1,22 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  js-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: node --test packages/cosmic-synapse-universe-core/test/*.mjs
+      - run: python -m py_compile research/analysis/analyze_trials.py native/python/run_bridge.py native/python/cosmos_bridge/*.py
+  native-headless:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y g++
+      - run: g++ -std=c++20 -Inative/cpp/include native/cpp/src/cst_state.cpp native/cpp/src/universe.cpp native/cpp/src/persistence.cpp native/cpp/src/live_data.cpp native/cpp/src/headless_test.cpp -o /tmp/living_universe_headless
+      - run: /tmp/living_universe_headless
