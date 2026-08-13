@@ -16,7 +16,7 @@ jobs:
       - run: npx cap add ios
       - run: npx cap sync ios
       - name: Build unsigned simulator app
-        run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
+        run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
       - name: Package simulator build
         run: ditto -c -k --sequesterRsrc --keepParent ios-build/Build/Products/Debug-iphonesimulator/App.app SIM-EARTH-7.07-iOS-Simulator.zip
       - uses: actions/upload-artifact@v4
