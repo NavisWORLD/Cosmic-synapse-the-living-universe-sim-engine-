@@ -1,0 +1,16 @@
+tElementById('sim707-panel').classList.toggle('closed');if(e.code==='KeyG')this.toggleOrbitSurface();if(e.code==='KeyR')this.toggleReality();if(e.code==='KeyM'){if(!this.audio.started)this.audio.start();else this.audio.set(!this.audio.on)}if(e.code==='KeyV')this.cycleView();if(e.code==='KeyF')this.toggleShip();if(e.code==='KeyE')this.scan();if(e.code==='KeyT')this.cycleWarp();if(e.code==='Space'&&!this.flightMode){e.preventDefault();this.jump()}"
+assert old in s
+s=s.replace(old,new,1)
+
+# Pointer-lock and touch input should work on either renderer canvas.
+old="this.canvas.addEventListener('click',()=>{if(this.mode==='surface'&&innerWidth>720&&document.pointerLockElement!==this.canvas)this.canvas.requestPointerLock?.()});document.addEventListener('mousemove',e=>{if(document.pointerLockElement===this.canvas&&this.mode==='surface'){this.player.heading+=e.movementX*.0022;this.player.pitch=clamp(this.player.pitch-e.movementY*.0018,-.55,.55)}});"
+new="const lookCanvases=[this.canvas,this.reality.canvas];for(const cv of lookCanvases)cv.addEventListener('click',()=>{if(this.mode==='surface'&&innerWidth>720&&document.pointerLockElement!==cv)cv.requestPointerLock?.()});document.addEventListener('mousemove',e=>{if((document.pointerLockElement===this.canvas||document.pointerLockElement===this.reality.canvas)&&this.mode==='surface'){this.player.heading+=e.movementX*.0022;this.player.pitch=clamp(this.player.pitch-e.movementY*.0018,-.62,.62)}});"
+assert old in s
+s=s.replace(old,new,1)
+old="this.canvas.addEventListener('touchstart',e=>{if(e.target!==this.canvas)return;const t=e.touches[0];this.touchLook={x:t.clientX,y:t.clientY}},{passive:true});this.canvas.addEventListener('touchmove',e=>{if(!this.touchLook||e.target!==this.canvas)return;const t=e.touches[0],dx=t.clientX-this.touchLook.x,dy=t.clientY-this.touchLook.y;this.player.heading+=dx*.005;this.player.pitch=clamp(this.player.pitch-dy*.004,-.55,.55);this.touchLook={x:t.clientX,y:t.clientY}},{passive:true});this.canvas.addEventListener('touchend',()=>this.touchLook=null,{passive:true});"
+new="for(const cv of lookCanvases){cv.addEventListener('touchstart',e=>{if(e.target!==cv)return;const t=e.touches[0];this.touchLook={x:t.clientX,y:t.clientY}},{passive:true});cv.addEventListener('touchmove',e=>{if(!this.touchLook||e.target!==cv)return;const t=e.touches[0],dx=t.clientX-this.touchLook.x,dy=t.clientY-this.touchLook.y;this.player.heading+=dx*.005;this.player.pitch=clamp(this.player.pitch-dy*.004,-.62,.62);this.touchLook={x:t.clientX,y:t.clientY}},{passive:true});cv.addEventListener('touchend',()=>this.touchLook=null,{passive:true})}"
+assert old in s
+s=s.replace(old,new,1)
+
+# Mobile touch controls also support Reality Body view/ship and cockpit altitude.
+old="this.bindStick();document.getElementById('s707-touch-jump').ontouchstart=e=>{e.preventDefault();this.jump()};document.getElementById('s707-touch-scan').ontouchstart=e=>{e.preventDefault();this.scan()};const sprint=document.getElementById('s707-touch-sprint');sprint.ontouchstart=e=>{e.preventDefault();this.touchSprint=true};sprint.ontouchend=()=>this.touchSprint=false;sprint.ontouchcancel=()=>this.touchSprint=false;document.getElementById('s707-touch-fold
