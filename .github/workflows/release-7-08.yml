@@ -1,0 +1,95 @@
+name: Package GitHub Release 7.08
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-7-08.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: v7.0.8
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download verified 7.08 build artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p staging/{android,ios,windows,macos,linux} release
+
+          download_artifact() {
+            local id="$1"
+            local name="$2"
+            gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" > "/tmp/${name}.zip"
+            unzip -q "/tmp/${name}.zip" -d "staging/${name}"
+          }
+
+          download_artifact 9168104385 android
+          download_artifact 9168098788 ios
+          download_artifact 9168105063 windows
+          download_artifact 9168094062 macos
+          download_artifact 9168108030 linux
+
+      - name: Normalize release filenames
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          copy_first() {
+            local root="$1"
+            local pattern="$2"
+            local target="$3"
+            local src
+            src="$(find "$root" -type f -name "$pattern" | head -n 1)"
+            if [ -z "$src" ]; then
+              echo "Missing expected artifact: $root / $pattern" >&2
+              exit 1
+            fi
+            cp "$src" "$target"
+          }
+
+          cp standalone/SIM_EARTH_7_08_REALITY_BODY.html release/SIM_EARTH_7_08_REALITY_BODY.html
+          copy_first staging/android '*.apk' release/SIM_EARTH_7_08_Android_Debug.apk
+          copy_first staging/ios '*.zip' release/SIM_EARTH_7_08_iOS_Simulator.zip
+          copy_first staging/windows '*.exe' release/SIM_EARTH_7_08_Windows_Setup_7.0.8.exe
+          copy_first staging/macos '*.dmg' release/SIM_EARTH_7_08_macOS_ARM64_7.0.8.dmg
+          copy_first staging/macos '*.zip' release/SIM_EARTH_7_08_macOS_ARM64_7.0.8.zip
+          copy_first staging/linux '*.AppImage' release/SIM_EARTH_7_08_Linux_7.0.8.AppImage
+          copy_first staging/linux '*.deb' release/SIM_EARTH_7_08_Linux_amd64_7.0.8.deb
+
+          find release -maxdepth 1 -type f ! -name SHA256SUMS.txt -print0 \
+            | sort -z \
+            | xargs -0 sha256sum > release/SHA256SUMS.txt
+
+          cat release/SHA256SUMS.txt
+
+      - name: Create or refresh GitHub Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" \
+              --title 'SIM EARTH 7.08 // REALITY BODY' \
+              --notes-file docs/RELEASE_NOTES_7_08.md
+            gh release upload "$TAG" release/* --clobber
+          else
+            gh release create "$TAG" release/* \
+              --target "$GITHUB_SHA" \
+              --title 'SIM EARTH 7.08 // REALITY BODY' \
+              --notes-file docs/RELEASE_NOTES_7_08.md
+          fi
+
+      - name: Verify published release
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" --json tagName,name,isDraft,isPrerelease,url,assets
