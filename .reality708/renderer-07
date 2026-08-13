@@ -1,2 +1,0 @@
-lity<1&&innerWidth>760){this.floraQuality=Math.min(1,this.floraQuality*1.03)}}
-}
