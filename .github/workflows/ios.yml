@@ -2,6 +2,7 @@ name: iOS Simulator Build
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     tags: ['v*']
 jobs:
   ios:
@@ -9,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: '22' }
       - run: npm install
       - run: npm run verify && npm run prepare:web
       - run: npx cap add ios
