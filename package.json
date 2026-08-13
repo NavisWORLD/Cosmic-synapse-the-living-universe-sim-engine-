@@ -35,8 +35,7 @@
     "linux": {
       "target": ["AppImage", "deb"],
       "category": "Game",
-      "maintainer": "Cory Shane Davis <NavisWORLD@users.noreply.github.com>",
-      "desktopName": "sim-earth-7-07"
+      "maintainer": "Cory Shane Davis <NavisWORLD@users.noreply.github.com>"
     }
   }
 }
