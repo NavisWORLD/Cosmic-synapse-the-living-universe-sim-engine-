@@ -28,12 +28,45 @@
   "build": {
     "appId": "io.github.navisworld.simearth707",
     "productName": "SIM EARTH 7.08",
-    "directories": { "output": "dist" },
-    "files": ["desktop/**/*", "app/**/*", "standalone/**/*", "package.json", "LICENSE", "NOTICE"],
-    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.games" },
-    "win": { "target": ["nsis"] },
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "desktop/**/*",
+      "app/**/*",
+      "standalone/**/*",
+      "package.json",
+      "LICENSE",
+      "NOTICE"
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.games"
+    },
+    "dmg": {
+      "title": "SIM EARTH 7.08"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "SIM EARTH 7.08"
+    },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "category": "Game",
       "maintainer": "Cory Shane Davis <NavisWORLD@users.noreply.github.com>"
     }
