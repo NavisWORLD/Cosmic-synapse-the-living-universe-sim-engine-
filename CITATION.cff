@@ -1,11 +1,11 @@
 cff-version: 1.2.0
-message: "If you use SIM EARTH 7.07, please cite this repository and the foundational CST publication."
-title: "SIM EARTH 7.07: Cosmic Synapse Living Universe Simulation Engine"
+message: "If you use SIM EARTH 7.08, please cite this repository and the foundational CST publication."
+title: "SIM EARTH 7.08: Reality Body — Cosmic Synapse Living Universe Simulation Engine"
 type: software
 authors:
   - family-names: "Davis"
     given-names: "Cory Shane"
-version: "7.07"
+version: "7.08"
 date-released: 2026-08-12
 repository-code: "https://github.com/NavisWORLD/Cosmic-synapse-the-living-universe-sim-engine-"
 license: Apache-2.0
