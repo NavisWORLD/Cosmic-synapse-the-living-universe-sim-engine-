@@ -1,5 +1,7 @@
 # SIM EARTH 7.07 — Build Verification Receipt
 
+> **Visual realism source update:** the current canonical source hash is `39278ea52ab10d80cf874ccb8fea8f2937cb19b1036f9d5e90007a01a9f53e5b`. The native artifacts recorded below were built from the earlier verified baseline `62a2bb449abc28a0860fdaeec15ba4c5b53ae8199679029f97e7270cb4a90647` and remain historical build evidence until the visual-realism source is rebuilt across those targets.
+
 Verified 2026-08-12 America/Chicago / 2026-08-13 UTC.
 
 ## Canonical engine identity

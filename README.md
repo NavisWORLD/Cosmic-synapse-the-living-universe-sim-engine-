@@ -204,3 +204,10 @@ That DOI is cited as lineage for the foundational CST work. It is not represente
 ## 🌌 Design rule
 
 > **Preserve ancestry. Add capability. Label simulations honestly. Let the universe remember.**
+
+## Visual realism ecology
+
+The surface renderer now treats a world as an ecosystem rather than a single terrain palette. Local temperature, moisture, elevation, atmosphere, water fraction, wind, biosphere state and deterministic world noise select a biome; the biome selects ground material, vegetation density, morphology families, ambient life and weather behavior. Earth-like worlds can move through rainforest, temperate and conifer forest, wetland, grassland, scrub, desert, tundra, alpine, snow/ice and ocean states, while gas giants render as atmospheric cloud decks instead of pretending they have a normal walkable rocky surface.
+
+The renderer is still procedural simulation, not a claim that every real plant species or every square meter of Earth is literally reconstructed from survey data. Its goal is coherent high-detail world generation inside the self-contained browser engine.
+
