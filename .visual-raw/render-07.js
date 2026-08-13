@@ -1,0 +1,3 @@
+ drawReality(){const c=this.ctx,v=this.app.sensors.video;if(v&&v.readyState>=2){const vw=v.videoWidth||640,vh=v.videoHeight||480,scale=Math.max(this.w/vw,this.h/vh),dw=vw*scale,dh=vh*scale;c.drawImage(v,(this.w-dw)/2,(this.h-dh)/2,dw,dh);c.fillStyle='rgba(0,24,31,.055)';c.fillRect(0,0,this.w,this.h)}else{c.fillStyle='#02080a';c.fillRect(0,0,this.w,this.h);c.fillStyle='rgba(210,255,255,.7)';c.textAlign='center';c.font='700 13px ui-monospace,monospace';c.fillText('CAMERA UNAVAILABLE // REALITY LENS RUNNING ON SENSOR STATE ONLY',this.w/2,this.h/2)}}
+ render(t){if(this.app.mode==='orbit')this.drawOrbit(t);else if(this.app.mode==='reality')this.drawReality();else this.drawSurface(t)}
+}
