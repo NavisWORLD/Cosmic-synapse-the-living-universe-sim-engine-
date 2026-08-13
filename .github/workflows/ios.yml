@@ -1,0 +1,25 @@
+name: iOS Simulator Build
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+jobs:
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm install
+      - run: npm run verify && npm run prepare:web
+      - run: npx cap add ios
+      - run: npx cap sync ios
+      - run: npx capacitor-assets generate --ios || true
+      - name: Build unsigned simulator app
+        run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
+      - name: Package simulator build
+        run: ditto -c -k --sequesterRsrc --keepParent ios-build/Build/Products/Debug-iphonesimulator/App.app SIM-EARTH-7.07-iOS-Simulator.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SIM-EARTH-7.07-iOS-Simulator
+          path: SIM-EARTH-7.07-iOS-Simulator.zip

@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use SIM EARTH 7.07, please cite this repository and the foundational CST publication."
+title: "SIM EARTH 7.07: Cosmic Synapse Living Universe Simulation Engine"
+type: software
+authors:
+  - family-names: "Davis"
+    given-names: "Cory Shane"
+version: "7.07"
+date-released: 2026-08-12
+repository-code: "https://github.com/NavisWORLD/Cosmic-synapse-the-living-universe-sim-engine-"
+license: Apache-2.0
+preferred-citation:
+  type: article
+  title: "The 12-Dimensional Cosmic Synapse Theory: Audio-Driven Deterministic Cosmological Simulation with Adaptive Memory and Light Particle Mapping"
+  authors:
+    - family-names: "Davis"
+      given-names: "Cory Shane"
+  doi: "10.5281/zenodo.17574447"
