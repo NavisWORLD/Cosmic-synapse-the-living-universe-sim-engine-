@@ -11,6 +11,7 @@ on:
 jobs:
   build-emulate:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - name: Restore V7 exact hash-locked source from verified V6
@@ -69,8 +70,18 @@ jobs:
           MPID=$!
           sleep 4
           kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do
+            kill -0 "$MPID" 2>/dev/null || break
+            sleep 0.1
+          done
+          kill -KILL "$MPID" 2>/dev/null || true
           wait "$MPID" 2>/dev/null || true
           kill -TERM "$XPID" 2>/dev/null || true
+          for i in $(seq 1 10); do
+            kill -0 "$XPID" 2>/dev/null || break
+            sleep 0.1
+          done
+          kill -KILL "$XPID" 2>/dev/null || true
           wait "$XPID" 2>/dev/null || true
           test -s qa.sav
           python3 - <<'PY'
@@ -97,8 +108,18 @@ jobs:
           MPID=$!
           sleep 4
           kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do
+            kill -0 "$MPID" 2>/dev/null || break
+            sleep 0.1
+          done
+          kill -KILL "$MPID" 2>/dev/null || true
           wait "$MPID" 2>/dev/null || true
           kill -TERM "$XPID" 2>/dev/null || true
+          for i in $(seq 1 10); do
+            kill -0 "$XPID" 2>/dev/null || break
+            sleep 0.1
+          done
+          kill -KILL "$XPID" 2>/dev/null || true
           wait "$XPID" 2>/dev/null || true
           test -s qa.sav
           python3 - <<'PY'
