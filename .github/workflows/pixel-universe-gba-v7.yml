@@ -1,0 +1,126 @@
+name: Lost COSMOS V7 native GBA expansion verification
+permissions:
+  contents: read
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/lost-cosmos-eridoria-eight-world-campaign-007]
+    paths:
+      - 'gba/lost-cosmos-eridoria-v7/bootstrap/kit.07.b64'
+jobs:
+  build-emulate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore V7 exact hash-locked source from verified V6
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .qa/v7 /tmp/patch-v7
+          test -s gba/lost-cosmos-eridoria-v7/bootstrap/kit.07.b64
+          cat gba/lost-cosmos-eridoria-v7/bootstrap/kit.??.b64 | tr -d '\n' | base64 -d >/tmp/v7-patch.tar.xz
+          echo '7e8ecbf7353f3d80ad4e9771f8b3fd30edab04a674093ca1ae9b259f8955a452  /tmp/v7-patch.tar.xz' | sha256sum -c -
+          cp -a gba/lost-cosmos-eridoria-v6/source/. .qa/v7/
+          test "$(git hash-object .qa/v7/lost_cosmos_v5.c)" = '6917e0875be1a1b3ac94dee3e5873053336f1c48'
+          test "$(git hash-object .qa/v7/cinematic_assets_v51.py)" = '531f37c0850e760ae857f3a4eabf57e699ffbbc2'
+          tar -xJf /tmp/v7-patch.tar.xz -C /tmp/patch-v7
+          for p in /tmp/patch-v7/*.patch; do (cd .qa/v7 && patch -p1 --forward < "$p"); done
+          cp /tmp/patch-v7/v7_campaign_tests.py .qa/v7/
+          rm -f .qa/v7/*.gba .qa/v7/*.sav .qa/v7/*.o .qa/v7/*.elf
+      - name: Install real GBA toolchain and mGBA
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb python3-pil
+      - name: Regenerate indexed artwork and build release
+        working-directory: .qa/v7
+        run: |
+          set -euo pipefail
+          /usr/bin/python3 cinematic_assets_v51.py
+          bash build_v5.sh
+          python3 verify_routes.py
+          python3 host_qa_v5.py
+          python3 v6_slice_tests.py
+          python3 v7_campaign_tests.py
+          python3 cinema_tests_v51.py
+          cp LOST_COSMOS_ERIDORIA_V7.gba release.gba
+          sha256sum release.gba
+          echo '78a707e144fc1bd335200b6586e56f326a3bb2a437af4d2afbeb53b0a3389ccd  release.gba' | sha256sum -c -
+      - name: Compile isolated QA cartridge
+        working-directory: .qa/v7
+        run: |
+          set -euo pipefail
+          QA=1 bash build_v5.sh
+          cp LOST_COSMOS_ERIDORIA_V7.gba qa.gba
+          rm -f qa.sav
+      - name: Real mGBA boot 1 — Eridoria and Ember
+        working-directory: .qa/v7
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb1.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba1.log 2>&1 &
+          MPID=$!
+          sleep 4
+          kill -TERM "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          test -s qa.sav
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5',(len(p),p[:8])
+          assert p[126]==0xa5,(p[126],p[127])
+          assert p[5]&1 and p[128]>=2 and p[143]==1
+          flags=p[200]|(p[201]<<8)
+          assert (flags & 31)==31,hex(flags)
+          print('PASS V7 real mGBA boot1: Malakar, Heart, Ember, RPG state and SRAM')
+          PY
+          cp qa.sav qa-boot1.sav
+      - name: Real mGBA boot 2 — two new worlds and Crown
+        working-directory: .qa/v7
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb2.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba2.log 2>&1 &
+          MPID=$!
+          sleep 4
+          kill -TERM "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          test -s qa.sav
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5'
+          assert p[126]==0x5a,(p[126],p[127])
+          flags=p[200]|(p[201]<<8)
+          assert (flags & (16|32|64|512|1024|4096))==(16|32|64|512|1024|4096),hex(flags)
+          assert p[203]==15 and p[5]==7 and p[9]!=0 and p[10]==1
+          print('PASS V7 real mGBA boot2: Tide/Bloom/Dream/Eldoria, Lattice, Crown, persisted save')
+          PY
+          cp qa.sav qa-final.sav
+      - name: Package built ROM and source evidence
+        if: success()
+        working-directory: .qa/v7
+        run: |
+          rm -f *.o *.elf qa.gba LOST_COSMOS_ERIDORIA_V7.gba
+          zip -q -r V7_Exact_Source.zip lost_cosmos_v5.c cinematic_assets_v51.py cinematic_assets_v51.h v5_art.h qseed.h start_v5.S linker_v5.ld build_v5.sh build_rom_v5.py verify_v5.py verify_routes.py host_qa_v5.py v6_slice_tests.py v7_campaign_tests.py cinema_tests_v51.py qa_fixtures V51_*.png
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-v7-mgba-artifacts
+          path: |
+            .qa/v7/release.gba
+            .qa/v7/V7_Exact_Source.zip
+            .qa/v7/qa-boot1.sav
+            .qa/v7/qa-final.sav
+            .qa/v7/mgba*.log
