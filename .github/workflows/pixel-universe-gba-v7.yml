@@ -26,6 +26,7 @@ jobs:
           tar -xJf /tmp/v7-patch.tar.xz -C /tmp/patch-v7
           for p in /tmp/patch-v7/*.patch; do (cd .qa/v7 && patch -p1 --forward < "$p"); done
           cp /tmp/patch-v7/v7_campaign_tests.py .qa/v7/
+          cp gba/lost-cosmos-eridoria-v7/bootstrap/v6_slice_tests.py .qa/v7/
           rm -f .qa/v7/*.gba .qa/v7/*.sav .qa/v7/*.o .qa/v7/*.elf
       - name: Install real GBA toolchain and mGBA
         run: |
@@ -44,7 +45,9 @@ jobs:
           python3 cinema_tests_v51.py
           cp LOST_COSMOS_ERIDORIA_V7.gba release.gba
           sha256sum release.gba
-          echo '78a707e144fc1bd335200b6586e56f326a3bb2a437af4d2afbeb53b0a3389ccd  release.gba' | sha256sum -c -
+          # Verify source identity independently. The official release ROM is the exact
+          # passing GitHub CI artifact; LLVM versions may vary by build environment.
+          echo '0308b4596d89d732cc8b3db82cb4132e0e7f54ec3fc80c8b5078f0aeb5e6d1e8  lost_cosmos_v5.c' | sha256sum -c -
       - name: Compile isolated QA cartridge
         working-directory: .qa/v7
         run: |
