@@ -59,7 +59,8 @@ def main():
         payload=zlib.decompress(base64.b64decode(info['zlib_base64'],validate=True))
         assert len(payload)==32768 and sha(payload)==info['sha256'], ('bad fixture',name)
         (out/'qa_fixtures'/name).write_bytes(payload)
-    if (boot/'README_V4.md').exists(): shutil.copy2(boot/'README_V4.md',out/'README_V4.md')
+    for doc in ['README_V4.md','VERIFICATION_V4.md']:
+        if (boot/doc).exists(): shutil.copy2(boot/doc,out/doc)
     print('PASS exact frozen V3 source:',BASE_SHA)
     print('PASS exact patched V4 source:',V4_SHA)
     print('PASS V2/V3 real-emulator save fixtures recovered and verified')
