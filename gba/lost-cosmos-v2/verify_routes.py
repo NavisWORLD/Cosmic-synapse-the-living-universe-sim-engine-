@@ -34,7 +34,7 @@ def gen(w,l=1):
   for y in range(28,35):put(c,t,31,y,FREE)
   rect(c,t,8,46,9,7);put(c,t,12,49,FREE,1);box(c,t,19,16,16,13);put(c,t,26,28,FREE,2);rect(c,t,22,19,10,5,WALL);put(c,t,27,22,FREE,8);box(c,t,47,5,12,10);put(c,t,52,14,FREE,9);noise(c,t,7,90)
   for x in range(10,31):put(c,t,x,51)
-  for y in range(28,52):put(c,t,26,y)
+  for y in range(28,52):put(c,t,26,y,FREE,2 if y==28 else 0)
   for y in range(0,64,8):put(c,t,30,y,WALL)
   for y in range(28,35):put(c,t,30,y);put(c,t,31,y)
  elif w==1:
@@ -44,7 +44,7 @@ def gen(w,l=1):
     if (x<16 or x>22) and (x<42 or x>48):put(c,t,x,y,HAZ)
   for x in range(5,60):put(c,t,x,34)
   rect(c,t,5,48,9,7);put(c,t,9,51,FREE,1);box(c,t,42,38,17,18);put(c,t,49,55,FREE,2);put(c,t,20,20,FREE,7);noise(c,t,17,38)
-  for x in range(9,50):put(c,t,x,51)
+  for x in range(9,50):put(c,t,x,51,FREE,1 if x==9 else 0)
   for y in range(20,52):put(c,t,20,y,FREE,7 if y==20 else 0)
  elif w==2:
   c,t=blank(WALL)
@@ -54,7 +54,7 @@ def gen(w,l=1):
   border(c,t)
   for x in range(5,58):put(c,t,x,31)
   rect(c,t,6,49,9,7);put(c,t,10,52,FREE,1);box(c,t,41,9,16,15);put(c,t,48,23,FREE,2);put(c,t,22,45,FREE,7);noise(c,t,23,25,0)
-  for x in range(10,49):put(c,t,x,52)
+  for x in range(10,49):put(c,t,x,52,FREE,1 if x==10 else 0)
   for y in range(23,53):put(c,t,48,y,FREE,2 if y==23 else 0)
   for y in range(45,53):put(c,t,22,y,FREE,7 if y==45 else 0)
   put(c,t,22,45,FREE,7)
@@ -63,7 +63,7 @@ def gen(w,l=1):
   for x in range(2,62,7):
    for y in range(3,60,9):put(c,t,x,y,WALL)
   rect(c,t,6,48,9,7);put(c,t,10,51,FREE,1);put(c,t,31,31,FREE,7);box(c,t,44,8,14,12);put(c,t,50,19,FREE,2);noise(c,t,31,70)
-  for x in range(10,51):put(c,t,x,51)
+  for x in range(10,51):put(c,t,x,51,FREE,1 if x==10 else 0)
   for y in range(19,52):put(c,t,31,y,FREE,7 if y==31 else 0)
   put(c,t,50,19,FREE,2)
  elif w==4:
@@ -112,3 +112,15 @@ for name,w,l,a,b in checks:
  c,_=gen(w,l)
  if not reach(c,a,b):raise SystemExit('FAIL route: '+name)
  print('PASS route:',name)
+
+trigger_checks=[
+ ("origin door",0,1,(26,28),2),("origin ship trigger",0,1,(12,49),1),
+ ("ember ship trigger",1,1,(9,51),1),("ember lift trigger",1,1,(20,20),7),("ember X trigger",1,0,(53,10),4),
+ ("tide ship trigger",2,1,(10,52),1),("tide lift trigger",2,1,(22,45),7),("tide Y trigger",2,0,(50,12),5),
+ ("bloom ship trigger",3,1,(10,51),1),("bloom lift trigger",3,1,(31,31),7),("bloom Z trigger",3,2,(52,11),6),
+ ("black secret trigger",4,1,(24,14),9),("crown core trigger",5,1,(55,8),10),
+]
+for name,w,l,(x,y),expected in trigger_checks:
+ c,t=gen(w,l)
+ if t[y][x]!=expected: raise SystemExit(f"FAIL trigger: {name} got {t[y][x]} expected {expected}")
+ print('PASS trigger:',name)
