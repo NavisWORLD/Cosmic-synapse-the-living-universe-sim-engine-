@@ -88,8 +88,9 @@ jobs:
           from pathlib import Path
           p=Path("qa.sav").read_bytes()
           assert len(p)==32768, len(p)
-          assert p[0x7e]==0xA5, hex(p[0x7e])
-          print("PASS mGBA boot 1: SRAM marker",hex(p[0x7e]))
+          if p[0x7e]!=0xA5:
+              raise AssertionError(f"boot1 marker={p[0x7e]:#x} stage={p[0x7f]:#x}")
+          print("PASS mGBA boot 1: SRAM marker",hex(p[0x7e]),"stage",hex(p[0x7f]))
           PY
           cp qa.sav qa-boot1.sav
           sha256sum qa.sav >sram-boot1.sha256
@@ -120,7 +121,8 @@ jobs:
           from pathlib import Path
           p=Path("qa.sav").read_bytes()
           assert len(p)==32768, len(p)
-          assert p[0x7e]==0x5A, hex(p[0x7e])
+          if p[0x7e]!=0x5A:
+              raise AssertionError(f"boot2 marker={p[0x7e]:#x} stage={p[0x7f]:#x}")
           assert (p[6] & 0x07)==0x07, hex(p[6])
           assert p[7] != 0, p[7]
           assert p[8] != 0, p[8]
