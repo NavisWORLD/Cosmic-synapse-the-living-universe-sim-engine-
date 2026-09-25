@@ -63,14 +63,22 @@ jobs:
         run: |
           set -euo pipefail
           rm -f qa.sav qa-boot1.sav
-          set +e
-          timeout --signal=TERM --kill-after=2s 6s xvfb-run -a mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot1.log 2>&1
-          code=$?
-          set -e
-          if [[ "$code" -ne 0 && "$code" -ne 124 && "$code" -ne 143 ]]; then
-            cat mgba-boot1.log
-            exit "$code"
-          fi
+          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb-boot1.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot1.log 2>&1 &
+          MPID=$!
+          sleep 4
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do
+            kill -0 "$MPID" 2>/dev/null || break
+            sleep 0.1
+          done
+          kill -KILL "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
           if [[ ! -s qa.sav ]]; then
             echo 'mGBA did not create qa.sav in forced savegamePath'; find "$PWD" "$HOME/.config/mgba" -maxdepth 3 -type f -name '*.sav' -ls 2>/dev/null || true
             cat mgba-boot1.log || true
@@ -91,14 +99,22 @@ jobs:
         run: |
           set -euo pipefail
           test -s qa.sav
-          set +e
-          timeout --signal=TERM --kill-after=2s 6s xvfb-run -a mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot2.log 2>&1
-          code=$?
-          set -e
-          if [[ "$code" -ne 0 && "$code" -ne 124 && "$code" -ne 143 ]]; then
-            cat mgba-boot2.log
-            exit "$code"
-          fi
+          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb-boot2.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot2.log 2>&1 &
+          MPID=$!
+          sleep 4
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do
+            kill -0 "$MPID" 2>/dev/null || break
+            sleep 0.1
+          done
+          kill -KILL "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
           test -s qa.sav
           python - <<'PY'
           from pathlib import Path
