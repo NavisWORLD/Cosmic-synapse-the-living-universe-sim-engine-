@@ -1,6 +1,6 @@
 name: Lost COSMOS GBA V5.1 Cinematic Hardware QA
 permissions:
-  contents: read
+  contents: write
 
 on:
   push:
@@ -45,7 +45,7 @@ jobs:
       - name: Install ARM toolchain and true GBA emulator
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang lld llvm mgba-sdl xvfb ffmpeg xdotool
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb ffmpeg xdotool openbox
 
       - name: Generate genuine legacy V5 SRAM with original mGBA
         working-directory: .qa/v5-original
@@ -108,14 +108,25 @@ jobs:
           Xvfb :98 -screen 0 800x600x24 -nolisten tcp >xvfb-player.log 2>&1 &
           XPID=$!
           export DISPLAY=:98
-          sleep 1
+          openbox --sm-disable >openbox-player.log 2>&1 &
+          WMID=$!
+          sleep 2
           SDL_AUDIODRIVER=dummy mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 release-v51.gba >mgba-player.log 2>&1 &
           MPID=$!
           sleep 2
+          WIN="$(xdotool search --name 'mGBA' | tail -1 || true)"
+          echo "GBA_WINDOW_ID=$WIN"
+          xdotool mousemove 760 560
           ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 -y v51_mgba_actual_title.png
-          xdotool search --name 'mGBA' | head -1 | xargs -r -I% xdotool windowactivate --sync '%' key Return || true
-          sleep 1
+          if [[ -n "$WIN" ]]; then
+            xdotool windowactivate --sync "$WIN" || true
+            xdotool windowfocus --sync "$WIN" || true
+            xdotool key --clearmodifiers Return
+          fi
+          sleep 2
+          xdotool mousemove 760 560
           ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 -y v51_mgba_actual_after_start.png
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -framerate 8 -video_size 800x600 -i :98.0 -t 3 -c:v libx264 -crf 27 -pix_fmt yuv420p -y v51_mgba_actual_gameplay.mp4 || true
           python3 - <<'PY'
           from pathlib import Path
           for f in ('v51_mgba_actual_title.png','v51_mgba_actual_after_start.png'):
@@ -125,6 +136,8 @@ jobs:
           PY
           kill -TERM "$MPID" 2>/dev/null || true
           wait "$MPID" 2>/dev/null || true
+          kill -TERM "$WMID" 2>/dev/null || true
+          wait "$WMID" 2>/dev/null || true
           kill -TERM "$XPID" 2>/dev/null || true
           wait "$XPID" 2>/dev/null || true
 
@@ -211,13 +224,32 @@ jobs:
             'build_v5.sh','build_rom_v5.py','start_v5.S','linker_v5.ld','verify_v5.py',
             'verify_routes.py','host_qa_v5.py','feature_tests_v5.py']
           names+=[p.name for p in s.glob('V51_*png')]
-          with zipfile.ZipFile(s/'V51_SOURCE.zip','w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+          with zipfile.ZipFile(s/'V51_SOURCE.zip','w',zipfile.ZIP_DEFLATED,compresslevel=9,strict_timestamps=False) as z:
             for n in names:
               if (s/n).exists():z.write(s/n,'lost-cosmos-v51/'+n)
             for p in (s/'qa_fixtures').glob('*.sav'):
               z.write(p,'lost-cosmos-v51/qa_fixtures/'+p.name)
           print('Editable V5.1 GBA source ZIP:',(s/'V51_SOURCE.zip').stat().st_size)
           PY
+
+      - name: Publish verified editable cinematic source on isolated development branch
+        if: success() && github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p gba/lost-cosmos-v5-cinematic/source
+          SRC='.qa/lost-cosmos-v51'
+          for filename in cinematic_assets_v51.py patch_cinematic_v51.py cinema_tests_v51.py cinematic_assets_v51.h lost_cosmos_v5.c v5_art.h qseed.h build_v5.sh build_rom_v5.py start_v5.S linker_v5.ld verify_v5.py verify_routes.py host_qa_v5.py feature_tests_v5.py; do
+            cp "$SRC/$filename" "gba/lost-cosmos-v5-cinematic/source/$filename"
+          done
+          cp "$SRC"/V51_GBA_indexed_*.png gba/lost-cosmos-v5-cinematic/source/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A gba/lost-cosmos-v5-cinematic/source
+          if ! git diff --cached --quiet; then
+            git commit -m "publish mGBA-verified Lost COSMOS V5.1 cinematic source [skip ci]"
+            git push origin HEAD:feature/lost-cosmos-gba-cinematic-playtest-0051
+          fi
 
       - name: Upload cinematic ROM, source, true mGBA screenshots and saves
         if: always()
@@ -229,6 +261,8 @@ jobs:
             .qa/lost-cosmos-v51/release-v51.gba.sha256
             .qa/lost-cosmos-v51/V51_SOURCE.zip
             .qa/lost-cosmos-v51/v51_mgba_actual*.png
+            .qa/lost-cosmos-v51/v51_mgba_actual_gameplay.mp4
+            .qa/lost-cosmos-v51/openbox-player.log
             .qa/lost-cosmos-v51/mgba-*.log
             .qa/lost-cosmos-v51/qa-boot1.sav
             .qa/lost-cosmos-v51/qa-final.sav
