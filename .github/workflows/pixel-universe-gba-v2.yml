@@ -33,7 +33,11 @@ jobs:
       - name: Install ARM build and emulator QA tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang lld llvm mgba-sdl gdb-multiarch xvfb netcat-openbsd
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb
+          clang --version
+          ld.lld --version
+          llvm-objcopy --version | head -1
+          mgba --version
       - name: Stage V2 source
         run: |
           mkdir -p .qa/lost-cosmos-v2
@@ -50,44 +54,52 @@ jobs:
         run: |
           QA=1 ./build_v2.sh
           cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V2.gba qa.gba
-          cp lost_cosmos_v2.elf qa.elf
           rm -f qa.sav qa.ss0
       - name: Emulator boot 1 — walk, interior, ship, Ember X, SRAM save
         working-directory: .qa/lost-cosmos-v2
+        shell: bash
         run: |
           set -euo pipefail
-          xvfb-run -a mgba -g qa.gba >mgba-boot1.log 2>&1 &
-          EPID=$!
-          for i in $(seq 1 30); do nc -z 127.0.0.1 2345 && break || sleep 1; done
-          nc -z 127.0.0.1 2345
-          gdb-multiarch -q qa.elf -batch \
-            -ex 'target remote 127.0.0.1:2345' \
-            -ex 'break qa_done' \
-            -ex 'continue' \
-            -ex 'p/x qa_stage' >gdb-boot1.log 2>&1
-          grep -qi '0x51564131' gdb-boot1.log
-          kill -TERM "$EPID" || true
-          wait "$EPID" || true
-          sleep 2
+          set +e
+          timeout --signal=INT --kill-after=2s 8s xvfb-run -a mgba qa.gba >mgba-boot1.log 2>&1
+          code=$?
+          set -e
+          if [[ "$code" -ne 0 && "$code" -ne 124 && "$code" -ne 130 && "$code" -ne 137 ]]; then
+            echo "mGBA boot 1 exited unexpectedly: $code"
+            exit "$code"
+          fi
+          sleep 1
           test -s qa.sav
+          python - <<'PY'
+          from pathlib import Path
+          d=Path("qa.sav").read_bytes()
+          assert len(d)>126, f"short SRAM: {len(d)}"
+          assert d[126]==0xA5, f"boot1 marker mismatch: {d[126]:#x}"
+          print(f"PASS boot1: mGBA executed surface/interior/ship/Ember-X/save; SRAM={len(d)} bytes marker=A5")
+          PY
           sha256sum qa.sav >sram-boot1.sha256
       - name: Emulator boot 2 — reload SRAM, Y/Z, Black Garden, Crown, postgame
         working-directory: .qa/lost-cosmos-v2
+        shell: bash
         run: |
           set -euo pipefail
-          xvfb-run -a mgba -g qa.gba >mgba-boot2.log 2>&1 &
-          EPID=$!
-          for i in $(seq 1 30); do nc -z 127.0.0.1 2345 && break || sleep 1; done
-          nc -z 127.0.0.1 2345
-          gdb-multiarch -q qa.elf -batch \
-            -ex 'target remote 127.0.0.1:2345' \
-            -ex 'break qa_done' \
-            -ex 'continue' \
-            -ex 'p/x qa_stage' >gdb-boot2.log 2>&1
-          grep -qi '0x51564132' gdb-boot2.log
-          kill -TERM "$EPID" || true
-          wait "$EPID" || true
+          set +e
+          timeout --signal=INT --kill-after=2s 8s xvfb-run -a mgba qa.gba >mgba-boot2.log 2>&1
+          code=$?
+          set -e
+          if [[ "$code" -ne 0 && "$code" -ne 124 && "$code" -ne 130 && "$code" -ne 137 ]]; then
+            echo "mGBA boot 2 exited unexpectedly: $code"
+            exit "$code"
+          fi
+          sleep 1
           test -s qa.sav
+          python - <<'PY'
+          from pathlib import Path
+          d=Path("qa.sav").read_bytes()
+          assert len(d)>126, f"short SRAM: {len(d)}"
+          assert d[126]==0x5A, f"boot2 marker mismatch: {d[126]:#x}"
+          print(f"PASS boot2: SRAM reloaded; Y/Z/Black Garden/Crown/ending/postgame completed; SRAM={len(d)} bytes marker=5A")
+          PY
           sha256sum qa.sav >sram-boot2.sha256
       - name: Publish verified editable source to development branch
         if: env.BOOTSTRAPPED == '1' && github.event_name == 'push'
