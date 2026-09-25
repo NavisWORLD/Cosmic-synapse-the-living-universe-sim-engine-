@@ -1,0 +1,192 @@
+name: Lost COSMOS GBA Eridoria V6 Pilot — opaque UI, story, duels
+permissions:
+  contents: write
+on:
+  push:
+    branches: [feature/lost-cosmos-gba-eridoria-story-battle-006]
+    paths:
+      - "gba/lost-cosmos-eridoria-v6/**"
+      - ".github/workflows/pixel-universe-gba-v6.yml"
+  workflow_dispatch:
+jobs:
+  build-and-emulate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct hash-locked pilot from published V5.1 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .qa/eridoria-v6
+          cp -a gba/lost-cosmos-v5-cinematic/source/. .qa/eridoria-v6/
+          test "$(sha256sum .qa/eridoria-v6/lost_cosmos_v5.c | cut -d' ' -f1)" = b7f8177d8e93b926d6a50750c9b9d95feb2c72913f6c1927eb9f7f6262ca2830
+          cat gba/lost-cosmos-eridoria-v6/bootstrap/patch.0*.b64 | tr -d '\n' | base64 -d > /tmp/eridoria-v6.patch.xz
+          echo "e250fcf5f633004ac9f163ac0850a925e44310e36e855ce2d2ac9db0ce500983  /tmp/eridoria-v6.patch.xz" | sha256sum -c -
+          xz -dc /tmp/eridoria-v6.patch.xz | (cd .qa/eridoria-v6 && patch -p1 --batch --fuzz=0)
+          test "$(sha256sum .qa/eridoria-v6/lost_cosmos_v5.c | cut -d' ' -f1)" = 4d5a6d62659de105d325736d6a204c9c6368850df02b506116fc9e290b8dd0c9
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('.qa/eridoria-v6')
+          b=root/'build_rom_v5.py';s=b.read_text()
+          s=s.replace("SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5_CINEMATIC.gba","LOST_COSMOS_ERIDORIA_V6_PREVIEW.gba").replace("b'LOSTCOSMOS51'","b'ERIDORIAV6  '").replace("b'LC51'","b'ERV6'").replace("header[0xBC]=6","header[0xBC]=7")
+          assert "LOST_COSMOS_ERIDORIA_V6_PREVIEW.gba" in s and "b'ERV6'" in s
+          b.write_text(s)
+          b=root/'verify_v5.py';s=b.read_text()
+          s=s.replace("SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5_CINEMATIC.gba","LOST_COSMOS_ERIDORIA_V6_PREVIEW.gba").replace("b'LOSTCOSMOS51'","b'ERIDORIAV6  '").replace("b'LC51'","b'ERV6'").replace("data[0xBC] != 6","data[0xBC] != 7")
+          assert "LOST_COSMOS_ERIDORIA_V6_PREVIEW.gba" in s and "b'ERV6'" in s
+          b.write_text(s)
+          PY
+          echo "PASS byte-exact V6 reconstruction, unique game header, V5 save-format preservation"
+      - name: Install actual GBA emulator and ARM tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb ffmpeg xdotool openbox
+      - name: Compile release and run host regressions
+        working-directory: .qa/eridoria-v6
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x build_v5.sh
+          ./build_v5.sh
+          python3 verify_routes.py
+          python3 host_qa_v5.py
+          python3 feature_tests_v5.py
+          python3 cinema_tests_v51.py
+          cp LOST_COSMOS_ERIDORIA_V6_PREVIEW.gba release.gba
+          sha256sum release.gba > release.gba.sha256
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p=Path('release.gba').read_bytes()
+          assert len(p)==262144 and p[0xA0:0xAC]==b'ERIDORIAV6  ' and p[0xAC:0xB0]==b'ERV6'
+          assert p[0xBC]==7
+          src=Path('lost_cosmos_v5.c').read_text()
+          for token in ("ui_frame(", "static void battle_enter(", "static void draw_battle(", "HEART OF ERIDORIA", "ASTRID"):
+              assert token in src, token
+          print('PASS native release',hashlib.sha256(p).hexdigest())
+          PY
+      - name: Capture actual mGBA title and gameplay screenshots
+        working-directory: .qa/eridoria-v6
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :98 -screen 0 800x600x24 -nolisten tcp >xvfb-title.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:98
+          openbox --sm-disable >openbox.log 2>&1 &
+          WMID=$!
+          sleep 2
+          SDL_AUDIODRIVER=dummy mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 release.gba >mgba-title.log 2>&1 &
+          MPID=$!
+          sleep 2
+          xdotool mousemove 760 560
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 -y actual_v6_title.png
+          WIN="$(xdotool search --name 'mGBA' | tail -1 || true)"
+          if [[ -n "$WIN" ]]; then
+            xdotool windowactivate --sync "$WIN" || true
+            xdotool windowfocus --sync "$WIN" || true
+            xdotool key --clearmodifiers Return
+          fi
+          sleep 2
+          xdotool mousemove 760 560
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 -y actual_v6_after_start.png
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -framerate 8 -video_size 800x600 -i :98.0 -t 3 -c:v libx264 -crf 27 -pix_fmt yuv420p -y actual_v6_gameplay.mp4 || true
+          test -s actual_v6_title.png && test -s actual_v6_after_start.png
+          kill -TERM "$MPID" 2>/dev/null || true;wait "$MPID" 2>/dev/null || true
+          kill -TERM "$WMID" 2>/dev/null || true;wait "$WMID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true;wait "$XPID" 2>/dev/null || true
+      - name: Build separate real mGBA gameplay QA cartridge
+        working-directory: .qa/eridoria-v6
+        run: |
+          set -euo pipefail
+          QA=1 ./build_v5.sh
+          cp LOST_COSMOS_ERIDORIA_V6_PREVIEW.gba qa-v6.gba
+          rm -f qa-v6.sav
+      - name: mGBA boot 1 — NPC Astrid, opaque battle, quest, Ember X
+        working-directory: .qa/eridoria-v6
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :99 -screen 0 800x600x24 -nolisten tcp >xvfb-boot1.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa-v6.gba >mgba-boot1.log 2>&1 &
+          MPID=$!
+          sleep 5
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20);do kill -0 "$MPID" 2>/dev/null||break;sleep 0.1;done
+          kill -KILL "$MPID" 2>/dev/null||true;wait "$MPID" 2>/dev/null||true
+          kill -TERM "$XPID" 2>/dev/null||true;wait "$XPID" 2>/dev/null||true
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa-v6.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5'
+          assert p[126]==0xA5,(p[126],p[127])
+          assert p[5]&1 and p[128]>=2 and p[143]==1
+          assert p[158]&64 and p[159]&64 and p[161]&32,(p[158],p[159],p[161])
+          print('PASS actual mGBA boot1: verified Astrid dialogue quest, encounter UI/combat, Ember story, SRAM')
+          PY
+          cp qa-v6.sav qa-boot1.sav
+      - name: mGBA boot 2 — saved Heart quest, all axes, ending and postgame
+        working-directory: .qa/eridoria-v6
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s qa-v6.sav
+          Xvfb :99 -screen 0 800x600x24 -nolisten tcp >xvfb-boot2.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa-v6.gba >mgba-boot2.log 2>&1 &
+          MPID=$!
+          sleep 5
+          kill -TERM "$MPID" 2>/dev/null||true
+          for i in $(seq 1 20);do kill -0 "$MPID" 2>/dev/null||break;sleep 0.1;done
+          kill -KILL "$MPID" 2>/dev/null||true;wait "$MPID" 2>/dev/null||true
+          kill -TERM "$XPID" 2>/dev/null||true;wait "$XPID" 2>/dev/null||true
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa-v6.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5'
+          assert p[126]==0x5A,(p[126],p[127])
+          assert p[5]==7 and p[11]==5 and p[128]>=3
+          assert p[143]==2 and p[144]==1 and p[145]==1
+          assert p[9] and p[10] and p[159]&64,(p[9],p[10],p[159])
+          print('PASS actual mGBA boot2: Heart quest persisted; six original worlds/XYZ/Crown/postgame')
+          PY
+          cp qa-v6.sav qa-final.sav
+      - name: Publish verified editable source to V6 branch
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import shutil
+          from pathlib import Path
+          src=Path('.qa/eridoria-v6');dst=Path('gba/lost-cosmos-eridoria-v6/source')
+          dst.mkdir(parents=True,exist_ok=True)
+          keep={'.c','.h','.py','.S','.ld','.sh','.md','.png','.sav'}
+          for p in src.rglob('*'):
+              if p.is_file() and p.suffix in keep and p.name not in {'host_qa_v5.c','cinema_qa.c'}:
+                  f=dst/p.relative_to(src);f.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(p,f)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add gba/lost-cosmos-eridoria-v6/source
+          if ! git diff --cached --quiet;then
+            git commit -m 'Publish verified Eridoria V6 campaign pilot source [skip ci]'
+            git push origin HEAD:feature/lost-cosmos-gba-eridoria-story-battle-006
+          fi
+      - name: Upload actual ROM, images, logs and SRAM evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lost-cosmos-eridoria-v6-pilot
+          path: |
+            .qa/eridoria-v6/release.gba
+            .qa/eridoria-v6/release.gba.sha256
+            .qa/eridoria-v6/actual_v6_*.png
+            .qa/eridoria-v6/actual_v6_*.mp4
+            .qa/eridoria-v6/mgba-*.log
+            .qa/eridoria-v6/qa-*.sav
