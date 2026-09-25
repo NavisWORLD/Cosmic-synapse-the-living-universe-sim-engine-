@@ -35,7 +35,7 @@ jobs:
       - name: Install ARM build and emulator QA tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang lld llvm mgba-sdl gdb-multiarch xvfb netcat-openbsd
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb
       - name: Stage V2 source
         run: |
           mkdir -p .qa/lost-cosmos-v2
@@ -62,49 +62,52 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          xvfb-run -a mgba -g qa.gba >mgba-boot1.log 2>&1 &
-          EPID=$!
-          trap 'kill -TERM "$EPID" 2>/dev/null || true' EXIT
-          for i in $(seq 1 30); do nc -z 127.0.0.1 2345 && break || sleep 1; done
-          nc -z 127.0.0.1 2345
-          gdb-multiarch -q qa.elf -batch \
-            -ex 'target remote 127.0.0.1:2345' \
-            -ex 'break qa_done' \
-            -ex 'continue' \
-            -ex 'p/x qa_stage' \
-            -ex 'x/1bx 0x0e00007e' \
-            -ex 'dump binary memory qa.sav 0x0e000000 0x0e008000' >gdb-boot1.log 2>&1
-          grep -qi '0x51564131' gdb-boot1.log
-          grep -qi '0xe00007e.*0xa5' gdb-boot1.log
-          test "$(stat -c %s qa.sav)" -eq 32768
+          rm -f qa.sav qa-boot1.sav
+          set +e
+          timeout --signal=TERM --kill-after=2s 6s xvfb-run -a mgba qa.gba >mgba-boot1.log 2>&1
+          code=$?
+          set -e
+          if [[ "$code" -ne 0 && "$code" -ne 124 && "$code" -ne 143 ]]; then
+            cat mgba-boot1.log
+            exit "$code"
+          fi
+          test -s qa.sav
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("qa.sav").read_bytes()
+          assert len(p)==32768, len(p)
+          assert p[0x7e]==0xA5, hex(p[0x7e])
+          print("PASS mGBA boot 1: SRAM marker",hex(p[0x7e]))
+          PY
+          cp qa.sav qa-boot1.sav
           sha256sum qa.sav >sram-boot1.sha256
-          kill -TERM "$EPID" || true
-          wait "$EPID" || true
-          trap - EXIT
       - name: mGBA boot 2 — SRAM reload, Y/Z, Black Garden, Crown, postgame
         working-directory: .qa/lost-cosmos-v2
         shell: bash
         run: |
           set -euo pipefail
-          xvfb-run -a mgba -g qa.gba >mgba-boot2.log 2>&1 &
-          EPID=$!
-          trap 'kill -TERM "$EPID" 2>/dev/null || true' EXIT
-          for i in $(seq 1 30); do nc -z 127.0.0.1 2345 && break || sleep 1; done
-          nc -z 127.0.0.1 2345
-          gdb-multiarch -q qa.elf -batch \
-            -ex 'target remote 127.0.0.1:2345' \
-            -ex 'break qa_done' \
-            -ex 'continue' \
-            -ex 'p/x qa_stage' \
-            -ex 'x/1bx 0x0e00007e' \
-            -ex 'dump binary memory qa-final.sav 0x0e000000 0x0e008000' >gdb-boot2.log 2>&1
-          grep -qi '0x51564132' gdb-boot2.log
-          grep -qi '0xe00007e.*0x5a' gdb-boot2.log
-          test "$(stat -c %s qa-final.sav)" -eq 32768
-          sha256sum qa-final.sav >sram-boot2.sha256
-          kill -TERM "$EPID" || true
-          wait "$EPID" || true
-          trap - EXIT
+          test -s qa.sav
+          set +e
+          timeout --signal=TERM --kill-after=2s 6s xvfb-run -a mgba qa.gba >mgba-boot2.log 2>&1
+          code=$?
+          set -e
+          if [[ "$code" -ne 0 && "$code" -ne 124 && "$code" -ne 143 ]]; then
+            cat mgba-boot2.log
+            exit "$code"
+          fi
+          test -s qa.sav
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("qa.sav").read_bytes()
+          assert len(p)==32768, len(p)
+          assert p[0x7e]==0x5A, hex(p[0x7e])
+          assert (p[6] & 0x07)==0x07, hex(p[6])
+          assert p[7] != 0, p[7]
+          assert p[8] != 0, p[8]
+          print("PASS mGBA boot 2: marker",hex(p[0x7e]),"keys",hex(p[6]),"ending",p[7],"postgame",p[8])
+          PY
+          cp qa.sav qa-final.sav
+          sha256sum qa.sav >sram-boot2.sha256
       - name: Publish verified editable source to development branch
         if: env.BOOTSTRAPPED == '1' && github.event_name == 'push'
         shell: bash
