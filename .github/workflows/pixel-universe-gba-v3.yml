@@ -24,10 +24,18 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .src/lost-cosmos-v3 .qa/lost-cosmos-v3
-          cat gba/lost-cosmos-v3/bootstrap/source.zip.b64.* | tr -d '\n' | base64 -d > /tmp/lost-cosmos-v3-source.zip
-          unzip -q /tmp/lost-cosmos-v3-source.zip -d .src/lost-cosmos-v3
+          # Use the actual editable branch source. The bootstrap archive is
+          # only a fallback for historical commits that lacked published source.
+          if [[ -f gba/lost-cosmos-v3/lost_cosmos_v3.c ]]; then
+            cp -a gba/lost-cosmos-v3/. .src/lost-cosmos-v3/
+            rm -rf .src/lost-cosmos-v3/bootstrap
+          else
+            cat gba/lost-cosmos-v3/bootstrap/source.zip.b64.* | tr -d '\n' | base64 -d > /tmp/lost-cosmos-v3-source.zip
+            unzip -q /tmp/lost-cosmos-v3-source.zip -d .src/lost-cosmos-v3
+          fi
+          echo '3d9b4caf42dded4bf2345a9ced987604cb702e325239dfe79999df16ad31e1cd  .src/lost-cosmos-v3/lost_cosmos_v3.c' | sha256sum -c -
           cp -a .src/lost-cosmos-v3/. .qa/lost-cosmos-v3/
-          cp /tmp/lost-cosmos-v3-source.zip .qa/lost-cosmos-v3/source.zip
+          (cd .src/lost-cosmos-v3 && zip -q -r ../../.qa/lost-cosmos-v3/source.zip . -x '*.o' '*.elf' '*.gba' '*.sav')
 
       - name: Install ARM build and mGBA
         run: |
