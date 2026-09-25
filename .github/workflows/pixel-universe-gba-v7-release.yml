@@ -1,0 +1,59 @@
+name: Publish Lost COSMOS V7 verified GBA prerelease
+permissions:
+  actions: read
+  contents: write
+on:
+  push:
+    branches: [feature/lost-cosmos-eridoria-eight-world-campaign-007]
+    paths:
+      - '.github/workflows/pixel-universe-gba-v7-release.yml'
+jobs:
+  publish-gba-prerelease:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover exact two-boot mGBA passing artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v7 /tmp/v7-src dist
+          gh run download 36167103911 --repo "$GITHUB_REPOSITORY" \
+            --name lost-cosmos-v7-mgba-artifacts --dir /tmp/v7
+          echo 'c7909147bbf5e124181f0d0eef1474230f4b26b8966109df6c396e56d4ab1a55  /tmp/v7/release.gba' | sha256sum -c -
+          unzip -q /tmp/v7/V7_Exact_Source.zip -d /tmp/v7-src
+          echo '0308b4596d89d732cc8b3db82cb4132e0e7f54ec3fc80c8b5078f0aeb5e6d1e8  /tmp/v7-src/lost_cosmos_v5.c' | sha256sum -c -
+          python3 - <<'PY'
+          from pathlib import Path
+          a=Path('/tmp/v7/qa-boot1.sav').read_bytes()
+          b=Path('/tmp/v7/qa-final.sav').read_bytes()
+          assert len(a)==len(b)==32768 and a[126]==0xa5 and b[126]==0x5a
+          assert b[5]==7 and b[10]==1
+          print('PASS both real mGBA SRAM boots')
+          PY
+          cp /tmp/v7/release.gba dist/LOST_COSMOS_ERIDORIA_V7_MGBA_VERIFIED.gba
+          cp /tmp/v7/V7_Exact_Source.zip dist/LOST_COSMOS_ERIDORIA_V7_Exact_Source.zip
+          cp gba/lost-cosmos-eridoria-v7/PLAYER_GUIDE.md dist/PLAYER_GUIDE.md
+          cp gba/lost-cosmos-eridoria-v7/CI_VERIFICATION.md dist/CI_VERIFICATION.md
+          cd /tmp/v7
+          zip -q -r "$GITHUB_WORKSPACE/dist/LOST_COSMOS_ERIDORIA_V7_MGBA_EVIDENCE.zip" \
+            qa-boot1.sav qa-final.sav mgba1.log mgba2.log
+      - name: Publish non-destructive playable prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag='lost-cosmos-eridoria-v7-mgba-001'
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Tag already has a release; refusing to overwrite."
+            exit 0
+          fi
+          gh release create "$tag" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "LOST COSMOS V7 — Eridoria (native GBA, mGBA verified)" \
+            --prerelease \
+            --notes "Native GBA eight-world condensed five-act campaign. Exact CI mGBA two-boot success: https://github.com/NavisWORLD/Cosmic-synapse-the-living-universe-sim-engine-/actions/runs/36167103911. Original V6 and archived 8,192-byte workload-derived input tape preserved. Download the ROM, verified exact editable source, player guide, and SRAM proof. Manual Delta iOS and physical GBA testing remain outstanding. This prerelease does not claim the complete long manuscript, all 17 guardian classes, or network multiplayer."
