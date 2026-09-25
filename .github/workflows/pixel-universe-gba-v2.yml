@@ -64,14 +64,18 @@ jobs:
           set -euo pipefail
           rm -f qa.sav qa-boot1.sav
           set +e
-          timeout --signal=TERM --kill-after=2s 6s xvfb-run -a mgba qa.gba >mgba-boot1.log 2>&1
+          timeout --signal=TERM --kill-after=2s 6s xvfb-run -a mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot1.log 2>&1
           code=$?
           set -e
           if [[ "$code" -ne 0 && "$code" -ne 124 && "$code" -ne 143 ]]; then
             cat mgba-boot1.log
             exit "$code"
           fi
-          test -s qa.sav
+          if [[ ! -s qa.sav ]]; then
+            echo 'mGBA did not create qa.sav in forced savegamePath'; find "$PWD" "$HOME/.config/mgba" -maxdepth 3 -type f -name '*.sav' -ls 2>/dev/null || true
+            cat mgba-boot1.log || true
+            exit 1
+          fi
           python - <<'PY'
           from pathlib import Path
           p=Path("qa.sav").read_bytes()
@@ -88,7 +92,7 @@ jobs:
           set -euo pipefail
           test -s qa.sav
           set +e
-          timeout --signal=TERM --kill-after=2s 6s xvfb-run -a mgba qa.gba >mgba-boot2.log 2>&1
+          timeout --signal=TERM --kill-after=2s 6s xvfb-run -a mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot2.log 2>&1
           code=$?
           set -e
           if [[ "$code" -ne 0 && "$code" -ne 124 && "$code" -ne 143 ]]; then
