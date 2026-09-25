@@ -50,6 +50,16 @@ jobs:
           ./build_v5.sh
           python3 verify_routes.py
           python3 host_qa_v5.py
+          # V5 tested NPC label at (3,12); V6 framed dialogue intentionally places it at (2,12).
+          # Preserve the original NPC/text assertion, updating only its pixel location.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('feature_tests_v5.py');s=p.read_text()
+          old="screenblock(UI_MAP_BASE)[12*32+3]"
+          assert old in s
+          p.write_text(s.replace(old,"screenblock(UI_MAP_BASE)[12*32+2]"))
+          print('Updated legacy feature test to V6 framed dialogue label position')
+          PY
           python3 feature_tests_v5.py
           python3 cinema_tests_v51.py
           cp LOST_COSMOS_ERIDORIA_V6_PREVIEW.gba release.gba
