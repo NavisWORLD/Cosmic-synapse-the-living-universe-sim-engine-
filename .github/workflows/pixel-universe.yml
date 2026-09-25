@@ -1,0 +1,24 @@
+name: Pixel Universe verification
+on:
+  push:
+    branches: [ feature/pixel-universe-sandbox-001 ]
+    paths:
+      - 'pixel-universe/**'
+      - 'scripts/verify-pixel-universe.mjs'
+      - '.github/workflows/pixel-universe.yml'
+  pull_request:
+    paths:
+      - 'pixel-universe/**'
+      - 'scripts/verify-pixel-universe.mjs'
+      - '.github/workflows/pixel-universe.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --check pixel-universe/game.js
+      - run: node --check pixel-universe/qseed.js
+      - run: node scripts/verify-pixel-universe.mjs
