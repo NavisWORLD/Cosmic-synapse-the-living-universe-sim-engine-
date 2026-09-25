@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Recover editable source from bootstrap shards when needed
+      - name: Recover final editable V2 source
         shell: bash
         run: |
           set -euo pipefail
@@ -26,6 +26,8 @@ jobs:
             echo "BOOTSTRAPPED=1" >> "$GITHUB_ENV"
             cat "$SRC"/bootstrap/source.zip.b64.* | tr -d '\n' | base64 -d >/tmp/lost-cosmos-v2-source.zip
             unzip -q /tmp/lost-cosmos-v2-source.zip -d "$SRC"
+            python "$SRC/bootstrap/finalize.py"
+            cp "$SRC/bootstrap/host_qa.py" "$SRC/host_qa.py"
             rm -f "$SRC/pixel-universe-gba-v2.yml"
           else
             echo "BOOTSTRAPPED=0" >> "$GITHUB_ENV"
@@ -33,85 +35,88 @@ jobs:
       - name: Install ARM build and emulator QA tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang lld llvm mgba-sdl xvfb
-          clang --version
-          ld.lld --version
-          llvm-objcopy --version | head -1
-          mgba --version
+          sudo apt-get install -y clang lld llvm mgba-sdl gdb-multiarch xvfb netcat-openbsd
       - name: Stage V2 source
         run: |
           mkdir -p .qa/lost-cosmos-v2
           cp -a gba/lost-cosmos-v2/. .qa/lost-cosmos-v2/
+          rm -rf .qa/lost-cosmos-v2/bootstrap
       - name: Build and statically verify release
         working-directory: .qa/lost-cosmos-v2
         run: |
           chmod +x build_v2.sh
           ./build_v2.sh
           python verify_routes.py
+          python host_qa.py
           cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V2.gba release.gba
+          sha256sum release.gba > release.gba.sha256
       - name: Build emulator autorun ROM
         working-directory: .qa/lost-cosmos-v2
         run: |
           QA=1 ./build_v2.sh
           cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V2.gba qa.gba
-          rm -f qa.sav qa.ss0
-      - name: Emulator boot 1 — walk, interior, ship, Ember X, SRAM save
+          cp lost_cosmos_v2.elf qa.elf
+          rm -f qa.sav qa-final.sav
+      - name: mGBA boot 1 — Origin, interior, ship, Ember X, SRAM
         working-directory: .qa/lost-cosmos-v2
         shell: bash
         run: |
           set -euo pipefail
-          set +e
-          timeout --signal=INT --kill-after=2s 8s xvfb-run -a mgba qa.gba >mgba-boot1.log 2>&1
-          code=$?
-          set -e
-          if [[ "$code" -ne 0 && "$code" -ne 124 && "$code" -ne 130 && "$code" -ne 137 ]]; then
-            echo "mGBA boot 1 exited unexpectedly: $code"
-            exit "$code"
-          fi
-          sleep 1
-          test -s qa.sav
-          python - <<'PY'
-          from pathlib import Path
-          d=Path("qa.sav").read_bytes()
-          assert len(d)>126, f"short SRAM: {len(d)}"
-          assert d[126]==0xA5, f"boot1 marker mismatch: {d[126]:#x}"
-          print(f"PASS boot1: mGBA executed surface/interior/ship/Ember-X/save; SRAM={len(d)} bytes marker=A5")
-          PY
+          xvfb-run -a mgba -g qa.gba >mgba-boot1.log 2>&1 &
+          EPID=$!
+          trap 'kill -TERM "$EPID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do nc -z 127.0.0.1 2345 && break || sleep 1; done
+          nc -z 127.0.0.1 2345
+          gdb-multiarch -q qa.elf -batch \
+            -ex 'target remote 127.0.0.1:2345' \
+            -ex 'break qa_done' \
+            -ex 'continue' \
+            -ex 'p/x qa_stage' \
+            -ex 'x/1bx 0x0e00007e' \
+            -ex 'dump binary memory qa.sav 0x0e000000 0x0e008000' >gdb-boot1.log 2>&1
+          grep -qi '0x51564131' gdb-boot1.log
+          grep -qi '0xe00007e.*0xa5' gdb-boot1.log
+          test "$(stat -c %s qa.sav)" -eq 32768
           sha256sum qa.sav >sram-boot1.sha256
-      - name: Emulator boot 2 — reload SRAM, Y/Z, Black Garden, Crown, postgame
+          kill -TERM "$EPID" || true
+          wait "$EPID" || true
+          trap - EXIT
+      - name: mGBA boot 2 — SRAM reload, Y/Z, Black Garden, Crown, postgame
         working-directory: .qa/lost-cosmos-v2
         shell: bash
         run: |
           set -euo pipefail
-          set +e
-          timeout --signal=INT --kill-after=2s 8s xvfb-run -a mgba qa.gba >mgba-boot2.log 2>&1
-          code=$?
-          set -e
-          if [[ "$code" -ne 0 && "$code" -ne 124 && "$code" -ne 130 && "$code" -ne 137 ]]; then
-            echo "mGBA boot 2 exited unexpectedly: $code"
-            exit "$code"
-          fi
-          sleep 1
-          test -s qa.sav
-          python - <<'PY'
-          from pathlib import Path
-          d=Path("qa.sav").read_bytes()
-          assert len(d)>126, f"short SRAM: {len(d)}"
-          assert d[126]==0x5A, f"boot2 marker mismatch: {d[126]:#x}"
-          print(f"PASS boot2: SRAM reloaded; Y/Z/Black Garden/Crown/ending/postgame completed; SRAM={len(d)} bytes marker=5A")
-          PY
-          sha256sum qa.sav >sram-boot2.sha256
+          xvfb-run -a mgba -g qa.gba >mgba-boot2.log 2>&1 &
+          EPID=$!
+          trap 'kill -TERM "$EPID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do nc -z 127.0.0.1 2345 && break || sleep 1; done
+          nc -z 127.0.0.1 2345
+          gdb-multiarch -q qa.elf -batch \
+            -ex 'target remote 127.0.0.1:2345' \
+            -ex 'break qa_done' \
+            -ex 'continue' \
+            -ex 'p/x qa_stage' \
+            -ex 'x/1bx 0x0e00007e' \
+            -ex 'dump binary memory qa-final.sav 0x0e000000 0x0e008000' >gdb-boot2.log 2>&1
+          grep -qi '0x51564132' gdb-boot2.log
+          grep -qi '0xe00007e.*0x5a' gdb-boot2.log
+          test "$(stat -c %s qa-final.sav)" -eq 32768
+          sha256sum qa-final.sav >sram-boot2.sha256
+          kill -TERM "$EPID" || true
+          wait "$EPID" || true
+          trap - EXIT
       - name: Publish verified editable source to development branch
         if: env.BOOTSTRAPPED == '1' && github.event_name == 'push'
         shell: bash
         run: |
           set -euo pipefail
           rm -rf gba/lost-cosmos-v2/bootstrap
+          rm -rf .bootstrap/lost-cosmos-v2
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add gba/lost-cosmos-v2
+          git add -A gba/lost-cosmos-v2 .bootstrap/lost-cosmos-v2
           git diff --cached --quiet && exit 0
-          git commit -m "publish Lost COSMOS V2 editable GBA source"
+          git commit -m "publish verified Lost COSMOS V2 editable GBA source"
           git push origin HEAD:feature/pixel-universe-gba-exploration-002
       - uses: actions/upload-artifact@v4
         if: always()
@@ -119,6 +124,7 @@ jobs:
           name: lost-cosmos-gba-v2
           path: |
             .qa/lost-cosmos-v2/release.gba
-            .qa/lost-cosmos-v2/*.log
-            .qa/lost-cosmos-v2/qa.sav
+            .qa/lost-cosmos-v2/release.gba.sha256
+            .qa/lost-cosmos-v2/*boot*.log
+            .qa/lost-cosmos-v2/*.sav
             .qa/lost-cosmos-v2/*.sha256
