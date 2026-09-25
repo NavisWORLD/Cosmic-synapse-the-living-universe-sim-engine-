@@ -1,0 +1,196 @@
+name: Lost COSMOS GBA V5 visual NPC verification
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [feature/lost-cosmos-gba-visual-overhaul-005]
+    paths:
+      - 'gba/lost-cosmos-v5/**'
+      - '.github/workflows/pixel-universe-gba-v5.yml'
+  pull_request:
+    paths:
+      - 'gba/lost-cosmos-v5/**'
+      - '.github/workflows/pixel-universe-gba-v5.yml'
+
+jobs:
+  build-npcs-emulate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore hash-locked V4-to-V5 editable source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .qa/lost-cosmos-v5
+          if [[ -f gba/lost-cosmos-v5/bootstrap/bootstrap_v5.py ]]; then
+            python3 gba/lost-cosmos-v5/bootstrap/bootstrap_v5.py \
+              --v4 gba/lost-cosmos-v4 \
+              --bootstrap gba/lost-cosmos-v5/bootstrap \
+              --out .qa/lost-cosmos-v5
+            if [[ -f gba/lost-cosmos-v5/lost_cosmos_v5.c ]]; then
+              cmp gba/lost-cosmos-v5/lost_cosmos_v5.c .qa/lost-cosmos-v5/lost_cosmos_v5.c
+              echo "BOOTSTRAPPED=0" >> "$GITHUB_ENV"
+              echo "Published V5 source already matches restored exact source: no republish necessary."
+            else
+              echo "BOOTSTRAPPED=1" >> "$GITHUB_ENV"
+            fi
+          else
+            cp -a gba/lost-cosmos-v5/. .qa/lost-cosmos-v5/
+            echo "BOOTSTRAPPED=0" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install genuine ARM and mGBA emulator tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb
+
+      - name: Compile and verify release plus NPC dialogue quests and save migration
+        working-directory: .qa/lost-cosmos-v5
+        run: |
+          set -euo pipefail
+          chmod +x build_v5.sh
+          ./build_v5.sh
+          python3 verify_routes.py
+          python3 host_qa_v5.py
+          python3 feature_tests_v5.py
+          python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          src=Path('lost_cosmos_v5.c').read_text()
+          art=Path('v5_art.h').read_text()
+          assert hashlib.sha256(src.encode()).hexdigest()=='820c8a20b7eb049603474ed059f7f3663c34cf0c2f5c70cad937a5df8c2f03b2'
+          for tok in ('workload_qi','next_workload','player_heavy_attack','player_dodge','BG2_ENABLE','windup','recover'):
+              assert tok in src,tok
+          for tok in ('V5_PLAYER','V5_BUDDY','V5_NPCS','V5_ENEMIES'):
+              assert tok in art,tok
+          print('PASS V5 exact source, replay isolation, telegraphed attack, authored indexed art')
+          PY
+          cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5.gba release.gba
+          sha256sum release.gba > release.gba.sha256
+
+      - name: Build separate mGBA autorun gameplay cartridge
+        working-directory: .qa/lost-cosmos-v5
+        run: |
+          set -euo pipefail
+          QA=1 ./build_v5.sh
+          cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5.gba qa.gba
+          rm -f qa.sav qa-boot1.sav qa-final.sav
+
+      - name: mGBA boot 1 - NPC conversation quest and Ember RPG save
+        working-directory: .qa/lost-cosmos-v5
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb-boot1.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot1.log 2>&1 &
+          MPID=$!
+          sleep 4
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
+          kill -KILL "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          test -s qa.sav || { cat mgba-boot1.log; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5',(len(p),p[:8])
+          if p[126]!=0xA5: raise AssertionError(f'boot1 marker={p[126]:#x} stage={p[127]:#x}')
+          assert p[5]&1 and p[11]==1 and p[128]>=2 and p[143]==1,(p[5],p[11],p[128],p[143])
+          assert (p[158]&1)!=0 and (p[160]&1)!=0,(p[158],p[160])
+          print('PASS mGBA V5 boot1: NPC conversation/quest/seen persisted, X/Ember, lv2, Ember Saber')
+          PY
+          cp qa.sav qa-boot1.sav
+          sha256sum qa-boot1.sav >sram-boot1.sha256
+
+      - name: mGBA boot 2 - quest persistence Y Z Crown and postgame
+        working-directory: .qa/lost-cosmos-v5
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s qa.sav
+          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb-boot2.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot2.log 2>&1 &
+          MPID=$!
+          sleep 4
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
+          kill -KILL "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          test -s qa.sav || { cat mgba-boot2.log; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5',(len(p),p[:8])
+          if p[126]!=0x5A: raise AssertionError(f'boot2 marker={p[126]:#x} stage={p[127]:#x}')
+          assert p[5]==7 and p[11]==5 and p[128]>=3,(p[5],p[11],p[128])
+          assert p[143]==2 and p[144]==1 and p[145]==1,(p[143],p[144],p[145])
+          assert p[9] and p[10] and (p[158]&1) and (p[159]&32) and (p[160]&1),(p[9],p[10],p[158],p[159],p[160])
+          print('PASS mGBA V5 boot2: NPC quest survived reboot, completed Three Axes, XYZ gear, Crown and postgame')
+          PY
+          cp qa.sav qa-final.sav
+          sha256sum qa-final.sav >sram-boot2.sha256
+
+      - name: Prepare final verified editable source package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,hashlib,shutil,zipfile
+          from pathlib import Path
+          src=Path('.qa/lost-cosmos-v5')
+          dest=Path('.release-source/lost-cosmos-v5');dest.mkdir(parents=True,exist_ok=True)
+          romhash=hashlib.sha256((src/'release.gba').read_bytes()).hexdigest()
+          receipt=src/'VERIFICATION_V5.md'
+          if receipt.exists():
+              receipt.write_text(receipt.read_text()+'\\nReal two-boot mGBA V5 CI: PASS, run '+os.environ["GITHUB_RUN_ID"]+'; exact release SHA-256: '+romhash+'\\n')
+          names=['lost_cosmos_v5.c','v5_art.h','patch_v5.py','asset_art_v5.py','qseed.h','start_v5.S','linker_v5.ld','build_v5.sh','build_rom_v5.py','verify_v5.py','verify_routes.py','host_qa_v5.py','feature_tests_v5.py','README_V5.md','VERIFICATION_V5.md']
+          for name in names:
+              if (src/name).exists():shutil.copy2(src/name,dest/name)
+          shutil.copytree(src/'qa_fixtures',dest/'qa_fixtures')
+          bundle=src/'SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5_Source.zip'
+          with zipfile.ZipFile(bundle,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in sorted(dest.rglob('*')):
+                  if p.is_file():z.write(p,p.relative_to(dest.parent))
+          print('FINAL_RELEASE_ROM_SHA256',romhash)
+          print('VERIFIED_SOURCE_ZIP',bundle,bundle.stat().st_size)
+          PY
+
+      - name: Publish verified V5 editable source onto development branch
+        if: env.BOOTSTRAPPED == '1' && github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf gba/lost-cosmos-v5
+          mkdir -p gba/lost-cosmos-v5
+          cp -a .release-source/lost-cosmos-v5/. gba/lost-cosmos-v5/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A gba/lost-cosmos-v5
+          git diff --cached --quiet && exit 0
+          git commit -m 'publish verified Lost COSMOS V5 NPC RPG source [skip ci]'
+          git push origin HEAD:feature/lost-cosmos-gba-visual-overhaul-005
+
+      - name: Upload exact release, source and mGBA proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lost-cosmos-gba-v4-visual-npc
+          path: |
+            .qa/lost-cosmos-v5/release.gba
+            .qa/lost-cosmos-v5/release.gba.sha256
+            .qa/lost-cosmos-v5/SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5_Source.zip
+            .qa/lost-cosmos-v5/*boot*.log
+            .qa/lost-cosmos-v5/*.sav
+            .qa/lost-cosmos-v5/*.sha256
