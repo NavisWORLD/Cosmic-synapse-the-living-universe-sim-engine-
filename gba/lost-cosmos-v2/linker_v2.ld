@@ -5,10 +5,21 @@ SECTIONS
     KEEP(*(.text.startup))
     *(.text*)
     *(.rodata*)
+    . = ALIGN(4);
+    __rom_text_end__ = .;
   }
-  . = ALIGN(4);
-  .data : { *(.data*) }
-  .bss 0x03000000 (NOLOAD) : {
+
+  /* Mutable non-zero globals execute from writable IWRAM.
+     Their initial bytes are stored immediately after .text in ROM. */
+  .data 0x03000000 : AT(__rom_text_end__) {
+    __data_start__ = .;
+    *(.data*)
+    . = ALIGN(4);
+    __data_end__ = .;
+  }
+  __data_load__ = LOADADDR(.data);
+
+  .bss ALIGN(4) (NOLOAD) : {
     __bss_start__ = .;
     *(.bss*)
     *(COMMON)
