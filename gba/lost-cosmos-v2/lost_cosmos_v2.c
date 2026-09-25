@@ -169,7 +169,7 @@ static u8 next_q(void){ u8 v=QSEED[qi++]; if(qi>=QSEED_LEN)qi=0; return v; }
 static u8 qpick(u8 n){ u8 v=next_q(); while(v>=n && n && v>=(u8)(n*8)) v=(u8)(v-n); return n?(u8)(v%n):0; }
 
 /* ---------- VRAM map helpers ---------- */
-static volatile u16* screenblock(int sb){ return (volatile u16*)(0x06000000 + sb*2048); }
+static volatile u16* screenblock(int sb){ return VRAM16 + sb*1024; }
 static void set_map_entry(int x,int y,u16 value){
  int block=(x>=32)+((y>=32)<<1); int idx=(y&31)*32+(x&31); screenblock(BG_MAP_BASE+block)[idx]=value;
 }
@@ -181,7 +181,7 @@ static void ui_num(int x,int y,int v,int pal){ char b[8]; int i=0,n=v,d=1000,sta
 
 /* ---------- tile generation ---------- */
 static void tile_pixel(u32*t,int x,int y,u8 c){ int w=y*1+(x>>3)*8; int lx=x&7; u32 mask=(u32)15<<(lx*4); t[w]=(t[w]&~mask)|((u32)(c&15)<<(lx*4)); }
-static void upload_bg_tile(int id,const u32*t){ vram_copy32((volatile u32*)(0x06000000 + id*32),t,8); }
+static void upload_bg_tile(int id,const u32*t){ vram_copy32(VRAM32 + id*8,t,8); }
 static void make_bg_tile(int id,int type){ u32 t[8];int x,y;for(y=0;y<8;y++)t[y]=0;for(y=0;y<8;y++)for(x=0;x<8;x++){
  u8 c=1;
  if(type==T_VOID)c=((x+y)&7)==0?2:0;
@@ -207,8 +207,8 @@ static void make_bg_tile(int id,int type){ u32 t[8];int x,y;for(y=0;y<8;y++)t[y]
  tile_pixel(t,x,y,c);
  }upload_bg_tile(id,t);}
 static void make_ui_tiles(void){ int g,x,y;u32 t[8]; /* tile 63 opaque panel */
- for(y=0;y<8;y++)t[y]=0x22222222u; vram_copy32((volatile u32*)(0x06004000+63*32),t,8);
- for(g=0;g<43;g++){for(y=0;y<8;y++)t[y]=0;for(x=0;x<5;x++)for(y=0;y<7;y++)if(FONT[g][x]&(1u<<y))tile_pixel(t,x+1,y,1);vram_copy32((volatile u32*)(0x06004000+(64+g)*32),t,8);}
+ for(y=0;y<8;y++)t[y]=0x22222222u; vram_copy32(VRAM32 + (0x4000/4) + 63*8,t,8);
+ for(g=0;g<43;g++){for(y=0;y<8;y++)t[y]=0;for(x=0;x<5;x++)for(y=0;y<7;y++)if(FONT[g][x]&(1u<<y))tile_pixel(t,x+1,y,1);vram_copy32(VRAM32 + (0x4000/4) + (64+g)*8,t,8);}
 }
 static void make_all_tiles(void){ int i; for(i=0;i<T_MAX;i++)make_bg_tile(i,i); make_ui_tiles(); }
 
@@ -250,10 +250,10 @@ static void map_wall_box(int x0,int y0,int w,int h,int pal){int x,y;for(x=x0;x<x
 static void map_door(int x,int y,int trig){map_put(x,y,T_DOOR,2,C_FREE,trig);}
 static void add_noise_decor(int seed,int tile,int pal,int count,int solid){int i;for(i=0;i<count;i++){int x=2+((seed+i*17+i*i*3)%60),y=2+((seed*3+i*29+i*i)%60);if(collision[mi(x,y)]==C_FREE && trigger[mi(x,y)]==TR_NONE)map_put(x,y,tile,pal,solid?C_WALL:C_FREE,0);}}
 
-static void generate_origin(void){int y;map_fill(T_GRASS,0);map_border();for(y=3;y<61;y++)map_put(31,y,T_WATER,2,C_WALL,0);for(y=28;y<35;y++)map_put(31,y,T_BRIDGE,1,C_FREE,0);map_rect(8,46,9,7,T_PAD,1,C_FREE);map_put(12,49,T_PAD,2,C_FREE,TR_SHIP);map_wall_box(19,16,16,13,2);map_door(26,28,TR_DOOR);map_rect(22,19,10,5,T_RUIN,2,C_WALL);map_put(27,22,T_ARCHIVE,3,C_FREE,TR_TERMINAL);map_wall_box(47,5,12,10,3);map_door(52,14,TR_SECRET);add_noise_decor(7,T_TREE,1,90,1);{int x;for(x=10;x<31;x++)map_put(x,51,T_PATH,1,C_FREE,0);for(y=28;y<52;y++)map_put(26,y,T_PATH,1,C_FREE,0);}for(y=0;y<64;y+=8)map_put(30,y,T_WATER,2,C_WALL,0);for(y=28;y<35;y++){map_put(30,y,T_BRIDGE,1,C_FREE,0);map_put(31,y,T_BRIDGE,1,C_FREE,0);} }
-static void generate_ember(void){int x,y;map_fill(T_FLOOR,0);map_border();for(y=8;y<58;y+=12)for(x=2;x<62;x++)if((x<16||x>22)&&(x<42||x>48))map_put(x,y,T_LAVA,2,C_HAZARD,0);for(x=5;x<60;x++)map_put(x,34,T_METAL,1,C_FREE,0);map_rect(5,48,9,7,T_PAD,1,C_FREE);map_put(9,51,T_PAD,2,C_FREE,TR_SHIP);map_wall_box(42,38,17,18,2);map_door(49,55,TR_DOOR);map_put(20,20,T_LIFT,3,C_FREE,TR_LIFT);add_noise_decor(17,T_CRYSTAL,3,38,1);for(x=9;x<50;x++)map_put(x,51,T_METAL,1,C_FREE,0);for(y=20;y<52;y++)map_put(20,y,T_METAL,1,C_FREE,(y==20)?TR_LIFT:0);}
-static void generate_tide(void){int x,y;map_fill(T_WATER,2);for(y=2;y<62;y++)for(x=2;x<62;x++)if(((x*5+y*3+11)&15)<6)map_put(x,y,T_FLOOR,0,C_FREE,0);map_border();for(x=5;x<58;x++)map_put(x,31,T_BRIDGE,1,C_FREE,0);map_rect(6,49,9,7,T_PAD,1,C_FREE);map_put(10,52,T_PAD,2,C_FREE,TR_SHIP);map_wall_box(41,9,16,15,3);map_door(48,23,TR_DOOR);map_put(22,45,T_LIFT,3,C_FREE,TR_LIFT);add_noise_decor(23,T_ARCHIVE,3,25,0);for(x=10;x<=48;x++)map_put(x,52,T_BRIDGE,1,C_FREE,0);for(y=23;y<=52;y++)map_put(48,y,T_BRIDGE,1,C_FREE,(y==23)?TR_DOOR:0);for(y=45;y<=52;y++)map_put(22,y,T_BRIDGE,1,C_FREE,(y==45)?TR_LIFT:0);map_put(22,45,T_LIFT,3,C_FREE,TR_LIFT);}
-static void generate_bloom(void){int x,y;map_fill(T_GRASS,0);map_border();for(x=2;x<62;x+=7)for(y=3;y<60;y+=9)map_put(x,y,T_PLANT,2,C_WALL,0);map_rect(6,48,9,7,T_PAD,1,C_FREE);map_put(10,51,T_PAD,2,C_FREE,TR_SHIP);map_put(31,31,T_LIFT,3,C_FREE,TR_LIFT);map_wall_box(44,8,14,12,3);map_door(50,19,TR_DOOR);add_noise_decor(31,T_TREE,1,70,1);for(x=10;x<=50;x++)map_put(x,51,T_PATH,1,C_FREE,0);for(y=19;y<=51;y++)map_put(31,y,T_PATH,1,C_FREE,(y==31)?TR_LIFT:0);map_put(50,19,T_DOOR,2,C_FREE,TR_DOOR);}
+static void generate_origin(void){int y;map_fill(T_GRASS,0);map_border();for(y=3;y<61;y++)map_put(31,y,T_WATER,2,C_WALL,0);for(y=28;y<35;y++)map_put(31,y,T_BRIDGE,1,C_FREE,0);map_rect(8,46,9,7,T_PAD,1,C_FREE);map_put(12,49,T_PAD,2,C_FREE,TR_SHIP);map_wall_box(19,16,16,13,2);map_door(26,28,TR_DOOR);map_rect(22,19,10,5,T_RUIN,2,C_WALL);map_put(27,22,T_ARCHIVE,3,C_FREE,TR_TERMINAL);map_wall_box(47,5,12,10,3);map_door(52,14,TR_SECRET);add_noise_decor(7,T_TREE,1,90,1);{int x;for(x=10;x<31;x++)map_put(x,51,T_PATH,1,C_FREE,0);for(y=28;y<52;y++)map_put(26,y,T_PATH,1,C_FREE,(y==28)?TR_DOOR:0);}for(y=0;y<64;y+=8)map_put(30,y,T_WATER,2,C_WALL,0);for(y=28;y<35;y++){map_put(30,y,T_BRIDGE,1,C_FREE,0);map_put(31,y,T_BRIDGE,1,C_FREE,0);} }
+static void generate_ember(void){int x,y;map_fill(T_FLOOR,0);map_border();for(y=8;y<58;y+=12)for(x=2;x<62;x++)if((x<16||x>22)&&(x<42||x>48))map_put(x,y,T_LAVA,2,C_HAZARD,0);for(x=5;x<60;x++)map_put(x,34,T_METAL,1,C_FREE,0);map_rect(5,48,9,7,T_PAD,1,C_FREE);map_put(9,51,T_PAD,2,C_FREE,TR_SHIP);map_wall_box(42,38,17,18,2);map_door(49,55,TR_DOOR);map_put(20,20,T_LIFT,3,C_FREE,TR_LIFT);add_noise_decor(17,T_CRYSTAL,3,38,1);for(x=9;x<50;x++)map_put(x,51,T_METAL,1,C_FREE,(x==9)?TR_SHIP:0);for(y=20;y<52;y++)map_put(20,y,T_METAL,1,C_FREE,(y==20)?TR_LIFT:0);}
+static void generate_tide(void){int x,y;map_fill(T_WATER,2);for(y=2;y<62;y++)for(x=2;x<62;x++)if(((x*5+y*3+11)&15)<6)map_put(x,y,T_FLOOR,0,C_FREE,0);map_border();for(x=5;x<58;x++)map_put(x,31,T_BRIDGE,1,C_FREE,0);map_rect(6,49,9,7,T_PAD,1,C_FREE);map_put(10,52,T_PAD,2,C_FREE,TR_SHIP);map_wall_box(41,9,16,15,3);map_door(48,23,TR_DOOR);map_put(22,45,T_LIFT,3,C_FREE,TR_LIFT);add_noise_decor(23,T_ARCHIVE,3,25,0);for(x=10;x<=48;x++)map_put(x,52,T_BRIDGE,1,C_FREE,(x==10)?TR_SHIP:0);for(y=23;y<=52;y++)map_put(48,y,T_BRIDGE,1,C_FREE,(y==23)?TR_DOOR:0);for(y=45;y<=52;y++)map_put(22,y,T_BRIDGE,1,C_FREE,(y==45)?TR_LIFT:0);map_put(22,45,T_LIFT,3,C_FREE,TR_LIFT);}
+static void generate_bloom(void){int x,y;map_fill(T_GRASS,0);map_border();for(x=2;x<62;x+=7)for(y=3;y<60;y+=9)map_put(x,y,T_PLANT,2,C_WALL,0);map_rect(6,48,9,7,T_PAD,1,C_FREE);map_put(10,51,T_PAD,2,C_FREE,TR_SHIP);map_put(31,31,T_LIFT,3,C_FREE,TR_LIFT);map_wall_box(44,8,14,12,3);map_door(50,19,TR_DOOR);add_noise_decor(31,T_TREE,1,70,1);for(x=10;x<=50;x++)map_put(x,51,T_PATH,1,C_FREE,(x==10)?TR_SHIP:0);for(y=19;y<=51;y++)map_put(31,y,T_PATH,1,C_FREE,(y==31)?TR_LIFT:0);map_put(50,19,T_DOOR,2,C_FREE,TR_DOOR);}
 static void generate_black(void){int x,y;map_fill(T_VOID,0);map_border();for(y=3;y<61;y++)for(x=3;x<61;x++)if(((x*13+y*7+x*y)&31)<5)map_put(x,y,T_HAZARD,2,C_HAZARD,0);for(x=6;x<56;x++)map_put(x,32,T_PATH,3,C_FREE,0);map_rect(7,49,9,7,T_PAD,1,C_FREE);map_put(11,52,T_PAD,2,C_FREE,TR_SHIP);map_wall_box(43,8,15,15,3);map_door(50,22,TR_DOOR);map_put(24,14,T_CRYSTAL,3,C_FREE,TR_SECRET);}
 static void generate_crown(void){int x,y;map_fill(T_CROWN,0);map_border(); /* six connected chambers */
  for(x=8;x<57;x+=16)for(y=5;y<58;y++)if(y!=15&&y!=31&&y!=47)map_put(x,y,T_WALL,2,C_WALL,0);
