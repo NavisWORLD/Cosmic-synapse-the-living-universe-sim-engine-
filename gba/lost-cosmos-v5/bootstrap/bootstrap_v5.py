@@ -31,7 +31,7 @@ for old,new in (
  ("verify_v4.py","verify_v5.py"),
  ("host_qa_v4.py","host_qa_v5.py"),
  ("feature_tests_v4.py","feature_tests_v5.py")):
-    content=(v4/old).read_text().replace("_v4","_v5").replace("V4","V5")
+    content=((v4/"bootstrap"/old) if old=="feature_tests_v4.py" else (v4/old)).read_text().replace("_v4","_v5").replace("V4","V5")
     if old=="build_rom_v4.py":
         content=content.replace("header[0xBC]=4","header[0xBC]=5")
     if old=="verify_v4.py":
