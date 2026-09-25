@@ -7,6 +7,7 @@ on:
     branches: [feature/lost-cosmos-eridoria-eight-world-campaign-007]
     paths:
       - 'gba/lost-cosmos-eridoria-v7/bootstrap/kit.07.b64'
+      - '.github/workflows/pixel-universe-gba-v7.yml'
 jobs:
   build-emulate:
     runs-on: ubuntu-latest
