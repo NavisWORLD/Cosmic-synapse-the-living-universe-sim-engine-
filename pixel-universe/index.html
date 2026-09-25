@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#05020b">
+<title>SIM EARTH // PIXEL UNIVERSE: LOST COSMOS</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="shell">
+  <canvas id="game" width="320" height="180" aria-label="Pixel Universe game canvas"></canvas>
+  <section id="hud">
+    <div class="topline"><b>PIXEL UNIVERSE // LOST COSMOS</b><span id="fps">BOOT</span></div>
+    <div id="status">Recovering Synapse state...</div>
+    <div id="story" role="status"></div>
+    <div id="buddy"><b>COSMOS</b> <span id="buddyMood">awakening</span><div id="buddyLine">...</div></div>
+    <div id="axis">X 0 · Y 0 · Z 0</div>
+    <div id="objective">OBJECTIVE: WAKE THE BUDDY</div>
+  </section>
+  <section id="touch" aria-label="Touch controls">
+    <div class="pad">
+      <button data-key="ArrowUp">▲</button>
+      <button data-key="ArrowLeft">◀</button>
+      <button data-key="ArrowDown">▼</button>
+      <button data-key="ArrowRight">▶</button>
+    </div>
+    <div class="actions">
+      <button data-key="KeyQ">Z−</button>
+      <button data-key="KeyE">Z+</button>
+      <button data-key="Space">BOOST</button>
+      <button data-key="KeyF">ACT</button>
+      <button data-key="KeyB">BUDDY</button>
+    </div>
+  </section>
+  <button id="helpBtn" aria-label="Open controls">?</button>
+  <dialog id="help">
+    <h2>LOST COSMOS</h2>
+    <p>Fly the three digital axes, land on worlds, recover the X/Y/Z Axis Keys, and decide what the Synapse Crown becomes.</p>
+    <p><b>Desktop:</b> WASD/arrows move · Q/E Z-axis · Shift/Space boost · F interact/land · B buddy focus · C drop beacon · R reset view · M audio.</p>
+    <p><b>Mobile:</b> use the controls at the bottom. ACT lands/interacts when close enough.</p>
+    <p>COSMOS is an autonomous simulated agent: persistent memory + needs + goals + 12D→42D→54D state + your frozen 8,192-byte quantum tape. It is not presented as conscious.</p>
+    <button id="closeHelp">RETURN</button>
+  </dialog>
+</main>
+<script src="qseed.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
