@@ -173,13 +173,24 @@ jobs:
           cp .qa/lost-cosmos-v4/verify_v4.py gba/lost-cosmos-v4/
           cp .qa/lost-cosmos-v4/verify_routes.py gba/lost-cosmos-v4/
           cp .qa/lost-cosmos-v4/host_qa_v4.py gba/lost-cosmos-v4/
-          rm -rf gba/lost-cosmos-v4/bootstrap
+          # Preserve concurrent branch work, including any separately staged docs.
+          # Keeping bootstrap source also preserves the provenance of this exact patch.
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A gba/lost-cosmos-v4
           git diff --cached --quiet && exit 0
           git commit -m "publish emulator-verified Lost COSMOS V4 editable source [skip ci]"
-          git push origin HEAD:feature/pixel-universe-gba-visual-npc-004
+          for attempt in 1 2 3 4; do
+            git fetch origin feature/pixel-universe-gba-visual-npc-004
+            git rebase FETCH_HEAD
+            if git push origin HEAD:feature/pixel-universe-gba-visual-npc-004; then
+              echo "Published V4 source without losing concurrent branch updates"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "V4 source publication did not succeed after safe retries" >&2
+          exit 1
 
       - name: Upload canonical V4 ROM and emulator evidence
         if: always()
