@@ -1,6 +1,6 @@
 # SIM EARTH // THE LOST COSMOS V3: Cosmic RPG
 
-Native Game Boy Advance action RPG built as a continuation of the verified Lost COSMOS V2 universe. Developed for Delta and compatible `.gba` emulators; This source accompanies the V3 release cartridge that passed a scripted two-boot mGBA run in GitHub Actions 36098528364. Extended manual play and Delta iPhone control feel are still untested.
+Native Game Boy Advance action RPG built as a continuation of the verified Lost COSMOS V2 universe. Developed for Delta and compatible `.gba` emulators; This source accompanies the V3 release cartridge that passed a scripted two-boot mGBA run in GitHub Actions 36098821373. Extended manual play and Delta iPhone control feel are still untested.
 
 ## World & gameplay
 
