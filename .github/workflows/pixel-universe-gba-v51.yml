@@ -28,7 +28,9 @@ jobs:
           stat -c '%s' /tmp/lost-cosmos-v51-code.tar.xz
           tar -xJf /tmp/lost-cosmos-v51-code.tar.xz -C .qa/lost-cosmos-v51/
           ls -l .qa/lost-cosmos-v51/*v51.py
-          python3 .qa/lost-cosmos-v51/cinematic_assets_v51.py
+          sudo apt-get update
+          sudo apt-get install -y python3-pil
+          /usr/bin/python3 .qa/lost-cosmos-v51/cinematic_assets_v51.py
           ( cd .qa/lost-cosmos-v51 && python3 patch_cinematic_v51.py )
           python3 - <<'PY'
           import hashlib
