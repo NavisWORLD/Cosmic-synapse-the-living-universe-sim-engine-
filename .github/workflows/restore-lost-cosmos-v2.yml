@@ -1,0 +1,98 @@
+name: Restore and verify Lost COSMOS GBA V2
+on:
+  push:
+    branches: [ feature/pixel-universe-gba-exploration-002 ]
+    paths:
+      - '.bootstrap/lost-cosmos-v2-canonical/**'
+      - '.github/workflows/restore-lost-cosmos-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  restore-build-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/pixel-universe-gba-exploration-002
+          fetch-depth: 0
+
+      - name: Restore exact source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .bootstrap/lost-cosmos-v2-canonical/source.b64.* | base64 -d > /tmp/lost-cosmos-v2.zip
+          echo "c6902148e523fabf6e3d35dc268068134b564dd33b76553656a22ae46cbc5a0c  /tmp/lost-cosmos-v2.zip" | sha256sum -c -
+          rm -rf gba/lost-cosmos-v2
+          mkdir -p gba/lost-cosmos-v2
+          unzip -q /tmp/lost-cosmos-v2.zip -d gba/lost-cosmos-v2
+          chmod +x gba/lost-cosmos-v2/build_v2.sh
+          rm -rf .bootstrap/lost-cosmos-v2-canonical .bootstrap/lost-cosmos-v2 || true
+
+      - name: Commit recovered source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Restore Lost COSMOS GBA V2 exploration source" || true
+          git push origin HEAD:feature/pixel-universe-gba-exploration-002
+
+      - name: Install ARM QA tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm binutils gdb-multiarch xvfb netcat-openbsd
+
+      - name: Rebuild and static verification
+        working-directory: gba/lost-cosmos-v2
+        run: |
+          ./build_v2.sh
+          python3 verify_v2.py
+          python3 verify_routes.py
+          sha256sum SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V2.gba
+
+      - name: mGBA two-boot SRAM QA when available
+        working-directory: gba/lost-cosmos-v2
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! apt-cache show mgba-sdl >/dev/null 2>&1; then
+            echo "mgba-sdl unavailable on this runner; emulator QA skipped."
+            exit 0
+          fi
+          sudo apt-get install -y mgba-sdl
+          QA=1 ./build_v2.sh
+          cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V2.gba qa.gba
+          cp lost_cosmos_v2.elf qa.elf
+          rm -f qa.sav
+
+          run_boot () {
+            expected="$1"
+            log="$2"
+            xvfb-run -a mgba -g qa.gba >"$log" 2>&1 &
+            EPID=$!
+            for i in $(seq 1 30); do nc -z 127.0.0.1 2345 && break || sleep 1; done
+            nc -z 127.0.0.1 2345
+            gdb-multiarch -q qa.elf -batch               -ex 'target remote 127.0.0.1:2345'               -ex 'break qa_done'               -ex 'continue'               -ex 'p/x qa_stage' >"gdb-$log" 2>&1
+            grep -qi "$expected" "gdb-$log"
+            kill -TERM "$EPID" || true
+            wait "$EPID" || true
+            test -s qa.sav
+          }
+
+          run_boot 0x51564131 mgba-boot1.log
+          sha256sum qa.sav > sram-boot1.sha256
+          run_boot 0x51564132 mgba-boot2.log
+          sha256sum qa.sav > sram-boot2.sha256
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-gba-v2-qa
+          path: |
+            gba/lost-cosmos-v2/SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V2.gba
+            gba/lost-cosmos-v2/*.log
+            gba/lost-cosmos-v2/qa.sav
+            gba/lost-cosmos-v2/*.sha256
