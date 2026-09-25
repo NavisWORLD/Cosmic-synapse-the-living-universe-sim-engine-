@@ -1,7 +1,10 @@
 name: Lost COSMOS GBA V3 RPG verification
+permissions:
+  contents: write
+
 on:
   push:
-    branches: [feature/pixel-universe-gba-rpg-003]
+    branches: [ feature/pixel-universe-gba-rpg-003 ]
     paths:
       - 'gba/lost-cosmos-v3/**'
       - '.github/workflows/pixel-universe-gba-v3.yml'
@@ -9,22 +12,30 @@ on:
     paths:
       - 'gba/lost-cosmos-v3/**'
       - '.github/workflows/pixel-universe-gba-v3.yml'
-permissions:
-  contents: read
+
 jobs:
   build-and-emulate:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: gba/lost-cosmos-v3
     steps:
       - uses: actions/checkout@v4
+
+      - name: Reconstruct exact V3 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .src/lost-cosmos-v3 .qa/lost-cosmos-v3
+          cat gba/lost-cosmos-v3/bootstrap/source.zip.b64.* | tr -d '\n' | base64 -d > /tmp/lost-cosmos-v3-source.zip
+          unzip -q /tmp/lost-cosmos-v3-source.zip -d .src/lost-cosmos-v3
+          cp -a .src/lost-cosmos-v3/. .qa/lost-cosmos-v3/
+          cp /tmp/lost-cosmos-v3-source.zip .qa/lost-cosmos-v3/source.zip
+
       - name: Install ARM build and mGBA
         run: |
           sudo apt-get update
           sudo apt-get install -y clang lld llvm mgba-sdl xvfb
-        working-directory: .
-      - name: Build and validate release + replay gameplay
+
+      - name: Build and validate release RPG
+        working-directory: .qa/lost-cosmos-v3
         run: |
           set -euo pipefail
           chmod +x build_v3.sh
@@ -33,12 +44,18 @@ jobs:
           python host_qa_v3.py
           cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V3.gba release.gba
           sha256sum release.gba > release.gba.sha256
+
       - name: Build isolated QA emulator cartridge
+        working-directory: .qa/lost-cosmos-v3
         run: |
+          set -euo pipefail
           QA=1 ./build_v3.sh
           cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V3.gba qa.gba
           rm -f qa.sav qa-boot1.sav qa-final.sav
-      - name: mGBA boot 1 - player/ship/X/combat/save
+
+      - name: mGBA boot 1 - combat, Ember gear, level, save
+        working-directory: .qa/lost-cosmos-v3
+        shell: bash
         run: |
           set -euo pipefail
           Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb-boot1.log 2>&1 &
@@ -49,10 +66,7 @@ jobs:
           MPID=$!
           sleep 4
           kill -TERM "$MPID" 2>/dev/null || true
-          for i in $(seq 1 20); do
-            kill -0 "$MPID" 2>/dev/null || break
-            sleep 0.1
-          done
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
           kill -KILL "$MPID" 2>/dev/null || true
           wait "$MPID" 2>/dev/null || true
           kill -TERM "$XPID" 2>/dev/null || true
@@ -64,12 +78,16 @@ jobs:
           assert len(p)==32768, len(p)
           assert p[:4]==b'LCV3', p[:8]
           if p[126]!=0xA5: raise AssertionError(f'boot1 marker={p[126]:#x} stage={p[127]:#x}')
-          assert p[5]&1 and p[11]==1 and p[128]>=2 and p[143]>=1,(p[5],p[11],p[128],p[143])
-          print(f'PASS real mGBA V3 boot1 A5 | keys {p[5]} | world {p[11]} | level {p[128]} | weapon {p[143]}')
+          assert p[5]&1 and p[11]==1 and p[128]>=2 and p[143]==1,(p[5],p[11],p[128],p[143])
+          assert p[142]&2,(p[142],)
+          print(f'PASS real mGBA V3 boot1 | level={p[128]} weapon={p[143]} gear={p[142]:#x}')
           PY
           cp qa.sav qa-boot1.sav
-          sha256sum qa-boot1.sav >sram-boot1.sha256
-      - name: mGBA boot 2 - save reload/Y/Z/gear/Crown/postgame
+          sha256sum qa-boot1.sav > sram-boot1.sha256
+
+      - name: mGBA boot 2 - Y/Z gear, Crown Edge, ending, postgame
+        working-directory: .qa/lost-cosmos-v3
+        shell: bash
         run: |
           set -euo pipefail
           test -s qa.sav
@@ -81,10 +99,7 @@ jobs:
           MPID=$!
           sleep 4
           kill -TERM "$MPID" 2>/dev/null || true
-          for i in $(seq 1 20); do
-            kill -0 "$MPID" 2>/dev/null || break
-            sleep 0.1
-          done
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
           kill -KILL "$MPID" 2>/dev/null || true
           wait "$MPID" 2>/dev/null || true
           kill -TERM "$XPID" 2>/dev/null || true
@@ -98,20 +113,37 @@ jobs:
           if p[126]!=0x5A: raise AssertionError(f'boot2 marker={p[126]:#x} stage={p[127]:#x}')
           assert p[5]==7 and p[11]==5 and p[128]>=3,(p[5],p[11],p[128])
           assert p[143]==2 and p[144]==1 and p[145]==1,(p[143],p[144],p[145])
+          assert (p[142]&0x1f)==0x1f,hex(p[142])
           assert p[9] and p[10],(p[9],p[10])
-          print(f'PASS real mGBA V3 boot2 5A | keys {p[5]} | world {p[11]} | level {p[128]} | gear {p[143:146].hex()} | postgame {p[10]}')
+          print(f'PASS real mGBA V3 boot2 | level={p[128]} gear={p[143:146].hex()} ending={p[9]} postgame={p[10]}')
           PY
           cp qa.sav qa-final.sav
-          sha256sum qa-final.sav >sram-boot2.sha256
-      - name: Publish release and QA evidence artifacts
+          sha256sum qa-final.sav > sram-boot2.sha256
+
+      - name: Publish verified editable V3 source
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf gba/lost-cosmos-v3
+          mkdir -p gba/lost-cosmos-v3
+          cp -a .src/lost-cosmos-v3/. gba/lost-cosmos-v3/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A gba/lost-cosmos-v3
+          git diff --cached --quiet && exit 0
+          git commit -m "publish verified Lost COSMOS V3 RPG source [skip ci]"
+          git push origin HEAD:feature/pixel-universe-gba-rpg-003
+
+      - name: Upload verified ROM and evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lost-cosmos-gba-v3
+          name: lost-cosmos-gba-v3-rpg
           path: |
-            gba/lost-cosmos-v3/release.gba
-            gba/lost-cosmos-v3/release.gba.sha256
-            gba/lost-cosmos-v3/*boot*.log
-            gba/lost-cosmos-v3/qa-boot1.sav
-            gba/lost-cosmos-v3/qa-final.sav
-            gba/lost-cosmos-v3/*.sha256
+            .qa/lost-cosmos-v3/release.gba
+            .qa/lost-cosmos-v3/release.gba.sha256
+            .qa/lost-cosmos-v3/source.zip
+            .qa/lost-cosmos-v3/*boot*.log
+            .qa/lost-cosmos-v3/*.sav
+            .qa/lost-cosmos-v3/*.sha256
