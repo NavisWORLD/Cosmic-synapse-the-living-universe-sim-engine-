@@ -41,6 +41,37 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y clang lld llvm mgba-sdl xvfb ffmpeg xdotool openbox
+      - name: Restore genuine legacy V2-V4 saves and capture original V5 SRAM in mGBA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .qa/eridoria-v6/qa_fixtures .qa/original-v5
+          cp gba/lost-cosmos-v5/qa_fixtures/v{2,3,4}_mgba_boot1.sav .qa/eridoria-v6/qa_fixtures/
+          cp -a gba/lost-cosmos-v5/. .qa/original-v5/
+          ( cd .qa/original-v5 && QA=1 ./build_v5.sh && cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5.gba qa-original.gba )
+          (
+            cd .qa/original-v5
+            Xvfb :96 -screen 0 640x480x24 -nolisten tcp >xvfb-legacy.log 2>&1 &
+            XPID=$!
+            export DISPLAY=:96
+            sleep 1
+            mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa-original.gba >mgba-legacy.log 2>&1 &
+            MPID=$!
+            sleep 5
+            kill -TERM "$MPID" 2>/dev/null || true
+            for i in $(seq 1 20);do kill -0 "$MPID" 2>/dev/null||break;sleep 0.1;done
+            kill -KILL "$MPID" 2>/dev/null||true
+            wait "$MPID" 2>/dev/null||true
+            kill -TERM "$XPID" 2>/dev/null||true
+            wait "$XPID" 2>/dev/null||true
+            python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa-original.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5' and p[126]==0xA5 and p[168]==0xFF, (len(p),p[:4],p[126],p[168])
+          Path('../eridoria-v6/qa_fixtures/v5_mgba_boot1.sav').write_bytes(p)
+          print('PASS generated true original V5 emulator save and restored all 4 migration fixtures')
+          PY
+          )
       - name: Compile release and run host regressions
         working-directory: .qa/eridoria-v6
         shell: bash
