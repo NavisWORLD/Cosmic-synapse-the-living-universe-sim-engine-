@@ -57,6 +57,27 @@ jobs:
         working-directory: .qa/lost-cosmos-v3
         run: |
           set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("lost_cosmos_v3.c")
+          s=p.read_text()
+          old="void gba_main(void){u16 k,newk;init_new_game();load_game();init_graphics();sound_init();if(game_mode==MODE_SPACE)generate_space();else generate_surface();"
+          new="""void gba_main(void){u16 k,newk;init_new_game();load_game();
+          #ifdef QA_AUTORUN
+           SRAM[126]=0xD1; SRAM[127]=0xA1; save_game();
+          #endif
+           init_graphics();
+          #ifdef QA_AUTORUN
+           SRAM[126]=0xD2; SRAM[127]=0xA2; save_game();
+          #endif
+           sound_init();if(game_mode==MODE_SPACE)generate_space();else generate_surface();
+          #ifdef QA_AUTORUN
+           SRAM[126]=0xD3; SRAM[127]=0xA3; save_game();
+          #endif
+          """
+          if old not in s: raise SystemExit("gba_main instrumentation target missing")
+          p.write_text(s.replace(old,new))
+          PY
           QA=1 ./build_v3.sh
           cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V3.gba qa.gba
           rm -f qa.sav qa-boot1.sav qa-final.sav
