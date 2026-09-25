@@ -68,7 +68,8 @@ jobs:
           sleep 1
           mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba1.log 2>&1 &
           MPID=$!
-          sleep 4
+          # Allow the extended eight-world on-cartridge QA to reach its save point.
+          sleep 14
           kill -TERM "$MPID" 2>/dev/null || true
           for i in $(seq 1 20); do
             kill -0 "$MPID" 2>/dev/null || break
@@ -83,7 +84,7 @@ jobs:
           done
           kill -KILL "$XPID" 2>/dev/null || true
           wait "$XPID" 2>/dev/null || true
-          test -s qa.sav
+          test -s qa.sav || { echo 'NO SRAM: files and emulator log'; ls -la; cat mgba1.log mgba2.log 2>/dev/null || true; exit 1; }
           python3 - <<'PY'
           from pathlib import Path
           p=Path('qa.sav').read_bytes()
@@ -106,7 +107,8 @@ jobs:
           sleep 1
           mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba2.log 2>&1 &
           MPID=$!
-          sleep 4
+          # Allow the extended eight-world on-cartridge QA to reach its save point.
+          sleep 14
           kill -TERM "$MPID" 2>/dev/null || true
           for i in $(seq 1 20); do
             kill -0 "$MPID" 2>/dev/null || break
@@ -121,7 +123,7 @@ jobs:
           done
           kill -KILL "$XPID" 2>/dev/null || true
           wait "$XPID" 2>/dev/null || true
-          test -s qa.sav
+          test -s qa.sav || { echo 'NO SRAM: files and emulator log'; ls -la; cat mgba1.log mgba2.log 2>/dev/null || true; exit 1; }
           python3 - <<'PY'
           from pathlib import Path
           p=Path('qa.sav').read_bytes()
