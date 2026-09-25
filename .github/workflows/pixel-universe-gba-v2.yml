@@ -1,0 +1,112 @@
+name: Lost COSMOS GBA V2
+permissions:
+  contents: write
+on:
+  push:
+    branches: [ feature/pixel-universe-gba-exploration-002 ]
+    paths:
+      - 'gba/lost-cosmos-v2/**'
+      - '.github/workflows/pixel-universe-gba-v2.yml'
+  pull_request:
+    paths:
+      - 'gba/lost-cosmos-v2/**'
+      - '.github/workflows/pixel-universe-gba-v2.yml'
+
+jobs:
+  build-and-emulate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover editable source from bootstrap shards when needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=gba/lost-cosmos-v2
+          if [[ ! -f "$SRC/lost_cosmos_v2.c" ]]; then
+            echo "BOOTSTRAPPED=1" >> "$GITHUB_ENV"
+            cat "$SRC"/bootstrap/source.zip.b64.* | tr -d '\n' | base64 -d >/tmp/lost-cosmos-v2-source.zip
+            unzip -q /tmp/lost-cosmos-v2-source.zip -d "$SRC"
+            rm -f "$SRC/pixel-universe-gba-v2.yml"
+          else
+            echo "BOOTSTRAPPED=0" >> "$GITHUB_ENV"
+          fi
+      - name: Install ARM build and emulator QA tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm mgba-sdl gdb-multiarch xvfb netcat-openbsd
+      - name: Stage V2 source
+        run: |
+          mkdir -p .qa/lost-cosmos-v2
+          cp -a gba/lost-cosmos-v2/. .qa/lost-cosmos-v2/
+      - name: Build and statically verify release
+        working-directory: .qa/lost-cosmos-v2
+        run: |
+          chmod +x build_v2.sh
+          ./build_v2.sh
+          python verify_routes.py
+          cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V2.gba release.gba
+      - name: Build emulator autorun ROM
+        working-directory: .qa/lost-cosmos-v2
+        run: |
+          QA=1 ./build_v2.sh
+          cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V2.gba qa.gba
+          cp lost_cosmos_v2.elf qa.elf
+          rm -f qa.sav qa.ss0
+      - name: Emulator boot 1 — walk, interior, ship, Ember X, SRAM save
+        working-directory: .qa/lost-cosmos-v2
+        run: |
+          set -euo pipefail
+          xvfb-run -a mgba -g qa.gba >mgba-boot1.log 2>&1 &
+          EPID=$!
+          for i in $(seq 1 30); do nc -z 127.0.0.1 2345 && break || sleep 1; done
+          nc -z 127.0.0.1 2345
+          gdb-multiarch -q qa.elf -batch \
+            -ex 'target remote 127.0.0.1:2345' \
+            -ex 'break qa_done' \
+            -ex 'continue' \
+            -ex 'p/x qa_stage' >gdb-boot1.log 2>&1
+          grep -qi '0x51564131' gdb-boot1.log
+          kill -TERM "$EPID" || true
+          wait "$EPID" || true
+          sleep 2
+          test -s qa.sav
+          sha256sum qa.sav >sram-boot1.sha256
+      - name: Emulator boot 2 — reload SRAM, Y/Z, Black Garden, Crown, postgame
+        working-directory: .qa/lost-cosmos-v2
+        run: |
+          set -euo pipefail
+          xvfb-run -a mgba -g qa.gba >mgba-boot2.log 2>&1 &
+          EPID=$!
+          for i in $(seq 1 30); do nc -z 127.0.0.1 2345 && break || sleep 1; done
+          nc -z 127.0.0.1 2345
+          gdb-multiarch -q qa.elf -batch \
+            -ex 'target remote 127.0.0.1:2345' \
+            -ex 'break qa_done' \
+            -ex 'continue' \
+            -ex 'p/x qa_stage' >gdb-boot2.log 2>&1
+          grep -qi '0x51564132' gdb-boot2.log
+          kill -TERM "$EPID" || true
+          wait "$EPID" || true
+          test -s qa.sav
+          sha256sum qa.sav >sram-boot2.sha256
+      - name: Publish verified editable source to development branch
+        if: env.BOOTSTRAPPED == '1' && github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf gba/lost-cosmos-v2/bootstrap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gba/lost-cosmos-v2
+          git diff --cached --quiet && exit 0
+          git commit -m "publish Lost COSMOS V2 editable GBA source"
+          git push origin HEAD:feature/pixel-universe-gba-exploration-002
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-gba-v2
+          path: |
+            .qa/lost-cosmos-v2/release.gba
+            .qa/lost-cosmos-v2/*.log
+            .qa/lost-cosmos-v2/qa.sav
+            .qa/lost-cosmos-v2/*.sha256
