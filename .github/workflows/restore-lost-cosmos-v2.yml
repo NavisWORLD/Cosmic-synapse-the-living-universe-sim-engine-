@@ -94,16 +94,7 @@ jobs:
               sleep 0.25
             done
             test -s qa.sav
-            python3 - "$expected_dec" <<'PY'
-import pathlib, sys
-expected=int(sys.argv[1])
-p=pathlib.Path("qa.sav")
-b=p.read_bytes()
-assert len(b) >= 127, f"SRAM too short: {len(b)}"
-actual=b[126]
-print(f"SRAM stage marker: 0x{actual:02X}; expected 0x{expected:02X}; size={len(b)}")
-assert actual == expected, (actual, expected)
-PY
+            python3 -c 'import pathlib,sys; expected=int(sys.argv[1]); b=pathlib.Path("qa.sav").read_bytes(); assert len(b)>=127, f"SRAM too short: {len(b)}"; actual=b[126]; print(f"SRAM stage marker: 0x{actual:02X}; expected 0x{expected:02X}; size={len(b)}"); assert actual==expected, (actual,expected)' "$expected_dec"
           }
 
           run_boot 165 mgba-boot1.log
