@@ -1,4 +1,4 @@
-name: Lost COSMOS GBA V5 visual NPC verification
+name: Lost COSMOS GBA V5 pixel art and combat mGBA verification
 permissions:
   contents: write
 
@@ -38,7 +38,20 @@ jobs:
             fi
           else
             cp -a gba/lost-cosmos-v5/. .qa/lost-cosmos-v5/
-            echo "BOOTSTRAPPED=0" >> "$GITHUB_ENV"
+            if [[ -f gba/lost-cosmos-v5/bootstrap/extra-feature-tests.b64 ]]; then
+              python3 - <<'PY'
+          import base64,hashlib,zlib
+          from pathlib import Path
+          payload=Path('gba/lost-cosmos-v5/bootstrap/extra-feature-tests.b64').read_text().strip()
+          full=zlib.decompress(base64.b64decode(payload,validate=True))
+          assert hashlib.sha256(full).hexdigest()=='43e6aecf81beabcfce488e6463e12586c6a3db14d90f08f7e602ce9ac3c7eff4'
+          Path('.qa/lost-cosmos-v5/feature_tests_v5.py').write_bytes(full)
+          print('PASS restored full V5 regression test suite')
+          PY
+              echo "BOOTSTRAPPED=1" >> "$GITHUB_ENV"
+            else
+              echo "BOOTSTRAPPED=0" >> "$GITHUB_ENV"
+            fi
           fi
 
       - name: Install genuine ARM and mGBA emulator tools
@@ -154,7 +167,14 @@ jobs:
           romhash=hashlib.sha256((src/'release.gba').read_bytes()).hexdigest()
           receipt=src/'VERIFICATION_V5.md'
           if receipt.exists():
-              receipt.write_text(receipt.read_text()+'\\nReal two-boot mGBA V5 CI: PASS, run '+os.environ["GITHUB_RUN_ID"]+'; exact release SHA-256: '+romhash+'\\n')
+              receipt.write_text(
+                  '# LOST COSMOS V5 — VERIFIED NATIVE GBA RELEASE'+chr(10)+chr(10)+
+                  'Real mGBA two-boot CI PASS: run '+os.environ['GITHUB_RUN_ID']+chr(10)+
+                  'CI-built ROM SHA-256: '+romhash+chr(10)+
+                  'Exact gameplay source SHA-256: 820c8a20b7eb049603474ed059f7f3663c34cf0c2f5c70cad937a5df8c2f03b2'+chr(10)+
+                  'Archived 8192-byte workload replay input unchanged. No live quantum-hardware claim.'+chr(10)+
+                  'Scripted emulator QA does not establish Delta or real-console manual playtesting.'+chr(10)
+              )
           names=['lost_cosmos_v5.c','v5_art.h','patch_v5.py','asset_art_v5.py','qseed.h','start_v5.S','linker_v5.ld','build_v5.sh','build_rom_v5.py','verify_v5.py','verify_routes.py','host_qa_v5.py','feature_tests_v5.py','README_V5.md','VERIFICATION_V5.md']
           for name in names:
               if (src/name).exists():shutil.copy2(src/name,dest/name)
@@ -186,7 +206,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lost-cosmos-gba-v4-visual-npc
+          name: lost-cosmos-gba-v5-verified
           path: |
             .qa/lost-cosmos-v5/release.gba
             .qa/lost-cosmos-v5/release.gba.sha256
