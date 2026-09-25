@@ -29,7 +29,13 @@ jobs:
               --v3 gba/lost-cosmos-v3 \
               --bootstrap gba/lost-cosmos-v4/bootstrap \
               --out .qa/lost-cosmos-v4
-            echo "BOOTSTRAPPED=1" >> "$GITHUB_ENV"
+            if [[ -f gba/lost-cosmos-v4/lost_cosmos_v4.c ]]; then
+              cmp gba/lost-cosmos-v4/lost_cosmos_v4.c .qa/lost-cosmos-v4/lost_cosmos_v4.c
+              echo "BOOTSTRAPPED=0" >> "$GITHUB_ENV"
+              echo "Published V4 source already matches restored exact source: no republish necessary."
+            else
+              echo "BOOTSTRAPPED=1" >> "$GITHUB_ENV"
+            fi
           else
             cp -a gba/lost-cosmos-v4/. .qa/lost-cosmos-v4/
             echo "BOOTSTRAPPED=0" >> "$GITHUB_ENV"
