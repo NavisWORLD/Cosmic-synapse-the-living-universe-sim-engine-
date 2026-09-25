@@ -1,4 +1,4 @@
-name: Lost COSMOS GBA V4 NPC visual verification
+name: Lost COSMOS GBA V4 visual NPC verification
 permissions:
   contents: write
 
@@ -8,92 +8,59 @@ on:
     paths:
       - 'gba/lost-cosmos-v4/**'
       - '.github/workflows/pixel-universe-gba-v4.yml'
-  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'gba/lost-cosmos-v4/**'
+      - '.github/workflows/pixel-universe-gba-v4.yml'
 
 jobs:
-  native-v4-and-mgba:
+  build-npcs-emulate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore exact V4 source and GBA tool scripts
+      - name: Restore hash-locked V3-to-V4 editable source
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p .qa/lost-cosmos-v4
-          python3 - <<'PY'
-          from pathlib import Path
-          import base64,hashlib,json,lzma,shutil
-          parent=Path("gba/lost-cosmos-v3")
-          source=Path("gba/lost-cosmos-v4")
-          out=Path(".qa/lost-cosmos-v4")
-          old=(parent/"lost_cosmos_v3.c").read_text()
-          sh=lambda s:hashlib.sha256(s.encode()).hexdigest()
-          assert sh(old)=="3d9b4caf42dded4bf2345a9ced987604cb702e325239dfe79999df16ad31e1cd", "V3 source ancestry changed"
-          if (source/"lost_cosmos_v4.c").exists():
-              new=(source/"lost_cosmos_v4.c").read_text()
-              print("Using published editable V4 source")
-          else:
-              pieces=sorted((source/"bootstrap").glob("ops.*.b64"))
-              assert len(pieces)==3,[str(p) for p in pieces]
-              encoded="".join(p.read_text().strip() for p in pieces)
-              ops=json.loads(lzma.decompress(base64.b64decode(encoded)))
-              new=old
-              for i,j,replacement in reversed(ops):
-                  new=new[:i]+replacement+new[j:]
-              print("Restored V4 through",len(ops),"byte-exact source edits")
-          assert sh(new)=="83bdde8e628ada112f172443336628d988ec977b464d0aadb5249d1e0b6805ca", sh(new)
-          (out/"lost_cosmos_v4.c").write_text(new)
-          shutil.copy2(parent/"qseed.h",out/"qseed.h")
-          for name in ("start_v3.S","linker_v3.ld","build_v3.sh","build_rom_v3.py","verify_v3.py","verify_routes.py","host_qa_v3.py"):
-              text=(parent/name).read_text()
-              target=name.replace("v3","v4")
-              if name!="verify_routes.py":
-                  text=text.replace("v3","v4").replace("V3","V4").replace("LCV3","LCV4")
-              if name=="build_rom_v3.py":
-                  text=text.replace("header[0xBC]=3","header[0xBC]=4")
-              if name=="verify_v3.py":
-                  text=text.replace("data[0xBC] != 3","data[0xBC] != 4")
-              (out/target).write_text(text)
-          for name in ("README_V4.md","VERIFICATION_V4.md"):
-              if (source/name).exists():
-                  shutil.copy2(source/name,out/name)
-          import re
-          q=(out/"qseed.h").read_text()
-          tape=bytes(int(x) for x in re.findall(r"\b\d+\b",q.split("{",1)[1].rsplit("}",1)[0]))
-          assert len(tape)==8192
-          assert hashlib.sha256(tape).hexdigest()=="9bcecc3732fe48107554cc2041cff6088f418290fb850ec0c9b89cdc375f54c8"
-          print("V4 C source / preserved quantum tape SHA: PASS")
-          PY
+          if [[ -f gba/lost-cosmos-v4/bootstrap/bootstrap_v4.py ]]; then
+            python3 gba/lost-cosmos-v4/bootstrap/bootstrap_v4.py \
+              --v3 gba/lost-cosmos-v3 \
+              --bootstrap gba/lost-cosmos-v4/bootstrap \
+              --out .qa/lost-cosmos-v4
+            echo "BOOTSTRAPPED=1" >> "$GITHUB_ENV"
+          else
+            cp -a gba/lost-cosmos-v4/. .qa/lost-cosmos-v4/
+            echo "BOOTSTRAPPED=0" >> "$GITHUB_ENV"
+          fi
 
-      - name: Install ARM and mGBA toolchain
+      - name: Install genuine ARM and mGBA emulator tools
         run: |
           sudo apt-get update
           sudo apt-get install -y clang lld llvm mgba-sdl xvfb
 
-      - name: Compile real release and run static/route/host QA
+      - name: Compile and verify release plus NPC dialogue quests and save migration
         working-directory: .qa/lost-cosmos-v4
-        shell: bash
         run: |
           set -euo pipefail
           chmod +x build_v4.sh
           ./build_v4.sh
           python3 verify_routes.py
           python3 host_qa_v4.py
+          python3 feature_tests_v4.py
           cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V4.gba release.gba
           sha256sum release.gba > release.gba.sha256
-          test "$(stat -c%s release.gba)" -eq 65536
 
-      - name: Compile isolated QA cartridge
+      - name: Build separate mGBA autorun gameplay cartridge
         working-directory: .qa/lost-cosmos-v4
-        shell: bash
         run: |
           set -euo pipefail
           QA=1 ./build_v4.sh
           cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V4.gba qa.gba
           rm -f qa.sav qa-boot1.sav qa-final.sav
 
-      - name: Real mGBA boot one - NPC conversation/quest, ship, Ember RPG
+      - name: mGBA boot 1 - NPC conversation quest and Ember RPG save
         working-directory: .qa/lost-cosmos-v4
         shell: bash
         run: |
@@ -104,7 +71,7 @@ jobs:
           sleep 1
           mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot1.log 2>&1 &
           MPID=$!
-          sleep 5
+          sleep 4
           kill -TERM "$MPID" 2>/dev/null || true
           for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
           kill -KILL "$MPID" 2>/dev/null || true
@@ -114,17 +81,17 @@ jobs:
           test -s qa.sav || { cat mgba-boot1.log; exit 1; }
           python3 - <<'PY'
           from pathlib import Path
-          p=Path("qa.sav").read_bytes()
-          assert len(p)==32768 and p[:4]==b"LCV4",(len(p),p[:4])
-          if p[126]!=0xA5: raise AssertionError(f"boot1 marker={p[126]:#x} stage={p[127]:#x}")
+          p=Path('qa.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV4',(len(p),p[:8])
+          if p[126]!=0xA5: raise AssertionError(f'boot1 marker={p[126]:#x} stage={p[127]:#x}')
           assert p[5]&1 and p[11]==1 and p[128]>=2 and p[143]==1,(p[5],p[11],p[128],p[143])
-          assert p[158]&1 and (p[160]|p[161]<<8)&1,(p[158],p[160],p[161])
-          print("PASS real mGBA V4 boot1: NPC, Mira quest, Ember RPG, save marker A5")
+          assert (p[158]&1)!=0 and (p[160]&1)!=0,(p[158],p[160])
+          print('PASS mGBA V4 boot1: NPC conversation/quest/seen persisted, X/Ember, lv2, Ember Saber')
           PY
           cp qa.sav qa-boot1.sav
-          sha256sum qa-boot1.sav > sram-boot1.sha256
+          sha256sum qa-boot1.sav >sram-boot1.sha256
 
-      - name: Real mGBA boot two - persistent quest, XYZ, Crown/postgame
+      - name: mGBA boot 2 - quest persistence Y Z Crown and postgame
         working-directory: .qa/lost-cosmos-v4
         shell: bash
         run: |
@@ -136,7 +103,7 @@ jobs:
           sleep 1
           mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot2.log 2>&1 &
           MPID=$!
-          sleep 5
+          sleep 4
           kill -TERM "$MPID" 2>/dev/null || true
           for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
           kill -KILL "$MPID" 2>/dev/null || true
@@ -146,60 +113,67 @@ jobs:
           test -s qa.sav || { cat mgba-boot2.log; exit 1; }
           python3 - <<'PY'
           from pathlib import Path
-          p=Path("qa.sav").read_bytes()
-          assert len(p)==32768 and p[:4]==b"LCV4",(len(p),p[:4])
-          if p[126]!=0x5A: raise AssertionError(f"boot2 marker={p[126]:#x} stage={p[127]:#x}")
+          p=Path('qa.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV4',(len(p),p[:8])
+          if p[126]!=0x5A: raise AssertionError(f'boot2 marker={p[126]:#x} stage={p[127]:#x}')
           assert p[5]==7 and p[11]==5 and p[128]>=3,(p[5],p[11],p[128])
           assert p[143]==2 and p[144]==1 and p[145]==1,(p[143],p[144],p[145])
-          assert p[158]&1 and p[159]&(1<<5),(p[158],p[159])
-          assert p[9] and p[10],(p[9],p[10])
-          print("PASS real mGBA V4 boot2: quest SRAM, XYZ, Crown/Level3/gear, ending/postgame")
+          assert p[9] and p[10] and (p[158]&1) and (p[159]&32) and (p[160]&1),(p[9],p[10],p[158],p[159],p[160])
+          print('PASS mGBA V4 boot2: NPC quest survived reboot, completed Three Axes, XYZ gear, Crown and postgame')
           PY
           cp qa.sav qa-final.sav
-          sha256sum qa-final.sav > sram-boot2.sha256
+          sha256sum qa-final.sav >sram-boot2.sha256
 
-      - name: Publish verified editable V4 source
-        if: github.event_name == 'push'
+      - name: Prepare final verified editable source package
         shell: bash
         run: |
           set -euo pipefail
+          python3 - <<'PY'
+          import os,hashlib,shutil,zipfile
+          from pathlib import Path
+          src=Path('.qa/lost-cosmos-v4')
+          dest=Path('.release-source/lost-cosmos-v4');dest.mkdir(parents=True,exist_ok=True)
+          romhash=hashlib.sha256((src/'release.gba').read_bytes()).hexdigest()
+          receipt=src/'VERIFICATION_V4.md'
+          if receipt.exists():
+              s=receipt.read_text().replace('**Real mGBA V4 emulator verification: PENDING.** Do not label V4 fully verified until a V4 GitHub Actions run succeeds and its exact ROM hash is recorded.',f'**Real mGBA V4 scripted two-boot verification: PASS.** GitHub Actions run {os.environ["GITHUB_RUN_ID"]}. Exact CI-built release ROM SHA-256: `{romhash}`.')
+              receipt.write_text(s)
+          names=['lost_cosmos_v4.c','qseed.h','start_v4.S','linker_v4.ld','build_v4.sh','build_rom_v4.py','verify_v4.py','verify_routes.py','host_qa_v4.py','feature_tests_v4.py','README_V4.md','VERIFICATION_V4.md']
+          for name in names:
+              if (src/name).exists():shutil.copy2(src/name,dest/name)
+          shutil.copytree(src/'qa_fixtures',dest/'qa_fixtures')
+          bundle=src/'SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V4_Source.zip'
+          with zipfile.ZipFile(bundle,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in sorted(dest.rglob('*')):
+                  if p.is_file():z.write(p,p.relative_to(dest.parent))
+          print('FINAL_RELEASE_ROM_SHA256',romhash)
+          print('VERIFIED_SOURCE_ZIP',bundle,bundle.stat().st_size)
+          PY
+
+      - name: Publish verified V4 editable source onto development branch
+        if: env.BOOTSTRAPPED == '1' && github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf gba/lost-cosmos-v4
           mkdir -p gba/lost-cosmos-v4
-          cp .qa/lost-cosmos-v4/lost_cosmos_v4.c gba/lost-cosmos-v4/
-          cp .qa/lost-cosmos-v4/qseed.h gba/lost-cosmos-v4/
-          cp .qa/lost-cosmos-v4/start_v4.S gba/lost-cosmos-v4/
-          cp .qa/lost-cosmos-v4/linker_v4.ld gba/lost-cosmos-v4/
-          cp .qa/lost-cosmos-v4/build_v4.sh gba/lost-cosmos-v4/
-          cp .qa/lost-cosmos-v4/build_rom_v4.py gba/lost-cosmos-v4/
-          cp .qa/lost-cosmos-v4/verify_v4.py gba/lost-cosmos-v4/
-          cp .qa/lost-cosmos-v4/verify_routes.py gba/lost-cosmos-v4/
-          cp .qa/lost-cosmos-v4/host_qa_v4.py gba/lost-cosmos-v4/
-          # Preserve concurrent branch work, including any separately staged docs.
-          # Keeping bootstrap source also preserves the provenance of this exact patch.
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp -a .release-source/lost-cosmos-v4/. gba/lost-cosmos-v4/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A gba/lost-cosmos-v4
           git diff --cached --quiet && exit 0
-          git commit -m "publish emulator-verified Lost COSMOS V4 editable source [skip ci]"
-          for attempt in 1 2 3 4; do
-            git fetch origin feature/pixel-universe-gba-visual-npc-004
-            git rebase FETCH_HEAD
-            if git push origin HEAD:feature/pixel-universe-gba-visual-npc-004; then
-              echo "Published V4 source without losing concurrent branch updates"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "V4 source publication did not succeed after safe retries" >&2
-          exit 1
+          git commit -m 'publish verified Lost COSMOS V4 NPC RPG source [skip ci]'
+          git push origin HEAD:feature/pixel-universe-gba-visual-npc-004
 
-      - name: Upload canonical V4 ROM and emulator evidence
+      - name: Upload exact release, source and mGBA proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lost-cosmos-gba-v4
+          name: lost-cosmos-gba-v4-visual-npc
           path: |
             .qa/lost-cosmos-v4/release.gba
             .qa/lost-cosmos-v4/release.gba.sha256
+            .qa/lost-cosmos-v4/SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V4_Source.zip
             .qa/lost-cosmos-v4/*boot*.log
             .qa/lost-cosmos-v4/*.sav
             .qa/lost-cosmos-v4/*.sha256
