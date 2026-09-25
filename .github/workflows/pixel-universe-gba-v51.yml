@@ -1,0 +1,269 @@
+name: Lost COSMOS GBA V5.1 Cinematic Hardware QA
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [feature/lost-cosmos-gba-cinematic-playtest-0051]
+    paths:
+      - 'gba/lost-cosmos-v5-cinematic/**'
+      - '.github/workflows/pixel-universe-gba-v51.yml'
+  workflow_dispatch:
+
+jobs:
+  cinematic-arm-mgba:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore byte-verified V5.1 source patch from original V5
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .qa/lost-cosmos-v51 .qa/v5-original
+          cp -a gba/lost-cosmos-v5/. .qa/lost-cosmos-v51/
+          cp -a gba/lost-cosmos-v5/. .qa/v5-original/
+          cat gba/lost-cosmos-v5-cinematic/bootstrap/kit.b64.* | tr -d '\n' | base64 -d > /tmp/lost-cosmos-v51-code.tar.xz
+          echo 'EXPECTED TAR.XZ: 9732 bytes'
+          stat -c '%s' /tmp/lost-cosmos-v51-code.tar.xz
+          tar -xJf /tmp/lost-cosmos-v51-code.tar.xz -C .qa/lost-cosmos-v51/
+          ls -l .qa/lost-cosmos-v51/*v51.py
+          sudo apt-get update
+          sudo apt-get install -y python3-pil
+          /usr/bin/python3 .qa/lost-cosmos-v51/cinematic_assets_v51.py
+          ( cd .qa/lost-cosmos-v51 && python3 patch_cinematic_v51.py )
+          python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          p=Path('.qa/lost-cosmos-v51/lost_cosmos_v5.c')
+          x=hashlib.sha256(p.read_bytes()).hexdigest()
+          print('CINEMATIC_SOURCE_SHA256',x)
+          assert x=='b7f8177d8e93b926d6a50750c9b9d95feb2c72913f6c1927eb9f7f6262ca2830',x
+          print('PASS exact reconstructed V5.1 source + generated GBA 4bpp art')
+          PY
+
+      - name: Install ARM toolchain and true GBA emulator
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb ffmpeg xdotool openbox
+
+      - name: Generate genuine legacy V5 SRAM with original mGBA
+        working-directory: .qa/v5-original
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x build_v5.sh
+          QA=1 ./build_v5.sh
+          cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5.gba qa-old-v5.gba
+          rm -f qa-old-v5.sav
+          Xvfb :97 -screen 0 800x600x24 -nolisten tcp >xvfb-old.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:97
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa-old-v5.gba >mgba-old.log 2>&1 &
+          MPID=$!
+          sleep 5
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
+          kill -KILL "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa-old-v5.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5'
+          assert p[126]==0xa5 and p[168]==0xff,(p[126],p[168],p[127])
+          Path('../lost-cosmos-v51/qa_fixtures/v5_mgba_boot1.sav').write_bytes(p)
+          print('PASS real original V5 mGBA save recovered for backwards-compatibility')
+          PY
+
+      - name: Compile cinematic player cartridge and complete regression suite
+        working-directory: .qa/lost-cosmos-v51
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x build_v5.sh
+          ./build_v5.sh
+          python3 verify_routes.py
+          python3 host_qa_v5.py
+          python3 feature_tests_v5.py
+          python3 cinema_tests_v51.py
+          cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5_CINEMATIC.gba release-v51.gba
+          sha256sum release-v51.gba >release-v51.gba.sha256
+          python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          x=Path('release-v51.gba').read_bytes()
+          assert len(x)==262144,len(x)
+          assert x[0xa0:0xac]==b'LOSTCOSMOS51' and x[0xac:0xb0]==b'LC51',(x[0xa0:0xac],x[0xac:0xb0])
+          print('PASS native original V5.1 player cartridge',len(x),hashlib.sha256(x).hexdigest())
+          PY
+
+      - name: Real emulator visual capture of player cartridge
+        working-directory: .qa/lost-cosmos-v51
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :98 -screen 0 800x600x24 -nolisten tcp >xvfb-player.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:98
+          openbox --sm-disable >openbox-player.log 2>&1 &
+          WMID=$!
+          sleep 2
+          SDL_AUDIODRIVER=dummy mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 release-v51.gba >mgba-player.log 2>&1 &
+          MPID=$!
+          sleep 2
+          WIN="$(xdotool search --name 'mGBA' | tail -1 || true)"
+          echo "GBA_WINDOW_ID=$WIN"
+          xdotool mousemove 760 560
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 -y v51_mgba_actual_title.png
+          if [[ -n "$WIN" ]]; then
+            xdotool windowactivate --sync "$WIN" || true
+            xdotool windowfocus --sync "$WIN" || true
+            xdotool key --clearmodifiers Return
+          fi
+          sleep 2
+          xdotool mousemove 760 560
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 -y v51_mgba_actual_after_start.png
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -framerate 8 -video_size 800x600 -i :98.0 -t 3 -c:v libx264 -crf 27 -pix_fmt yuv420p -y v51_mgba_actual_gameplay.mp4 || true
+          python3 - <<'PY'
+          from pathlib import Path
+          for f in ('v51_mgba_actual_title.png','v51_mgba_actual_after_start.png'):
+              p=Path(f)
+              assert p.exists() and p.stat().st_size>2500, (f,p.stat().st_size if p.exists() else None)
+              print('CAPTURED actual SDL/mGBA Xvfb framebuffer:',f,p.stat().st_size)
+          PY
+          kill -TERM "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$WMID" 2>/dev/null || true
+          wait "$WMID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+
+      - name: Build separate autonomous RPG QA cartridge
+        working-directory: .qa/lost-cosmos-v51
+        shell: bash
+        run: |
+          set -euo pipefail
+          QA=1 ./build_v5.sh
+          cp SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5_CINEMATIC.gba qa-v51.gba
+          rm -f qa-v51.sav
+
+      - name: mGBA boot 1 — true V5.1 NPC combat quest save
+        working-directory: .qa/lost-cosmos-v51
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :99 -screen 0 800x600x24 -nolisten tcp >xvfb-boot1.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa-v51.gba >mgba-boot1.log 2>&1 &
+          MPID=$!
+          sleep 5
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
+          kill -KILL "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa-v51.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5'
+          assert p[126]==0xa5 and p[5]&1 and p[128]>=2 and p[143]==1,(p[126],p[127],p[5],p[128],p[143])
+          assert p[158]&1 and p[160]&1,(p[158],p[160])
+          assert p[168]==0xc0,p[168]
+          print('PASS V5.1 real mGBA boot 1: Ember quest, key and gear persisted')
+          PY
+          cp qa-v51.sav qa-boot1.sav
+
+      - name: mGBA boot 2 — reboot persistent quests keys Crown postgame
+        working-directory: .qa/lost-cosmos-v51
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s qa-v51.sav
+          Xvfb :99 -screen 0 800x600x24 -nolisten tcp >xvfb-boot2.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa-v51.gba >mgba-boot2.log 2>&1 &
+          MPID=$!
+          sleep 5
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
+          kill -KILL "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa-v51.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5'
+          assert p[126]==0x5a and p[5]==7 and p[128]>=3,(p[126],p[127],p[5],p[128])
+          assert p[143:146]==bytes([2,1,1]),p[143:146]
+          assert p[9] and p[10] and p[158]&1 and p[159]&32 and p[160]&1
+          assert p[168]==0xc0,p[168]
+          print('PASS V5.1 real mGBA boot 2: continued all XYZ NPC quests Crown and postgame')
+          PY
+          cp qa-v51.sav qa-final.sav
+
+      - name: Package editable source with native art
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import Path
+          s=Path('.qa/lost-cosmos-v51')
+          names=['cinematic_assets_v51.py','patch_cinematic_v51.py','cinema_tests_v51.py',
+            'cinematic_assets_v51.h','lost_cosmos_v5.c','v5_art.h','qseed.h',
+            'build_v5.sh','build_rom_v5.py','start_v5.S','linker_v5.ld','verify_v5.py',
+            'verify_routes.py','host_qa_v5.py','feature_tests_v5.py']
+          names+=[p.name for p in s.glob('V51_*png')]
+          with zipfile.ZipFile(s/'V51_SOURCE.zip','w',zipfile.ZIP_DEFLATED,compresslevel=9,strict_timestamps=False) as z:
+            for n in names:
+              if (s/n).exists():z.write(s/n,'lost-cosmos-v51/'+n)
+            for p in (s/'qa_fixtures').glob('*.sav'):
+              z.write(p,'lost-cosmos-v51/qa_fixtures/'+p.name)
+          print('Editable V5.1 GBA source ZIP:',(s/'V51_SOURCE.zip').stat().st_size)
+          PY
+
+      - name: Publish verified editable cinematic source on isolated development branch
+        if: success() && github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p gba/lost-cosmos-v5-cinematic/source
+          SRC='.qa/lost-cosmos-v51'
+          for filename in cinematic_assets_v51.py patch_cinematic_v51.py cinema_tests_v51.py cinematic_assets_v51.h lost_cosmos_v5.c v5_art.h qseed.h build_v5.sh build_rom_v5.py start_v5.S linker_v5.ld verify_v5.py verify_routes.py host_qa_v5.py feature_tests_v5.py; do
+            cp "$SRC/$filename" "gba/lost-cosmos-v5-cinematic/source/$filename"
+          done
+          cp "$SRC"/V51_GBA_indexed_*.png gba/lost-cosmos-v5-cinematic/source/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A gba/lost-cosmos-v5-cinematic/source
+          if ! git diff --cached --quiet; then
+            git commit -m "publish mGBA-verified Lost COSMOS V5.1 cinematic source [skip ci]"
+            git push origin HEAD:feature/lost-cosmos-gba-cinematic-playtest-0051
+          fi
+
+      - name: Upload cinematic ROM, source, true mGBA screenshots and saves
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lost-cosmos-gba-v51-cinematic-proof
+          path: |
+            .qa/lost-cosmos-v51/release-v51.gba
+            .qa/lost-cosmos-v51/release-v51.gba.sha256
+            .qa/lost-cosmos-v51/V51_SOURCE.zip
+            .qa/lost-cosmos-v51/v51_mgba_actual*.png
+            .qa/lost-cosmos-v51/v51_mgba_actual_gameplay.mp4
+            .qa/lost-cosmos-v51/openbox-player.log
+            .qa/lost-cosmos-v51/mgba-*.log
+            .qa/lost-cosmos-v51/qa-boot1.sav
+            .qa/lost-cosmos-v51/qa-final.sav
+            .qa/v5-original/qa-old-v5.sav
