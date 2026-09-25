@@ -368,7 +368,7 @@ static void postgame_tick(void){if(!postgame||game_mode!=MODE_SURFACE||current_r
 static void init_new_game(void);
 volatile u32 qa_stage=0;
 __attribute__((noinline)) void qa_done(void){ for(;;){} }
-static void qa_fail(u32 code){ qa_stage=0xBAD00000u|code; qa_done(); }
+static void qa_fail(u32 code){ qa_stage=0xBAD00000u|code; SRAM[126]=0xEE; SRAM[127]=(u8)code; save_game(); qa_done(); }
 static void qa_require(int ok,u32 code){ if(!ok) qa_fail(code); }
 static void gameplay_qa(void){
  /* Two emulator boots: boot 1 reaches Ember X and persists SRAM; boot 2
@@ -399,7 +399,7 @@ static void gameplay_qa(void){
    anomaly_counter=599;postgame_tick();
    {int tx=12+((current_world*9+ending*7+keys_found*3)%40),ty=12+((current_world*13+ending*11)%40);player.x=(s16)(tx*8);player.y=(s16)(ty*8);interact();}
    qa_require((cosmos.memory_flags&MEM_ANOMALY)!=0,0x33);
-   save_game();SRAM[126]=0x5A;qa_stage=0x51564132u;qa_done();
+   SRAM[126]=0x5A;SRAM[127]=0x32;save_game();qa_stage=0x51564132u;qa_done();
  }else{
    /* Clean first-stage state, then exercise walkability, interior, ship, flight, X and save. */
    init_new_game();current_world=0;current_room=0;current_layer=1;game_mode=MODE_SURFACE;generate_surface();
@@ -410,7 +410,7 @@ static void gameplay_qa(void){
    ship_x=PLANET_X[1];ship_y=PLANET_Y[1]+10;land_ship();qa_require(current_world==1&&game_mode==MODE_SURFACE,0x06);
    player.x=20*8;player.y=20*8;shift_layer(-1);qa_require(current_layer==0,0x07);
    player.x=53*8;player.y=11*8;interact();qa_require((keys_found&1)!=0,0x08);
-   save_game();SRAM[126]=0xA5;qa_stage=0x51564131u;qa_done();
+   SRAM[126]=0xA5;SRAM[127]=0x31;save_game();qa_stage=0x51564131u;qa_done();
  }
 }
 #endif
