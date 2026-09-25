@@ -64,15 +64,15 @@ jobs:
           old="void gba_main(void){u16 k,newk;init_new_game();load_game();init_graphics();sound_init();if(game_mode==MODE_SPACE)generate_space();else generate_surface();"
           new="""void gba_main(void){u16 k,newk;init_new_game();load_game();
           #ifdef QA_AUTORUN
-           SRAM[126]=0xD1; SRAM[127]=0xA1; save_game();
+           if(SRAM[126]!=0xA5){SRAM[126]=0xD1; SRAM[127]=0xA1; save_game();}
           #endif
            init_graphics();
           #ifdef QA_AUTORUN
-           SRAM[126]=0xD2; SRAM[127]=0xA2; save_game();
+           if(SRAM[126]!=0xA5){SRAM[126]=0xD2; SRAM[127]=0xA2; save_game();}
           #endif
            sound_init();if(game_mode==MODE_SPACE)generate_space();else generate_surface();
           #ifdef QA_AUTORUN
-           SRAM[126]=0xD3; SRAM[127]=0xA3; save_game();
+           if(SRAM[126]!=0xA5){SRAM[126]=0xD3; SRAM[127]=0xA3; save_game();}
           #endif
           """
           if old not in s: raise SystemExit("gba_main instrumentation target missing")
