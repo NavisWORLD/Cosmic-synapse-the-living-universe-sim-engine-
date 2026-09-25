@@ -426,8 +426,7 @@ static void init_graphics(void){int i;REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|OB
 static void init_new_game(void){player.x=80;player.y=408;player.face=1;player.hp=3;cosmos.x=100;cosmos.y=396;cosmos.goal=GOAL_FOLLOW;cosmos.trust=96;cosmos.curiosity=205;cosmos.avoid=30;cosmos.energy=240;cosmos.focus=130;current_world=0;current_room=0;current_layer=1;game_mode=MODE_SURFACE;ship_world=0;ship_x=PLANET_X[0];ship_y=PLANET_Y[0]+26;copystr(dialogue,"I REMEMBER A SKY MADE OF SQUARES.",90);}
 void gba_main(void){u16 k,newk;init_new_game();load_game();init_graphics();sound_init();if(game_mode==MODE_SPACE)generate_space();else generate_surface();
 #ifdef QA_AUTORUN
- /* Give an emulator GDB stub time to attach before the autorun reaches qa_done. */
- {u16 qa_wait; for(qa_wait=0; qa_wait<120; qa_wait++) wait_vblank();}
+ /* CI QA executes immediately; no debugger-attach delay is required. */
  gameplay_qa();
 #endif
 for(;;){k=(u16)(~REG_KEYINPUT)&0x03FF;newk=(u16)(k&~prev_keys);prev_keys=k;if(intro){if(newk&KEY_START){intro=0;say("YOU WOKE ME WITH THE OLD TAPE. THREE AXIS KEYS ARE STILL BROADCASTING.");}}else{if(game_mode!=MODE_PAUSE&&(newk&KEY_START))enter_pause();else if(game_mode==MODE_PAUSE)update_pause(newk);else if(game_mode==MODE_SURFACE)update_surface(k,newk);else update_space(k,newk);if((frame&15)==0)state_tick();if(dialogue_timer)dialogue_timer--;music_step();}wait_vblank();frame++;render();}}
