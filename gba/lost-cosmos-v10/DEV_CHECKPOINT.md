@@ -1,0 +1,5 @@
+# LOST COSMOS V10: development checkpoint
+
+This is a non-destructive continuation of the V8 framed-text verified branch. Cory's V9 Riftfall was built locally and was not pushed to GitHub. Local V10 now has a genuine compiled ARM7TDMI development ROM, a priority-layer dialogue repair, a four-option interactive title, two additional original indexed Brindlemark images, ten illustrated opening cards, playable persisted Elder-to-Astrid tutorial objectives, and distinct art for the old three endings. Eight host regression suites passed; actual V10 mGBA and Delta manual visual acceptance remain outstanding. The game is NOT the final five-act fully authored Complete Edition.
+
+Local matching sources: V10 source C SHA256 edfb92a237c94bba3d7b09dfef6a4668ec38a26ad114e0c21accb1bd666da886; reproducible local LLVM ROM SHA256 a6f2f2a27fb8bae605d2b91efc6e6382ae84a87365ec59738401aa427a9cba22. The complete original long-form manuscript was not available; only edited five-act Eridoria story bible was retrieved. Preserve all earlier editions and never report full release acceptance without genuine end-to-end QA.
