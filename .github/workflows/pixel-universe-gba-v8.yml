@@ -1,0 +1,201 @@
+name: Lost COSMOS V8 native GBA palette depth story verification
+permissions:
+  contents: write
+on:
+  push:
+    branches: [feature/lost-cosmos-eridoria-12d-visual-story-008]
+    paths:
+      - 'gba/lost-cosmos-eridoria-v8/bootstrap/**'
+      - '.github/workflows/pixel-universe-gba-v8.yml'
+  workflow_dispatch:
+
+jobs:
+  build-v8-and-emulate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Recover exact V7 and apply hash-locked V8 patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .qa/v8 /tmp/v8kit
+          cp -a gba/lost-cosmos-eridoria-v7/source/. .qa/v8/
+          test "$(git hash-object .qa/v8/lost_cosmos_v5.c)" = '3df325aee69044b805e6f6154ae2dfab58694bed'
+          cat gba/lost-cosmos-eridoria-v8/bootstrap/kit.??.b64 | tr -d '\n' | base64 -d >/tmp/v8kit.tar.xz
+          echo '53c8e145b88c46b4cd6259f80621920be607dbc48bacc607edef3268a9993229  /tmp/v8kit.tar.xz' | sha256sum -c -
+          tar -xJf /tmp/v8kit.tar.xz -C /tmp/v8kit
+          for p in /tmp/v8kit/*.patch; do
+            (cd .qa/v8 && patch -p1 --forward < "$p")
+          done
+          cp /tmp/v8kit/v8_visual_story_tests.py /tmp/v8kit/README_V8.md /tmp/v8kit/ERIDORIA_CAMPAIGN_ADAPTATION_V8.md .qa/v8/
+          cp /tmp/v8kit/qa_fixtures/v7_mgba_boot1.sav .qa/v8/qa_fixtures/
+          rm -f .qa/v8/*.gba .qa/v8/*.sav .qa/v8/*.o .qa/v8/*.elf .qa/v8/*.bin
+          echo 'PASS hash-locked V7-to-V8 source reconstruction'
+
+      - name: Install genuine GBA and mGBA toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb python3-pil
+
+      - name: Rebuild cinematic indexed assets, compile release, run regression suite
+        working-directory: .qa/v8
+        shell: bash
+        run: |
+          set -euo pipefail
+          /usr/bin/python3 cinematic_assets_v51.py
+          bash build_v5.sh
+          python3 verify_routes.py
+          python3 host_qa_v5.py
+          python3 feature_tests_v5.py
+          python3 v6_slice_tests.py
+          python3 v7_campaign_tests.py
+          python3 cinema_tests_v51.py
+          python3 v8_visual_story_tests.py
+          cp LOST_COSMOS_ERIDORIA_V8.gba release.gba
+          sha256sum release.gba > release.gba.sha256
+          echo 'PASS entire V2-V8 campaign, palette, state, cinematic, save migration and story suite'
+
+      - name: Compile isolated real mGBA QA cartridge
+        working-directory: .qa/v8
+        shell: bash
+        run: |
+          set -euo pipefail
+          QA=1 bash build_v5.sh
+          cp LOST_COSMOS_ERIDORIA_V8.gba qa.gba
+          rm -f qa.sav
+
+      - name: Real mGBA boot 1 - Malakar quest and Ember gear
+        working-directory: .qa/v8
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb1.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba1.log 2>&1 &
+          MPID=$!
+          sleep 4
+          kill -TERM "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          test -s qa.sav || { cat mgba1.log; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("qa.sav").read_bytes()
+          assert len(p)==32768 and p[:4]==b"LCV5", (len(p),p[:8])
+          if p[126]!=0xa5: raise AssertionError(f"boot1 marker={p[126]:02x} stage={p[127]:02x}")
+          assert p[5]&1 and p[128]>=2 and p[143]==1, (p[5],p[128],p[143])
+          flags=p[200]|p[201]<<8
+          assert (flags&31)==31,hex(flags)
+          assert p[208]==0xd8,(p[208],)
+          assert p[212]==((0x53+p[208]+p[209]*3+p[210]*5+p[211]*7)&255)
+          print("PASS real mGBA V8 boot1: Malakar, Heart, Ember, level 2, equipment, persistent V8 save")
+          PY
+          cp qa.sav qa-boot1.sav
+
+      - name: Real mGBA boot 2 - Dream Eldoria Crown and persistence
+        working-directory: .qa/v8
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s qa.sav
+          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb2.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba2.log 2>&1 &
+          MPID=$!
+          sleep 4
+          kill -TERM "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          test -s qa.sav || { cat mgba2.log; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("qa.sav").read_bytes()
+          assert len(p)==32768 and p[:4]==b"LCV5"
+          if p[126]!=0x5a: raise AssertionError(f"boot2 marker={p[126]:02x} stage={p[127]:02x}")
+          flags=p[200]|p[201]<<8
+          need=16|32|64|512|1024|4096
+          assert (flags&need)==need,hex(flags)
+          assert p[203]==15 and p[5]==7 and p[9]!=0 and p[10]==1,(p[203],p[5],p[9],p[10])
+          assert p[208]==0xd8 and p[212]==((0x53+p[208]+p[209]*3+p[210]*5+p[211]*7)&255)
+          print("PASS real mGBA V8 boot2: save reload, Dream/Eldoria, four elements, Crown and postgame")
+          PY
+          cp qa.sav qa-final.sav
+
+      - name: Prepare verified source and release receipt
+        working-directory: .qa/v8
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,hashlib,zipfile
+          from pathlib import Path
+          r=Path(".")
+          sha=hashlib.sha256((r/"release.gba").read_bytes()).hexdigest()
+          receipt=(
+              "# LOST COSMOS V8 verified GBA release\n\n"
+              "GitHub Actions native mGBA two-boot run: "+os.environ["GITHUB_RUN_ID"]+"\n"
+              "Exact CI release.gba SHA-256: "+sha+"\n"
+              "V7 base source blob: 3df325aee69044b805e6f6154ae2dfab58694bed\n"
+              "V8 source patch SHA-256: 53c8e145b88c46b4cd6259f80621920be607dbc48bacc607edef3268a9993229\n"
+              "Verified source build/route and V2-V8 host tests: PASS\n"
+              "The existing 8192-byte workload-derived input is classical offline replay.\n"
+              "Native mGBA QA does not itself establish human playtesting or Delta iPhone compatibility.\n"
+          )
+          Path("VERIFIED_CI_V8.md").write_text(receipt)
+          names=["lost_cosmos_v5.c","qseed.h","v5_art.h","cinematic_assets_v51.h",
+                 "cinematic_assets_v51.py","start_v5.S","linker_v5.ld","build_v5.sh",
+                 "build_rom_v5.py","verify_v5.py","verify_routes.py","host_qa_v5.py",
+                 "feature_tests_v5.py","v6_slice_tests.py","v7_campaign_tests.py",
+                 "cinema_tests_v51.py","v8_visual_story_tests.py","README_V8.md",
+                 "ERIDORIA_CAMPAIGN_ADAPTATION_V8.md","VERIFIED_CI_V8.md"]
+          with zipfile.ZipFile("V8_Exact_Source.zip","w",zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for name in names:
+                  p=Path(name)
+                  assert p.is_file(), name
+                  z.write(p,"lost-cosmos-v8/"+name)
+              for p in sorted(Path("qa_fixtures").glob("*.sav")):
+                  z.write(p,"lost-cosmos-v8/"+str(p))
+              for p in sorted(Path(".").glob("V51_*.png")):
+                  z.write(p,"lost-cosmos-v8/"+str(p))
+          print("V8 VERIFIED CI ROM SHA256",sha)
+          PY
+
+      - name: Publish editable verified source to isolated V8 branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p gba/lost-cosmos-eridoria-v8/source
+          cp -a .qa/v8/lost_cosmos_v5.c .qa/v8/qseed.h .qa/v8/v5_art.h .qa/v8/cinematic_assets_v51.h .qa/v8/cinematic_assets_v51.py \
+            .qa/v8/start_v5.S .qa/v8/linker_v5.ld .qa/v8/build_v5.sh .qa/v8/build_rom_v5.py \
+            .qa/v8/verify_v5.py .qa/v8/verify_routes.py .qa/v8/host_qa_v5.py .qa/v8/feature_tests_v5.py \
+            .qa/v8/v6_slice_tests.py .qa/v8/v7_campaign_tests.py .qa/v8/cinema_tests_v51.py \
+            .qa/v8/v8_visual_story_tests.py .qa/v8/README_V8.md .qa/v8/ERIDORIA_CAMPAIGN_ADAPTATION_V8.md \
+            .qa/v8/VERIFIED_CI_V8.md gba/lost-cosmos-eridoria-v8/source/
+          cp -a .qa/v8/qa_fixtures gba/lost-cosmos-eridoria-v8/source/
+          cp .qa/v8/V51_*.png gba/lost-cosmos-eridoria-v8/source/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A gba/lost-cosmos-eridoria-v8/source
+          git diff --cached --quiet || (git commit -m "publish verified V8 GBA sources [skip ci]" && git push origin HEAD:feature/lost-cosmos-eridoria-12d-visual-story-008)
+
+      - name: Upload exact verified release and emulator proof
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-v8-verified
+          path: |
+            .qa/v8/release.gba
+            .qa/v8/release.gba.sha256
+            .qa/v8/V8_Exact_Source.zip
+            .qa/v8/VERIFIED_CI_V8.md
+            .qa/v8/qa-boot1.sav
+            .qa/v8/qa-final.sav
+            .qa/v8/mgba*.log
+            .qa/v8/xvfb*.log
