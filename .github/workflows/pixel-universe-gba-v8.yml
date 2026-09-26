@@ -1,0 +1,181 @@
+name: Lost COSMOS V8 GBA accessibility + story hardware verification
+permissions:
+  contents: write
+on:
+  push:
+    branches: [feature/lost-cosmos-eridoria-depth-story-ui-008]
+    paths:
+      - 'gba/lost-cosmos-eridoria-v8/bootstrap/patch.05.b64'
+      - '.github/workflows/pixel-universe-gba-v8.yml'
+  workflow_dispatch:
+jobs:
+  v8-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore exact hash-locked V8 source from verified V7
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .qa/v8 /tmp/v8patch
+          test -s gba/lost-cosmos-eridoria-v8/bootstrap/patch.05.b64
+          cat gba/lost-cosmos-eridoria-v8/bootstrap/patch.??.b64 | tr -d '\n' | base64 -d >/tmp/v8-patch.tar.xz
+          echo 'f88bc0bb0b7ee0a9af14ef14d7f88702ce5966d08c8f8ed45c798d1513336a5f  /tmp/v8-patch.tar.xz' | sha256sum -c -
+          cp -a gba/lost-cosmos-eridoria-v7/source/. .qa/v8/
+          test "$(git hash-object .qa/v8/lost_cosmos_v5.c)" = '3df325aee69044b805e6f6154ae2dfab58694bed'
+          tar -xJf /tmp/v8-patch.tar.xz -C /tmp/v8patch
+          (cd .qa/v8 && patch -p0 --forward < /tmp/v8patch/engine.patch)
+          for p in build_rom_v5.py verify_v5.py cinema_tests_v51.py v8_view_story_tests.py; do cp "/tmp/v8patch/$p" ".qa/v8/$p"; done
+          mkdir -p .qa/v8/qa_fixtures
+          cp /tmp/v8patch/qa_fixtures/v7_mgba_boot1.sav .qa/v8/qa_fixtures/
+          echo 'acfd1fd5ac40e27035d21a5240e66352383009ea0d33bfb4dfa582cb19a2af34  .qa/v8/lost_cosmos_v5.c' | sha256sum -c -
+          rm -f .qa/v8/*.gba .qa/v8/*.sav .qa/v8/*.o .qa/v8/*.elf
+      - name: Install ARM toolchain, mGBA, and framebuffer capture
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb python3-pil ffmpeg xdotool openbox
+      - name: Build exact native cartridge and execute all regression suites
+        working-directory: .qa/v8
+        shell: bash
+        run: |
+          set -euo pipefail
+          /usr/bin/python3 cinematic_assets_v51.py
+          bash build_v5.sh
+          python3 verify_routes.py
+          python3 host_qa_v5.py
+          python3 v6_slice_tests.py
+          python3 v7_campaign_tests.py
+          python3 cinema_tests_v51.py
+          python3 v8_view_story_tests.py
+          cp LOST_COSMOS_ERIDORIA_V8.gba release.gba
+          sha256sum release.gba > release.gba.sha256
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('release.gba').read_bytes()
+          assert len(p)==262144,len(p)
+          assert p[0xa0:0xac]==b'ERIDORIAV8  ' and p[0xac:0xb0]==b'ERV8',(p[0xa0:0xac],p[0xac:0xb0])
+          print('PASS exact native ERV8 player cartridge',len(p))
+          PY
+      - name: Capture genuine player ROM before and after opening
+        working-directory: .qa/v8
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :97 -screen 0 800x600x24 -nolisten tcp >xvfb-visual.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:97
+          openbox --sm-disable >openbox-visual.log 2>&1 &
+          WMID=$!
+          sleep 2
+          SDL_AUDIODRIVER=dummy mgba -C audioSync=0 -C videoSync=0 release.gba >mgba-visual.log 2>&1 &
+          MPID=$!
+          sleep 2
+          xdotool mousemove 760 560
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :97.0 -frames:v 1 -y actual-title.png
+          WIN="$(xdotool search --name mGBA | tail -1 || true)"
+          if [[ -n "$WIN" ]]; then
+            xdotool windowactivate --sync "$WIN" || true
+            xdotool windowfocus --sync "$WIN" || true
+            xdotool key --clearmodifiers Return
+          fi
+          sleep 2
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :97.0 -frames:v 1 -y actual-gameplay.png
+          test -s actual-title.png && test -s actual-gameplay.png
+          kill -TERM "$MPID" "$WMID" "$XPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          wait "$WMID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+      - name: Build isolated autonomous gameplay test ROM
+        working-directory: .qa/v8
+        shell: bash
+        run: |
+          set -euo pipefail
+          QA=1 bash build_v5.sh
+          cp LOST_COSMOS_ERIDORIA_V8.gba qa.gba
+          rm -f qa.sav qa-boot1.sav qa-final.sav
+      - name: Real mGBA boot one Eridoria quests and RPG
+        working-directory: .qa/v8
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb1.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba1.log 2>&1 &
+          MPID=$!
+          sleep 6
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
+          kill -KILL "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          test -s qa.sav || { cat mgba1.log; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5',(len(p),p[:8])
+          assert p[126]==0xa5,(p[126],p[127])
+          assert p[5]&1 and p[128]>=2 and p[143]==1,(p[5],p[128],p[143])
+          flags=p[200]|p[201]<<8
+          assert flags&31==31,hex(flags)
+          print('PASS V8 native mGBA boot1 Eridoria story, RPG, palette/perspective invariants, SRAM')
+          PY
+          cp qa.sav qa-boot1.sav
+      - name: Real mGBA boot two eight-world campaign and persistent identity
+        working-directory: .qa/v8
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s qa.sav
+          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb2.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:99
+          sleep 1
+          mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba2.log 2>&1 &
+          MPID=$!
+          sleep 6
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
+          kill -KILL "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          test -s qa.sav || { cat mgba2.log; exit 1; }
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('qa.sav').read_bytes()
+          assert len(p)==32768 and p[:4]==b'LCV5',(len(p),p[:8])
+          assert p[126]==0x5a,(p[126],p[127])
+          flags=p[200]|p[201]<<8
+          assert (flags&(16|32|64|512|1024|4096))==(16|32|64|512|1024|4096),hex(flags)
+          assert p[203]==15 and p[5]==7 and p[9]!=0 and p[10]==1,(p[203],p[5],p[9],p[10])
+          print('PASS V8 native mGBA boot2 all eight worlds, preserved COSMOS RPG, Crown postgame')
+          PY
+          cp qa.sav qa-final.sav
+      - name: Prepare editable source archive from passing CI run
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp gba/lost-cosmos-eridoria-v8/bootstrap/patch.??.b64 /tmp/ 2>/dev/null || true
+          mkdir -p .qa/v8/release-docs
+          cp gba/lost-cosmos-eridoria-v8/docs/*.md .qa/v8/release-docs/ 2>/dev/null || true
+          cd .qa/v8
+          zip -q -r LOST_COSMOS_V8_SOURCE.zip lost_cosmos_v5.c build_rom_v5.py verify_v5.py cinema_tests_v51.py v8_view_story_tests.py v7_campaign_tests.py v6_slice_tests.py host_qa_v5.py build_v5.sh verify_routes.py qseed.h v5_art.h cinematic_assets_v51.h cinematic_assets_v51.py start_v5.S linker_v5.ld qa_fixtures release-docs V51_*.png
+      - name: Upload exact release, source and emulator evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lost-cosmos-v8-mgba
+          path: |
+            .qa/v8/release.gba
+            .qa/v8/release.gba.sha256
+            .qa/v8/LOST_COSMOS_V8_SOURCE.zip
+            .qa/v8/qa-boot1.sav
+            .qa/v8/qa-final.sav
+            .qa/v8/actual-title.png
+            .qa/v8/actual-gameplay.png
+            .qa/v8/mgba*.log
