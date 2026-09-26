@@ -1,0 +1,110 @@
+name: Lost COSMOS V8 genuine mGBA visual captures
+permissions:
+  contents: read
+  actions: read
+on:
+  push:
+    branches: [feature/lost-cosmos-eridoria-12d-visual-story-008]
+    paths: ['.github/workflows/pixel-universe-gba-v8-visual.yml']
+
+jobs:
+  screenshot-native-gba:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download exact verified native GBA cartridge
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v8verified .capture
+          gh run download 36209327747 --repo NavisWORLD/Cosmic-synapse-the-living-universe-sim-engine- --name lost-cosmos-v8-verified --dir /tmp/v8verified
+          cp /tmp/v8verified/release.gba .capture/release.gba
+          echo 'c0cc32e8e695b74c3b859a74897bf08582dfc37085105db0ea3ad8f71e5f0c42  .capture/release.gba' | sha256sum -c -
+
+      - name: Install SDL mGBA and native X11 framebuffer recording tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mgba-sdl xvfb ffmpeg xdotool openbox python3-pil
+
+      - name: Capture real rendered title and interactive gameplay after Start
+        working-directory: .capture
+        shell: bash
+        run: |
+          set -euo pipefail
+          Xvfb :98 -screen 0 800x600x24 -nolisten tcp >xvfb.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:98
+          openbox --sm-disable >openbox.log 2>&1 &
+          WMID=$!
+          sleep 2
+          SDL_AUDIODRIVER=dummy mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 release.gba >mgba-visual.log 2>&1 &
+          MPID=$!
+          WIN=""
+          for i in $(seq 1 45); do
+            WIN="$(xdotool search --name 'mGBA' | tail -1 || true)"
+            if [[ -n "$WIN" ]]; then break; fi
+            sleep 0.4
+          done
+          echo "WINDOW_READY=$WIN" >> mgba-visual.log
+          if [[ -z "$WIN" ]]; then
+            xwininfo -root -tree || true
+            tail -40 mgba-visual.log
+            exit 1
+          fi
+          sleep 1
+          xdotool mousemove 760 560 || true
+          timeout 12s ffmpeg -nostdin -hide_banner -loglevel error -y -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 actual-title-x11.png >ffmpeg-title.log 2>&1 || true
+          if [[ -n "$WIN" ]]; then
+            xdotool windowactivate --sync "$WIN" || true
+            xdotool windowfocus --sync "$WIN" || true
+            xdotool key --clearmodifiers Return || true
+            echo "SDL_WINDOW=$WIN" >> mgba-visual.log
+          else
+            echo 'SDL_WINDOW_NOT_FOUND' >> mgba-visual.log
+          fi
+          sleep 2
+          xdotool mousemove 760 560 || true
+          timeout 12s ffmpeg -nostdin -hide_banner -loglevel error -y -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 actual-gameplay-x11.png >ffmpeg-gameplay.log 2>&1 || true
+          kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 15); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.2; done
+          kill -KILL "$MPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          kill -TERM "$WMID" 2>/dev/null || true
+          kill -KILL "$WMID" 2>/dev/null || true
+          wait "$WMID" 2>/dev/null || true
+          kill -TERM "$XPID" 2>/dev/null || true
+          kill -KILL "$XPID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+          echo 'mGBA visual log:'
+          tail -n 35 mgba-visual.log || true
+          echo 'FFMPEG visual logs:'
+          tail -n 12 ffmpeg-title.log ffmpeg-gameplay.log || true
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          for name in ("actual-title-x11.png","actual-gameplay-x11.png"):
+              p=Path(name)
+              assert p.is_file() and p.stat().st_size>500,(name,"no captured frame")
+              im=Image.open(p).convert("RGB")
+              colors=len(im.getcolors(600000) or [])
+              print("CAPTURED_NATIVE_GBA_RENDER",name,im.size,"distinct_RGB_colors",colors,"bytes",p.stat().st_size)
+              assert colors>8,("blank framebuffer",name,colors)
+          title=Image.open("actual-title-x11.png").convert("RGB")
+          game=Image.open("actual-gameplay-x11.png").convert("RGB")
+          changed=sum(1 for x,y in zip(title.getdata(),game.getdata()) if x!=y)
+          print("TITLE_TO_GAMEPLAY_CHANGED_PIXELS",changed)
+          assert changed>500,("start button did not change the displayed game scene",changed)
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-v8-real-mgba-visuals
+          include-hidden-files: true
+          path: |
+            .capture/actual-*.png
+            .capture/*visual.log
+            .capture/xvfb.log
+            .capture/ffmpeg-*.log
