@@ -26,39 +26,50 @@ jobs:
       - name: Install SDL mGBA and native X11 framebuffer recording tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y mgba-sdl xvfb ffmpeg xdotool python3-pil
+          sudo apt-get install -y mgba-sdl xvfb ffmpeg xdotool openbox python3-pil
 
       - name: Capture real rendered title and interactive gameplay after Start
         working-directory: .capture
         shell: bash
         run: |
           set -euo pipefail
-          Xvfb :99 -screen 0 640x480x24 -nolisten tcp >xvfb.log 2>&1 &
+          Xvfb :98 -screen 0 800x600x24 -nolisten tcp >xvfb.log 2>&1 &
           XPID=$!
-          export DISPLAY=:99
-          sleep 1
-          mgba -C audioSync=0 -C videoSync=0 release.gba >mgba-visual.log 2>&1 &
+          export DISPLAY=:98
+          openbox --sm-disable >openbox.log 2>&1 &
+          WMID=$!
+          sleep 2
+          SDL_AUDIODRIVER=dummy mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 release.gba >mgba-visual.log 2>&1 &
           MPID=$!
           sleep 2
-          timeout 12s ffmpeg -hide_banner -loglevel error -y -f x11grab -framerate 1 -video_size 640x480 -i :99.0 -frames:v 1 actual-title-x11.png >ffmpeg-title.log 2>&1 || true
-          W="$(xdotool search --onlyvisible --name '[mM][gG][bB][aA]' | head -n1 || true)"
-          if [[ -n "$W" ]]; then
-            xdotool windowfocus "$W" || true
-            xdotool key --window "$W" Return || true
-            echo "SDL_WINDOW=$W" >> mgba-visual.log
+          xdotool mousemove 760 560 || true
+          timeout 12s ffmpeg -nostdin -hide_banner -loglevel error -y -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 actual-title-x11.png >ffmpeg-title.log 2>&1 || true
+          WIN="$(xdotool search --name 'mGBA' | tail -1 || true)"
+          if [[ -n "$WIN" ]]; then
+            xdotool windowactivate --sync "$WIN" || true
+            xdotool windowfocus --sync "$WIN" || true
+            xdotool key --clearmodifiers Return || true
+            echo "SDL_WINDOW=$WIN" >> mgba-visual.log
           else
-            xdotool key Return || true
             echo 'SDL_WINDOW_NOT_FOUND' >> mgba-visual.log
           fi
           sleep 2
-          timeout 12s ffmpeg -hide_banner -loglevel error -y -f x11grab -framerate 1 -video_size 640x480 -i :99.0 -frames:v 1 actual-gameplay-x11.png >ffmpeg-gameplay.log 2>&1 || true
+          xdotool mousemove 760 560 || true
+          timeout 12s ffmpeg -nostdin -hide_banner -loglevel error -y -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 actual-gameplay-x11.png >ffmpeg-gameplay.log 2>&1 || true
           kill -TERM "$MPID" 2>/dev/null || true
-          for i in $(seq 1 10); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.2; done
+          for i in $(seq 1 15); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.2; done
           kill -KILL "$MPID" 2>/dev/null || true
           wait "$MPID" 2>/dev/null || true
+          kill -TERM "$WMID" 2>/dev/null || true
+          kill -KILL "$WMID" 2>/dev/null || true
+          wait "$WMID" 2>/dev/null || true
           kill -TERM "$XPID" 2>/dev/null || true
           kill -KILL "$XPID" 2>/dev/null || true
           wait "$XPID" 2>/dev/null || true
+          echo 'mGBA visual log:'
+          tail -n 35 mgba-visual.log || true
+          echo 'FFMPEG visual logs:'
+          tail -n 12 ffmpeg-title.log ffmpeg-gameplay.log || true
           python3 - <<'PY'
           from pathlib import Path
           from PIL import Image
@@ -66,7 +77,7 @@ jobs:
               p=Path(name)
               assert p.is_file() and p.stat().st_size>500,(name,"no captured frame")
               im=Image.open(p).convert("RGB")
-              colors=len(im.getcolors(500000) or [])
+              colors=len(im.getcolors(600000) or [])
               print("CAPTURED_NATIVE_GBA_RENDER",name,im.size,"distinct_RGB_colors",colors,"bytes",p.stat().st_size)
               assert colors>8,("blank framebuffer",name,colors)
           PY
@@ -75,6 +86,7 @@ jobs:
         if: always()
         with:
           name: lost-cosmos-v8-real-mgba-visuals
+          include-hidden-files: true
           path: |
             .capture/actual-*.png
             .capture/*visual.log
