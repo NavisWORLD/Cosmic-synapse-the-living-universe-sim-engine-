@@ -11,6 +11,7 @@ on:
 jobs:
   v8-native:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Restore exact hash-locked V8 source from verified V7
@@ -106,6 +107,8 @@ jobs:
           MPID=$!
           sleep 6
           kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
+          kill -KILL "$MPID" 2>/dev/null || true
           wait "$MPID" 2>/dev/null || true
           kill -TERM "$XPID" 2>/dev/null || true
           wait "$XPID" 2>/dev/null || true
@@ -135,6 +138,8 @@ jobs:
           MPID=$!
           sleep 6
           kill -TERM "$MPID" 2>/dev/null || true
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
+          kill -KILL "$MPID" 2>/dev/null || true
           wait "$MPID" 2>/dev/null || true
           kill -TERM "$XPID" 2>/dev/null || true
           wait "$XPID" 2>/dev/null || true
