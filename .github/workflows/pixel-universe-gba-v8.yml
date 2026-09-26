@@ -21,6 +21,8 @@ jobs:
           set -euo pipefail
           mkdir -p .qa/v8 /tmp/v8kit
           cp -a gba/lost-cosmos-eridoria-v7/source/. .qa/v8/
+          cp gba/lost-cosmos-eridoria-v6/source/feature_tests_v5.py .qa/v8/
+          test "$(git hash-object .qa/v8/feature_tests_v5.py)" = '27fa1b13826529270ac609178f51375a3d6ea95c'
           test "$(git hash-object .qa/v8/lost_cosmos_v5.c)" = '3df325aee69044b805e6f6154ae2dfab58694bed'
           cat gba/lost-cosmos-eridoria-v8/bootstrap/kit.??.b64 | tr -d '\n' | base64 -d >/tmp/v8kit.tar.xz
           echo '53c8e145b88c46b4cd6259f80621920be607dbc48bacc607edef3268a9993229  /tmp/v8kit.tar.xz' | sha256sum -c -
