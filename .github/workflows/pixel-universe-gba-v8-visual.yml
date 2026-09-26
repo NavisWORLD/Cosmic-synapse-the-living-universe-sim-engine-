@@ -41,10 +41,21 @@ jobs:
           sleep 2
           SDL_AUDIODRIVER=dummy mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 release.gba >mgba-visual.log 2>&1 &
           MPID=$!
-          sleep 2
+          WIN=""
+          for i in $(seq 1 45); do
+            WIN="$(xdotool search --name 'mGBA' | tail -1 || true)"
+            if [[ -n "$WIN" ]]; then break; fi
+            sleep 0.4
+          done
+          echo "WINDOW_READY=$WIN" >> mgba-visual.log
+          if [[ -z "$WIN" ]]; then
+            xwininfo -root -tree || true
+            tail -40 mgba-visual.log
+            exit 1
+          fi
+          sleep 1
           xdotool mousemove 760 560 || true
           timeout 12s ffmpeg -nostdin -hide_banner -loglevel error -y -f x11grab -video_size 800x600 -i :98.0 -frames:v 1 actual-title-x11.png >ffmpeg-title.log 2>&1 || true
-          WIN="$(xdotool search --name 'mGBA' | tail -1 || true)"
           if [[ -n "$WIN" ]]; then
             xdotool windowactivate --sync "$WIN" || true
             xdotool windowfocus --sync "$WIN" || true
@@ -80,6 +91,11 @@ jobs:
               colors=len(im.getcolors(600000) or [])
               print("CAPTURED_NATIVE_GBA_RENDER",name,im.size,"distinct_RGB_colors",colors,"bytes",p.stat().st_size)
               assert colors>8,("blank framebuffer",name,colors)
+          title=Image.open("actual-title-x11.png").convert("RGB")
+          game=Image.open("actual-gameplay-x11.png").convert("RGB")
+          changed=sum(1 for x,y in zip(title.getdata(),game.getdata()) if x!=y)
+          print("TITLE_TO_GAMEPLAY_CHANGED_PIXELS",changed)
+          assert changed>500,("start button did not change the displayed game scene",changed)
           PY
 
       - uses: actions/upload-artifact@v4
