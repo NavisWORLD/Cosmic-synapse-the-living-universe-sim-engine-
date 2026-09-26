@@ -3,9 +3,10 @@ permissions:
   contents: write
 on:
   push:
-    branches: [feature/lost-cosmos-eridoria-depth-story-ui-008]
+    branches: [feature/lost-cosmos-v8-framed-text-009]
     paths:
       - 'gba/lost-cosmos-eridoria-v8/bootstrap/patch.05.b64'
+      - 'gba/lost-cosmos-eridoria-v8/fixes/apply_framed_text.py'
       - '.github/workflows/pixel-universe-gba-v8.yml'
   workflow_dispatch:
 jobs:
@@ -30,6 +31,8 @@ jobs:
           mkdir -p .qa/v8/qa_fixtures
           cp /tmp/v8patch/qa_fixtures/v7_mgba_boot1.sav .qa/v8/qa_fixtures/
           echo 'acfd1fd5ac40e27035d21a5240e66352383009ea0d33bfb4dfa582cb19a2af34  .qa/v8/lost_cosmos_v5.c' | sha256sum -c -
+          python3 gba/lost-cosmos-eridoria-v8/fixes/apply_framed_text.py .qa/v8
+          echo 'd8c4fab88a8b48358edd1b606880408b0a7b8352bdec2ce0618918658bcf7b78  .qa/v8/lost_cosmos_v5.c' | sha256sum -c -
           rm -f .qa/v8/*.gba .qa/v8/*.sav .qa/v8/*.o .qa/v8/*.elf
       - name: Install ARM toolchain, mGBA, and framebuffer capture
         run: |
