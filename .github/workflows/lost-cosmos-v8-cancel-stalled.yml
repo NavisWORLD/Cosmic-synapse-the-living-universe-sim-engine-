@@ -1,0 +1,16 @@
+name: Cancel stalled V8 emulator attempt
+on:
+  push:
+    branches: [feature/lost-cosmos-eridoria-12d-visual-story-008]
+    paths: ['.github/workflows/lost-cosmos-v8-cancel-stalled.yml']
+permissions:
+  actions: write
+jobs:
+  stop-stalled-emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Cancel old boundedly-stalled native emulator job
+        run: gh api --method POST repos/NavisWORLD/Cosmic-synapse-the-living-universe-sim-engine-/actions/runs/36209086901/cancel
+        env:
+          GH_TOKEN: ${{ github.token }}
