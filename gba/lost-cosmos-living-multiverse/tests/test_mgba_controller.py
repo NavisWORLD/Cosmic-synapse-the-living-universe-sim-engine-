@@ -142,8 +142,14 @@ def run(rom, elf, output):
         for _ in range(9):
             emu.tap("DOWN", hold=12, release=12)
         require(emu.read_symbol("pause_sel") == 9, "Real menu did not select SAVE")
+        save_started_frame = emu.frame
         emu.tap("A", hold=12, release=12)
-        require(emu.read_symbol("pause_page") == 10, "Real SAVE action did not finish")
+        # The native two-bank CRC journal is synchronous and can take more than
+        # the 24 emulated frames covered by tap(). Wait for the actual save UI,
+        # not a guessed clock delay; fail if the transaction never finishes.
+        wait(emu, lambda: emu.read_symbol("pause_page") == 10,
+             "real dual-bank SAVE journal completion", budget=600)
+        report["save_transaction_emulated_frames"] = emu.frame - save_started_frame
         emu.screenshot(output / "05_save_menu_native.png")
         emu.tap("B", hold=12, release=12)
         emu.tap("B", hold=12, release=12)
