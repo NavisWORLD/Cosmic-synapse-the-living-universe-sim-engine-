@@ -1006,7 +1006,12 @@ static void eridoria_area(void){int x,y;
  else if(current_room==5){ /* Forgotten city and the White Sentinel's gateway. */
   for(x=8;x<57;x++)map_put(x,31,T_BRIDGE,1,C_FREE,0);
   for(y=10;y<56;y++)map_put(31,y,T_BRIDGE,1,C_FREE,0);
-  map_wall_box(12,9,39,20,3);map_door(31,28,TR_TERMINAL);
+  map_wall_box(12,9,39,20,3);
+  /* The 8px door trapped Arin outside the White Sentinel's hall.
+   * Carve a five-tile passage for his actual 10px collision footprint,
+   * retaining the old terminal at its exact position and story trigger. */
+  for(y=26;y<=34;y++)for(x=29;x<=33;x++)map_put(x,y,T_BRIDGE,1,C_FREE,TR_NONE);
+  map_door(31,28,TR_TERMINAL);
   map_put(8,54,T_DOOR,3,C_FREE,TR_GATE);map_put(54,10,T_CRYSTAL,3,C_FREE,TR_GATE);
   add_noise_decor(47,T_CRYSTAL,3,30,0);
  }
