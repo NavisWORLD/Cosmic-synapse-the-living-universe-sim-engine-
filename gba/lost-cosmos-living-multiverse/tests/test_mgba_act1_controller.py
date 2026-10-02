@@ -61,12 +61,24 @@ def run(rom,elf,out):
    mark("02_earned_village_quest")
    nav.interact(12,at=(54,8))       # Real northeast gate to Oakwood.
    if nav.location()!=(0,3,1):raise RuntimeError("Real Oakwood gate did not change map")
+   # The room ID changes before actual native BG2 map/NPC generation finishes.
+   # Never assert absent NPCs against a real transition blank frame.
+   wait(emu,lambda: emu.read_symbol("npc_count")>0 and
+        any(n.id==16 for n in nav.npcs()) and
+        (emu.read16(0x04000000)&0x0400)!=0,
+        "fully rendered genuine Oakwood with Ravenswood", max_frames=1500)
+   emu.step((),12)
    mark("03_true_oakwood")
    nav.talk_npc(16,advances=3)      # Ravenswood's actual real three-page conversation.
    if not emu.read_symbol("story_flags")&2:raise RuntimeError("Ravenswood did not earn ST_OAKWOOD")
    mark("04_earned_ravenswood_map")
    nav.interact(12,at=(54,12))     # Authored Oakwood -> Cragstone route, no forced warp.
    if nav.location()!=(0,4,1):raise RuntimeError("Cragstone remained locked despite earned map")
+   wait(emu,lambda: emu.read_symbol("npc_count")>0 and
+        any(n.id==17 for n in nav.npcs()) and
+        (emu.read16(0x04000000)&0x0400)!=0,
+        "fully generated actual Cragstone temple and Stone Keeper", max_frames=1500)
+   emu.step((),12)
    mark("05_true_cragstone")
    # Actual native rune locations, original source canonical SKY/ROOT/HEART/STAR order:
    for code,pos in [(15,(35,22)),(13,(21,22)),(16,(42,22)),(14,(28,22))]:

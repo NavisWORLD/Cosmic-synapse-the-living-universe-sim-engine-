@@ -30,6 +30,8 @@ jobs:
           cp LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba artifacts/release/LOST_COSMOS_V10_8_CANDIDATE.gba
           python3 tools/package_current_source.py --out artifacts/release/LOST_COSMOS_V10_8_EDITABLE_SOURCE.zip
           (cd artifacts/release && sha256sum *.gba *.zip > SHA256SUMS.txt)
+      - name: Gate all 24 physical story maps, 96 actual objective triggers and six older save pages
+        run: python3 tests/test_completion_maps_v10_8.py
       - name: Verify all three real-game ending credits transitions with native C host
         run: python3 tests/test_end_credits_v10_8.py
       - name: Build controller bridge and test journal integrity
