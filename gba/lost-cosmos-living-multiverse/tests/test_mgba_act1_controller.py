@@ -2,7 +2,7 @@
 """Real controller-only native Act I route: Brindlemark -> Oakwood -> Cragstone.
 Never writes emulated state, forces quest flags, loads savestates or teleports.
 Actual screenshots and input trace are retained even on a genuine failure.
-This is a partial Act I test, NOT full Malakar/Heart or five-act acceptance.
+This tests actual complete Act I through Malakar/Heart, not the remaining four acts.
 """
 import argparse
 import json
@@ -69,7 +69,7 @@ def run(rom,elf,out):
         "fully rendered genuine Oakwood with Ravenswood", max_frames=1500)
    emu.step((),12)
    mark("03_true_oakwood")
-   nav.talk_npc(16,advances=3)      # Ravenswood's actual real three-page conversation.
+   nav.talk_npc(16,advances=6)      # Ravenswood's actual real three-page conversation.
    if not emu.read_symbol("story_flags")&2:raise RuntimeError("Ravenswood did not earn ST_OAKWOOD")
    mark("04_earned_ravenswood_map")
    nav.interact(12,at=(54,12))     # Authored Oakwood -> Cragstone route, no forced warp.
@@ -85,6 +85,29 @@ def run(rom,elf,out):
     nav.interact(code,at=pos)
    if not emu.read_symbol("story_flags")&4:raise RuntimeError("Four separate real runes did not earn ST_PUZZLE")
    mark("06_real_four_seal_puzzle")
+   # The legitimate final rune shows a native cinematic; let it finish.
+   nav.wait_cinema()
+   # This is the REAL native boss (enemy slot 8) and genuine menu combat.
+   # No injected kills, memory writes, teleports, or savestate shortcuts.
+   nav.fight_enemy(8)
+   if not emu.read_symbol("story_flags")&8:
+    raise RuntimeError("Genuine Malakar battle did not earn ST_MALAKAR")
+   mark("07_real_Malakar_defeated")
+   nav.interact(17,at=(32,9))
+   if not emu.read_symbol("story_flags")&16:
+    raise RuntimeError("Genuine First Heart interaction did not earn ST_HEART")
+   # The 8 KiB dual-bank save may still be committing when the interaction
+   # returns. Wait for actual native emulated frames before battery export.
+   emu.step((),180)
+   if (emu.read8(0x0e000000+200)&31)!=31:
+    raise RuntimeError("Original SRAM Story Flags did not commit after real Heart")
+   report["first_heart_sram"]={
+    "primary_story_byte":emu.read8(0x0e000000+200),
+    "bank0_story_byte":emu.read8(0x0e000000+8192+200),
+    "bank1_story_byte":emu.read8(0x0e000000+16384+200),
+    "bank0_commit":emu.read8(0x0e000000+24576+15),
+    "bank1_commit":emu.read8(0x0e000000+24576+64+15)}
+   mark("08_real_First_Heart")
    report["passed"]=True
   except Exception as exc:
    report["passed"]=False
@@ -97,7 +120,7 @@ def run(rom,elf,out):
    report["last_frame"]=emu.frame
    (out/"act1_controller_report.json").write_text(json.dumps(report,indent=2)+"\n")
  print(json.dumps({"passed":report["passed"],"stages":report["completed_stages"],
-                  "scope":"true Act I opening route to real four-seal unlock, NOT Malakar boss yet"},indent=2))
+                  "scope":"actual native full Act I through real Malakar combat and First Heart; NOT Acts II-V"},indent=2))
 
 if __name__=="__main__":
  p=argparse.ArgumentParser()
