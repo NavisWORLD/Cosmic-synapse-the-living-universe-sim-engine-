@@ -2,6 +2,7 @@
  * savestate, warp, or savedata-restore operation. Compile against mGBA 0.10.x.
  */
 #define _POSIX_C_SOURCE 200809L
+#include <mgba/flags.h>
 #include <mgba/core/core.h>
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/log.h>
@@ -24,7 +25,7 @@ struct qa_frame {
 
 struct qa_core {
     struct mCore *core;
-    mColor *pixels;
+    color_t *pixels;
     uint8_t *rgb;
     unsigned width, height;
     uint32_t keys, watch_address;
@@ -42,16 +43,23 @@ static uint64_t monotonic_ns(void) {
     return (uint64_t)t.tv_sec * 1000000000ull + (uint64_t)t.tv_nsec;
 }
 
-/* mGBA uses RGB555 in 16-bit builds and 0xAABBGGRR in 32-bit builds. */
+/* Ubuntu's core uses 0xAABBGGRR; also respect optional 16-bit builds. */
 static void convert_rgb(struct qa_core *q) {
     size_t i, count = (size_t)q->width * q->height;
     for (i = 0; i < count; ++i) {
         uint32_t c = q->pixels[i];
-        if (sizeof(mColor) == 2) {
+        if (sizeof(color_t) == 2) {
+#ifdef COLOR_5_6_5
+            unsigned r = (c >> 11) & 31, g = (c >> 5) & 63, b = c & 31;
+            q->rgb[i * 3] = (uint8_t)((r << 3) | (r >> 2));
+            q->rgb[i * 3 + 1] = (uint8_t)((g << 2) | (g >> 4));
+            q->rgb[i * 3 + 2] = (uint8_t)((b << 3) | (b >> 2));
+#else
             unsigned r = c & 31, g = (c >> 5) & 31, b = (c >> 10) & 31;
             q->rgb[i * 3] = (uint8_t)((r << 3) | (r >> 2));
             q->rgb[i * 3 + 1] = (uint8_t)((g << 3) | (g >> 2));
             q->rgb[i * 3 + 2] = (uint8_t)((b << 3) | (b >> 2));
+#endif
         } else {
             q->rgb[i * 3] = c & 255;
             q->rgb[i * 3 + 1] = (c >> 8) & 255;
@@ -139,7 +147,7 @@ struct qa_core *qa_open(const char *rom, const char *save, char *error, size_t e
         snprintf(error, error_size, "Expected native GBA 240x160 video, got %ux%u", q->width, q->height);
         goto fail;
     }
-    q->pixels = calloc((size_t)q->width * q->height, sizeof(mColor));
+    q->pixels = calloc((size_t)q->width * q->height, sizeof(color_t));
     q->rgb = calloc((size_t)q->width * q->height, 3);
     if (!q->pixels || !q->rgb) goto fail;
     q->core->setVideoBuffer(q->core, q->pixels, q->width);

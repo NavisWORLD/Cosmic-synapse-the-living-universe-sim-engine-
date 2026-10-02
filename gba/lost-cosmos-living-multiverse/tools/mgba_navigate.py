@@ -24,6 +24,15 @@ class Enemy:
     elite: int
 
 
+@dataclass(frozen=True)
+class Npc:
+    slot: int
+    id: int
+    active: int
+    x: int
+    y: int
+
+
 class Navigator:
     def __init__(self, emu):
         self.emu = emu
@@ -238,6 +247,93 @@ class Navigator:
             result.append(Enemy(index, x, y, data[offset + 6], data[offset + 7], data[offset + 8],
                                 data[offset + 9], data[offset + 10], data[offset + 12]))
         return result
+
+    def npcs(self):
+        symbol = self.emu.symbols["npc_runtime"]
+        if symbol.size != 48:
+            raise ValueError("NPC runtime layout changed; expected four native 12-byte entries")
+        data = self.emu.read_range(symbol.address, symbol.size)
+        result = []
+        for slot in range(self.value("npc_count")):
+            offset = slot * 12
+            x, y = struct.unpack_from("<hh", data, offset + 4)
+            result.append(Npc(slot, data[offset], data[offset + 2], x, y))
+        return result
+
+    def talk_npc(self, npc_id, *, advances=3):
+        """Approach the actual on-map NPC and use A through its dialogue."""
+        triggers = self.triggers()
+        def goals(start, board):
+            npcs = [npc for npc in self.npcs() if npc.active]
+            desired = next((npc for npc in npcs if npc.id == npc_id), None)
+            if desired is None:
+                raise RuntimeError(f"NPC {npc_id} is absent from native location {self.location()}")
+            result = set()
+            for px in range(max(8, desired.x - 30), min(503, desired.x + 30) + 1):
+                for py in range(max(8, desired.y - 30), min(503, desired.y + 30) + 1):
+                    if px % 2 != start[0] % 2 or py % 2 != start[1] % 2:
+                        continue
+                    nearest = min(npcs, key=lambda npc: abs(npc.x - px) + abs(npc.y - py))
+                    if nearest.id != npc_id or abs(desired.x - px) + abs(desired.y - py) >= 30:
+                        continue
+                    if (self.nearby_trigger(triggers, px, py)[0] == 0 and
+                            self.can_stand(board, px, py)):
+                        result.add((px, py))
+            return result
+        for _ in range(6):
+            self._walk(goals)
+            self.emu.tap("A", hold=12, release=12)
+            if self.value("npc_dialogue_active"):
+                break
+        if not self.value("npc_dialogue_active") or self.value("npc_dialogue_id") != npc_id:
+            raise RuntimeError(f"Real controller interaction did not open NPC {npc_id}")
+        for _ in range(advances):
+            if not self.value("npc_dialogue_active"):
+                break
+            self.emu.tap("A", hold=12, release=12)
+        if self.value("npc_dialogue_active"):
+            self.emu.tap("B", hold=12, release=12)
+        self.emu._event("controller_npc_talk", frame=self.emu.frame, location=self.location(),
+                        npc_id=npc_id, advance_presses=advances)
+
+    def shift_layer(self, target):
+        if target not in (0, 1, 2):
+            raise ValueError("Native GBA layer must be 0, 1, or 2")
+        while self.value("current_layer") != target:
+            self.goto_trigger(7)  # Actual TR_LIFT
+            self.emu.tap("R" if self.value("current_layer") < target else "L", hold=12, release=12)
+        return self.location()
+
+    def board_ship(self):
+        self.interact(1)  # Actual TR_SHIP
+        self.wait_cinema()
+        if self.value("game_mode") != 1:
+            raise RuntimeError("Real ship interaction did not enter space")
+
+    def fly_to(self, world, *, max_frames=12000):
+        """Steer the actual ship and press A at the selected native planet."""
+        planets = ((256, 260), (405, 150), (105, 365), (365, 430),
+                   (72, 84), (452, 70), (240, 69), (238, 444))
+        if not 0 <= world < len(planets):
+            raise ValueError("Native world index must be in [0, 7]")
+        if self.value("game_mode") != 1 or self.value("cinema_active"):
+            raise RuntimeError("Flight requires actual space mode after its visible cinema")
+        target = planets[world]
+        begin = self.emu.frame
+        for axis, name in enumerate(("ship_x", "ship_y")):
+            while abs(self.emu.read_symbol(name, signed=True) - target[axis]) > 4:
+                if self.emu.frame - begin >= max_frames:
+                    raise RuntimeError("Actual controller flight exceeded its input budget")
+                if self.value("game_mode") != 1:
+                    raise RuntimeError("Actual space mode changed during controller flight")
+                delta = target[axis] - self.emu.read_symbol(name, signed=True)
+                key = ("RIGHT" if delta > 0 else "LEFT") if axis == 0 else ("DOWN" if delta > 0 else "UP")
+                self.emu.step(key, max(1, min(8, abs(delta) // 4)))
+        self.emu.tap("A", hold=12, release=12)
+        if self.value("game_mode") != 0 or self.value("current_world") != world:
+            raise RuntimeError(f"Actual landing at world {world} was refused; its native progression gate may still be locked")
+        self.emu._event("controller_landed", frame=self.emu.frame, location=self.location(), world=world)
+        return self.location()
 
     def battle(self, *, max_frames=30000):
         """Win the live menu battle using ATTACK and timed B blocking."""
