@@ -238,6 +238,10 @@ int qa_capture_error(struct qa_core *q) { return q->capture_error; }
 uint32_t qa_read8(struct qa_core *q, uint32_t address) { return q->core->busRead8(q->core, address); }
 uint32_t qa_read16(struct qa_core *q, uint32_t address) { return q->core->busRead16(q->core, address); }
 uint32_t qa_read32(struct qa_core *q, uint32_t address) { return q->core->busRead32(q->core, address); }
+int qa_read_register(struct qa_core *q, const char *name, int32_t *out) {
+    if (!q->core->readRegister) return ENOTSUP;
+    return q->core->readRegister(q->core, name, out) ? 0 : EINVAL;
+}
 void qa_watch(struct qa_core *q, uint32_t address, int width) { q->watch_address = address; q->watch_width = width; }
 
 int qa_export_save(struct qa_core *q, const char *path) {

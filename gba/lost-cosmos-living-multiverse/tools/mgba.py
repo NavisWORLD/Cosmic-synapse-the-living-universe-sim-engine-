@@ -69,6 +69,18 @@ class ElfSymbols(dict):
             raise ValueError("Expected a 32-bit little-endian ELF file")
         if struct.unpack_from("<H", data, 18)[0] != 40:
             raise ValueError("Expected an ARM ELF file")
+        program_offset = struct.unpack_from("<I", data, 28)[0]
+        program_size, program_count = struct.unpack_from("<HH", data, 42)
+        if program_size < 32 or program_offset + program_count * program_size > len(data):
+            raise ValueError("Invalid ELF program table")
+        self.rom_segments = []
+        for i in range(program_count):
+            kind, file_offset, _vaddr, physical, length, _memory_size, _flags, _align = struct.unpack_from(
+                "<8I", data, program_offset + i * program_size)
+            if kind == 1 and length and 0x08000000 <= physical < 0x0A000000:
+                if file_offset + length > len(data):
+                    raise ValueError("Invalid ELF load segment")
+                self.rom_segments.append((physical - 0x08000000, data[file_offset:file_offset + length]))
         offset = struct.unpack_from("<I", data, 32)[0]
         entry_size, count = struct.unpack_from("<HH", data, 46)
         if entry_size < 40 or offset + count * entry_size > len(data):
@@ -93,6 +105,15 @@ class ElfSymbols(dict):
                 text = names[name:end].decode("utf-8", errors="strict")
                 if not text.startswith("$"):
                     self[text] = Symbol(value, length, info & 15)
+
+    def assert_matches_rom(self, path):
+        rom = Path(path).read_bytes()
+        if not self.rom_segments:
+            raise ValueError("ELF has no native GBA cartridge load segments")
+        for offset, content in self.rom_segments:
+            if rom[offset:offset + len(content)] != content:
+                raise ValueError(f"ELF does not match the ROM cartridge bytes at 0x{0x08000000 + offset:08X}")
+        return True
 
 
 class _Frame(C.Structure):
@@ -121,6 +142,7 @@ def _load_bridge():
         "qa_stop_capture": ([ptr], None),
         "qa_export_save": ([ptr, C.c_char_p], C.c_int),
         "qa_watch": ([ptr, C.c_uint32, C.c_int], None),
+        "qa_read_register": ([ptr, C.c_char_p, C.POINTER(C.c_int32)], C.c_int),
         "qa_sample_rate": ([], C.c_uint),
         "qa_capture_sumsq": ([ptr], C.c_double),
     }
@@ -163,6 +185,8 @@ class Mgba:
         if self.save_path:
             self.save_path.parent.mkdir(parents=True, exist_ok=True)
         self.symbols = ElfSymbols(elf) if elf else {}
+        if elf:
+            self.symbols.assert_matches_rom(self.rom)
         self.lib = _load_bridge()
         self._core = None
         self._recording = None
@@ -174,9 +198,11 @@ class Mgba:
         self.metadata = {
             "backend": "libmGBA", "control": "addKeys/clearKeys + runFrame",
             "memory_writes": False, "savestate_loads": False,
+            "bridge_path": self.lib._name, "bridge_sha256": sha256(Path(self.lib._name)),
             "rom_path": str(self.rom), "rom_sha256": sha256(self.rom),
             "elf_path": str(self.symbols.path) if elf else None,
             "elf_sha256": sha256(self.symbols.path) if elf else None,
+            "elf_matches_rom_load_segments": bool(elf),
             "save_input_path": str(self.save_path) if self.save_path and self.save_path.exists() else None,
             "save_input_sha256": sha256(self.save_path) if self.save_path and self.save_path.exists() else None,
         }
@@ -278,6 +304,13 @@ class Mgba:
 
     # Explicit aliases match mGBA's public bus-read names.
     busRead8, busRead16, busRead32 = read8, read16, read32
+
+    def read_register(self, name):
+        value = C.c_int32()
+        error = self.lib.qa_read_register(self._open(), name.encode("ascii"), C.byref(value))
+        if error:
+            raise OSError(error, f"mGBA cannot read register {name!r}")
+        return value.value & 0xFFFFFFFF
 
     def read_range(self, address, size):
         if not 0 <= size <= 1_048_576:

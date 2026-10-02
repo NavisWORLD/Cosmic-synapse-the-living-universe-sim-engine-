@@ -126,7 +126,7 @@ class Navigator:
         if self.value("npc_dialogue_active") or self.value("shop_open"):
             raise RuntimeError("Close native conversation/shop before walking")
         for name in ("riddle_open", "pending_choice", "v10_hw_riddle", "v10_realm_riddle",
-                     "arc_pending", "g6_pending", "g7_pending"):
+                     "arc_pending", "g6_pending", "g7_pending", "completion_pending"):
             if name in self.emu.symbols and self.value(name):
                 raise RuntimeError(f"Resolve the native choice {name} before walking")
 

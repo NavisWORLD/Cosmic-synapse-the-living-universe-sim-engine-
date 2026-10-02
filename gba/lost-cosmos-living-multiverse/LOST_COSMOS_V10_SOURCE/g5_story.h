@@ -48,12 +48,12 @@ static void g5_interact(u8 t){int idx=g5_here();u32 bit;
  if(idx<0||idx>=17)return;bit=1u<<idx;
  if(!(arc_guardians_mask&bit)){say("RESTORE THIS GUARDIANS ATLAS CHAPTER FIRST.");return;}
  if(idx==16&&!postgame){say("ALTAIR AWAITS YOUR OWN ENDING.");return;}
- if(g5_complete&bit){say(G5_DONE[idx]);return;}
+ if(g5_complete&bit){say(GUARDIAN_CHARACTERS[idx].after);return;}
  if(t==TR_G5_OATH){
-  if(g5_active==idx){say(G5_HINT[idx]);return;}
+  if(g5_active==idx){say(GUARDIAN_CHARACTERS[idx].preparation);return;}
   if(g5_active!=G5_NONE){say("FINISH OR CANCEL YOUR PREVIOUS GUARDIAN OATH.");return;}
   g5_active=(u8)idx;g5_start_kills=kill_count;
-  say(G5_OATH[idx]);save_game();return;
+  say(GUARDIAN_CHARACTERS[idx].oath);save_game();return;
  }
  if(t==TR_G5_PROOF){
   if(g5_active!=idx){say("FIND THIS GUARDIANS WESTERN OATH STONE FIRST.");return;}
@@ -61,7 +61,7 @@ static void g5_interact(u8 t){int idx=g5_here();u32 bit;
   g5_debit(idx);g5_complete|=bit;g5_active=G5_NONE;g5_start_kills=0;
   add_xp((u16)(18+idx*3));credits=(u8)mini(255,credits+4+(idx%5));
   cosmos.trust=(u8)mini(255,cosmos.trust+2);
-  say(G5_DONE[idx]);tone(1455);save_game();return;
+  say(GUARDIAN_CHARACTERS[idx].after);tone(1455);save_game();return;
  }
 }
 /* First-act novel-adapted optional three-place replay quest:

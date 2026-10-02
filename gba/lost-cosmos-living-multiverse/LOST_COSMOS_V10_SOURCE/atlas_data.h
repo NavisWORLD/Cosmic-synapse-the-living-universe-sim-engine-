@@ -74,8 +74,8 @@ static const ArcGuardian ARC_GUARDIANS[17]={
 /* Player agency: all 3 routes are playable and change later field/party mechanics.
    Bonus applies only after the World Tree chapter is completed (progress>=6). */
 static int arc_guardian_attack(void){int atk=(arc_guardians_mask&(1u<<arc_ally))?ARC_GUARDIANS[arc_ally].attack:0;
- return atk+g5_bonus_attack(arc_ally)+g6_attack_bonus()+g7_attack_bonus()+((arc_progress>=6&&arc_route==2)?2:0);
+ return atk+completion_attack_bonus()+g5_bonus_attack(arc_ally)+g6_attack_bonus()+g7_attack_bonus()+((arc_progress>=6&&arc_route==2)?2:0);
 }
 static int arc_guardian_guard(void){int guard=(arc_guardians_mask&(1u<<arc_ally))?ARC_GUARDIANS[arc_ally].guard:0;
- return guard+g5_bonus_guard(arc_ally)+g6_guard_bonus()+g7_guard_bonus()+((arc_progress>=6&&arc_route==1)?2:0);
+ return guard+completion_guard_bonus()+g5_bonus_guard(arc_ally)+g6_guard_bonus()+g7_guard_bonus()+((arc_progress>=6&&arc_route==1)?2:0);
 }

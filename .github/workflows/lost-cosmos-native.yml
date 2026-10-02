@@ -3,8 +3,6 @@ on:
   push:
     branches: [feature/lost-cosmos-living-multiverse-recovery-011]
     paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
-  pull_request:
-    paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -49,5 +47,57 @@ jobs:
         if: always()
         with:
           name: lost-cosmos-native-${{ github.sha }}
-          path: gba/lost-cosmos-living-multiverse/artifacts/
+          path: |
+            gba/lost-cosmos-living-multiverse/artifacts/native/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_controller/
+            gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/parts.json
+            gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/REASSEMBLE.txt
           retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-000-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-000.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-001-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-001.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-002-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-002.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-003-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-003.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-004-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-004.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-005-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-005.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-006-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-006.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-007-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-007.bin
+          retention-days: 7

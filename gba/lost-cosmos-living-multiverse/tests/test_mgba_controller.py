@@ -53,6 +53,28 @@ def verify_png(path):
     require(struct.unpack_from(">II", raw, 16) == (240, 160), "Screenshot must preserve native 240x160 dimensions")
 
 
+def boot_diagnostics(emu, output, label):
+    registers = {}
+    for name in ("pc", "sp", "cpsr", "r0", "r1", "r2", "r3", "r14", "r15"):
+        try:
+            registers[name] = f"0x{emu.read_register(name):08X}"
+        except OSError as exc:
+            registers[name] = str(exc)
+    state = scalar_state(emu)
+    state.update({"frame": emu.read_symbol("frame"), "v10_has_save": emu.read_symbol("v10_has_save"),
+                  "position": position(emu)})
+    report = {"label": label, "metadata": emu.metadata, "emulator_frame": emu.frame,
+              "state": state, "cpu_registers": registers,
+              "gba_io": {"DISPCNT": emu.read16(0x04000000), "VCOUNT": emu.read16(0x04000006),
+                         "KEYINPUT": emu.read16(0x04000130)},
+              "cartridge_words": {f"0x{address:08X}": f"0x{emu.read32(address):08X}"
+                                  for address in (0x08000000, 0x080000C0, 0x080000C4, 0x080000C8)},
+              "timing": emu.timing_report()}
+    (output / f"{label}.diagnostics.json").write_text(json.dumps(report, indent=2) + "\n")
+    emu.screenshot(output / f"{label}.diagnostics.png")
+    return report
+
+
 def verify_video(path, expected_frames):
     data = json.loads(subprocess.check_output([
         "ffprobe", "-v", "error", "-count_frames", "-show_streams", "-of", "json", str(path)
@@ -78,11 +100,12 @@ def run(rom, elf, output):
               watch_symbol="frame") as emu:
         emu.start_recording(output / "boot1_native.mkv")
         emu.step((), 180)
+        report["boot1_diagnostics"] = boot_diagnostics(emu, output, "boot1_title")
+        emu.screenshot(output / "01_title_native.png")
         require(emu.read_symbol("intro") == 1, "Fresh ROM did not show the real title menu")
         require(emu.read_symbol("v10_has_save") == 0, "Fresh boot unexpectedly found a save")
         require(len(set(emu.rgb()[i:i + 3] for i in range(0, 240 * 160 * 3, 3))) >= 8,
                 "Native boot video appears blank")
-        emu.screenshot(output / "01_title_native.png")
         emu.tap("A", hold=12, release=12)
         wait(emu, lambda: emu.read_symbol("v10_opening") == 1, "New Game opening")
         emu.step((), 60)
@@ -135,6 +158,7 @@ def run(rom, elf, output):
               watch_symbol="frame") as emu:
         emu.start_recording(output / "boot2_native.mkv")
         emu.step((), 180)
+        report["boot2_diagnostics"] = boot_diagnostics(emu, output, "boot2_title")
         require(emu.read_symbol("intro") == 1 and emu.read_symbol("v10_has_save") == 1,
                 "Second cold boot did not detect real battery SRAM")
         emu.screenshot(output / "06_second_boot_native.png")
