@@ -24,6 +24,8 @@ jobs:
           sha256sum LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba > /tmp/first-native.sha256
           (cd LOST_COSMOS_V10_SOURCE && bash build_v5.sh)
           sha256sum --check /tmp/first-native.sha256
+      - name: Verify all three real-game ending credits transitions with native C host
+        run: python3 tests/test_end_credits_v10_8.py
       - name: Build controller bridge and test journal integrity
         run: |
           bash tools/mgba_build.sh
