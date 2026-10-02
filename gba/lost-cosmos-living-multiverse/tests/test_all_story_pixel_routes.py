@@ -81,8 +81,25 @@ int main(void){
  need(current_room,TR_GROVE_MIRROR,grove);
  need(current_room,TR_GROVE_WRAITH,grove);
  need(current_room,TR_EARTH,grove);
+ /* Also test ALL five original book chapters, starting at original
+  * authentic native door spawn, not tile-BFS fantasy entry points. */
+ {const int worlds[5]={0,0,0,0,6},rooms[5]={7,8,9,12,11};
+  const int counts[5]={4,4,5,3,4};
+  const int targets[5][5]={
+    {TR_HW_WISDOM,TR_HW_COURAGE,TR_HW_HEART,TR_GATE,0},
+    {TR_ICE_RUNE,TR_ICE_WOLF,TR_ICE_CRYSTAL,TR_GATE,0},
+    {TR_FLAME_LEFT,TR_FLAME_RIGHT,TR_PHOENIX,TR_PASSION,TR_GATE},
+    {TR_PEAK_RUNE,TR_HARMONY,TR_GATE,0,0},
+    {TR_FEST_L,TR_FEST_C,TR_FEST_R,TR_GATE,0}};
+  for(int j=0;j<5;j++){
+   current_world=worlds[j];current_room=rooms[j];current_layer=1;
+   generate_surface();
+   int n=explore((j==0?11:10)*8,52*8);
+   for(int k=0;k<counts[j];k++)need(current_room,targets[j][k],n);
+  }
+ }
  printf("TOTAL pixel-footprint native objective checks %d unreachable %d\n",count,fail);
- assert(count==331&&fail==0);
+ assert(count==351&&fail==0);
  puts("PASS ALL 40 native expansion maps; actual 10px actor and real trigger_near priority.");
  return 0;
 }
