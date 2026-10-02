@@ -309,7 +309,7 @@ static s16 ship_x=256,ship_y=280;
 static u8 ship_world=0;
 static u16 music_tick=0;
 static u16 anomaly_counter=0;
-static u8 intro=1;
+static volatile u8 intro=1; /* Preserve a truthful addressable title flag for real mGBA readout. */
 /* Cinematic frames are pre-rendered indexed 4bpp BG2; simulation/saves continue to
    own game state, and the render-only cutscene timer never consumes QSEED bytes. */
 static u8 cinema_active=0,cinema_scene=0;
@@ -2165,7 +2165,7 @@ static void collect_drops(void){int i;for(i=0;i<8;i++)if(drops[i].active&&iabs(d
  }
  if(inv[t]<99)inv[t]++;drops[i].active=0;if(t==ITEM_CORE){if(player_mp<max_mp)player_mp++;say("QUANTUM CORE ACQUIRED. THE BUDDY'S WORKLOAD LOOP RESONATES.");}else if(t==ITEM_SHARD)say("STAR SHARD ACQUIRED.");else if(t==ITEM_POTION)say("POTION ACQUIRED.");else say("ETHER ACQUIRED.");tone(1750);}}
 static void enemy_tick(void){int i;
- if(game_mode!=MODE_SURFACE||(current_room&&current_room!=6))return;
+ if(game_mode!=MODE_SURFACE||(current_room&&current_room!=6&&!COMP_IS_ROOM))return; /* Completion bosses need real hurt cooldown and AI ticks. */
  for(i=0;i<10;i++){Enemy*e=&enemies[i];int dx,dy,d;
   if(!e->active)continue;
   if(e->hurt)e->hurt--;
