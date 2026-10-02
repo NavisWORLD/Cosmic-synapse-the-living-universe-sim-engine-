@@ -14,7 +14,7 @@ dump = prelude + r"""
 #include <stdio.h>
 int main(void){
  init_new_game();init_graphics();intro=0;game_mode=MODE_SURFACE;
- for(int r=2;r<=4;r++){
+ for(int r=2;r<=5;r++){
   current_world=0;current_room=r;current_layer=1;player.x=88;player.y=416;
   generate_surface();
   printf("ROOM %d %d\n",r,npc_count);
@@ -64,7 +64,7 @@ def reachable(board, start):
                 queue.append(point)
     return seen
 
-for room, identity, start in ((2,14,(88,416)),(3,16,(88,416)),(4,17,(248,416))):
+for room, identity, start in ((2,14,(88,416)),(3,16,(88,416)),(4,17,(248,416)),(5,18,(80,416))):
     record = rooms[room]
     npc = record["npcs"][identity]
     seen = reachable(record["board"], start)
@@ -74,5 +74,5 @@ for room, identity, start in ((2,14,(88,416)),(3,16,(88,416)),(4,17,(248,416))):
              and all(abs(p[0]-npc[0])+abs(p[1]-npc[1]) <=
                      abs(p[0]-o[0])+abs(p[1]-o[1]) for o in others)]
     print(f"ROOM {room}: NPC {identity} at {npc}, genuine 10px-footprint interaction positions={len(goals)}")
-    assert goals, f"ACT I softlock: NPC {identity} is unreachable from {start} in room {room}"
-print("PASS native C/real actor-footprint: Brindlemark, Ravenswood Oakwood, Cragstone")
+    assert goals, f"Eridoria campaign softlock: NPC {identity} is unreachable from {start} in room {room}"
+print("PASS native C/real actor-footprint: Brindlemark, Ravenswood Oakwood, Cragstone, Forgotten City White Sentinel")
