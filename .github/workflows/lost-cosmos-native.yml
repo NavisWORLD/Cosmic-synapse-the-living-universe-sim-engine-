@@ -39,6 +39,10 @@ jobs:
           /tmp/lc-journal-test
       - name: Real mGBA controller boot, movement, audio, video and two-boot save check
         run: python3 tests/test_mgba_controller.py --out artifacts/mgba_controller
+      - name: Experimental real-input Act I Brindlemark to Cragstone progression
+        continue-on-error: true # Add as a release gate ONLY after genuinely passing all scripted stages.
+        timeout-minutes: 4
+        run: python3 tests/test_mgba_act1_controller.py --out artifacts/mgba_act1
       - name: Bundle portable controller runtime
         if: always()
         run: |
@@ -59,6 +63,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/native/
             gba/lost-cosmos-living-multiverse/artifacts/release/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_controller/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/parts.json
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/REASSEMBLE.txt
           retention-days: 30
