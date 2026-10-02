@@ -92,6 +92,23 @@ static void completion_generate_map(void){int i,x,y,s=current_room-COMPLETION_FI
    }
   }
  }
+ /* Restore ALL interactive tiles after ALL sequence routes have been carved.
+  * The original path carver set trigger=TR_NONE over its own initiating rune,
+  * making some new chapters impossible to complete by actual controller. */
+ for(i=0;i<4;i++){
+  const CompletionObjective*o=&COMPLETION_OBJECTIVES[s][i];int tile;
+  tile=o->action==COMP_ACT_READ||o->action==COMP_ACT_STORY?T_ARCHIVE:
+   o->action==COMP_ACT_BATTLE||o->action==COMP_ACT_BOSS_PHASE||o->action==COMP_ACT_MERCY?T_HAZARD:
+   o->action==COMP_ACT_TALK?T_LANTERN:o->action==COMP_ACT_SWITCH?T_CIRCUIT:T_RUNE;
+  map_put(o->tx,o->ty,tile,i<completion_step[s]?3:5,C_FREE,TR_COMP_OBJECTIVE+i);
+  if(o->action==COMP_ACT_SEQUENCE)for(int n=0;n<3;n++){
+   int xx=o->tx+(n-1)*4,yy=o->ty+4;
+   map_put(xx,yy,n==0?T_MOON:n==1?T_STAR:T_CRYSTAL,5,C_FREE,TR_COMP_SEQUENCE+n);
+  }
+ }
+ map_put(31,54,T_DOOR,5,C_FREE,TR_COMP_EXIT);
+ map_put(55,10,T_DOOR,5,C_FREE,TR_COMP_NEXT);
+ map_put(10,48,T_CRYSTAL,5,C_FREE,TR_COMP_CACHE);
 }
 static void completion_patch_portal(void){int i,x,y;
  if(COMP_IS_ROOM||current_layer!=1)return;
