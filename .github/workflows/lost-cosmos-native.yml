@@ -51,6 +51,9 @@ jobs:
       - name: Release gate - real controller-only Act II from earned SRAM to Sentinel and Dream trials plus cold boot
         timeout-minutes: 7
         run: python3 tests/test_mgba_act2_controller.py --act1 artifacts/mgba_act1 --out artifacts/mgba_act2
+      - name: Release gate - actual Dream-to-Eldoria ship and all 4 native elements, Storm boss, second cold boot
+        timeout-minutes: 7
+        run: python3 tests/test_mgba_eldoria_controller.py --act2 artifacts/mgba_act2 --out artifacts/mgba_eldoria
       - name: Bundle portable controller runtime
         if: always()
         run: |
@@ -73,6 +76,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/mgba_controller/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act2/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_eldoria/
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/parts.json
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/REASSEMBLE.txt
           retention-days: 30
