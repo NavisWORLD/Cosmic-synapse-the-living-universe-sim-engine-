@@ -34,7 +34,7 @@ jobs:
         run: python3 tests/test_completion_maps_v10_8.py
       - name: Gate NPC reachability with the actual native 10px collision footprint
         run: python3 tests/test_act1_pixel_reachability.py
-      - name: Gate all 40 story rooms and 327 actions against REAL 10px collision and native interaction priority
+      - name: Gate 351 actual player-hitbox actions across 40 expansion plus six original book realm maps
         run: python3 tests/test_all_story_pixel_routes.py
       - name: Verify all three real-game ending credits transitions with native C host
         run: python3 tests/test_end_credits_v10_8.py
