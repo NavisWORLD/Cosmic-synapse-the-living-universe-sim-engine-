@@ -1160,7 +1160,9 @@ static void generate_space(void){int x,y;npc_count=0;REG_DISPCNT=0;set_world_pal
  ui_clear();REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;}
 
 /* ---------- deterministic native-GBA cinematic presentation ---------- */
+#include "credits_v10_8.h"
 static void cinema_end(void){
+ if(v10_ending_card)v108_credits_begin();
  cinema_active=0;cinema_timer=0;v10_ending_card=0;
  if(game_mode==MODE_SPACE){
   set_world_palette(ship_world); /* cinematic palette bank 5 restored in space too */
@@ -2509,7 +2511,7 @@ static void world_light_tick(void){
  BG_PALETTE[5*16+3]=brighter5(signal,phase==1?2:0);
  BG_PALETTE[7*16+3]=brighter5(danger,phase==3?1:0);
 }
-static void render(void){if((frame&15)==0&&!cinema_active&&!intro){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){oam_hide_all();draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
+static void render(void){if((frame&15)==0&&!cinema_active&&!intro){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){oam_hide_all();draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
 
 /* ---------- postgame anomaly ---------- */
 static void postgame_tick(void){if(!postgame||game_mode!=MODE_SURFACE||current_room)return;anomaly_counter++;if(anomaly_counter==600){int tx=12+((current_world*9+ending*7+keys_found*3)%40),ty=12+((current_world*13+ending*11)%40);map_put(tx,ty,T_CRYSTAL,3,C_FREE,TR_ANOMALY);say("A NEW ANOMALY JUST WROTE ITSELF INTO THE MAP.");}}
@@ -2834,7 +2836,7 @@ static void update_pause(u16 newk){
 
 /* ---------- boot ---------- */
 static void init_graphics(void){int i;REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));make_all_tiles();make_obj_tiles();lc_upload_import_art();oam_hide_all();for(i=0;i<4*1024;i++)screenblock(BG_MAP_BASE)[i]=0;ui_clear();}
-static void init_new_game(void){int i;arc_reset();p4_reset();g5_reset();g6_reset();g7_reset();completion_reset();story_flags=0;rune_progress=element_mask=shop_open=shop_sel=npc_log_offset=riddle_open=0;quest_started=quest_completed=0;npc_seen=0;npc_recent=0;npc_dialogue_active=0;player.x=80;player.y=408;player.face=1;player_level=1;player_xp=0;max_hp=6;player.hp=max_hp;max_mp=6;player_mp=max_mp;str_stat=2;def_stat=1;mag_stat=2;credits=0;for(i=0;i<ITEM_COUNT;i++)inv[i]=0;inv[ITEM_POTION]=2;inv[ITEM_ETHER]=1;gear_owned=1;weapon=armor=charm=0;current_spell=SPELL_PULSE;buddy_talk=buddy_quantum=1;qstate.mean=128;qstate.coherence=128;qstate.phase=0;cosmos.x=100;cosmos.y=396;cosmos.goal=GOAL_FOLLOW;cosmos.trust=96;cosmos.curiosity=205;cosmos.avoid=30;cosmos.energy=240;cosmos.focus=130;dodge_timer=dodge_cooldown=heavy_cooldown=0;touch_mode=0;hold_a_frames=0;workload_qi=0;v10_tutorial=0;v10_ending_card=0;v10_hw_choice=v10_hw_riddle=0;v10_relic=0;v10_realm_choices=v10_realm_riddle=v10_festival_notes=0;actor_style=0;role_preview=0;chronicle_page=0;
+static void init_new_game(void){int i;arc_reset();p4_reset();g5_reset();g6_reset();g7_reset();completion_reset();story_flags=0;rune_progress=element_mask=shop_open=shop_sel=npc_log_offset=riddle_open=0;quest_started=quest_completed=0;npc_seen=0;npc_recent=0;npc_dialogue_active=0;player.x=80;player.y=408;player.face=1;player_level=1;player_xp=0;max_hp=6;player.hp=max_hp;max_mp=6;player_mp=max_mp;str_stat=2;def_stat=1;mag_stat=2;credits=0;for(i=0;i<ITEM_COUNT;i++)inv[i]=0;inv[ITEM_POTION]=2;inv[ITEM_ETHER]=1;gear_owned=1;weapon=armor=charm=0;current_spell=SPELL_PULSE;buddy_talk=buddy_quantum=1;qstate.mean=128;qstate.coherence=128;qstate.phase=0;cosmos.x=100;cosmos.y=396;cosmos.goal=GOAL_FOLLOW;cosmos.trust=96;cosmos.curiosity=205;cosmos.avoid=30;cosmos.energy=240;cosmos.focus=130;dodge_timer=dodge_cooldown=heavy_cooldown=0;touch_mode=0;hold_a_frames=0;workload_qi=0;v10_tutorial=0;v10_ending_card=0;v108_credits_reset();v10_hw_choice=v10_hw_riddle=0;v10_relic=0;v10_realm_choices=v10_realm_riddle=v10_festival_notes=0;actor_style=0;role_preview=0;chronicle_page=0;
  kill_count=0;v9_wave=1;v9_best_wave=v9_completed=v9_bonded=v9_bond_type=0;
  v9_jump=v9_jump_cd=v9_combo=v9_combo_time=v9_wave_delay=0;
  v9_equipped=v9_gear_sel=0;v9_rng=0xC0A571D5u;
@@ -2907,6 +2909,7 @@ void gba_main(void){u16 k,newk;
    if(newk&KEY_START)v10_complete_opening();
    else if(newk&KEY_A)v10_advance_opening();
   }
+  else if(v108_credits_active){v108_credits_input(newk);}
   else if(cinema_active){
    if(newk&(KEY_A|KEY_START))cinema_end();
    else if(cinema_timer&&!--cinema_timer)cinema_end();
@@ -2920,6 +2923,6 @@ void gba_main(void){u16 k,newk;
    if((frame&255)==0&&player_mp<max_mp)player_mp++;
    if(dialogue_timer)dialogue_timer--;
   }
-  music_step();wait_vblank();frame++;render();
+  music_step();v108_credits_tick();wait_vblank();frame++;render();
  }
 }
