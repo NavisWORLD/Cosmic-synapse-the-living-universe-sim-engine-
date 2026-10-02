@@ -1,0 +1,53 @@
+name: Lost COSMOS native build and controller QA
+on:
+  push:
+    branches: [feature/lost-cosmos-living-multiverse-recovery-011]
+    paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
+  pull_request:
+    paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: gba/lost-cosmos-living-multiverse
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native compiler and official mGBA library
+        run: sudo apt-get update && sudo apt-get install -y clang lld llvm libmgba-dev ffmpeg gcc python3-pil
+      - name: Build the real ARM7TDMI ROM
+        run: cd LOST_COSMOS_V10_SOURCE && bash build_v5.sh
+      - name: Verify reproducible build
+        run: |
+          sha256sum LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba > /tmp/first-native.sha256
+          (cd LOST_COSMOS_V10_SOURCE && bash build_v5.sh)
+          sha256sum --check /tmp/first-native.sha256
+      - name: Build controller bridge and test journal integrity
+        run: |
+          bash tools/mgba_build.sh
+          gcc -std=c99 -Wall -Wextra -Werror -Wno-misleading-indentation -O2 tests/test_save_journal.c -o /tmp/lc-journal-test
+          /tmp/lc-journal-test
+      - name: Real mGBA controller boot, movement, audio, video and two-boot save check
+        run: python3 tests/test_mgba_controller.py --out artifacts/mgba_controller
+      - name: Bundle portable controller runtime
+        if: always()
+        run: |
+          if test -f tools/mgba_bundle_runtime.py; then python3 tools/mgba_bundle_runtime.py --out artifacts/runner-runtime; fi
+      - name: Collect native candidate
+        if: always()
+        run: |
+          mkdir -p artifacts/native
+          cp LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf artifacts/native/
+          llvm-size LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf > artifacts/native/memory.txt
+          sha256sum artifacts/native/* > artifacts/native/SHA256SUMS.txt
+          git rev-parse HEAD > artifacts/native/COMMIT.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-native-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/
+          retention-days: 30
