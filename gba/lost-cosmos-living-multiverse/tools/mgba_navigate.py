@@ -407,8 +407,16 @@ class Navigator:
         if self.value("pause_sel") != 9:
             raise RuntimeError("Actual SAVE menu row was not selected")
         self.emu.tap("A", hold=12, release=12)
-        if self.value("pause_page") != 10:
-            raise RuntimeError("Actual SAVE menu action did not finish")
+        # The native dual-bank CRC transaction is synchronous and exceeded
+        # a 24-frame tap in real mGBA. Observe completion, not guessed timing.
+        for _ in range(75):
+            if self.value("pause_page") == 10:
+                break
+            self.emu.step((), 8)
+        else:
+            raise RuntimeError("Actual dual-bank SAVE never reached complete UI after 600 frames")
+        self.emu._event("controller_save_committed", frame=self.emu.frame,
+                        position=self.position(), location=self.location())
         self.emu.tap("B", hold=12, release=12)
         self.emu.tap("B", hold=12, release=12)
         self._surface()
