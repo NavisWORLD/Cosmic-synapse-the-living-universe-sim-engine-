@@ -916,6 +916,12 @@ static void v10_generate_hollow_grove(void){int x,y;
  for(x=29;x<=34;x++)for(y=23;y<=28;y++)map_put(x,y,T_BRIDGE,1,C_FREE,0);
  for(y=7;y<=54;y++)for(x=30;x<=33;x++)map_put(x,y,T_PATH,1,C_FREE,0);
  for(x=11;x<=52;x++)for(y=31;y<=34;y++)map_put(x,y,T_PATH,1,C_FREE,0);
+ /* A procedural forest at (8,52)/(16,52) blocked the native 10px player
+  * entering Hollow Grove from the genuine (10,52) spawn, even though a
+  * one-tile QA BFS could cross. Carve actual full-width access before
+  * placing old riddle, Wraith, Earth and return triggers. */
+ for(y=30;y<=55;y++)for(x=8;x<=16;x++)map_put(x,y,T_PATH,1,C_FREE,TR_NONE);
+ for(y=49;y<=55;y++)for(x=8;x<=34;x++)map_put(x,y,T_PATH,1,C_FREE,TR_NONE);
  map_put(13,32,T_WATER,5,C_FREE,TR_GROVE_MIRROR);
  map_put(48,32,T_RUNE,5,C_FREE,TR_GROVE_WRAITH);
  map_put(32,12,T_CRYSTAL,5,C_FREE,TR_EARTH);
