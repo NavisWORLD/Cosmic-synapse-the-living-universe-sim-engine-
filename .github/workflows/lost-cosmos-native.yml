@@ -24,6 +24,12 @@ jobs:
           sha256sum LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba > /tmp/first-native.sha256
           (cd LOST_COSMOS_V10_SOURCE && bash build_v5.sh)
           sha256sum --check /tmp/first-native.sha256
+      - name: Package the public-safe editable V10.8 source and real candidate ROM
+        run: |
+          mkdir -p artifacts/release
+          cp LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba artifacts/release/LOST_COSMOS_V10_8_CANDIDATE.gba
+          python3 tools/package_current_source.py --out artifacts/release/LOST_COSMOS_V10_8_EDITABLE_SOURCE.zip
+          (cd artifacts/release && sha256sum *.gba *.zip > SHA256SUMS.txt)
       - name: Verify all three real-game ending credits transitions with native C host
         run: python3 tests/test_end_credits_v10_8.py
       - name: Build controller bridge and test journal integrity
@@ -51,6 +57,7 @@ jobs:
           name: lost-cosmos-native-${{ github.sha }}
           path: |
             gba/lost-cosmos-living-multiverse/artifacts/native/
+            gba/lost-cosmos-living-multiverse/artifacts/release/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_controller/
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/parts.json
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/REASSEMBLE.txt

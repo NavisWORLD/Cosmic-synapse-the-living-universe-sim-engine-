@@ -1440,7 +1440,7 @@ static void draw_battle(void){Enemy*e=&enemies[battle_index];
 }
 static void draw_intro(void){
  static const char*options[4]={"NEW GAME","CONTINUE","OPTIONS","CREDITS"};int i;
- ui_clear();ui_fill_rows(0,1,63,15);ui_text(2,0,"LOST COSMOS / V10.4",14);
+ ui_clear();ui_fill_rows(0,1,63,15);ui_text(2,0,"LOST COSMOS / ERIDORIA",14);
  ui_fill_rows(10,19,63,15);
  ui_text(2,10,"THE LIVING MULTIVERSE",14);
  if(v10_title_sub==1){
