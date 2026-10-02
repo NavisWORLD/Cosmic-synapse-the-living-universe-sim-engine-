@@ -72,8 +72,17 @@ int main(void){
   if(i==10)need(current_room,TR_G7_PILLAR,n);
   if(i==11)for(int t=TR_G7_ORB_FIRST;t<=TR_G7_ORB_LAST;t++)need(current_room,t,n);
  }
+ /* Regress existing real-actor Hollow Grove entry and every quest station.
+  * Procedural trees previously blocked the 10px player from its real spawn
+  * even though the old one-tile BFS passed this original realm. */
+ current_world=7;current_room=10;current_layer=1;generate_surface();
+ int grove=explore(10*8,52*8);
+ need(current_room,TR_GATE,grove);
+ need(current_room,TR_GROVE_MIRROR,grove);
+ need(current_room,TR_GROVE_WRAITH,grove);
+ need(current_room,TR_EARTH,grove);
  printf("TOTAL pixel-footprint native objective checks %d unreachable %d\n",count,fail);
- assert(count==327&&fail==0);
+ assert(count==331&&fail==0);
  puts("PASS ALL 40 native expansion maps; actual 10px actor and real trigger_near priority.");
  return 0;
 }
