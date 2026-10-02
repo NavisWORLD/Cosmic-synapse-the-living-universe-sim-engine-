@@ -972,7 +972,12 @@ static void eridoria_area(void){int x,y;
  }else if(current_room==3){ /* Oakwood: living market and Ravenswood manor. */
   for(x=5;x<58;x++)map_put(x,40,T_PATH,1,C_FREE,0);
   for(y=12;y<56;y++)map_put(29,y,T_PATH,1,C_FREE,0);
-  map_wall_box(24,9,18,16,3);map_door(32,24,TR_TERMINAL);
+  map_wall_box(24,9,18,16,3);
+  /* A 10px actor cannot cross an 8px single-tile manor threshold.
+   * Carve a three-tile-plus entrance from the market road through the
+   * southern wall so Ravenswood is reachable by REAL directional inputs. */
+  for(y=22;y<=41;y++)for(x=29;x<=33;x++)map_put(x,y,T_PATH,1,C_FREE,TR_NONE);
+  map_door(32,24,TR_TERMINAL);
   for(x=11;x<23;x+=5)map_put(x,35,T_FURNACE,2,C_FREE,0);
   map_put(8,54,T_DOOR,3,C_FREE,TR_GATE);map_put(54,12,T_RUNE,3,C_FREE,TR_GATE);
   add_noise_decor(72,T_LANTERN,3,30,0);
