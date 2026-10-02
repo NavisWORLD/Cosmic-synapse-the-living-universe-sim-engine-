@@ -56,6 +56,9 @@ jobs:
       - name: Release gate - actual Dream-to-Eldoria ship and all 4 native elements, Storm boss, second cold boot
         timeout-minutes: 7
         run: python3 tests/test_mgba_eldoria_controller.py --act2 artifacts/mgba_act2 --out artifacts/mgba_eldoria
+      - name: Release gate - actual Hollow Grove reflection, real Wraith, Earth crystal and separate new cold boot
+        timeout-minutes: 7
+        run: python3 tests/test_mgba_hollow_grove_controller.py --eldoria artifacts/mgba_eldoria --out artifacts/mgba_grove
       - name: Bundle portable controller runtime
         if: always()
         run: |
@@ -79,6 +82,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act2/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_eldoria/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_grove/
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/parts.json
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/REASSEMBLE.txt
           retention-days: 30
