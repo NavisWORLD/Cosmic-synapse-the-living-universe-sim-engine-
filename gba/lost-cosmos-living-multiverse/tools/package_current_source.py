@@ -13,7 +13,7 @@ import zipfile
 ROOT=Path(__file__).resolve().parents[1]
 PREFIX='LOST_COSMOS_V10_8_SOURCE'
 INCLUDE=('LOST_COSMOS_V10_SOURCE','baseline','lineage','docs','tests','tools')
-SUFFIXES={'.c','.h','.py','.sh','.ld','.md','.txt','.diff','.sha256','.json','.yml','.yaml'}
+SUFFIXES={'.c','.h','.s','.py','.sh','.ld','.md','.txt','.diff','.sha256','.json','.yml','.yaml'}
 BANNED=('private','manuscript','credential','secret','.env','.sav','token','personal')
 TEMP={'host_qa_v5.c','living_book_v107_native_host_qa.c','guardian_v105_native_host_qa.c',
       'act_threads_v106_native_host_qa.c','test_end_credits_v108_host.c'}
@@ -35,6 +35,7 @@ def sources():
  must={'LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.c',
        'LOST_COSMOS_V10_SOURCE/qseed.h',
        'LOST_COSMOS_V10_SOURCE/build_v5.sh',
+       'LOST_COSMOS_V10_SOURCE/start_v5.S',
        'LOST_COSMOS_V10_SOURCE/credits_v10_8.h'}
  if not must.issubset(files):raise AssertionError('Missing current native engine, QSEED or build components')
  return files
