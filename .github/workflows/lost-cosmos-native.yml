@@ -32,6 +32,8 @@ jobs:
           (cd artifacts/release && sha256sum *.gba *.zip > SHA256SUMS.txt)
       - name: Gate all 24 physical story maps, 96 actual objective triggers and six older save pages
         run: python3 tests/test_completion_maps_v10_8.py
+      - name: Gate NPC reachability with the actual native 10px collision footprint
+        run: python3 tests/test_act1_pixel_reachability.py
       - name: Verify all three real-game ending credits transitions with native C host
         run: python3 tests/test_end_credits_v10_8.py
       - name: Build controller bridge and test journal integrity
