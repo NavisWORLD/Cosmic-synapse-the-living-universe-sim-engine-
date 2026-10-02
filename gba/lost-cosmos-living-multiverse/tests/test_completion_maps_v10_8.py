@@ -47,7 +47,7 @@ static void test_rooms(void){
    const CompletionObjective*o=&COMPLETION_OBJECTIVES[i][j];
    if(trigger[mi(o->tx,o->ty)]!=TR_COMP_OBJECTIVE+j){
     fprintf(stderr,"SOFTLOCK: chapter=%d objective=%d actual_trigger=%u\n",
-            i,j,trigger[mi(o->tx,o->ty)]);return;
+            i,j,trigger[mi(o->tx,o->ty)]);assert(0);
    }
    assert(route(31,51,o->tx,o->ty));
   }
