@@ -1742,42 +1742,50 @@ static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE
   ui_text(2,16,"A EQUIP  UP/DOWN",14);
   ui_text(5,17,"B RETURN",13);
  }
- else if(pause_page==18){ui_text(4,2,"PARTY // COLLECTION",14);
-  if(!lc_party.count){ui_text(3,5,"NO COMPANIONS YET",15);ui_text(3,7,"BOND WITH A WEAK WILD BEAST",13);}
+ else if(pause_page==18){
+  ui_text(4,2,"PARTY // COLLECTION",14);
+  if(!lc_party.count){ui_text(4,6,"NO COMPANIONS YET",15);ui_text(4,8,"BOND WITH A WEAK WILD BEAST",13);}
   for(i=0;i<lc_party.count&&i<8;i++){int y=4+i;ui_text(2,y,lc_party_sel==i?">":" ",13);ui_text(4,y,lc_species_name(lc_party.slots[i].species),i==lc_party.active?14:15);}
   if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party_sel];
-   ui_text(18,4,"LV",13);ui_num(21,4,c->level,15);ui_text(18,5,"BOND",13);ui_num(24,5,c->bond,15);
-   ui_text(18,6,"HP",13);ui_num(22,6,c->hp,15);ui_text(18,7,"EVO",13);ui_num(22,7,c->stage,15);
+   ui_text(14,4,"LV",13);ui_num(19,4,c->level,15);
+   ui_text(14,5,"BOND",13);ui_num(19,5,c->bond,15);
+   ui_text(14,6,"HP",13);ui_num(19,6,c->hp,15);
+   ui_text(14,7,"EVO",13);ui_num(19,7,c->stage,15);
 #if defined(LC_IMPORTED_COMPANION)
-   if(c->species>=LC_SPECIES_IMPORTED){ui_text(18,9,"Q-BEAST",14);lc_draw_import_portrait(168,82);}
+   if(c->species>=LC_SPECIES_IMPORTED){ui_text(14,9,"Q-BEAST",14);lc_draw_import_portrait(168,40);}
 #endif
   }
-  ui_text(2,16,"A SELECT",14);ui_text(13,16,"R BESTIARY",13);ui_text(5,17,"UP/DOWN CHOOSE",15);ui_text(20,17,"B BACK",13);
+  ui_text(4,16,"A ACTIONS",14);ui_text(16,16,"R JOURNAL",13);ui_text(4,17,"B BACK",13);
  }
- else if(pause_page==20){ui_text(4,2,"BESTIARY // FIELD JOURNAL",14);
-  for(i=0;i<8;i++){int y=3+i;ui_text(2,y,i==eco_guide_sel?">":" ",13);ui_text(4,y,ECO_NAMES[i],eco_capture_count(i+1)?14:15);}
-  ui_text(17,3,"HOME",13);ui_text(17,4,ECO_HABITAT[eco_guide_sel],15);
-  ui_text(17,6,"SKILL",13);ui_text(17,7,ECO_ABILITY[eco_guide_sel],15);
-  ui_text(17,9,"OBS",13);ui_num(22,9,p4_research[eco_guide_sel],15);
-  ui_text(17,11,"EVO",13);ui_text(17,12,"LV12 BOND55",15);
-  ui_text(17,14,"FINAL",13);ui_text(17,15,"LV28 BOND80",15);
-  ui_text(5,17,"UP/DOWN SPECIES",14);ui_text(21,17,"B BACK",13);
+ else if(pause_page==20){
+  ui_text(4,2,"BESTIARY // FIELD JOURNAL",14);
+  ui_text(4,4,ECO_NAMES[eco_guide_sel],15);
+  oam_set(1,24,48,384+eco_guide_sel*24+(((frame>>4)&1)*4),5+eco_guide_sel,0);oam_ui_portrait(1);
+  ui_text(10,6,"HOME",13);ui_text(16,6,ECO_HABITAT[eco_guide_sel],15);
+  ui_text(10,8,"SKILL",13);ui_text(16,8,ECO_ABILITY[eco_guide_sel],15);
+  ui_text(10,10,"OBS",13);ui_num(16,10,p4_research[eco_guide_sel],15);
+  ui_text(10,12,"EVO",13);ui_text(16,12,"LV12 B55",15);
+  ui_text(10,14,"FINAL",13);ui_text(16,14,"LV28 B80",15);
+  ui_text(4,17,"UP/DOWN SPECIES",14);ui_text(22,17,"B BACK",13);
  }
- else if(pause_page==26){ui_text(4,2,"BEAST BOX BRIDGE",14);
+ else if(pause_page==26){
+  ui_text(4,2,"BEAST BOX BRIDGE",14);
 #if defined(LC_IMPORTED_COMPANION)
   {LcCreature*c=lc_party.count?&lc_party.slots[lc_party.active]:0;
-   ui_text(2,3,"STATUS",13);ui_text(12,3,"BRIDGE READY",14);
-   ui_text(2,5,"MODE",13);ui_text(12,5,"VERIFIED SNAPSHOT",15);
-   ui_text(2,7,"LINK",13);ui_text(12,7,"OFFLINE MODE",15);
-   ui_text(2,9,"GAME DATA",13);ui_text(12,9,"BCG1 + BCP1",15);
-   ui_text(2,11,"IDENTITY",13);ui_text(12,11,"LOCKED",14);
-   ui_text(2,13,"MEMORY",13);ui_text(12,13,"PUBLIC ONLY",15);
-   if(c){ui_text(2,15,"BEAST",13);ui_text(12,15,lc_species_name(c->species),14);ui_text(2,16,"ID",13);ui_hex32(12,16,c->identity,15);lc_draw_import_portrait(168,68);}
+   ui_text(3,4,"STATUS",13);ui_text(11,4,"READY",14);
+   ui_text(3,6,"MODE",13);ui_text(11,6,"VERIFIED",15);
+   ui_text(3,8,"LINK",13);ui_text(11,8,"OFFLINE",15);
+   ui_text(3,10,"GAME",13);ui_text(11,10,"BCG1/BCP1",15);
+   ui_text(3,12,"IDENT",13);ui_text(11,12,"LOCKED",14);
+   ui_text(3,14,"MEMORY",13);ui_text(11,14,"PUBLIC",15);
+   if(c){ui_text(3,16,"BEAST",13);ui_text(11,16,lc_species_name(c->species),14);lc_draw_import_portrait(168,40);}
+   ui_text(3,17,"ID",13);if(c)ui_hex32(7,17,c->identity,15);
   }
 #else
-  ui_text(3,6,"BRIDGE READY",14);ui_text(3,8,"NO BEAST SNAPSHOT IMPORTED",15);
+  ui_text(4,6,"BRIDGE READY",14);ui_text(4,8,"NO BEAST SNAPSHOT IMPORTED",15);
+  ui_text(4,10,"IMPORT THROUGH QBEAST BUILDER",13);
 #endif
-  ui_text(5,17,"B BACK",13);
+  ui_text(22,17,"B BACK",13);
  }
  else if(pause_page==27){static const char*A[5]={"SET ACTIVE","TRAIN","EVOLVE","DETAILS","RELEASE"};ui_text(4,2,"COMPANION ACTIONS",14);
   if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party_sel];ui_text(2,3,lc_species_name(c->species),15);
