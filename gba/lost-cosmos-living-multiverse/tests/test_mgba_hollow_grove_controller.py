@@ -103,7 +103,12 @@ def run(rom,elf,eldoria,out):
    if emu.read_symbol("intro")==0 and emu.read_symbol("current_room")==10:break
    emu.step((),8)
   else:raise RuntimeError("Actual second controller CONTINUE did not restore Hollow Grove")
-  emu.step((),48)
+  transition_frame=emu.read_symbol("frame")
+  for _ in range(40):
+   if emu.read_symbol("frame")!=transition_frame:break
+   emu.step((),8)
+  else:raise RuntimeError("Hollow Grove procedural rebuild never returned to render loop")
+  emu.step((),4)
   if len(set(emu.rgb()[i:i+3] for i in range(0,240*160*3,3)))<8:
    raise RuntimeError("Hollow Grove CONTINUE restored state but framebuffer stayed blank")
   restored={"world":emu.read_symbol("current_world"),
