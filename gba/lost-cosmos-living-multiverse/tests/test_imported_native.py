@@ -16,6 +16,11 @@ with tempfile.TemporaryDirectory() as d:
  receipt=import_export(synthetic,root)
  assert receipt['generator_version']==1
  assert receipt['BCP1_game_profile']['public_identity']==f"{fnv('identity|1|nebula-test'):08x}"
+ header=(root/'imported_companion.h').read_text()
+ assert 'lc_imported_companion_tiles[8192]' in header
+ assert 'lc_imported_companion_field_tiles[2048]' in header
+ assert receipt['field_art'].startswith('four native 32x32')
+ assert len(bytes.fromhex(receipt['field_tiles_32_sha256']))==32
  source=(GAME/'host_qa_v5.c').read_text().split('\n#ifdef HOST_QA\nint main(',1)[0]
  source+='''
 #include <assert.h>
