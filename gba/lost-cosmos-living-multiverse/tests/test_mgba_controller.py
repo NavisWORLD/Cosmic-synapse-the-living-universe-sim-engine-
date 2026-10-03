@@ -136,12 +136,19 @@ def run(rom, elf, output):
         require(sum(abs(a - b) for a, b in zip(moved, original)) >= 8,
                 "Actual controller direction inputs did not move the actor")
         emu.screenshot(output / "04_exploration_native.png")
-        # Save through the real START menu: SAVE is row 9 (zero based).
+        # Save through the actual V11.1 player menu: SYSTEM is the right-column
+        # fifth entry, then SAVE GAME is the fifth SYSTEM option.
         emu.tap("START", hold=12, release=12)
         wait(emu, lambda: emu.read_symbol("game_mode") == 2, "pause menu")
-        for _ in range(9):
-            emu.tap("DOWN", hold=12, release=12)
-        require(emu.read_symbol("pause_sel") == 9, "Real menu did not select SAVE")
+        emu.tap("RIGHT", hold=10, release=10)
+        for _ in range(4):
+            emu.tap("DOWN", hold=10, release=10)
+        require(emu.read_symbol("pause_sel") == 9, "Real menu did not select SYSTEM")
+        emu.tap("A", hold=12, release=12)
+        require(emu.read_symbol("pause_page") == 9, "SYSTEM page did not open")
+        for _ in range(4):
+            emu.tap("DOWN", hold=10, release=10)
+        require(emu.read_symbol("setting_sel") == 4, "Real SYSTEM page did not select SAVE GAME")
         save_started_frame = emu.frame
         emu.tap("A", hold=12, release=12)
         # The native two-bank CRC journal is synchronous and can take more than
