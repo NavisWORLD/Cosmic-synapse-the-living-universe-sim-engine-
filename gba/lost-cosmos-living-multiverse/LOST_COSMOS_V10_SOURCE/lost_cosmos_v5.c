@@ -853,7 +853,7 @@ static void paint_v4_scenery(void){int x,y,h,old,t,pal;
   if(current_world==3&&old==T_GRASS){if(h<21)t=(h&1)?T_FLOWER:T_VINES;pal=3;}
   if(current_world==4&&old==T_VOID){if(h<15)t=(h&1)?T_RUNE:T_MOON;pal=3;}
   if(current_world==5&&old==T_CROWN){if(h<13)t=(h&1)?T_CIRCUIT:T_RUNE;pal=3;}
-  if(current_room&&old==T_FLOOR&&h<18){t=h&1?T_PILLAR:T_RUNE;pal=2;}
+  if(current_room&&current_room!=5&&old==T_FLOOR&&h<18){t=h&1?T_PILLAR:T_RUNE;pal=2;}
   if(t>=0)map_put(x,y,t,pal,C_FREE,TR_NONE);
  }
 }
@@ -989,7 +989,10 @@ static void v10_generate_dream_festival(void){int x,y;
 #include "g6_geometry.h"
 #include "g7_geometry.h"
 static void eridoria_area(void){int x,y;
- map_fill(current_room==4?T_RUIN:(current_room==5?T_ARCHIVE:T_GRASS),0);map_border();
+ if(current_room==4)map_fill(T_RUIN,0);
+ else if(current_room==5)map_fill(T_FLOOR,2);
+ else map_fill(T_GRASS,0);
+ map_border();
  if(current_room==2){ /* Brindlemark: central blacksmith forge, homes, branching roads. */
   for(x=6;x<59;x++)map_put(x,31,T_PATH,1,C_FREE,0);
   for(y=8;y<57;y++)map_put(31,y,T_PATH,1,C_FREE,0);
@@ -1052,7 +1055,7 @@ static void eridoria_area(void){int x,y;
   add_noise_decor(47,T_CRYSTAL,3,30,0);
  }
 }
-static void generate_dreams(void){int x,y;map_fill(T_FLOWER,0);map_border();
+static void generate_dreams(void){int x,y;map_fill(T_FLOOR,0);map_border();
  for(y=4;y<60;y+=10)for(x=3;x<60;x+=9)if((x+y)%3)map_put(x,y,T_CRYSTAL,3,C_WALL,0);
  for(x=9;x<55;x++)map_put(x,31,T_PATH,1,C_FREE,0);
  for(y=12;y<53;y++)map_put(31,y,T_PATH,1,C_FREE,0);
@@ -1242,7 +1245,7 @@ static void draw_cinema_caption(void){
   ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(14,19,63,15);
   ui_text(1,0,"LOST COSMOS / PROLOGUE",14);ui_text(2,14,card->head,13);
   ui_wrap_text(15,card->text,15,3);
-  ui_text(1,19,"A NEXT   START SKIP",14);ui_num(26,19,v10_opening_step+1,13);
+  ui_text(4,18,"A NEXT   START SKIP",14);ui_num(26,18,v10_opening_step+1,13);
   return;
  }
  if(v10_ending_card){
@@ -1465,7 +1468,6 @@ static void draw_battle(void){Enemy*e=&enemies[battle_index];
  }
  if(battle_phase==1)ui_text(18,12,"B GUARD",13);
  ui_wrap_text(16,battle_notice,14,2);
- ui_text(2,18,"A ACT    B RUN/GUARD",13);
  ui_text(16,10,"ALLY",14);ui_num(23,10,p4_charges,15);
  oam_hide_all();oam_set32(0,43,59,272,0);oam_ui_portrait(0);
  oam_set(1,77,70,32+(cosmos.mood&3)*4,1+(cosmos.mood&3),0);oam_ui_portrait(1);
@@ -1501,14 +1503,13 @@ static void draw_intro(void){
   ui_text(2,12,"CREATED BY CORY DAVIS",14);
   ui_text(2,14,"COSMIC SYNAPSE / COSMOS",15);
   ui_text(2,16,"ERIDORIA / LOST COSMOS",13);
-  ui_text(2,18,"B RETURN",14);
+  ui_text(4,17,"B RETURN",14);
  }else{
   for(i=0;i<4;i++){
    ui_text(2,12+i,(v10_title_sel==i)?">":" ",14);
    ui_text(4,12+i,options[i],(!v10_has_save&&i==1)?13:15);
   }
-  ui_text(1,18,v10_has_save?"SAVE DETECTED":"START A NEW ADVENTURE",13);
-  ui_text(1,19,"UP/DOWN SELECT   A CONFIRM",14);
+  ui_text(4,17,"UP/DOWN SELECT   A CONFIRM",14);
  }
 }
 /* Thirty original, unlockable narrative passages grounded in the five existing
