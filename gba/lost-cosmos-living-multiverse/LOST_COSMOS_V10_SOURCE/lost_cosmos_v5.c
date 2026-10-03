@@ -1628,7 +1628,7 @@ static const char* spell_name(u8 s){static const char*S[SPELL_COUNT]={"SYNAPSE P
 static const char* weapon_name(void){return weapon==2?"CROWN EDGE":(weapon==1?"EMBER SABER":"RUST BLADE");}
 static const char* armor_name(void){return armor?"TIDE MAIL":"TRAVEL CLOTH";}
 static const char* charm_name(void){return charm?"BLOOM CHARM":"NONE";}
-static void draw_pause(void){int i;ui_pause_canvas();
+static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;ui_pause_canvas();
  if(pause_page==0){static const char*items[10]={"MAP","QUEST","PARTY","ITEMS","EQUIPMENT","ABILITIES","BESTIARY","MEMORIES","BEAST BOX","SYSTEM"};
   /* Delta-safe 2x5 cartridge menu. The emulator skin owns the top-center and
      outer lower corners, so all actionable text stays inside the native safe area. */
