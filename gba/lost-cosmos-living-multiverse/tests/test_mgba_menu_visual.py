@@ -11,6 +11,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"tools"))
 from mgba import Mgba,sha256
+from mgba_navigate import Navigator
 
 PAGES=[
  ("map",0),("quest",1),("party",2),("items",3),("equipment",4),
@@ -53,7 +54,12 @@ def run(rom,elf,out):
    wait(emu,lambda:emu.read_symbol("v10_opening")==1,"opening")
    emu.tap("START",hold=12,release=12)
    wait(emu,lambda:emu.read_symbol("v10_opening")==0 and emu.read_symbol("current_room")==2,"Brindlemark")
-   wait(emu,lambda:(emu.read16(0x04000000)&0x0400)!=0 and emu.read_symbol("npc_count")>0,"rendered Brindlemark")
+   nav=Navigator(emu)
+   # Room/world IDs and stale NPCs become visible before the intentional
+   # TRAVERSING COSMOS build cover is removed. Wait for the actual Elder from
+   # the completed Brindlemark map so screenshots never capture a transition.
+   wait(emu,lambda:(emu.read16(0x04000000)&0x0400)!=0 and
+        any(n.id==14 for n in nav.npcs()),"fully rendered Brindlemark with Elder",budget=1800)
    emu.step((),16);emu.screenshot(out/"01_exploration.png")
    emu.tap("START",hold=12,release=12)
    wait(emu,lambda:emu.read_symbol("game_mode")==2 and emu.read_symbol("pause_page")==0,"main menu")
