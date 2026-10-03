@@ -61,7 +61,7 @@ def run(rom,elf,out):
     page=emu.read_symbol("pause_page")
     emu.screenshot(out/f"page_{index:02d}_{name}.png")
     report["captures"].append({"name":name,"selector":index,"pause_page":page,"frame":emu.frame})
-    if name=="party" and page==18 and emu.read_symbol("lc_party")>=0:
+    if name=="party" and page==18:
      emu.tap("A",hold=10,release=10);emu.step((),8)
      emu.screenshot(out/"page_02_party_actions.png")
      emu.tap("B",hold=10,release=10);emu.step((),8)
