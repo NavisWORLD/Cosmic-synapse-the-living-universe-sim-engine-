@@ -3,6 +3,9 @@ on:
   push:
     branches: [feature/lost-cosmos-living-multiverse-recovery-011, feature/lost-cosmos-v11-enhanced-001]
     paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
+  pull_request:
+    branches: [feature/lost-cosmos-v10-presentation-001]
+    paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -50,6 +53,9 @@ jobs:
           /tmp/lc-journal-test
       - name: Real mGBA controller boot, movement, audio, video and two-boot save check
         run: python3 tests/test_mgba_controller.py --out artifacts/mgba_controller
+      - name: Real mGBA V11.1 full menu visual pilgrimage
+        timeout-minutes: 5
+        run: python3 tests/test_mgba_menu_visual.py --out artifacts/mgba_menu_visual
       - name: Release gate - real controller-only Act I to Malakar and First Heart, plus real second cold boot
         timeout-minutes: 7
         run: |
@@ -84,6 +90,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/native/
             gba/lost-cosmos-living-multiverse/artifacts/release/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_controller/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_menu_visual/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act2/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_eldoria/
