@@ -53,12 +53,13 @@ def as_c(name: str, raw: bytes) -> str:
 
 
 def field_tiles_32(raw: bytes) -> bytes:
-    """Nearest-neighbour 64x64x4 GBA 4bpp portraits -> 32x32x4 field art.
+    """Convert four verified 64x64 portraits into compact 32x32 field frames.
 
-    The source is 1D OBJ tile order (8 tiles per 64px row). The output uses
-    the same hardware-native 1D order with four tiles per 32px row. No
-    interpolation invents colors; every field pixel selects one verified
-    source-palette pixel from the portable Beast export.
+    The output remains a hardware-native 32x32 OBJ canvas, but the visible
+    silhouette is deliberately capped at 20x20 pixels and centered. This
+    keeps an imported Quantum Beast companion comparable to the hero instead
+    of placing a portrait-sized blob in the overworld. Scaling is deterministic
+    nearest-neighbour and uses only the original verified 16-color palette.
     """
     if len(raw) != 8192:
         raise InvalidExport('Expected four 64x64 4bpp companion frames')
@@ -74,13 +75,26 @@ def field_tiles_32(raw: bytes) -> bytes:
                         b=raw[tile+y*4+x//2]
                         pixels[ty*8+y][tx*8+x]=b&15
                         pixels[ty*8+y][tx*8+x+1]=(b>>4)&15
-        small=[[pixels[y*2][x*2] for x in range(32)] for y in range(32)]
+        visible=[(x,y) for y in range(64) for x in range(64) if pixels[y][x]]
+        canvas=[[0]*32 for _ in range(32)]
+        if visible:
+            minx=min(x for x,_ in visible);maxx=max(x for x,_ in visible)
+            miny=min(y for _,y in visible);maxy=max(y for _,y in visible)
+            sw=maxx-minx+1;sh=maxy-miny+1
+            scale=min(20/sw,20/sh)
+            dw=max(1,min(20,int(sw*scale+0.5)));dh=max(1,min(20,int(sh*scale+0.5)))
+            ox=(32-dw)//2;oy=(32-dh)//2
+            for y in range(dh):
+                sy=miny+min(sh-1,(y*sh)//dh)
+                for x in range(dw):
+                    sx=minx+min(sw-1,(x*sw)//dw)
+                    canvas[oy+y][ox+x]=pixels[sy][sx]
         for ty in range(4):
             for tx in range(4):
                 for y in range(8):
                     for x in range(0,8,2):
-                        lo=small[ty*8+y][tx*8+x]&15
-                        hi=small[ty*8+y][tx*8+x+1]&15
+                        lo=canvas[ty*8+y][tx*8+x]&15
+                        hi=canvas[ty*8+y][tx*8+x+1]&15
                         out.append(lo|(hi<<4))
     if len(out)!=2048:
         raise AssertionError('32x32 field-art packing invariant failed')
@@ -196,7 +210,7 @@ def import_export(source: Path, output: Path) -> dict:
                  'BCG1_guest_validated':True,'BCP1_game_profile':profile,
                  'portable_seed_hash':seed_hash,'generator_version':version,
                  'frames':['idle','listening','thinking','celebrating'],
-                 'field_art':'four native 32x32 frames derived from the verified 64x64 export',
+                 'field_art':'compact <=20px silhouettes centered in four native 32x32 frames from verified 64x64 export',
                  'not_included':['owner_memory','real_sensor_data','model_weights','cloud_credentials']}
         (output/'import_receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')
         return receipt
