@@ -1144,7 +1144,25 @@ static void v9_generate_rift(void){int x,y,d,pal;
  map_put(31,28,T_CROWN,5,C_FREE,TR_NONE);
 }
 #include "visual_world_v10_8.h"
-static void generate_surface(void){int i;location_banner=150;REG_DISPCNT=0;for(i=0;i<MAP_W*MAP_H;i++){collision[i]=C_FREE;trigger[i]=TR_NONE;}set_world_palette(COMP_IS_ROOM?COMPLETION_SCENES[current_room-COMPLETION_FIRST_ROOM].theme:current_world==0?(current_room==6?4:current_room==7?3:current_room==8?2:current_room==9?1:current_room==12?5:
+static void world_build_cover(const char*line){
+ /* Keep a stable, opaque UI frame on screen while procedural tilemaps are
+    rebuilt. The old implementation blanked DISPCNT and exposed ~0.7 s of
+    black video on real mGBA/Delta. BG1 has highest priority and hides BG0/BG2
+    writes until the new world is complete. */
+ REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;
+ REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;
+ ui_pause_canvas();ui_text(6,8,"TRAVERSING COSMOS",14);ui_text(6,10,line,13);
+#ifndef HOST_QA
+ wait_vblank();
+#endif
+}
+static void world_build_reveal(void){
+#ifndef HOST_QA
+ wait_vblank();
+#endif
+ ui_clear();
+}
+static void generate_surface(void){int i;location_banner=150;world_build_cover("BUILDING LOCAL MAP");for(i=0;i<MAP_W*MAP_H;i++){collision[i]=C_FREE;trigger[i]=TR_NONE;}set_world_palette(COMP_IS_ROOM?COMPLETION_SCENES[current_room-COMPLETION_FIRST_ROOM].theme:current_world==0?(current_room==6?4:current_room==7?3:current_room==8?2:current_room==9?1:current_room==12?5:
  current_room>=ARC_FIRST_ROOM&&current_room<ARC_FIRST_ROOM+ARC_STAGES?
  (current_room-ARC_FIRST_ROOM)%8:
  current_room==ARC_EPILOGUE_ROOM?(ending==1?6:ending==2?3:4):G6_IS_ROOM?
@@ -1202,11 +1220,11 @@ static void generate_surface(void){int i;location_banner=150;REG_DISPCNT=0;for(i
   }
  }
  REG_BG2CNT=(u16)(1|(BG_TILE_CB<<2)|(V8_FOREGROUND_MAP<<8));
- REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));ui_clear();REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;}
-static void generate_space(void){int x,y;npc_count=0;location_banner=150;REG_DISPCNT=0;set_world_palette(ship_world);for(y=0;y<MAP_H;y++)for(x=0;x<MAP_W;x++){int h=(x*37+y*53+x*y*3)&127;map_put(x,y,h<6?T_STAR:T_VOID,(h&1)?3:0,C_FREE,TR_NONE);}REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG2CNT=(u16)(1|(BG_TILE_CB<<2)|(SPACE_PARALLAX_MAP<<8));
+ REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;world_build_reveal();}
+static void generate_space(void){int x,y;npc_count=0;location_banner=150;world_build_cover("LUNA-ARC TRANSIT");set_world_palette(ship_world);for(y=0;y<MAP_H;y++)for(x=0;x<MAP_W;x++){int h=(x*37+y*53+x*y*3)&127;map_put(x,y,h<6?T_STAR:T_VOID,(h&1)?3:0,C_FREE,TR_NONE);}REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG2CNT=(u16)(1|(BG_TILE_CB<<2)|(SPACE_PARALLAX_MAP<<8));
  for(y=0;y<32;y++)for(x=0;x<32;x++){int h=((x*37+y*19+x*y*5)^0x25)&63;
   screenblock(SPACE_PARALLAX_MAP)[y*32+x]=h<2?map_attr(T_STAR,2):map_attr(T_VOID,0);}
- ui_clear();REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;}
+ REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;world_build_reveal();}
 
 /* ---------- deterministic native-GBA cinematic presentation ---------- */
 #include "credits_v10_8.h"
