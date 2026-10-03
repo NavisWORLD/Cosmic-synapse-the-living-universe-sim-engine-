@@ -193,6 +193,7 @@ static QuantumState qstate;
    authoritative when loading historical saves and are never renumbered. */
 #define LC_ROSTER_SRAM 1024
 #define LC_IMPORT_OBJ_TILE 640
+#define LC_IMPORT_FIELD_OBJ_TILE 896
 #define LC_IMPORT_OBJ_PAL 15
 static LcRoster lc_party;
 static u8 lc_party_sel=0;
@@ -238,6 +239,13 @@ static void lc_add_exported_profile(void){
 }
 /* Only the imported 64x64 PORTRAIT uses OBJ bank 15 and reserved tile 640..895.
    The established 16x16 field sprites keep their original allocator/indices. */
+static void lc_import_palette(void){
+#if defined(LC_IMPORTED_COMPANION)
+ int i;for(i=0;i<16;i++)OBJ_PALETTE[LC_IMPORT_OBJ_PAL*16+i]=
+  (u16)lc_imported_companion_palette[2*i]|
+  (u16)((u16)lc_imported_companion_palette[2*i+1]<<8);
+#endif
+}
 static void lc_upload_import_art(void){
 #if defined(LC_IMPORTED_COMPANION)
  volatile u16 *dst=(volatile u16*)OBJ_VRAM32;
@@ -246,13 +254,16 @@ static void lc_upload_import_art(void){
   dst[LC_IMPORT_OBJ_TILE*16+i]=(u16)lc_imported_companion_tiles[i*2] |
    (u16)((u16)lc_imported_companion_tiles[i*2+1]<<8);
  }
+ for(i=0;i<1024;i++){
+  dst[LC_IMPORT_FIELD_OBJ_TILE*16+i]=(u16)lc_imported_companion_field_tiles[i*2] |
+   (u16)((u16)lc_imported_companion_field_tiles[i*2+1]<<8);
+ }
+ lc_import_palette();
 #endif
 }
 static void lc_draw_import_portrait(int x,int y){
 #if defined(LC_IMPORTED_COMPANION)
- int i;for(i=0;i<16;i++)OBJ_PALETTE[LC_IMPORT_OBJ_PAL*16+i]=
-  (u16)lc_imported_companion_palette[2*i]|
-  (u16)((u16)lc_imported_companion_palette[2*i+1]<<8);
+ lc_import_palette();
  OAM16[42*4]=(u16)(y&255);
  OAM16[42*4+1]=(u16)((x&511)|(3u<<14)); /* square 64x64 */
  OAM16[42*4+2]=(u16)(LC_IMPORT_OBJ_TILE+(cosmos.mood&3)*64 +
@@ -261,11 +272,25 @@ static void lc_draw_import_portrait(int x,int y){
  (void)x;(void)y;
 #endif
 }
+static void lc_draw_import_field(int oi,int x,int y,int hflip,int ui){
+#if defined(LC_IMPORTED_COMPANION)
+ if(x<-32||x>239||y<-32||y>159){OAM16[oi*4]=0x0200;return;}
+ lc_import_palette();
+ OAM16[oi*4]=(u16)(y&255);
+ OAM16[oi*4+1]=(u16)((x&511)|(2u<<14)|(hflip?0x1000:0)); /* square 32x32 */
+ OAM16[oi*4+2]=(u16)(LC_IMPORT_FIELD_OBJ_TILE+(cosmos.mood&3)*16+
+   ((ui?0:1u)<<10)+(LC_IMPORT_OBJ_PAL<<12));
+#else
+ (void)oi;(void)x;(void)y;(void)hflip;(void)ui;
+#endif
+}
 
 static u8 beacon_count=0;
 static u8 current_world=0,current_room=0,current_layer=1,game_mode=MODE_SURFACE,return_mode=MODE_SURFACE;
 static u8 keys_found=0,visited_mask=1,secrets_mask=0,chapter=0,ending=0,cosmos_preference=0,player_choice=0;
 static u8 postgame=0,audio_on=1,pause_sel=0,pause_page=0,touch_mode=0,hold_a_frames=0;
+static u8 collection_action_sel=0,ability_sel=0;
+static u16 location_banner=180;
 static u8 player_level=1,max_hp=6,player_mp=6,max_mp=6,str_stat=2,def_stat=1,mag_stat=2,credits=0;
 static u16 player_xp=0,kill_count=0;
 static u8 inv[ITEM_COUNT]={2,1,0,0};
@@ -574,6 +599,7 @@ static void ui_fill_rows(int y0,int y1,int tile,int pal){ int x,y; volatile u16*
 static void ui_frame(int top,int bottom,int pal){int x,y;volatile u16*m=screenblock(UI_MAP_BASE);
  for(y=top;y<=bottom;y++)for(x=0;x<30;x++)m[y*32+x]=map_attr((y==top||y==bottom||x==0||x==29)?61:62,pal);
 }
+static void ui_pause_canvas(void){ui_clear();ui_fill_rows(0,19,63,15);}
 static void ui_text(int x,int y,const char*s,int pal){ volatile u16*m=screenblock(UI_MAP_BASE); while(*s&&x<30){ int g=font_index(*s++); m[y*32+x]=map_attr((g<0)?62:64+g,pal); x++; } }
 static void ui_num(int x,int y,int value,int pal){
  /* Correctly renders 0..60000 XP and every existing stat without non-digit
@@ -582,6 +608,10 @@ static void ui_num(int x,int y,int value,int pal){
  if(value<0){buf[j++]='-';n=(unsigned int)(-value);}else n=(unsigned int)value;
  do{digits[i++]=(char)('0'+(n%10));n/=10;}while(n&&i<10);
  while(i>0&&j<11)buf[j++]=digits[--i];buf[j]=0;ui_text(x,y,buf,pal);
+}
+static void ui_hex32(int x,int y,u32 value,int pal){
+ static const char H[]="0123456789ABCDEF";char b[9];int i;
+ for(i=0;i<8;i++)b[i]=H[(value>>(28-i*4))&15];b[8]=0;ui_text(x,y,b,pal);
 }
 
 /* ---------- tile generation ---------- */
@@ -627,14 +657,14 @@ static void make_bg_tile(int id,int type){ u32 t[8];int x,y;
  }upload_bg_tile(id,t);}
 static void make_ui_tiles(void){int g,x,y;u32 t[8];
  /* UI uses a dedicated 4bpp character base. Index 0 is transparent ONLY outside panels. */
- for(y=0;y<8;y++)t[y]=0x33333333u;vram_copy32(VRAM32+(0x4000/4)+61*8,t,8); /* border */
+ for(y=0;y<8;y++)t[y]=0x33333333u;vram_copy32(VRAM32+(0x4000/4)+61*8,t,8); /* dialogue border */
  for(y=0;y<8;y++)t[y]=0x22222222u;
  vram_copy32(VRAM32+(0x4000/4)+62*8,t,8); /* opaque space */
  vram_copy32(VRAM32+(0x4000/4)+63*8,t,8); /* opaque panel */
+ /* Menus use one crisp 5x7 foreground rather than the old doubled drop-shadow.
+    Delta scales individual GBA pixels aggressively; a second offset glyph read
+    like a graphical glitch on phone skins. */
  for(g=0;g<48;g++){for(y=0;y<8;y++)t[y]=0x22222222u;
-  for(x=0;x<5;x++)for(y=0;y<7;y++)if(FONT[g][x]&(1u<<y)){
-     if(x+2<8&&y+1<8)tile_pixel(t,x+2,y+1,4);
-   }
   for(x=0;x<5;x++)for(y=0;y<7;y++)if(FONT[g][x]&(1u<<y))tile_pixel(t,x+1,y,1);
   vram_copy32(VRAM32+(0x4000/4)+(64+g)*8,t,8);
  }
@@ -823,7 +853,7 @@ static void paint_v4_scenery(void){int x,y,h,old,t,pal;
   if(current_world==3&&old==T_GRASS){if(h<21)t=(h&1)?T_FLOWER:T_VINES;pal=3;}
   if(current_world==4&&old==T_VOID){if(h<15)t=(h&1)?T_RUNE:T_MOON;pal=3;}
   if(current_world==5&&old==T_CROWN){if(h<13)t=(h&1)?T_CIRCUIT:T_RUNE;pal=3;}
-  if(current_room&&old==T_FLOOR&&h<18){t=h&1?T_PILLAR:T_RUNE;pal=2;}
+  if(current_room&&current_room!=5&&old==T_FLOOR&&h<18){t=h&1?T_PILLAR:T_RUNE;pal=2;}
   if(t>=0)map_put(x,y,t,pal,C_FREE,TR_NONE);
  }
 }
@@ -959,7 +989,10 @@ static void v10_generate_dream_festival(void){int x,y;
 #include "g6_geometry.h"
 #include "g7_geometry.h"
 static void eridoria_area(void){int x,y;
- map_fill(current_room==4?T_RUIN:(current_room==5?T_ARCHIVE:T_GRASS),0);map_border();
+ if(current_room==4)map_fill(T_RUIN,0);
+ else if(current_room==5)map_fill(T_FLOOR,2);
+ else map_fill(T_GRASS,0);
+ map_border();
  if(current_room==2){ /* Brindlemark: central blacksmith forge, homes, branching roads. */
   for(x=6;x<59;x++)map_put(x,31,T_PATH,1,C_FREE,0);
   for(y=8;y<57;y++)map_put(31,y,T_PATH,1,C_FREE,0);
@@ -1022,7 +1055,7 @@ static void eridoria_area(void){int x,y;
   add_noise_decor(47,T_CRYSTAL,3,30,0);
  }
 }
-static void generate_dreams(void){int x,y;map_fill(T_FLOWER,0);map_border();
+static void generate_dreams(void){int x,y;map_fill(T_FLOOR,0);map_border();
  for(y=4;y<60;y+=10)for(x=3;x<60;x+=9)if((x+y)%3)map_put(x,y,T_CRYSTAL,3,C_WALL,0);
  for(x=9;x<55;x++)map_put(x,31,T_PATH,1,C_FREE,0);
  for(y=12;y<53;y++)map_put(31,y,T_PATH,1,C_FREE,0);
@@ -1111,7 +1144,25 @@ static void v9_generate_rift(void){int x,y,d,pal;
  map_put(31,28,T_CROWN,5,C_FREE,TR_NONE);
 }
 #include "visual_world_v10_8.h"
-static void generate_surface(void){int i;REG_DISPCNT=0;for(i=0;i<MAP_W*MAP_H;i++){collision[i]=C_FREE;trigger[i]=TR_NONE;}set_world_palette(COMP_IS_ROOM?COMPLETION_SCENES[current_room-COMPLETION_FIRST_ROOM].theme:current_world==0?(current_room==6?4:current_room==7?3:current_room==8?2:current_room==9?1:current_room==12?5:
+static void world_build_cover(const char*line){
+ /* Keep a stable, opaque UI frame on screen while procedural tilemaps are
+    rebuilt. The old implementation blanked DISPCNT and exposed ~0.7 s of
+    black video on real mGBA/Delta. BG1 has highest priority and hides BG0/BG2
+    writes until the new world is complete. */
+ REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;
+ REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;
+ ui_pause_canvas();ui_text(6,8,"TRAVERSING COSMOS",14);ui_text(6,10,line,13);
+#ifndef HOST_QA
+ wait_vblank();
+#endif
+}
+static void world_build_reveal(void){
+#ifndef HOST_QA
+ wait_vblank();
+#endif
+ ui_clear();
+}
+static void generate_surface(void){int i;location_banner=150;world_build_cover("BUILDING LOCAL MAP");for(i=0;i<MAP_W*MAP_H;i++){collision[i]=C_FREE;trigger[i]=TR_NONE;}set_world_palette(COMP_IS_ROOM?COMPLETION_SCENES[current_room-COMPLETION_FIRST_ROOM].theme:current_world==0?(current_room==6?4:current_room==7?3:current_room==8?2:current_room==9?1:current_room==12?5:
  current_room>=ARC_FIRST_ROOM&&current_room<ARC_FIRST_ROOM+ARC_STAGES?
  (current_room-ARC_FIRST_ROOM)%8:
  current_room==ARC_EPILOGUE_ROOM?(ending==1?6:ending==2?3:4):G6_IS_ROOM?
@@ -1169,11 +1220,11 @@ static void generate_surface(void){int i;REG_DISPCNT=0;for(i=0;i<MAP_W*MAP_H;i++
   }
  }
  REG_BG2CNT=(u16)(1|(BG_TILE_CB<<2)|(V8_FOREGROUND_MAP<<8));
- REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));ui_clear();REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;}
-static void generate_space(void){int x,y;npc_count=0;REG_DISPCNT=0;set_world_palette(ship_world);for(y=0;y<MAP_H;y++)for(x=0;x<MAP_W;x++){int h=(x*37+y*53+x*y*3)&127;map_put(x,y,h<6?T_STAR:T_VOID,(h&1)?3:0,C_FREE,TR_NONE);}REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG2CNT=(u16)(1|(BG_TILE_CB<<2)|(SPACE_PARALLAX_MAP<<8));
+ REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;world_build_reveal();}
+static void generate_space(void){int x,y;npc_count=0;location_banner=150;world_build_cover("LUNA-ARC TRANSIT");set_world_palette(ship_world);for(y=0;y<MAP_H;y++)for(x=0;x<MAP_W;x++){int h=(x*37+y*53+x*y*3)&127;map_put(x,y,h<6?T_STAR:T_VOID,(h&1)?3:0,C_FREE,TR_NONE);}REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG2CNT=(u16)(1|(BG_TILE_CB<<2)|(SPACE_PARALLAX_MAP<<8));
  for(y=0;y<32;y++)for(x=0;x<32;x++){int h=((x*37+y*19+x*y*5)^0x25)&63;
   screenblock(SPACE_PARALLAX_MAP)[y*32+x]=h<2?map_attr(T_STAR,2):map_attr(T_VOID,0);}
- ui_clear();REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;}
+ REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;world_build_reveal();}
 
 /* ---------- deterministic native-GBA cinematic presentation ---------- */
 #include "credits_v10_8.h"
@@ -1212,7 +1263,7 @@ static void draw_cinema_caption(void){
   ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(14,19,63,15);
   ui_text(1,0,"LOST COSMOS / PROLOGUE",14);ui_text(2,14,card->head,13);
   ui_wrap_text(15,card->text,15,3);
-  ui_text(1,19,"A NEXT   START SKIP",14);ui_num(26,19,v10_opening_step+1,13);
+  ui_text(4,18,"A NEXT   START SKIP",14);ui_num(26,18,v10_opening_step+1,13);
   return;
  }
  if(v10_ending_card){
@@ -1388,30 +1439,25 @@ static void ui_wrap_text(int row,const char*s,int pal,int maxrows){
  }
 }
 static const char*campaign_objective(void);
-static void draw_hud(void){char k[8];ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(18,19,63,15);ui_text(1,0,game_mode==MODE_SPACE?"SPACE":location_name(),14);if(game_mode==MODE_SURFACE){
-  if(ARC_IS_ROOM){ui_text(24,0,"CH",13);ui_num(27,0,(int)current_room-ARC_FIRST_ROOM+1,15);}
-  else ui_text(19,0,layer_name(),13);
- }
- k[0]='X';k[1]=(keys_found&1)?'*':'-';k[2]='Y';k[3]=(keys_found&2)?'*':'-';k[4]='Z';k[5]=(keys_found&4)?'*':'-';k[6]=0;ui_text(1,1,k,13);ui_text(9,1,"LV",14);ui_num(12,1,player_level,15);ui_text(16,1,"HP",14);ui_num(19,1,player.hp,15);ui_text(21,1,"/",15);ui_num(22,1,max_hp,15);ui_text(26,1,"MP",14);ui_num(28,1,player_mp,15);
+static void draw_hud(void){ui_clear();ui_fill_rows(0,0,63,15);
+ ui_text(1,0,"HP",14);ui_num(4,0,player.hp,15);ui_text(6,0,"/",15);ui_num(7,0,max_hp,15);
+ ui_text(12,0,"LV",13);ui_num(15,0,player_level,15);
+ ui_text(20,0,"MP",14);ui_num(23,0,player_mp,15);ui_text(25,0,"/",15);ui_num(26,0,max_mp,15);
+ if(location_banner){ui_fill_rows(1,1,62,15);ui_text(2,1,game_mode==MODE_SPACE?"DEEP SPACE":location_name(),13);location_banner--;}
  if(riddle_open){ui_frame(11,19,15);ui_text(2,12,"TRIAL OF WISDOM",14);
   ui_wrap_text(13,"BORN OF LIGHT BRIEF AS NIGHT",15,2);
-  ui_text(2,16,"LEFT SHADOW  UP MOON",13);ui_text(2,17,"RIGHT SHOOTING STAR",15);
-  ui_text(2,18,"SELECT WITH D-PAD",14);
+  ui_text(2,16,"LEFT SHADOW   UP MOON",13);ui_text(2,17,"RIGHT SHOOTING STAR",15);
+  ui_text(2,18,"D-PAD CHOOSE   B LEAVE",14);
  }else if(npc_dialogue_active){const NPCDef*d=&NPCS[npc_dialogue_id];ui_frame(11,19,15);
- ui_text(2,12,d->name,14);ui_text(2,13,(d->quest<8&&(quest_completed&(1u<<d->quest)))?"MEMORY RECORDED":"ERIDORIA // DIALOGUE",13);
- ui_wrap_text(14,npc_line(),15,4);ui_text(2,18,"A NEXT    B CLOSE",14);
- }else if(dialogue_timer){ui_frame(13,19,15);ui_text(2,14,"COSMOS",14);ui_wrap_text(15,dialogue,15,3);}else if(current_room==6&&game_mode==MODE_SURFACE){
-  ui_text(1,18,"RIFT WAVE",14);ui_num(12,18,v9_wave,13);
-  if(v9_combo_time&&v9_combo>=2){ui_text(17,18,"COMBO",13);ui_num(24,18,v9_combo,15);}
-  ui_text(1,19,"SEL+R JUMP SEL+L TAME",15);
- }else{ui_text(1,18,"A SWORD/ACT",14);ui_text(13,18,"B RUN",15);ui_text(20,18,"R MAGIC",13);ui_text(1,19,"L POTION",14);ui_text(8,19,"START MENU",15);ui_text(20,19,"Q",14);ui_num(22,19,qstate.phase,15);
- /* Human-readable next quest is always accessible on the Story page; on
-    alternating frames the quiet HUD swaps controls for the next objective. */
- if(((frame>>8)&1)==0){ui_fill_rows(19,19,62,15);
-  ui_text(1,19,(current_world==0&&current_room==7)?((story_flags&ST_HEARTWOOD)?"HEARTWOOD: THE GROVE REMEMBERS":(!(story_flags&ST_HW_WISDOM)?"HEARTWOOD: SOLVE ROOT RUNE":(!(story_flags&ST_HW_COURAGE)?"HEARTWOOD: GUARDIAN TRIAL":"HEARTWOOD: BALANCE CRYSTAL"))):(v10_tutorial==1)?"FIND THE BRINDLE ELDER":
-   (v10_tutorial==2)?"WEST GATE / SEEK ASTRID":
-   (v10_tutorial==3)?"ORIGIN / SPEAK TO ASTRID":
-   (v10_tutorial==4)?"FIND MIRA / REPAIR BEACON":campaign_objective(),14);}}
+  ui_text(2,12,d->name,14);ui_text(2,13,(d->quest<8&&(quest_completed&(1u<<d->quest)))?"MEMORY RECORDED":"ERIDORIA",13);
+  ui_wrap_text(14,npc_line(),15,4);ui_text(2,18,"A NEXT   B CLOSE",14);
+ }else if(dialogue_timer){ui_frame(13,19,15);ui_text(2,14,"COSMOS",14);ui_wrap_text(15,dialogue,15,3);
+ }else if(current_room==6&&game_mode==MODE_SURFACE){ui_fill_rows(18,19,62,15);
+  ui_text(2,18,"RIFT",14);ui_num(7,18,v9_wave,13);if(v9_combo_time&&v9_combo>=2){ui_text(14,18,"COMBO",13);ui_num(20,18,v9_combo,15);}
+  ui_text(2,19,"SEL+R JUMP   SEL+L BOND",15);
+ }else if(v10_tutorial){ui_fill_rows(19,19,62,15);
+  ui_text(2,19,(v10_tutorial==1)?"FIND THE BRINDLE ELDER":(v10_tutorial==2)?"WEST GATE / SEEK ASTRID":(v10_tutorial==3)?"ORIGIN / SPEAK TO ASTRID":"FIND MIRA / REPAIR BEACON",14);
+ }
 }
 static void draw_shop(void){static const char*lines[4]={"BUY POTION 5 CREDITS","BUY ETHER 7 CREDITS","SELL SHARD +3","SELL CORE +12"};int i;
  ui_clear();ui_frame(0,19,15);ui_text(2,2,"OAKWOOD MARKET // TRADE",14);
@@ -1440,7 +1486,6 @@ static void draw_battle(void){Enemy*e=&enemies[battle_index];
  }
  if(battle_phase==1)ui_text(18,12,"B GUARD",13);
  ui_wrap_text(16,battle_notice,14,2);
- ui_text(2,18,"A ACT    B RUN/GUARD",13);
  ui_text(16,10,"ALLY",14);ui_num(23,10,p4_charges,15);
  oam_hide_all();oam_set32(0,43,59,272,0);oam_ui_portrait(0);
  oam_set(1,77,70,32+(cosmos.mood&3)*4,1+(cosmos.mood&3),0);oam_ui_portrait(1);
@@ -1450,6 +1495,10 @@ static void draw_battle(void){Enemy*e=&enemies[battle_index];
  if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];
   if(c->species>=1&&c->species<=8){oam_set(3,115,71,384+(c->species-1)*24+
     mini(2,c->stage)*8+((frame>>4)&1)*4,7,0);oam_ui_portrait(3);}
+#if defined(LC_IMPORTED_COMPANION)
+  else if(c->species>=LC_SPECIES_IMPORTED&&c->species<LC_SPECIES_IMPORTED+7)
+   lc_draw_import_field(3,108,59,0,1);
+#endif
  }
  if(current_world==0&&current_room==6&&e->elite)ui_text(3,3,"NIHILOS ECHO",13);
 
@@ -1472,14 +1521,13 @@ static void draw_intro(void){
   ui_text(2,12,"CREATED BY CORY DAVIS",14);
   ui_text(2,14,"COSMIC SYNAPSE / COSMOS",15);
   ui_text(2,16,"ERIDORIA / LOST COSMOS",13);
-  ui_text(2,18,"B RETURN",14);
+  ui_text(4,17,"B RETURN",14);
  }else{
   for(i=0;i<4;i++){
    ui_text(2,12+i,(v10_title_sel==i)?">":" ",14);
    ui_text(4,12+i,options[i],(!v10_has_save&&i==1)?13:15);
   }
-  ui_text(1,18,v10_has_save?"SAVE DETECTED":"START A NEW ADVENTURE",13);
-  ui_text(1,19,"UP/DOWN SELECT   A CONFIRM",14);
+  ui_text(4,17,"UP/DOWN SELECT   A CONFIRM",14);
  }
 }
 /* Thirty original, unlockable narrative passages grounded in the five existing
@@ -1599,10 +1647,19 @@ static const char* spell_name(u8 s){static const char*S[SPELL_COUNT]={"SYNAPSE P
 static const char* weapon_name(void){return weapon==2?"CROWN EDGE":(weapon==1?"EMBER SABER":"RUST BLADE");}
 static const char* armor_name(void){return armor?"TIDE MAIL":"TRAVEL CLOTH";}
 static const char* charm_name(void){return charm?"BLOOM CHARM":"NONE";}
-static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2,1,"PAUSED // COSMIC RPG",14);
- if(pause_page==0){static const char*items[13]={"MAP","COSMOS","STATS","ITEMS","EQUIPMENT","MEMORIES","AXIS KEYS","STORY","SETTINGS","SAVE","QUESTS","NPC LOG","ERIDORIA"};for(i=0;i<13;i++){ui_text(2,3+i,(i==pause_sel)?">":" ",13);ui_text(4,3+i,items[i],(i==pause_sel)?14:15);}ui_text(2,16,touch_mode?"SELECT DODGE   B+A HEAVY":"B+A HEAVY  B+SEL DODGE",14);ui_text(2,17,"A OPEN   B RESUME",13);}
- else if(pause_page==1){ui_text(2,3,"MAP // KNOWN WORLDS",14);for(i=0;i<8;i++){ui_text(2,5+i,(visited_mask&(1u<<i))?"*":"-",13);ui_text(4,5+i,WORLDS[i].name,15);}ui_text(2,17,"B BACK",13);}
- else if(pause_page==2){ui_text(2,3,"COSMOS // QUANTUM BUDDY",14);ui_text(2,5,"MOOD",13);ui_text(10,5,mood_name(),15);ui_text(2,6,"GOAL",13);ui_text(10,6,goal_name(cosmos.goal),15);ui_text(2,7,"TRUST",13);ui_num(10,7,cosmos.trust,15);ui_text(2,8,"CURIOSITY",13);ui_num(13,8,cosmos.curiosity,15);ui_text(2,9,"Q PHASE",13);ui_num(12,9,qstate.phase,15);ui_text(2,10,"Q COHERENCE",13);ui_num(14,10,qstate.coherence,15);ui_text(2,11,"Q SPREAD",13);ui_num(12,11,qstate.spread,15);ui_text(2,13,buddy_quantum?"WORKLOAD REPLAY ON":"WORKLOAD REPLAY OFF",14);ui_text(2,14,buddy_talk?"AUTO TALK ON":"AUTO TALK OFF",15);ui_text(2,16,"R CREATURE COLLECTION",14);ui_text(2,17,"B BACK",13);}
+static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;ui_pause_canvas();
+ if(pause_page==0){static const char*items[10]={"MAP","QUEST","PARTY","ITEMS","EQUIPMENT","ABILITIES","BESTIARY","MEMORIES","BEAST BOX","SYSTEM"};
+  /* Delta-safe 2x5 cartridge menu. The emulator skin owns the top-center and
+     outer lower corners, so all actionable text stays inside the native safe area. */
+  ui_text(5,2,"LOST COSMOS",14);ui_text(20,2,"MENU",13);
+  for(i=0;i<5;i++){int y=6+i*2;
+   ui_text(4,y,(i==pause_sel)?">":" ",13);ui_text(6,y,items[i],(i==pause_sel)?14:15);
+   ui_text(16,y,(i+5==pause_sel)?">":" ",13);ui_text(18,y,items[i+5],(i+5==pause_sel)?14:15);
+  }
+  ui_text(6,17,"A OPEN",14);ui_text(19,17,"B CLOSE",13);
+ }
+ else if(pause_page==1){ui_text(4,2,"MAP // KNOWN WORLDS",14);for(i=0;i<8;i++){ui_text(2,5+i,(visited_mask&(1u<<i))?"*":"-",13);ui_text(4,5+i,WORLDS[i].name,15);}ui_text(2,17,"B BACK",13);}
+ else if(pause_page==2){ui_text(2,3,"COSMOS // QUANTUM BUDDY",14);ui_text(2,5,"MOOD",13);ui_text(10,5,mood_name(),15);ui_text(2,6,"GOAL",13);ui_text(10,6,goal_name(cosmos.goal),15);ui_text(2,7,"TRUST",13);ui_num(10,7,cosmos.trust,15);ui_text(2,8,"CURIOSITY",13);ui_num(13,8,cosmos.curiosity,15);ui_text(2,9,"RHYTHM",13);ui_num(12,9,qstate.phase,15);ui_text(2,10,"FOCUS",13);ui_num(14,10,qstate.coherence,15);ui_text(2,11,"SPARK",13);ui_num(12,11,qstate.spread,15);ui_text(2,13,buddy_quantum?"COSMIC REPLAY ON":"COSMIC REPLAY OFF",14);ui_text(2,14,buddy_talk?"AUTO TALK ON":"AUTO TALK OFF",15);ui_text(2,16,"R CREATURE COLLECTION",14);ui_text(2,17,"B BACK",13);}
  else if(pause_page==3){ui_text(2,3,ROLE_NAMES[actor_style&3],14);ui_text(2,5,"LEVEL",13);ui_num(10,5,player_level,15);ui_text(2,6,"XP",13);ui_num(10,6,player_xp,15);ui_text(2,7,"HP",13);ui_num(10,7,player.hp,15);ui_text(14,7,"/",15);ui_num(16,7,max_hp,15);ui_text(2,8,"MP",13);ui_num(10,8,player_mp,15);ui_text(14,8,"/",15);ui_num(16,8,max_mp,15);ui_text(2,10,"STR",13);ui_num(10,10,str_stat,15);ui_text(2,11,"DEF",13);ui_num(10,11,def_stat,15);ui_text(2,12,"MAG",13);ui_num(10,12,mag_stat,15);ui_text(2,13,"KILLS",13);ui_num(10,13,kill_count,15);ui_text(2,14,"CREDITS",13);ui_num(12,14,credits,15);ui_text(2,16,"R ROLE  L RIFT ARMORY",14);ui_text(2,17,"B BACK",13);oam_set32(1,184,45,272,0);oam_ui_portrait(1);}
  else if(pause_page==4){ui_text(2,3,"ITEMS / R WORKSHOP",14);for(i=0;i<ITEM_COUNT;i++){ui_text(2,5+i,(i==item_sel)?">":" ",13);ui_text(4,5+i,item_name(i),15);ui_num(22,5+i,inv[i],13);}ui_text(2,11,"SELECT ITEM - A USE",14);
  ui_text(2,12,item_sel==ITEM_POTION?"RESTORES 4 HP":item_sel==ITEM_ETHER?"RESTORES 5 MP":item_sel==ITEM_SHARD?"THREE = STR + MAG":"MAX MP +1 BUDDY ENERGY",15);
@@ -1617,9 +1674,16 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
  else if(pause_page==6){ui_text(2,3,"MEMORIES",14);ui_text(2,5,(cosmos.memory_flags&MEM_ORIGIN_ARCHIVE)?"* ORIGIN ARCHIVE":"- ORIGIN ARCHIVE",15);ui_text(2,6,(cosmos.memory_flags&MEM_BLACK_GARDEN)?"* BLACK GARDEN":"- BLACK GARDEN",15);ui_text(2,7,(cosmos.memory_flags&MEM_SECRET)?"* SECRET SIGNAL":"- SECRET SIGNAL",15);ui_text(2,8,(cosmos.memory_flags&MEM_SHIP)?"* FIRST FLIGHT":"- FIRST FLIGHT",15);ui_text(2,9,(cosmos.memory_flags&MEM_ENDING)?"* CROWN CHOICE":"- CROWN CHOICE",15);ui_text(2,17,"B BACK",13);}
  else if(pause_page==7){ui_text(2,3,"AXIS KEYS",14);ui_text(2,5,(keys_found&1)?"X // RESTORED":"X // MISSING",15);ui_text(2,6,(keys_found&2)?"Y // RESTORED":"Y // MISSING",15);ui_text(2,7,(keys_found&4)?"Z // RESTORED":"Z // MISSING",15);ui_text(2,10,"KEYS UNLOCK SPELLS + GEAR",13);ui_text(2,17,"B BACK",13);}
  else if(pause_page==8){ui_text(2,3,"STORY",14);ui_wrap_text(5,story_line(),15,8);ui_text(2,15,"NEXT QUEST",13);ui_text(2,16,campaign_objective(),15);ui_text(2,17,"R STORY BOOK  B BACK",13);}
- else if(pause_page==9){ui_text(2,3,"SETTINGS",14);ui_text(2,5,setting_sel==0?"> AUDIO":"  AUDIO",13);ui_text(16,5,audio_on?"ON":"OFF",15);ui_text(2,6,setting_sel==1?"> Q BUDDY":"  Q BUDDY",13);ui_text(16,6,buddy_quantum?"ON":"OFF",15);ui_text(2,7,setting_sel==2?"> AUTO TALK":"  AUTO TALK",13);ui_text(16,7,buddy_talk?"ON":"OFF",15);ui_text(2,8,setting_sel==3?"> TOUCH MODE":"  TOUCH MODE",13);ui_text(16,8,touch_mode?"ON":"OFF",15);ui_text(2,10,"UP/DOWN SELECT A TOGGLE",14);ui_text(2,17,"B BACK",13);}
- else if(pause_page==10){ui_text(2,5,"SAVE COMPLETE",14);ui_text(2,7,"SRAM_V113 // V5",15);ui_text(2,9,"RPG + COSMOS STATE PERSISTED",13);ui_text(2,17,"B BACK",13);}
- else if(pause_page==11){static const char*QN[7]={"BEACON SHARD","FORGE TEST","OLD ARCHIVE","SEED MACHINE","LOST FUTURE","THREE AXES","HEART OF ERIDORIA"};ui_text(2,3,"QUEST JOURNAL",14);
+ else if(pause_page==9){ui_text(4,2,"SYSTEM",14);
+  ui_text(3,4,setting_sel==0?"> AUDIO":"  AUDIO",13);ui_text(19,4,audio_on?"ON":"OFF",15);
+  ui_text(3,6,setting_sel==1?"> Q-BUDDY REPLAY":"  Q-BUDDY REPLAY",13);ui_text(22,6,buddy_quantum?"ON":"OFF",15);
+  ui_text(3,8,setting_sel==2?"> AUTO TALK":"  AUTO TALK",13);ui_text(19,8,buddy_talk?"ON":"OFF",15);
+  ui_text(3,10,setting_sel==3?"> TOUCH MODE":"  TOUCH MODE",13);ui_text(19,10,touch_mode?"ON":"OFF",15);
+  ui_text(3,12,setting_sel==4?"> SAVE GAME":"  SAVE GAME",13);
+  ui_text(2,17,"A CHANGE / SAVE",14);ui_text(19,17,"B BACK",13);
+ }
+ else if(pause_page==10){ui_text(2,5,"SAVE COMPLETE",14);ui_text(4,7,"LOCAL CARTRIDGE SAVE",15);ui_text(4,9,"ADVENTURE SAVED",13);ui_text(2,17,"B BACK",13);}
+ else if(pause_page==11){static const char*QN[7]={"BEACON SHARD","FORGE TEST","OLD ARCHIVE","SEED MACHINE","LOST FUTURE","THREE AXES","HEART OF ERIDORIA"};ui_text(4,2,"QUEST JOURNAL",14);
  for(i=0;i<7;i++){ui_text(2,5+i,quest_completed&(1u<<i)?"*":quest_started&(1u<<i)?"+":"-",13);ui_text(4,5+i,QN[i],15);}ui_text(2,13,"* DONE   + ACTIVE   - OPEN",13);ui_text(2,17,"B BACK",13);}
  else if(pause_page==12){int row=5,seen=0;ui_text(2,3,"INHABITANTS MET",14);for(i=0;i<NPC_DEF_COUNT;i++)if(npc_seen&(1u<<i)){
  if(seen++<npc_log_offset)continue;if(row>=16)break;ui_text(2,row,"*",13);ui_text(4,row++,NPCS[i].name,15);
@@ -1633,26 +1697,24 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(2,14,(story_flags&ST_LATTICE)?"* LATTICE REFORGED":"+ RETURN TO THE CROWN",15);
   ui_text(2,15,"NEXT",13);ui_text(7,15,campaign_objective(),15);
   ui_text(2,16,"CRAGSTONE CLUES",13);ui_num(20,16,g5_book_step,15);ui_text(23,16,"/ 3",13);
-  ui_text(2,17,"R STORY L CRYSTALS SEL ALLY",13);
-  ui_text(2,18,"RIGHT FULL THREAD UP/DN MORE",14);
+  ui_text(4,17,"R STORY  L CRYSTALS  SEL ALLY",13);
  }
  else if(pause_page==25){int idx=completion_sel,start=(idx/5)*5;
-  ui_frame(0,19,15);ui_text(2,1,"THE COMPLETE LIVING THREAD",14);
+  ui_text(4,2,"THE LIVING THREAD",14);
   for(i=start;i<mini(start+5,24);i++){int y=3+(i-start)*2;ui_text(2,y,i==idx?">":" ",13);ui_text(4,y,COMPLETION_SCENES[i].name,(completion_done&(1u<<i))?14:15);}
   ui_text(2,13,"EARNED",13);ui_num(10,13,completion_count(),15);ui_text(14,13,"/ 24",14);
   ui_wrap_text(14,completion_available(idx)?(completion_step[idx]<4?COMPLETION_OBJECTIVES[idx][completion_step[idx]].name:COMPLETION_SCENES[idx].resolution):completion_requirement(idx),15,3);
-  ui_text(2,17,"UP DN SELECT R VISIT",13);ui_text(2,18,"B CAMPAIGN / REALM PROOFS",14);
+  ui_text(4,17,"UP/DN SELECT  R VISIT  B BACK",13);
  }
  else if(pause_page==14){int count=chronicle_limit();
-  ui_frame(0,19,15);ui_text(2,1,"ERIDORIA // STORY BOOK",14);
+  ui_text(4,2,"ERIDORIA // STORY BOOK",14);
   if(count>0){if(chronicle_page>=count)chronicle_page=(u8)(count-1);
    ui_text(2,3,CHRONICLE[chronicle_page].title,13);
    ui_wrap_text(5,CHRONICLE[chronicle_page].text,15,11);
    ui_text(2,16,"PAGE",13);ui_num(8,16,chronicle_page+1,15);
    ui_text(13,16,"OF",13);ui_num(17,16,count,15);
   }
-  ui_text(2,18,"LEFT/RIGHT TURN PAGE",14);
-  ui_text(2,19,"B ERIDORIA JOURNAL",13);
+  ui_text(4,17,"LEFT/RIGHT PAGE  B BACK",14);
  }
  else if(pause_page==17){
    ui_text(2,2,"NOVEL / CRYSTAL QUEST",14);
@@ -1668,8 +1730,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
    ui_text(2,15,(v10_realm_choices&4)?"GROVE RESTORED":"GROVE UNRESTORED",15);
    ui_text(2,17,"B ERIDORIA",14);
  }
- else if(pause_page==16){
-  ui_clear();ui_frame(0,19,15);ui_text(2,1,"RIFTFALL // YOUR ARMORY",14);
+ else if(pause_page==16){ui_text(4,2,"RIFTFALL // YOUR ARMORY",14);
   for(i=0;i<5;i++){
    ui_text(2,4+i*2,i==v9_gear_sel?">":" ",13);
    ui_text(4,4+i*2,V9_RARITY[i],v9_loot[i]?(i>=3?13:15):14);
@@ -1679,56 +1740,70 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(2,14,"BONDED",13);
   ui_text(11,14,v9_bonded?BATTLE_NAMES[v9_bond_type]:"NONE",15);
   ui_text(2,16,"A EQUIP  UP/DOWN",14);
-  ui_text(2,18,"B RETURN",13);
+  ui_text(5,17,"B RETURN",13);
  }
  else if(pause_page==18){
-  ui_clear();ui_frame(0,19,15);ui_text(2,1,"CREATURE COLLECTION",14);
-  ui_text(2,2,"12-SLOT OFFLINE ROSTER",13);
-  if(!lc_party.count)ui_text(2,5,"BOND WITH A WEAK WILD BEAST",15);
-  for(i=0;i<lc_party.count;i++){
-   int y=4+i;
-   ui_text(2,y,lc_party_sel==i?">":" ",13);
-   ui_text(4,y,lc_species_name(lc_party.slots[i].species),
-    i==lc_party.active?14:15);
-  }
-  if(lc_party.count){
-   LcCreature *c=&lc_party.slots[lc_party_sel];
-   ui_text(18,4,"LV",13);ui_num(21,4,c->level,15);
-   ui_text(18,5,"TR",13);ui_num(21,5,c->bond,15);
-   ui_text(18,6,"AT",13);ui_num(21,6,c->attack,15);
-   ui_text(18,7,"EV",13);ui_num(21,7,c->stage,15);
-  }
+  ui_text(4,2,"PARTY // COLLECTION",14);
+  if(!lc_party.count){ui_text(4,6,"NO COMPANIONS YET",15);ui_text(4,8,"BOND WITH A WEAK WILD BEAST",13);}
+  for(i=0;i<lc_party.count&&i<8;i++){int y=4+i;ui_text(2,y,lc_party_sel==i?">":" ",13);ui_text(4,y,lc_species_name(lc_party.slots[i].species),i==lc_party.active?14:15);}
+  if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party_sel];
+   ui_text(14,4,"LV",13);ui_num(19,4,c->level,15);
+   ui_text(14,5,"BOND",13);ui_num(19,5,c->bond,15);
+   ui_text(14,6,"HP",13);ui_num(19,6,c->hp,15);
+   ui_text(14,7,"EVO",13);ui_num(19,7,c->stage,15);
 #if defined(LC_IMPORTED_COMPANION)
-  ui_text(18,8,"BB PIXEL",13);
-  lc_draw_import_portrait(168,82);
-#else
-  ui_text(17,8,"NO BB ART",13);
+   if(c->species>=LC_SPECIES_IMPORTED){ui_text(14,9,"Q-BEAST",14);lc_draw_import_portrait(168,40);}
 #endif
-  ui_text(2,16,lc_release_armed?"START AGAIN TO RELEASE":"START X2 RELEASE WILD",13);
-  ui_text(2,17,"A SET L TRAIN SEL EVOLVE",14);
-  ui_text(2,18,"R BESTIARY B BACK",13);
+  }
+  ui_text(4,16,"A ACTIONS",14);ui_text(16,16,"R JOURNAL",13);ui_text(4,17,"B BACK",13);
  }
  else if(pause_page==20){
-  ui_frame(0,19,15);ui_text(2,1,"LIVING BESTIARY",14);
-  ui_text(2,2,"EIGHT NATIVE SPECIES",13);
-  for(i=0;i<8;i++){
-   ui_text(2,4+i,i==eco_guide_sel?">":" ",13);
-   ui_text(4,4+i,ECO_NAMES[i],eco_capture_count(i+1)?14:15);
-   ui_num(24,4+i,eco_capture_count(i+1),13);
+  ui_text(4,2,"BESTIARY // FIELD JOURNAL",14);
+  ui_text(4,4,ECO_NAMES[eco_guide_sel],15);
+  oam_set(1,24,48,384+eco_guide_sel*24+(((frame>>4)&1)*4),5+eco_guide_sel,0);oam_ui_portrait(1);
+  ui_text(10,6,"HOME",13);ui_text(16,6,ECO_HABITAT[eco_guide_sel],15);
+  ui_text(10,8,"SKILL",13);ui_text(16,8,ECO_ABILITY[eco_guide_sel],15);
+  ui_text(10,10,"OBS",13);ui_num(16,10,p4_research[eco_guide_sel],15);
+  ui_text(10,12,"EVO",13);ui_text(16,12,"LV12 B55",15);
+  ui_text(10,14,"FINAL",13);ui_text(16,14,"LV28 B80",15);
+  ui_text(4,17,"UP/DOWN SPECIES",14);ui_text(22,17,"B BACK",13);
+ }
+ else if(pause_page==26){
+  ui_text(4,2,"BEAST BOX BRIDGE",14);
+#if defined(LC_IMPORTED_COMPANION)
+  {LcCreature*c=lc_party.count?&lc_party.slots[lc_party.active]:0;
+   ui_text(3,4,"STATUS",13);ui_text(11,4,"READY",14);
+   ui_text(3,6,"MODE",13);ui_text(11,6,"VERIFIED",15);
+   ui_text(3,8,"LINK",13);ui_text(11,8,"OFFLINE",15);
+   ui_text(3,10,"GAME",13);ui_text(11,10,"BCG1/BCP1",15);
+   ui_text(3,12,"IDENT",13);ui_text(11,12,"LOCKED",14);
+   ui_text(3,14,"MEMORY",13);ui_text(11,14,"PUBLIC",15);
+   if(c){ui_text(3,16,"BEAST",13);ui_text(11,16,lc_species_name(c->species),14);lc_draw_import_portrait(168,40);}
+   ui_text(3,17,"ID",13);if(c)ui_hex32(7,17,c->identity,15);
   }
-  ui_text(2,12,"HOME",13);ui_text(8,12,ECO_HABITAT[eco_guide_sel],15);
-  ui_text(2,13,"SKILL",13);ui_text(9,13,ECO_ABILITY[eco_guide_sel],15);
-  if(eco_guide_sel<5){
-   ui_text(2,14,eco_unlocked(eco_guide_sel+1)?"* SANCTUARY RESTORED":"- SANCTUARY NOT RESTORED",14);
-  }else ui_text(2,14,"STORY GUARDIAN BOND",14);
-  ui_text(2,15,"EVOLVE LV12 TRUST55",13);
-  ui_text(2,16,"FINAL LV28 TRUST80",13);
-  ui_text(2,17,"OBSERVED",13);ui_num(13,17,p4_research[eco_guide_sel],15);
-  ui_text(2,18,"UP DOWN / B COLLECTION",14);
+#else
+  ui_text(4,6,"BRIDGE READY",14);ui_text(4,8,"NO BEAST SNAPSHOT IMPORTED",15);
+  ui_text(4,10,"IMPORT THROUGH QBEAST BUILDER",13);
+#endif
+  ui_text(22,17,"B BACK",13);
+ }
+ else if(pause_page==27){static const char*A[5]={"SET ACTIVE","TRAIN","EVOLVE","DETAILS","RELEASE"};ui_text(4,2,"COMPANION ACTIONS",14);
+  if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party_sel];ui_text(2,3,lc_species_name(c->species),15);
+   for(i=0;i<5;i++){ui_text(4,5+i*2,i==collection_action_sel?">":" ",13);ui_text(6,5+i*2,A[i],i==collection_action_sel?14:15);}
+   if(collection_action_sel==4){if(c->species>=LC_SPECIES_IMPORTED)ui_text(2,16,"IMPORTED IDENTITY IS PINNED",13);else if(lc_release_armed)ui_text(2,16,"A AGAIN TO RELEASE",13);else ui_text(2,16,"RELEASE REQUIRES CONFIRM",13);}
+  }
+  ui_text(5,17,"A CONFIRM",14);ui_text(20,17,"B BACK",13);
+ }
+ else if(pause_page==28){static const char*S[4]={"SYNAPSE PULSE","EMBER BOLT","TIDE WARD","BLOOM NOVA"};ui_text(4,2,"ABILITIES",14);
+  for(i=0;i<4;i++){int unlocked=(i==0)||(i==1&&(keys_found&1))||(i==2&&(keys_found&2))||(i==3&&(keys_found&4));
+   ui_text(3,4+i*2,i==ability_sel?">":" ",13);ui_text(5,4+i*2,S[i],unlocked?(i==current_spell?14:15):13);
+   if(i==current_spell)ui_text(23,4+i*2,"EQ",13);else if(!unlocked)ui_text(23,4+i*2,"LOCK",13);}
+  ui_text(2,13,"ACTIVE",13);ui_text(10,13,spell_name(current_spell),15);
+  ui_text(2,15,"R CASTS THE ACTIVE ABILITY",15);ui_text(5,17,"A EQUIP",14);ui_text(20,17,"B BACK",13);
  }
  else if(pause_page==21){
-  ui_frame(0,19,15);ui_text(2,1,"ERIDORIA // FIELD WORKSHOP",14);
-  ui_text(2,2,"BATTLE DROPS -> GUARANTEED",13);
+  ui_text(4,2,"FIELD WORKSHOP",14);
+  ui_text(4,3,"BATTLE MATERIALS",13);
   for(i=0;i<4;i++){ui_text(2,4+i*2,(i==p4_craft_sel)?">":" ",13);
    ui_text(4,4+i*2,P4_RECIPE[i],i==p4_craft_sel?14:15);
   }
@@ -1739,10 +1814,10 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(12,13,"SKY",13);ui_num(16,13,p4_material[4],15);
   ui_text(2,14,"CREDITS",13);ui_num(12,14,credits,15);
   ui_text(2,15,P4_COSTS[p4_craft_sel],14);
-  ui_text(2,17,"A CRAFT UP DOWN B BACK",13);
+  ui_text(4,17,"A CRAFT  UP/DOWN  B BACK",13);
  }
  else if(pause_page==23){int idx=(int)g6_journal_sel;
-  ui_frame(0,19,15);ui_text(2,1,"ERIDORIA // ACT II-V THREADS",14);
+  ui_text(4,2,"ERIDORIA // ACT THREADS",14);
   for(i=0;i<G6_COUNT;i++){
    ui_text(2,3+i*2,(i==idx)?">":" ",14);
    ui_text(4,3+i*2,G6_NAME[i],(g6_done&(1u<<i))?14:15);
@@ -1754,11 +1829,10 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
     g6_step[idx]==1?"NORTH CHOICE":
     g6_step[idx]==2?"EAST PROOF":"COMPLETED",15);
   ui_wrap_text(13,G6_HINT[idx],15,3);
-  ui_text(2,17,"UP/DN SELECT   R VISIT",14);
-  ui_text(2,18,"B ERIDORIA - SAVED QUESTS",13);
+  ui_text(4,17,"UP/DN SELECT  R VISIT  B BACK",14);
  }
  else if(pause_page==24){int idx=(int)g7_journal_sel,start=(idx/5)*5;
-  ui_frame(0,19,15);ui_text(2,1,"THE LIVING BOOK // NEW CHAPTERS",14);
+  ui_text(4,2,"THE LIVING BOOK",14);
   for(i=start;i<start+5&&i<G7_COUNT;i++){
     int y=3+(i-start)*2;
     ui_text(2,y,(i==idx)?">":" ",14);
@@ -1768,11 +1842,10 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   }
   ui_text(2,14,G7_ACT[idx],13);
   ui_wrap_text(15,G7_HINT[idx],15,2);
-  ui_text(2,17,"UP/DN PAGE R VISIT",14);
-  ui_text(2,18,"B ACT CHAPTER INDEX",13);
+  ui_text(4,17,"UP/DN PAGE  R VISIT  B BACK",14);
  }
  else if(pause_page==22){int idx=(int)g5_journal_sel;
-  ui_frame(0,19,15);ui_text(2,1,"GUARDIAN // PERSONAL TRIAL",14);
+  ui_text(4,2,"GUARDIAN // PERSONAL TRIAL",14);
   ui_text(2,3,ARC_GUARDIANS[idx].name,15);
   ui_text(2,4,G5_NAME[idx],14);
   ui_text(2,6,(g5_complete&(1u<<idx))?"* OATH HONORED":
@@ -1783,12 +1856,10 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(2,14,"CRAGSTONE",13);ui_num(15,14,g5_book_step,15);
   ui_text(2,15,"BONUS ATK",13);ui_num(13,15,G5_ATK[idx],15);
   ui_text(17,15,"DEF",13);ui_num(23,15,G5_DEF[idx],15);
-  ui_text(2,17,"UP DN SELECT / R VISIT",14);
-  ui_text(2,18,"SEL CANCEL ACTIVE / B BACK",13);
+  ui_text(4,17,"UP/DN  R VISIT  SEL CANCEL  B BACK",14);
  }
  else if(pause_page==19){int page=(int)(arc_ally_sel/7)*7;
-  ui_frame(0,19,15);ui_text(2,1,"GUARDIAN FELLOWSHIP",14);
-  ui_text(2,2,"A EQUIP ACTIVE DISCIPLINE",13);
+  ui_text(4,2,"GUARDIAN FELLOWSHIP",14);
   for(i=page;i<mini(page+7,17);i++){
    int y=4+i-page;ui_text(2,y,i==arc_ally_sel?">":" ",13);
    ui_text(4,y,ARC_GUARDIANS[i].name,(arc_guardians_mask&(1u<<i))?15:13);
@@ -1800,17 +1871,16 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(14,14,"GUARD",13);ui_num(22,14,ARC_GUARDIANS[arc_ally_sel].guard,15);
   ui_text(2,16,"STORY ATLAS",13);ui_num(17,16,arc_progress,15);
   ui_text(19,16,"/ 16",15);
-  ui_text(2,18,"A EQUIP L QUEST R VISIT",13);
+  ui_text(4,17,"A EQUIP  L QUEST  R VISIT  B BACK",13);
  }
- else if(pause_page==15){
-  ui_clear();ui_frame(0,19,15);ui_text(2,2,"CHOOSE YOUR HERO",14);
+ else if(pause_page==15){ui_text(4,2,"CHOOSE YOUR HERO",14);
   for(i=0;i<4;i++){
     ui_text(2,4+i*2,(role_preview==i)?">":" ",13);
     ui_text(4,4+i*2,ROLE_NAMES[i],role_preview==i?14:15);
   }
   ui_text(2,13,ROLE_PERKS[role_preview&3],15);
   ui_text(2,15,"A ACCEPT / B BACK",13);
-  ui_text(2,17,"OLD STATS AND ITEMS STAY",14);
+  ui_text(4,17,"STATS + ITEMS ARE PRESERVED",14);
   oam_set32(1,186,96,272,0);
  }
 
@@ -2489,13 +2559,21 @@ static void render_surface_sprites(void){int sx=player.x-cam_x-8,sy=player.y-cam
  if(v9_bonded||lc_party.count){
   u8 typ=v9_bond_type;
   if(lc_party.count)typ=(u8)(lc_party.slots[lc_party.active].species%EN_COUNT);
-  {int tile=60+typ*4,pal=5+typ;
+  {int tile=60+typ*4,pal=5+typ;u8 imported=0;
    if(lc_party.count){u8 species=lc_party.slots[lc_party.active].species;
     if(species>=1&&species<=8){
      u8 stage=lc_party.slots[lc_party.active].stage;
      tile=384+(species-1)*24+stage*8+(((frame>>4)&1)*4);
      pal=4+species;
-    }}
+    }
+#if defined(LC_IMPORTED_COMPANION)
+    else if(species>=LC_SPECIES_IMPORTED&&species<LC_SPECIES_IMPORTED+7)imported=1;
+#endif
+   }
+#if defined(LC_IMPORTED_COMPANION)
+   if(imported)lc_draw_import_field(42,cosmos.x-cam_x-8,cosmos.y-cam_y-13,cosmos.vx<0,0);
+   else
+#endif
    oam_set(42,cosmos.x-cam_x+6+((tile>=384)?((int)((frame>>5)&3)-1):0),cosmos.y-cam_y+1+(int)((frame>>3)&1),tile,pal,0);
   }
  }
@@ -2717,7 +2795,7 @@ static void update_surface(u16 k,u16 newk){int speed=(k&KEY_B)?3:2,dx=0,dy=0;u8 
 if(current_world==4&&current_room==0&&(frame&31)==0){int drift=(next_q()&1)?1:-1;if(!blocked_px(player.x+drift,player.y))player.x+=(s16)drift;}enemy_tick();collect_drops();npc_tick();buddy_tick();buddy_combat_assist();workload_buddy_tick();postgame_tick();v9_rift_tick();}
 
 static void update_space(u16 k,u16 newk){int sp=(k&KEY_B)?4:2;if(k&KEY_LEFT)ship_x-=sp;if(k&KEY_RIGHT)ship_x+=sp;if(k&KEY_UP)ship_y-=sp;if(k&KEY_DOWN)ship_y+=sp;ship_x=(s16)clampi(ship_x,8,504);ship_y=(s16)clampi(ship_y,8,504);if(newk&KEY_A)land_ship();if(newk&KEY_SELECT)drop_beacon();}
-static void enter_pause(void){return_mode=game_mode;game_mode=MODE_PAUSE;pause_sel=0;pause_page=0;}
+static void enter_pause(void){return_mode=game_mode;game_mode=MODE_PAUSE;pause_sel=0;pause_page=0;REG_BG1HOFS=0;REG_BG1VOFS=0;ui_clear();}
 static void update_pause(u16 newk){
  if(pause_page==25){if(newk&KEY_UP)completion_sel=(u8)((completion_sel+23)%24);if(newk&KEY_DOWN)completion_sel=(u8)((completion_sel+1)%24);if(newk&KEY_R)completion_warp(completion_sel);if(newk&KEY_B)pause_page=13;return;}
  if(pause_page==13&&(newk&KEY_RIGHT)){pause_page=25;completion_sel=(u8)mini(23,completion_count());return;}
@@ -2782,59 +2860,38 @@ static void update_pause(u16 newk){
   if(newk&KEY_B)pause_page=4;
   return;
  }
- if(pause_page==20){
-  if(newk&KEY_UP)eco_guide_sel=(u8)(eco_guide_sel?eco_guide_sel-1:7);
-  if(newk&KEY_DOWN)eco_guide_sel=(u8)((eco_guide_sel+1)%8);
-  if(newk&KEY_B){pause_page=18;lc_release_armed=0;}
-  return;
- }
  if(pause_page==18){
-  if(newk&(KEY_UP|KEY_DOWN|KEY_A|KEY_L|KEY_SELECT|KEY_B|KEY_R))lc_release_armed=0;
-  if(newk&KEY_R){pause_page=20;eco_guide_sel=(u8)(lc_party.count&&lc_party.slots[lc_party_sel].species<=8?lc_party.slots[lc_party_sel].species-1:0);return;}
-  if((newk&KEY_START)&&lc_party.count){
-   if(!lc_release_armed){lc_release_armed=1;say("PRESS START AGAIN TO RELEASE THIS WILD FRIEND.");}
-   else {
-    if(lc_release_wild(&lc_party,lc_party_sel)==LC_OK){
-     lc_party_sel=(u8)(lc_party.count?mini(lc_party_sel,lc_party.count-1):0);
-     v9_bonded=lc_party.count?(u8)(lc_party.slots[lc_party.active].bond>=55):0;
-     say("RELEASED TO THE WILD. YOUR CHOICE HAS BEEN SAVED.");save_game();
-    }else say("IMPORTED COMPANION IS PINNED. NO RELEASE.");
-    lc_release_armed=0;
-   }
-   return;
-  }
-  if(newk&KEY_UP&&lc_party.count){lc_party_sel=(u8)(lc_party_sel?lc_party_sel-1:lc_party.count-1);}
-  if(newk&KEY_DOWN&&lc_party.count){lc_party_sel=(u8)(lc_party_sel+1>=lc_party.count?0:lc_party_sel+1);}
-  if(newk&KEY_A&&lc_party.count){
-   lc_party.active=lc_party_sel;
-   v9_bonded=(u8)(lc_party.slots[lc_party.active].bond>=55);
-   v9_bond_type=(u8)(lc_party.slots[lc_party.active].species%EN_COUNT);
-   save_game();
-  }
-  if(newk&KEY_L&&lc_party.count){
-   LcCreature *c=&lc_party.slots[lc_party_sel];
-   if(inv[ITEM_SHARD]>=2){
-    LcResult v=lc_bond(&lc_party,lc_party_sel,
-       (u8)(c->species>=128?(c->species-128)%3:c->species%3),
-       (u8)mini(100,65+player_level));
-    if(v==LC_OK){
-     inv[ITEM_SHARD]-=2;
-     if(lc_party_sel==lc_party.active&&c->bond>=55)v9_bonded=1;
-     say("TRAINING SUCCEEDED. YOUR TRUST GREW.");save_game();
-    }else say("BOND TRIAL NOT READY.");
-   }else say("TWO SHARDS ARE NEEDED TO TRAIN.");
-  }
-  if(newk&KEY_SELECT&&lc_party.count){
-   u8 catalyst=(u8)(current_world==0&&current_room==7?1:
-    current_world==2?2:current_world==4?3:0);
-   if(lc_evolve(&lc_party,lc_party_sel,catalyst)==LC_OK){
-    say("YOUR CREATURE EVOLVED. ITS POWERS CHANGED.");save_game();
-   }else say("LEVEL OR BOND TOO LOW TO EVOLVE.");
-  }
-  if(newk&KEY_B){pause_page=2;set_world_palette(current_world);}
+  if(newk&KEY_UP&&lc_party.count)lc_party_sel=(u8)(lc_party_sel?lc_party_sel-1:lc_party.count-1);
+  if(newk&KEY_DOWN&&lc_party.count)lc_party_sel=(u8)(lc_party_sel+1>=lc_party.count?0:lc_party_sel+1);
+  if(newk&KEY_A&&lc_party.count){collection_action_sel=0;pause_page=27;return;}
+  if(newk&KEY_R){pause_page=20;eco_guide_sel=(u8)(lc_party.count&&lc_party.slots[lc_party_sel].species>=1&&lc_party.slots[lc_party_sel].species<=8?lc_party.slots[lc_party_sel].species-1:0);return;}
+  if(newk&KEY_B){pause_page=0;return;}
   return;
  }
- if(pause_page==2&&(newk&KEY_R)){pause_page=18;lc_party_sel=lc_party.active;lc_release_armed=0;return;}
+ if(pause_page==27){
+  if(newk&KEY_UP){collection_action_sel=(u8)(collection_action_sel?collection_action_sel-1:4);lc_release_armed=0;}
+  if(newk&KEY_DOWN){collection_action_sel=(u8)((collection_action_sel+1)%5);lc_release_armed=0;}
+  if(newk&KEY_B){lc_release_armed=0;pause_page=18;return;}
+  if((newk&KEY_A)&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party_sel];
+   if(collection_action_sel==0){lc_party.active=lc_party_sel;v9_bonded=(u8)(c->bond>=55);v9_bond_type=(u8)(c->species%EN_COUNT);save_game();say("ACTIVE COMPANION UPDATED.");pause_page=18;}
+   else if(collection_action_sel==1){if(inv[ITEM_SHARD]>=2){LcResult v=lc_bond(&lc_party,lc_party_sel,(u8)(c->species>=128?(c->species-128)%3:c->species%3),(u8)mini(100,65+player_level));if(v==LC_OK){inv[ITEM_SHARD]-=2;save_game();say("TRAINING SUCCEEDED. BOND GREW.");}else say("BOND TRIAL NOT READY.");}else say("TWO STAR SHARDS ARE NEEDED.");}
+   else if(collection_action_sel==2){u8 catalyst=(u8)(current_world==0&&current_room==7?1:current_world==2?2:current_world==4?3:0);if(lc_evolve(&lc_party,lc_party_sel,catalyst)==LC_OK){save_game();say("YOUR CREATURE EVOLVED.");}else say("LEVEL OR BOND TOO LOW.");}
+   else if(collection_action_sel==3){if(c->species>=LC_SPECIES_IMPORTED)pause_page=26;else{eco_guide_sel=(u8)(c->species>=1&&c->species<=8?c->species-1:0);pause_page=20;}}
+   else {if(c->species>=LC_SPECIES_IMPORTED){lc_release_armed=0;say("IMPORTED COMPANION IS PINNED.");}
+    else if(!lc_release_armed)lc_release_armed=1;
+    else if(lc_release_wild(&lc_party,lc_party_sel)==LC_OK){lc_release_armed=0;lc_party_sel=(u8)(lc_party.count?mini(lc_party_sel,lc_party.count-1):0);save_game();say("RELEASED TO THE WILD.");pause_page=18;}
+   }
+  }
+  return;
+ }
+ if(pause_page==26){if(newk&KEY_B)pause_page=0;return;}
+ if(pause_page==28){
+  if(newk&KEY_UP)ability_sel=(u8)(ability_sel?ability_sel-1:3);if(newk&KEY_DOWN)ability_sel=(u8)((ability_sel+1)%4);
+  if(newk&KEY_A){if(ability_sel==0||(ability_sel==1&&(keys_found&1))||(ability_sel==2&&(keys_found&2))||(ability_sel==3&&(keys_found&4))){current_spell=ability_sel;save_game();}else say("THAT ABILITY IS STILL LOCKED.");}
+  if(newk&KEY_B)pause_page=0;return;
+ }
+ if(pause_page==20){if(newk&KEY_UP)eco_guide_sel=(u8)(eco_guide_sel?eco_guide_sel-1:7);if(newk&KEY_DOWN)eco_guide_sel=(u8)((eco_guide_sel+1)%8);if(newk&KEY_B)pause_page=0;return;}
+ if(pause_page==2&&(newk&KEY_R)){pause_page=18;lc_party_sel=lc_party.active;return;}
  if(pause_page==13&&(newk&KEY_DOWN)){pause_page=24;g7_journal_sel=0;return;}
  if(pause_page==13&&(newk&KEY_UP)){pause_page=23;g6_journal_sel=0;return;}
  if(pause_page==13&&(newk&KEY_L)){pause_page=17;return;}
@@ -2847,7 +2904,14 @@ static void update_pause(u16 newk){
  if(pause_page==3&&(newk&KEY_L)){pause_page=16;v9_gear_sel=v9_equipped;return;}
  if(pause_page==8&&(newk&KEY_R)){pause_page=14;chronicle_page=0;return;}
  if(pause_page==4&&(newk&KEY_R)){pause_page=21;p4_craft_sel=0;return;}
- if(pause_page==0){if(newk&KEY_UP){if(pause_sel)pause_sel--;else pause_sel=12;}if(newk&KEY_DOWN){pause_sel=(u8)((pause_sel+1)%13);}if(newk&KEY_B){game_mode=return_mode;ui_clear();return;}if(newk&KEY_A){if(pause_sel<9)pause_page=(u8)(pause_sel+1);else if(pause_sel==9){save_game();pause_page=10;}else pause_page=(u8)(pause_sel+1);}}else{if(newk&KEY_B)pause_page=0;if(pause_page==12){if((newk&KEY_DOWN)&&npc_log_offset<24)npc_log_offset++;if((newk&KEY_UP)&&npc_log_offset)npc_log_offset--;}if(pause_page==4){if(newk&KEY_UP){if(item_sel)item_sel--;else item_sel=ITEM_COUNT-1;}if(newk&KEY_DOWN)item_sel=(u8)((item_sel+1)%ITEM_COUNT);if(newk&KEY_A)use_item(item_sel);}if(pause_page==5){if(newk&KEY_UP){if(equip_sel)equip_sel--;else equip_sel=3;}if(newk&KEY_DOWN)equip_sel=(u8)((equip_sel+1)&3);if(newk&KEY_A){if(equip_sel==0){if(weapon==0&&gear_owned&2)weapon=1;else if(weapon==1&&gear_owned&16)weapon=2;else weapon=0;}else if(equip_sel==1)armor=(u8)((gear_owned&4)?!armor:0);else if(equip_sel==2)charm=(u8)((gear_owned&8)?!charm:0);else{u8 n=current_spell;do{n=(u8)((n+1)%SPELL_COUNT);}while((n==SPELL_EMBER&&!(keys_found&1))||(n==SPELL_TIDE&&!(keys_found&2))||(n==SPELL_BLOOM&&!(keys_found&4)));current_spell=n;}refresh_player_frames();save_game();}}if(pause_page==9){if(newk&KEY_UP)setting_sel=(u8)((setting_sel+3)%4);if(newk&KEY_DOWN)setting_sel=(u8)((setting_sel+1)%4);if(newk&KEY_A){if(setting_sel==0)audio_on=(u8)!audio_on;else if(setting_sel==1)buddy_quantum=(u8)!buddy_quantum;else if(setting_sel==2)buddy_talk=(u8)!buddy_talk;else touch_mode=(u8)!touch_mode;save_game();}}}}
+ if(pause_page==0){static const u8 P[10]={1,11,18,4,5,28,20,6,26,9};
+  if(newk&KEY_UP)pause_sel=(u8)((pause_sel/5)*5+((pause_sel%5+4)%5));
+  if(newk&KEY_DOWN)pause_sel=(u8)((pause_sel/5)*5+((pause_sel%5+1)%5));
+  if((newk&KEY_LEFT)&&pause_sel>=5)pause_sel=(u8)(pause_sel-5);
+  if((newk&KEY_RIGHT)&&pause_sel<5)pause_sel=(u8)(pause_sel+5);
+  if(newk&KEY_B){game_mode=return_mode;ui_clear();return;}
+  if(newk&KEY_A){pause_page=P[pause_sel];if(pause_page==18)lc_party_sel=lc_party.active;if(pause_page==28)ability_sel=current_spell;}
+ }else{if(newk&KEY_B)pause_page=0;if(pause_page==12){if((newk&KEY_DOWN)&&npc_log_offset<24)npc_log_offset++;if((newk&KEY_UP)&&npc_log_offset)npc_log_offset--;}if(pause_page==4){if(newk&KEY_UP){if(item_sel)item_sel--;else item_sel=ITEM_COUNT-1;}if(newk&KEY_DOWN)item_sel=(u8)((item_sel+1)%ITEM_COUNT);if(newk&KEY_A)use_item(item_sel);}if(pause_page==5){if(newk&KEY_UP){if(equip_sel)equip_sel--;else equip_sel=3;}if(newk&KEY_DOWN)equip_sel=(u8)((equip_sel+1)&3);if(newk&KEY_A){if(equip_sel==0){if(weapon==0&&gear_owned&2)weapon=1;else if(weapon==1&&gear_owned&16)weapon=2;else weapon=0;}else if(equip_sel==1)armor=(u8)((gear_owned&4)?!armor:0);else if(equip_sel==2)charm=(u8)((gear_owned&8)?!charm:0);else{u8 n=current_spell;do{n=(u8)((n+1)%SPELL_COUNT);}while((n==SPELL_EMBER&&!(keys_found&1))||(n==SPELL_TIDE&&!(keys_found&2))||(n==SPELL_BLOOM&&!(keys_found&4)));current_spell=n;}refresh_player_frames();save_game();}}if(pause_page==9){if(newk&KEY_UP)setting_sel=(u8)(setting_sel?setting_sel-1:4);if(newk&KEY_DOWN)setting_sel=(u8)((setting_sel+1)%5);if(newk&KEY_A){if(setting_sel==4){save_game();pause_page=10;}else{if(setting_sel==0)audio_on=(u8)!audio_on;else if(setting_sel==1)buddy_quantum=(u8)!buddy_quantum;else if(setting_sel==2)buddy_talk=(u8)!buddy_talk;else if(setting_sel==3)touch_mode=(u8)!touch_mode;save_game();}}}}}
 
 
 /* ---------- boot ---------- */

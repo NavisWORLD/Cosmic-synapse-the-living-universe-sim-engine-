@@ -53,8 +53,12 @@ def run(rom,elf,act2,out):
    emu.step((),20);nav=Navigator(emu)
    if not emu.read_symbol("story_flags")&512:raise RuntimeError("Dream Unity unearned")
    mark("01_real_prior_Dream_save")
-   nav.interact(1,at=(10,53));nav.wait_cinema()
-   if emu.read_symbol("game_mode")!=1:raise RuntimeError("Actual LUNA-ARC was not boarded")
+   nav.goto_trigger(1,at=(10,53));nav.board_ship()
+   if emu.read_symbol("game_mode")!=1 or emu.read_symbol("cinema_active"):
+    raise RuntimeError("Actual LUNA-ARC warp did not finish in playable space")
+   emu.step((),8)
+   if len(set(emu.rgb()[i:i+3] for i in range(0,240*160*3,3)))<6:
+    raise RuntimeError("LUNA-ARC entered space state but framebuffer stayed blank")
    mark("02_actual_LUNA_ARC_flight")
    nav.fly_to(7)
    wait(lambda:nav.location()==(7,0,1),"real Eldoria landing")

@@ -306,9 +306,21 @@ class Navigator:
 
     def board_ship(self):
         self.interact(1)  # Actual TR_SHIP
+        # board_ship() sets MODE_SPACE before generate_space() has finished.
+        # The native world-build cover and SRAM work can therefore outlive the
+        # key tap; cinema_active becomes true only when the warp presentation
+        # is actually ready. Never mistake that pre-cinema build window for a
+        # completed transition.
+        begin=self.emu.frame
+        while not self.value("cinema_active"):
+            if self.emu.frame-begin>=900:
+                raise RuntimeError("Real ship warp cinema never began")
+            if self.value("game_mode") != 1:
+                raise RuntimeError("Real ship interaction left space before warp presentation")
+            self.emu.step((),8)
         self.wait_cinema()
-        if self.value("game_mode") != 1:
-            raise RuntimeError("Real ship interaction did not enter space")
+        if self.value("game_mode") != 1 or self.value("cinema_active"):
+            raise RuntimeError("Real ship interaction did not finish in playable space")
 
     def fly_to(self, world, *, max_frames=12000):
         """Steer the actual ship and press A at the selected native planet."""

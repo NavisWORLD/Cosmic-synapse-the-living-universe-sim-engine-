@@ -4,7 +4,7 @@ permissions:
 
 on:
   push:
-    branches: [ feature/pixel-universe-gba-rpg-003 ]
+    branches: [ feature/pixel-universe-gba-rpg-003, feature/lost-cosmos-v11-enhanced-001 ]
     paths:
       - 'gba/lost-cosmos-v3/**'
       - '.github/workflows/pixel-universe-gba-v3.yml'

@@ -123,6 +123,12 @@ def run(rom, elf, output):
                 "Opening did not lead to actual playable surface")
         require(emu.read_symbol("current_world") == 0 and emu.read_symbol("current_room") == 2,
                 "New Game did not start in Brindlemark")
+        transition_frame=emu.read_symbol("frame")
+        wait(emu, lambda: emu.read_symbol("frame") != transition_frame,
+             "first rendered Brindlemark frame", budget=300)
+        emu.step((), 4)
+        require(len(set(emu.rgb()[i:i + 3] for i in range(0, 240 * 160 * 3, 3))) >= 8,
+                "Playable Brindlemark framebuffer remained blank after transition")
         emu.screenshot(output / "03_brindlemark_native.png")
         original = position(emu)
         movement = []
@@ -136,12 +142,19 @@ def run(rom, elf, output):
         require(sum(abs(a - b) for a, b in zip(moved, original)) >= 8,
                 "Actual controller direction inputs did not move the actor")
         emu.screenshot(output / "04_exploration_native.png")
-        # Save through the real START menu: SAVE is row 9 (zero based).
+        # Save through the actual V11.1 player menu: SYSTEM is the right-column
+        # fifth entry, then SAVE GAME is the fifth SYSTEM option.
         emu.tap("START", hold=12, release=12)
         wait(emu, lambda: emu.read_symbol("game_mode") == 2, "pause menu")
-        for _ in range(9):
-            emu.tap("DOWN", hold=12, release=12)
-        require(emu.read_symbol("pause_sel") == 9, "Real menu did not select SAVE")
+        emu.tap("RIGHT", hold=10, release=10)
+        for _ in range(4):
+            emu.tap("DOWN", hold=10, release=10)
+        require(emu.read_symbol("pause_sel") == 9, "Real menu did not select SYSTEM")
+        emu.tap("A", hold=12, release=12)
+        require(emu.read_symbol("pause_page") == 9, "SYSTEM page did not open")
+        for _ in range(4):
+            emu.tap("DOWN", hold=10, release=10)
+        require(emu.read_symbol("setting_sel") == 4, "Real SYSTEM page did not select SAVE GAME")
         save_started_frame = emu.frame
         emu.tap("A", hold=12, release=12)
         # The native two-bank CRC journal is synchronous and can take more than
@@ -177,8 +190,14 @@ def run(rom, elf, output):
         require(restored == moved, f"Continue failed to restore controller-earned position: {restored} != {moved}")
         for name in ("current_world", "current_room", "current_layer", "keys_found", "ending", "postgame", "kill_count", "player_level"):
             require(second_state[name] == first_state[name], f"Continue did not restore {name}")
+        transition_frame=emu.read_symbol("frame")
+        wait(emu, lambda: emu.read_symbol("frame") != transition_frame,
+             "first rendered CONTINUE frame", budget=300)
+        emu.step((), 4)
+        require(len(set(emu.rgb()[i:i + 3] for i in range(0, 240 * 160 * 3, 3))) >= 8,
+                "CONTINUE restored state but left a blank framebuffer")
         emu.screenshot(output / "07_continue_native.png")
-        emu.step((), 120)
+        emu.step((), 104)
         report["boot2"] = {"state": second_state, "restored_position": restored,
                            "timing": emu.timing_report(), "capture": emu.stop_recording()}
     for png in output.glob("*_native.png"):
