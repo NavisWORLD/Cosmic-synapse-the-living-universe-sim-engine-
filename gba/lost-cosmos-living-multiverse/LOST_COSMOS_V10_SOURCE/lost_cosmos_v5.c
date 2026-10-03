@@ -1631,7 +1631,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
  if(pause_page==0){static const char*items[10]={"MAP","QUEST","PARTY","ITEMS","EQUIPMENT","ABILITIES","BESTIARY","MEMORIES","BEAST BOX","SYSTEM"};
   ui_frame(0,19,15);ui_text(2,1,"LOST COSMOS",14);ui_text(18,1,"ADVENTURE",13);
   for(i=0;i<10;i++){int y=3+i;ui_text(3,y,(i==pause_sel)?">":" ",13);ui_text(5,y,items[i],(i==pause_sel)?14:15);}
-  ui_text(2,17,"A SELECT",14);ui_text(18,17,"B RESUME",13);ui_text(2,18,"L/R PAGE IN SUBMENUS",15);
+  ui_text(2,17,"A SELECT",14);ui_text(18,17,"B RESUME",13);ui_text(2,18,"CLEAN MENUS / NO DEBUG HUD",15);
  }
  else if(pause_page==1){ui_text(2,3,"MAP // KNOWN WORLDS",14);for(i=0;i<8;i++){ui_text(2,5+i,(visited_mask&(1u<<i))?"*":"-",13);ui_text(4,5+i,WORLDS[i].name,15);}ui_text(2,17,"B BACK",13);}
  else if(pause_page==2){ui_text(2,3,"COSMOS // QUANTUM BUDDY",14);ui_text(2,5,"MOOD",13);ui_text(10,5,mood_name(),15);ui_text(2,6,"GOAL",13);ui_text(10,6,goal_name(cosmos.goal),15);ui_text(2,7,"TRUST",13);ui_num(10,7,cosmos.trust,15);ui_text(2,8,"CURIOSITY",13);ui_num(13,8,cosmos.curiosity,15);ui_text(2,9,"Q PHASE",13);ui_num(12,9,qstate.phase,15);ui_text(2,10,"Q COHERENCE",13);ui_num(14,10,qstate.coherence,15);ui_text(2,11,"Q SPREAD",13);ui_num(12,11,qstate.spread,15);ui_text(2,13,buddy_quantum?"WORKLOAD REPLAY ON":"WORKLOAD REPLAY OFF",14);ui_text(2,14,buddy_talk?"AUTO TALK ON":"AUTO TALK OFF",15);ui_text(2,16,"R CREATURE COLLECTION",14);ui_text(2,17,"B BACK",13);}
@@ -1764,7 +1764,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_clear();ui_frame(0,19,15);ui_text(2,1,"COMPANION ACTIONS",14);
   if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party_sel];ui_text(2,3,lc_species_name(c->species),15);
    for(i=0;i<5;i++){ui_text(4,5+i*2,i==collection_action_sel?">":" ",13);ui_text(6,5+i*2,A[i],i==collection_action_sel?14:15);}
-   if(collection_action_sel==4&&c->species>=LC_SPECIES_IMPORTED)ui_text(2,16,"IMPORTED IDENTITY IS PINNED",13);
+   if(collection_action_sel==4){if(c->species>=LC_SPECIES_IMPORTED)ui_text(2,16,"IMPORTED IDENTITY IS PINNED",13);else if(lc_release_armed)ui_text(2,16,"A AGAIN TO RELEASE",13);else ui_text(2,16,"RELEASE REQUIRES CONFIRM",13);}
   }
   ui_text(2,18,"A CONFIRM",14);ui_text(20,18,"B BACK",13);
  }
@@ -2849,15 +2849,18 @@ static void update_pause(u16 newk){
   return;
  }
  if(pause_page==27){
-  if(newk&KEY_UP)collection_action_sel=(u8)(collection_action_sel?collection_action_sel-1:4);
-  if(newk&KEY_DOWN)collection_action_sel=(u8)((collection_action_sel+1)%5);
-  if(newk&KEY_B){pause_page=18;return;}
+  if(newk&KEY_UP){collection_action_sel=(u8)(collection_action_sel?collection_action_sel-1:4);lc_release_armed=0;}
+  if(newk&KEY_DOWN){collection_action_sel=(u8)((collection_action_sel+1)%5);lc_release_armed=0;}
+  if(newk&KEY_B){lc_release_armed=0;pause_page=18;return;}
   if((newk&KEY_A)&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party_sel];
    if(collection_action_sel==0){lc_party.active=lc_party_sel;v9_bonded=(u8)(c->bond>=55);v9_bond_type=(u8)(c->species%EN_COUNT);save_game();say("ACTIVE COMPANION UPDATED.");pause_page=18;}
    else if(collection_action_sel==1){if(inv[ITEM_SHARD]>=2){LcResult v=lc_bond(&lc_party,lc_party_sel,(u8)(c->species>=128?(c->species-128)%3:c->species%3),(u8)mini(100,65+player_level));if(v==LC_OK){inv[ITEM_SHARD]-=2;save_game();say("TRAINING SUCCEEDED. BOND GREW.");}else say("BOND TRIAL NOT READY.");}else say("TWO STAR SHARDS ARE NEEDED.");}
    else if(collection_action_sel==2){u8 catalyst=(u8)(current_world==0&&current_room==7?1:current_world==2?2:current_world==4?3:0);if(lc_evolve(&lc_party,lc_party_sel,catalyst)==LC_OK){save_game();say("YOUR CREATURE EVOLVED.");}else say("LEVEL OR BOND TOO LOW.");}
    else if(collection_action_sel==3){if(c->species>=LC_SPECIES_IMPORTED)pause_page=26;else{eco_guide_sel=(u8)(c->species>=1&&c->species<=8?c->species-1:0);pause_page=20;}}
-   else {if(lc_release_wild(&lc_party,lc_party_sel)==LC_OK){lc_party_sel=(u8)(lc_party.count?mini(lc_party_sel,lc_party.count-1):0);save_game();say("RELEASED TO THE WILD.");pause_page=18;}else say("IMPORTED COMPANION IS PINNED.");}
+   else {if(c->species>=LC_SPECIES_IMPORTED){lc_release_armed=0;say("IMPORTED COMPANION IS PINNED.");}
+    else if(!lc_release_armed)lc_release_armed=1;
+    else if(lc_release_wild(&lc_party,lc_party_sel)==LC_OK){lc_release_armed=0;lc_party_sel=(u8)(lc_party.count?mini(lc_party_sel,lc_party.count-1):0);save_game();say("RELEASED TO THE WILD.");pause_page=18;}
+   }
   }
   return;
  }
