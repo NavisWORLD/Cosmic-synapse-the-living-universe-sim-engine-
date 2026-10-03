@@ -19,7 +19,7 @@ with tempfile.TemporaryDirectory() as d:
  header=(root/'imported_companion.h').read_text()
  assert 'lc_imported_companion_tiles[8192]' in header
  assert 'lc_imported_companion_field_tiles[2048]' in header
- assert receipt['field_art'].startswith('four native 32x32')
+ assert receipt['field_art'].startswith('compact <=20px silhouettes')
  assert len(bytes.fromhex(receipt['field_tiles_32_sha256']))==32
  source=(GAME/'host_qa_v5.c').read_text().split('\n#ifdef HOST_QA\nint main(',1)[0]
  source+='''
