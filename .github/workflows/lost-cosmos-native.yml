@@ -53,6 +53,9 @@ jobs:
           /tmp/lc-journal-test
       - name: Real mGBA controller boot, movement, audio, video and two-boot save check
         run: python3 tests/test_mgba_controller.py --out artifacts/mgba_controller
+      - name: Real mGBA V11.1 full menu visual pilgrimage
+        timeout-minutes: 5
+        run: python3 tests/test_mgba_menu_visual.py --out artifacts/mgba_menu_visual
       - name: Release gate - real controller-only Act I to Malakar and First Heart, plus real second cold boot
         timeout-minutes: 7
         run: |
@@ -67,9 +70,6 @@ jobs:
       - name: Release gate - actual Hollow Grove reflection, real Wraith, Earth crystal and separate new cold boot
         timeout-minutes: 7
         run: python3 tests/test_mgba_hollow_grove_controller.py --eldoria artifacts/mgba_eldoria --out artifacts/mgba_grove
-      - name: Real mGBA V11.1 full menu visual pilgrimage
-        timeout-minutes: 5
-        run: python3 tests/test_mgba_menu_visual.py --out artifacts/mgba_menu_visual
       - name: Bundle portable controller runtime
         if: always()
         run: |
