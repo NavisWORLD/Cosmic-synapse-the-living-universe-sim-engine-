@@ -24,16 +24,19 @@ def wait(emu,pred,label,budget=1800):
  raise RuntimeError(f"Timed out waiting for {label}")
 
 def goto_index(emu,target):
- cur=emu.read_symbol("pause_sel")
- if cur>=5 and target<5: emu.tap("LEFT",hold=8,release=8);cur-=5
- if cur<5 and target>=5: emu.tap("RIGHT",hold=8,release=8);cur+=5
- row=cur%5;want=target%5
- # use shortest wrap path exactly as the native two-column menu supports
- down=(want-row)%5;up=(row-want)%5
- key="DOWN" if down<=up else "UP"
- for _ in range(min(down,up)): emu.tap(key,hold=8,release=8)
- if emu.read_symbol("pause_sel")!=target:
-  raise RuntimeError(f"Menu navigation failed: {emu.read_symbol('pause_sel')} != {target}")
+ # Navigate entirely by real D-pad input and tolerate one scan/frame of input
+ # settling between submenus. No state writes are used.
+ for _ in range(16):
+  cur=emu.read_symbol("pause_sel")
+  if cur==target:return
+  cur_col=1 if cur>=5 else 0;want_col=1 if target>=5 else 0
+  if cur_col!=want_col:key="RIGHT" if want_col else "LEFT"
+  else:
+   row=cur%5;want=target%5
+   down=(want-row)%5;up=(row-want)%5
+   key="DOWN" if down<=up else "UP"
+  emu.tap(key,hold=10,release=14);emu.step((),6)
+ raise RuntimeError(f"Menu navigation failed: {emu.read_symbol('pause_sel')} != {target}")
 
 def run(rom,elf,out):
  out.mkdir(parents=True,exist_ok=True)
@@ -60,7 +63,9 @@ def run(rom,elf,out):
     emu.tap("A",hold=10,release=10);emu.step((),8)
     page=emu.read_symbol("pause_page")
     emu.screenshot(out/f"page_{index:02d}_{name}.png")
-    report["captures"].append({"name":name,"selector":index,"pause_page":page,"frame":emu.frame})
+    report["captures"].append({"name":name,"selector":index,"pause_page":page,"frame":emu.frame,
+      "bg1cnt":emu.read16(0x0400000A),"bg1hofs":emu.read16(0x04000014),
+      "bg1vofs":emu.read16(0x04000016),"dispcnt":emu.read16(0x04000000)})
     if name=="party" and page==18 and emu.read_symbol("lc_party",width=1)>0:
      emu.tap("A",hold=10,release=10);emu.step((),8)
      emu.screenshot(out/"page_02_party_actions.png")
