@@ -123,7 +123,10 @@ def run(rom, elf, output):
                 "Opening did not lead to actual playable surface")
         require(emu.read_symbol("current_world") == 0 and emu.read_symbol("current_room") == 2,
                 "New Game did not start in Brindlemark")
-        emu.step((), 16)
+        transition_frame=emu.read_symbol("frame")
+        wait(emu, lambda: emu.read_symbol("frame") != transition_frame,
+             "first rendered Brindlemark frame", budget=300)
+        emu.step((), 4)
         require(len(set(emu.rgb()[i:i + 3] for i in range(0, 240 * 160 * 3, 3))) >= 8,
                 "Playable Brindlemark framebuffer remained blank after transition")
         emu.screenshot(output / "03_brindlemark_native.png")
@@ -187,7 +190,10 @@ def run(rom, elf, output):
         require(restored == moved, f"Continue failed to restore controller-earned position: {restored} != {moved}")
         for name in ("current_world", "current_room", "current_layer", "keys_found", "ending", "postgame", "kill_count", "player_level"):
             require(second_state[name] == first_state[name], f"Continue did not restore {name}")
-        emu.step((), 16)
+        transition_frame=emu.read_symbol("frame")
+        wait(emu, lambda: emu.read_symbol("frame") != transition_frame,
+             "first rendered CONTINUE frame", budget=300)
+        emu.step((), 4)
         require(len(set(emu.rgb()[i:i + 3] for i in range(0, 240 * 160 * 3, 3))) >= 8,
                 "CONTINUE restored state but left a blank framebuffer")
         emu.screenshot(output / "07_continue_native.png")
