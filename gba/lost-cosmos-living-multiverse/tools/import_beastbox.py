@@ -51,6 +51,41 @@ def as_c(name: str, raw: bytes) -> str:
         lines.append('  '+', '.join(f'0x{x:02x}' for x in raw[i:i+16])+',')
     return '\n'.join(lines+['};'])
 
+
+def field_tiles_32(raw: bytes) -> bytes:
+    """Nearest-neighbour 64x64x4 GBA 4bpp portraits -> 32x32x4 field art.
+
+    The source is 1D OBJ tile order (8 tiles per 64px row). The output uses
+    the same hardware-native 1D order with four tiles per 32px row. No
+    interpolation invents colors; every field pixel selects one verified
+    source-palette pixel from the portable Beast export.
+    """
+    if len(raw) != 8192:
+        raise InvalidExport('Expected four 64x64 4bpp companion frames')
+    out=bytearray()
+    for frame in range(4):
+        base=frame*2048
+        pixels=[[0]*64 for _ in range(64)]
+        for ty in range(8):
+            for tx in range(8):
+                tile=base+(ty*8+tx)*32
+                for y in range(8):
+                    for x in range(0,8,2):
+                        b=raw[tile+y*4+x//2]
+                        pixels[ty*8+y][tx*8+x]=b&15
+                        pixels[ty*8+y][tx*8+x+1]=(b>>4)&15
+        small=[[pixels[y*2][x*2] for x in range(32)] for y in range(32)]
+        for ty in range(4):
+            for tx in range(4):
+                for y in range(8):
+                    for x in range(0,8,2):
+                        lo=small[ty*8+y][tx*8+x]&15
+                        hi=small[ty*8+y][tx*8+x+1]&15
+                        out.append(lo|(hi<<4))
+    if len(out)!=2048:
+        raise AssertionError('32x32 field-art packing invariant failed')
+    return bytes(out)
+
 # Exact deterministic generator lineage, mirrored from Beast Box creature-profile.ts v1.
 # Never substitute a plausible same-budget stat vector for the real seeded profile.
 FAMILIES=('nebula','aurora','void','plasma','memory','signal','starlight')
@@ -140,10 +175,13 @@ def import_export(source: Path, output: Path) -> dict:
             for ch in f'lost-cosmos|{seed}'.encode('utf-8'):
                 h=((h^ch)*16777619)&0xffffffff
             seed_hash=h
+        field_tiles=field_tiles_32(tiles)
         output.mkdir(parents=True,exist_ok=True)
         content=['#ifndef LOST_COSMOS_IMPORTED_COMPANION_H','#define LOST_COSMOS_IMPORTED_COMPANION_H',
                  '/* Build-time original Beast Cage pixel frames. Allocate OBJ resources in the actual engine. */',
-                 as_c('lc_imported_companion_tiles',tiles),as_c('lc_imported_companion_palette',palette)]
+                 as_c('lc_imported_companion_tiles',tiles),
+                 as_c('lc_imported_companion_field_tiles',field_tiles),
+                 as_c('lc_imported_companion_palette',palette)]
         if profile is not None:
             content.append('#define LC_IMPORT_HAS_BCP1 1')
             content.append(f'#define LC_IMPORT_SEED_HASH 0x{seed_hash:08x}u')
@@ -153,10 +191,12 @@ def import_export(source: Path, output: Path) -> dict:
         receipt={'schema':'lost-cosmos-beastbox-build-import-v1',
                  'export_zip_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),
                  'tiles_sha256':hashlib.sha256(tiles).hexdigest(),
+                 'field_tiles_32_sha256':hashlib.sha256(field_tiles).hexdigest(),
                  'palette_sha256':hashlib.sha256(palette).hexdigest(),
                  'BCG1_guest_validated':True,'BCP1_game_profile':profile,
                  'portable_seed_hash':seed_hash,'generator_version':version,
                  'frames':['idle','listening','thinking','celebrating'],
+                 'field_art':'four native 32x32 frames derived from the verified 64x64 export',
                  'not_included':['owner_memory','real_sensor_data','model_weights','cloud_credentials']}
         (output/'import_receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')
         return receipt
