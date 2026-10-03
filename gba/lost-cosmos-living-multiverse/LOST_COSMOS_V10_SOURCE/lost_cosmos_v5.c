@@ -193,6 +193,7 @@ static QuantumState qstate;
    authoritative when loading historical saves and are never renumbered. */
 #define LC_ROSTER_SRAM 1024
 #define LC_IMPORT_OBJ_TILE 640
+#define LC_IMPORT_FIELD_OBJ_TILE 896
 #define LC_IMPORT_OBJ_PAL 15
 static LcRoster lc_party;
 static u8 lc_party_sel=0;
@@ -238,6 +239,13 @@ static void lc_add_exported_profile(void){
 }
 /* Only the imported 64x64 PORTRAIT uses OBJ bank 15 and reserved tile 640..895.
    The established 16x16 field sprites keep their original allocator/indices. */
+static void lc_import_palette(void){
+#if defined(LC_IMPORTED_COMPANION)
+ int i;for(i=0;i<16;i++)OBJ_PALETTE[LC_IMPORT_OBJ_PAL*16+i]=
+  (u16)lc_imported_companion_palette[2*i]|
+  (u16)((u16)lc_imported_companion_palette[2*i+1]<<8);
+#endif
+}
 static void lc_upload_import_art(void){
 #if defined(LC_IMPORTED_COMPANION)
  volatile u16 *dst=(volatile u16*)OBJ_VRAM32;
@@ -246,19 +254,34 @@ static void lc_upload_import_art(void){
   dst[LC_IMPORT_OBJ_TILE*16+i]=(u16)lc_imported_companion_tiles[i*2] |
    (u16)((u16)lc_imported_companion_tiles[i*2+1]<<8);
  }
+ for(i=0;i<1024;i++){
+  dst[LC_IMPORT_FIELD_OBJ_TILE*16+i]=(u16)lc_imported_companion_field_tiles[i*2] |
+   (u16)((u16)lc_imported_companion_field_tiles[i*2+1]<<8);
+ }
+ lc_import_palette();
 #endif
 }
 static void lc_draw_import_portrait(int x,int y){
 #if defined(LC_IMPORTED_COMPANION)
- int i;for(i=0;i<16;i++)OBJ_PALETTE[LC_IMPORT_OBJ_PAL*16+i]=
-  (u16)lc_imported_companion_palette[2*i]|
-  (u16)((u16)lc_imported_companion_palette[2*i+1]<<8);
+ lc_import_palette();
  OAM16[42*4]=(u16)(y&255);
  OAM16[42*4+1]=(u16)((x&511)|(3u<<14)); /* square 64x64 */
  OAM16[42*4+2]=(u16)(LC_IMPORT_OBJ_TILE+(cosmos.mood&3)*64 +
    (LC_IMPORT_OBJ_PAL<<12));
 #else
  (void)x;(void)y;
+#endif
+}
+static void lc_draw_import_field(int oi,int x,int y,int hflip,int ui){
+#if defined(LC_IMPORTED_COMPANION)
+ if(x<-32||x>239||y<-32||y>159){OAM16[oi*4]=0x0200;return;}
+ lc_import_palette();
+ OAM16[oi*4]=(u16)(y&255);
+ OAM16[oi*4+1]=(u16)((x&511)|(2u<<14)|(hflip?0x1000:0)); /* square 32x32 */
+ OAM16[oi*4+2]=(u16)(LC_IMPORT_FIELD_OBJ_TILE+(cosmos.mood&3)*16+
+   ((ui?0:1u)<<10)+(LC_IMPORT_OBJ_PAL<<12));
+#else
+ (void)oi;(void)x;(void)y;(void)hflip;(void)ui;
 #endif
 }
 
@@ -1450,6 +1473,10 @@ static void draw_battle(void){Enemy*e=&enemies[battle_index];
  if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];
   if(c->species>=1&&c->species<=8){oam_set(3,115,71,384+(c->species-1)*24+
     mini(2,c->stage)*8+((frame>>4)&1)*4,7,0);oam_ui_portrait(3);}
+#if defined(LC_IMPORTED_COMPANION)
+  else if(c->species>=LC_SPECIES_IMPORTED&&c->species<LC_SPECIES_IMPORTED+7)
+   lc_draw_import_field(3,108,59,0,1);
+#endif
  }
  if(current_world==0&&current_room==6&&e->elite)ui_text(3,3,"NIHILOS ECHO",13);
 
@@ -2489,13 +2516,21 @@ static void render_surface_sprites(void){int sx=player.x-cam_x-8,sy=player.y-cam
  if(v9_bonded||lc_party.count){
   u8 typ=v9_bond_type;
   if(lc_party.count)typ=(u8)(lc_party.slots[lc_party.active].species%EN_COUNT);
-  {int tile=60+typ*4,pal=5+typ;
+  {int tile=60+typ*4,pal=5+typ;u8 imported=0;
    if(lc_party.count){u8 species=lc_party.slots[lc_party.active].species;
     if(species>=1&&species<=8){
      u8 stage=lc_party.slots[lc_party.active].stage;
      tile=384+(species-1)*24+stage*8+(((frame>>4)&1)*4);
      pal=4+species;
-    }}
+    }
+#if defined(LC_IMPORTED_COMPANION)
+    else if(species>=LC_SPECIES_IMPORTED&&species<LC_SPECIES_IMPORTED+7)imported=1;
+#endif
+   }
+#if defined(LC_IMPORTED_COMPANION)
+   if(imported)lc_draw_import_field(42,cosmos.x-cam_x-8,cosmos.y-cam_y-15,cosmos.vx<0,0);
+   else
+#endif
    oam_set(42,cosmos.x-cam_x+6+((tile>=384)?((int)((frame>>5)&3)-1):0),cosmos.y-cam_y+1+(int)((frame>>3)&1),tile,pal,0);
   }
  }
