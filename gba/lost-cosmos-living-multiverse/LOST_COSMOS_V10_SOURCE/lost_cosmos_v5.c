@@ -599,6 +599,7 @@ static void ui_fill_rows(int y0,int y1,int tile,int pal){ int x,y; volatile u16*
 static void ui_frame(int top,int bottom,int pal){int x,y;volatile u16*m=screenblock(UI_MAP_BASE);
  for(y=top;y<=bottom;y++)for(x=0;x<30;x++)m[y*32+x]=map_attr((y==top||y==bottom||x==0||x==29)?61:62,pal);
 }
+static void ui_pause_canvas(void){ui_clear();ui_fill_rows(0,19,63,15);}
 static void ui_text(int x,int y,const char*s,int pal){ volatile u16*m=screenblock(UI_MAP_BASE); while(*s&&x<30){ int g=font_index(*s++); m[y*32+x]=map_attr((g<0)?62:64+g,pal); x++; } }
 static void ui_num(int x,int y,int value,int pal){
  /* Correctly renders 0..60000 XP and every existing stat without non-digit
@@ -656,14 +657,14 @@ static void make_bg_tile(int id,int type){ u32 t[8];int x,y;
  }upload_bg_tile(id,t);}
 static void make_ui_tiles(void){int g,x,y;u32 t[8];
  /* UI uses a dedicated 4bpp character base. Index 0 is transparent ONLY outside panels. */
- for(y=0;y<8;y++)t[y]=0x33333333u;vram_copy32(VRAM32+(0x4000/4)+61*8,t,8); /* border */
+ for(y=0;y<8;y++)t[y]=0x33333333u;vram_copy32(VRAM32+(0x4000/4)+61*8,t,8); /* dialogue border */
  for(y=0;y<8;y++)t[y]=0x22222222u;
  vram_copy32(VRAM32+(0x4000/4)+62*8,t,8); /* opaque space */
  vram_copy32(VRAM32+(0x4000/4)+63*8,t,8); /* opaque panel */
+ /* Menus use one crisp 5x7 foreground rather than the old doubled drop-shadow.
+    Delta scales individual GBA pixels aggressively; a second offset glyph read
+    like a graphical glitch on phone skins. */
  for(g=0;g<48;g++){for(y=0;y<8;y++)t[y]=0x22222222u;
-  for(x=0;x<5;x++)for(y=0;y<7;y++)if(FONT[g][x]&(1u<<y)){
-     if(x+2<8&&y+1<8)tile_pixel(t,x+2,y+1,4);
-   }
   for(x=0;x<5;x++)for(y=0;y<7;y++)if(FONT[g][x]&(1u<<y))tile_pixel(t,x+1,y,1);
   vram_copy32(VRAM32+(0x4000/4)+(64+g)*8,t,8);
  }
@@ -1627,11 +1628,16 @@ static const char* spell_name(u8 s){static const char*S[SPELL_COUNT]={"SYNAPSE P
 static const char* weapon_name(void){return weapon==2?"CROWN EDGE":(weapon==1?"EMBER SABER":"RUST BLADE");}
 static const char* armor_name(void){return armor?"TIDE MAIL":"TRAVEL CLOTH";}
 static const char* charm_name(void){return charm?"BLOOM CHARM":"NONE";}
-static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2,1,"PAUSED // COSMIC RPG",14);
+static void draw_pause(void){int i;ui_pause_canvas();
  if(pause_page==0){static const char*items[10]={"MAP","QUEST","PARTY","ITEMS","EQUIPMENT","ABILITIES","BESTIARY","MEMORIES","BEAST BOX","SYSTEM"};
-  ui_frame(0,19,15);ui_text(2,1,"LOST COSMOS",14);ui_text(18,1,"ADVENTURE",13);
-  for(i=0;i<10;i++){int y=3+i;ui_text(3,y,(i==pause_sel)?">":" ",13);ui_text(5,y,items[i],(i==pause_sel)?14:15);}
-  ui_text(2,17,"A SELECT",14);ui_text(18,17,"B RESUME",13);ui_text(2,18,"CLEAN MENUS / NO DEBUG HUD",15);
+  /* Delta-safe 2x5 cartridge menu. The emulator skin owns the top-center and
+     outer lower corners, so all actionable text stays inside the native safe area. */
+  ui_text(5,2,"LOST COSMOS",14);ui_text(20,2,"MENU",13);
+  for(i=0;i<5;i++){int y=6+i*2;
+   ui_text(4,y,(i==pause_sel)?">":" ",13);ui_text(6,y,items[i],(i==pause_sel)?14:15);
+   ui_text(16,y,(i+5==pause_sel)?">":" ",13);ui_text(18,y,items[i+5],(i+5==pause_sel)?14:15);
+  }
+  ui_text(6,17,"A OPEN",14);ui_text(19,17,"B CLOSE",13);
  }
  else if(pause_page==1){ui_text(2,3,"MAP // KNOWN WORLDS",14);for(i=0;i<8;i++){ui_text(2,5+i,(visited_mask&(1u<<i))?"*":"-",13);ui_text(4,5+i,WORLDS[i].name,15);}ui_text(2,17,"B BACK",13);}
  else if(pause_page==2){ui_text(2,3,"COSMOS // QUANTUM BUDDY",14);ui_text(2,5,"MOOD",13);ui_text(10,5,mood_name(),15);ui_text(2,6,"GOAL",13);ui_text(10,6,goal_name(cosmos.goal),15);ui_text(2,7,"TRUST",13);ui_num(10,7,cosmos.trust,15);ui_text(2,8,"CURIOSITY",13);ui_num(13,8,cosmos.curiosity,15);ui_text(2,9,"Q PHASE",13);ui_num(12,9,qstate.phase,15);ui_text(2,10,"Q COHERENCE",13);ui_num(14,10,qstate.coherence,15);ui_text(2,11,"Q SPREAD",13);ui_num(12,11,qstate.spread,15);ui_text(2,13,buddy_quantum?"WORKLOAD REPLAY ON":"WORKLOAD REPLAY OFF",14);ui_text(2,14,buddy_talk?"AUTO TALK ON":"AUTO TALK OFF",15);ui_text(2,16,"R CREATURE COLLECTION",14);ui_text(2,17,"B BACK",13);}
@@ -1649,7 +1655,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
  else if(pause_page==6){ui_text(2,3,"MEMORIES",14);ui_text(2,5,(cosmos.memory_flags&MEM_ORIGIN_ARCHIVE)?"* ORIGIN ARCHIVE":"- ORIGIN ARCHIVE",15);ui_text(2,6,(cosmos.memory_flags&MEM_BLACK_GARDEN)?"* BLACK GARDEN":"- BLACK GARDEN",15);ui_text(2,7,(cosmos.memory_flags&MEM_SECRET)?"* SECRET SIGNAL":"- SECRET SIGNAL",15);ui_text(2,8,(cosmos.memory_flags&MEM_SHIP)?"* FIRST FLIGHT":"- FIRST FLIGHT",15);ui_text(2,9,(cosmos.memory_flags&MEM_ENDING)?"* CROWN CHOICE":"- CROWN CHOICE",15);ui_text(2,17,"B BACK",13);}
  else if(pause_page==7){ui_text(2,3,"AXIS KEYS",14);ui_text(2,5,(keys_found&1)?"X // RESTORED":"X // MISSING",15);ui_text(2,6,(keys_found&2)?"Y // RESTORED":"Y // MISSING",15);ui_text(2,7,(keys_found&4)?"Z // RESTORED":"Z // MISSING",15);ui_text(2,10,"KEYS UNLOCK SPELLS + GEAR",13);ui_text(2,17,"B BACK",13);}
  else if(pause_page==8){ui_text(2,3,"STORY",14);ui_wrap_text(5,story_line(),15,8);ui_text(2,15,"NEXT QUEST",13);ui_text(2,16,campaign_objective(),15);ui_text(2,17,"R STORY BOOK  B BACK",13);}
- else if(pause_page==9){ui_frame(0,19,15);ui_text(2,1,"SYSTEM",14);
+ else if(pause_page==9){ui_text(4,2,"SYSTEM",14);
   ui_text(3,4,setting_sel==0?"> AUDIO":"  AUDIO",13);ui_text(19,4,audio_on?"ON":"OFF",15);
   ui_text(3,6,setting_sel==1?"> Q-BUDDY REPLAY":"  Q-BUDDY REPLAY",13);ui_text(22,6,buddy_quantum?"ON":"OFF",15);
   ui_text(3,8,setting_sel==2?"> AUTO TALK":"  AUTO TALK",13);ui_text(19,8,buddy_talk?"ON":"OFF",15);
@@ -1676,14 +1682,14 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(2,18,"RIGHT FULL THREAD UP/DN MORE",14);
  }
  else if(pause_page==25){int idx=completion_sel,start=(idx/5)*5;
-  ui_frame(0,19,15);ui_text(2,1,"THE COMPLETE LIVING THREAD",14);
+  ui_text(4,2,"THE COMPLETE LIVING THREAD",14);
   for(i=start;i<mini(start+5,24);i++){int y=3+(i-start)*2;ui_text(2,y,i==idx?">":" ",13);ui_text(4,y,COMPLETION_SCENES[i].name,(completion_done&(1u<<i))?14:15);}
   ui_text(2,13,"EARNED",13);ui_num(10,13,completion_count(),15);ui_text(14,13,"/ 24",14);
   ui_wrap_text(14,completion_available(idx)?(completion_step[idx]<4?COMPLETION_OBJECTIVES[idx][completion_step[idx]].name:COMPLETION_SCENES[idx].resolution):completion_requirement(idx),15,3);
   ui_text(2,17,"UP DN SELECT R VISIT",13);ui_text(2,18,"B CAMPAIGN / REALM PROOFS",14);
  }
  else if(pause_page==14){int count=chronicle_limit();
-  ui_frame(0,19,15);ui_text(2,1,"ERIDORIA // STORY BOOK",14);
+  ui_text(4,2,"ERIDORIA // STORY BOOK",14);
   if(count>0){if(chronicle_page>=count)chronicle_page=(u8)(count-1);
    ui_text(2,3,CHRONICLE[chronicle_page].title,13);
    ui_wrap_text(5,CHRONICLE[chronicle_page].text,15,11);
@@ -1708,7 +1714,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
    ui_text(2,17,"B ERIDORIA",14);
  }
  else if(pause_page==16){
-  ui_clear();ui_frame(0,19,15);ui_text(2,1,"RIFTFALL // YOUR ARMORY",14);
+  ui_pause_canvas();ui_text(4,2,"RIFTFALL // YOUR ARMORY",14);
   for(i=0;i<5;i++){
    ui_text(2,4+i*2,i==v9_gear_sel?">":" ",13);
    ui_text(4,4+i*2,V9_RARITY[i],v9_loot[i]?(i>=3?13:15):14);
@@ -1721,7 +1727,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(2,18,"B RETURN",13);
  }
  else if(pause_page==18){
-  ui_clear();ui_frame(0,19,15);ui_text(2,1,"PARTY // COLLECTION",14);
+  ui_pause_canvas();ui_text(4,2,"PARTY // COLLECTION",14);
   if(!lc_party.count){ui_text(3,5,"NO COMPANIONS YET",15);ui_text(3,7,"BOND WITH A WEAK WILD BEAST",13);}
   for(i=0;i<lc_party.count&&i<8;i++){int y=4+i;ui_text(2,y,lc_party_sel==i?">":" ",13);ui_text(4,y,lc_species_name(lc_party.slots[i].species),i==lc_party.active?14:15);}
   if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party_sel];
@@ -1731,20 +1737,20 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
    if(c->species>=LC_SPECIES_IMPORTED){ui_text(18,9,"Q-BEAST",14);lc_draw_import_portrait(168,82);}
 #endif
   }
-  ui_text(2,16,"A SELECT",14);ui_text(13,16,"R BESTIARY",13);ui_text(2,18,"UP/DOWN CHOOSE",15);ui_text(19,18,"B BACK",13);
+  ui_text(2,16,"A SELECT",14);ui_text(13,16,"R BESTIARY",13);ui_text(5,17,"UP/DOWN CHOOSE",15);ui_text(20,17,"B BACK",13);
  }
  else if(pause_page==20){
-  ui_clear();ui_frame(0,19,15);ui_text(2,1,"BESTIARY // FIELD JOURNAL",14);
+  ui_pause_canvas();ui_text(4,2,"BESTIARY // FIELD JOURNAL",14);
   for(i=0;i<8;i++){int y=3+i;ui_text(2,y,i==eco_guide_sel?">":" ",13);ui_text(4,y,ECO_NAMES[i],eco_capture_count(i+1)?14:15);}
   ui_text(17,3,"HOME",13);ui_text(17,4,ECO_HABITAT[eco_guide_sel],15);
   ui_text(17,6,"SKILL",13);ui_text(17,7,ECO_ABILITY[eco_guide_sel],15);
   ui_text(17,9,"OBS",13);ui_num(22,9,p4_research[eco_guide_sel],15);
   ui_text(17,11,"EVO",13);ui_text(17,12,"LV12 BOND55",15);
   ui_text(17,14,"FINAL",13);ui_text(17,15,"LV28 BOND80",15);
-  ui_text(2,18,"UP/DOWN SPECIES",14);ui_text(21,18,"B BACK",13);
+  ui_text(5,17,"UP/DOWN SPECIES",14);ui_text(21,17,"B BACK",13);
  }
  else if(pause_page==26){
-  ui_clear();ui_frame(0,19,15);ui_text(2,1,"BEAST BOX BRIDGE",14);
+  ui_pause_canvas();ui_text(4,2,"BEAST BOX BRIDGE",14);
 #if defined(LC_IMPORTED_COMPANION)
   {LcCreature*c=lc_party.count?&lc_party.slots[lc_party.active]:0;
    ui_text(2,3,"STATUS",13);ui_text(12,3,"BRIDGE READY",14);
@@ -1758,26 +1764,26 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
 #else
   ui_text(3,6,"BRIDGE READY",14);ui_text(3,8,"NO BEAST SNAPSHOT IMPORTED",15);
 #endif
-  ui_text(2,18,"B BACK",13);
+  ui_text(5,17,"B BACK",13);
  }
  else if(pause_page==27){static const char*A[5]={"SET ACTIVE","TRAIN","EVOLVE","DETAILS","RELEASE"};
-  ui_clear();ui_frame(0,19,15);ui_text(2,1,"COMPANION ACTIONS",14);
+  ui_pause_canvas();ui_text(4,2,"COMPANION ACTIONS",14);
   if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party_sel];ui_text(2,3,lc_species_name(c->species),15);
    for(i=0;i<5;i++){ui_text(4,5+i*2,i==collection_action_sel?">":" ",13);ui_text(6,5+i*2,A[i],i==collection_action_sel?14:15);}
    if(collection_action_sel==4){if(c->species>=LC_SPECIES_IMPORTED)ui_text(2,16,"IMPORTED IDENTITY IS PINNED",13);else if(lc_release_armed)ui_text(2,16,"A AGAIN TO RELEASE",13);else ui_text(2,16,"RELEASE REQUIRES CONFIRM",13);}
   }
-  ui_text(2,18,"A CONFIRM",14);ui_text(20,18,"B BACK",13);
+  ui_text(5,17,"A CONFIRM",14);ui_text(20,17,"B BACK",13);
  }
  else if(pause_page==28){static const char*S[4]={"SYNAPSE PULSE","EMBER BOLT","TIDE WARD","BLOOM NOVA"};
-  ui_clear();ui_frame(0,19,15);ui_text(2,1,"ABILITIES",14);
+  ui_pause_canvas();ui_text(4,2,"ABILITIES",14);
   for(i=0;i<4;i++){int unlocked=(i==0)||(i==1&&(keys_found&1))||(i==2&&(keys_found&2))||(i==3&&(keys_found&4));
    ui_text(3,4+i*2,i==ability_sel?">":" ",13);ui_text(5,4+i*2,S[i],unlocked?(i==current_spell?14:15):13);
    if(i==current_spell)ui_text(23,4+i*2,"EQ",13);else if(!unlocked)ui_text(23,4+i*2,"LOCK",13);}
   ui_text(2,13,"ACTIVE",13);ui_text(10,13,spell_name(current_spell),15);
-  ui_text(2,15,"R CASTS THE ACTIVE ABILITY",15);ui_text(2,18,"A EQUIP",14);ui_text(20,18,"B BACK",13);
+  ui_text(2,15,"R CASTS THE ACTIVE ABILITY",15);ui_text(5,17,"A EQUIP",14);ui_text(20,17,"B BACK",13);
  }
  else if(pause_page==21){
-  ui_frame(0,19,15);ui_text(2,1,"ERIDORIA // FIELD WORKSHOP",14);
+  ui_text(4,2,"ERIDORIA // FIELD WORKSHOP",14);
   ui_text(2,2,"BATTLE DROPS -> GUARANTEED",13);
   for(i=0;i<4;i++){ui_text(2,4+i*2,(i==p4_craft_sel)?">":" ",13);
    ui_text(4,4+i*2,P4_RECIPE[i],i==p4_craft_sel?14:15);
@@ -1792,7 +1798,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(2,17,"A CRAFT UP DOWN B BACK",13);
  }
  else if(pause_page==23){int idx=(int)g6_journal_sel;
-  ui_frame(0,19,15);ui_text(2,1,"ERIDORIA // ACT II-V THREADS",14);
+  ui_text(4,2,"ERIDORIA // ACT II-V THREADS",14);
   for(i=0;i<G6_COUNT;i++){
    ui_text(2,3+i*2,(i==idx)?">":" ",14);
    ui_text(4,3+i*2,G6_NAME[i],(g6_done&(1u<<i))?14:15);
@@ -1808,7 +1814,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(2,18,"B ERIDORIA - SAVED QUESTS",13);
  }
  else if(pause_page==24){int idx=(int)g7_journal_sel,start=(idx/5)*5;
-  ui_frame(0,19,15);ui_text(2,1,"THE LIVING BOOK // NEW CHAPTERS",14);
+  ui_text(4,2,"THE LIVING BOOK // NEW CHAPTERS",14);
   for(i=start;i<start+5&&i<G7_COUNT;i++){
     int y=3+(i-start)*2;
     ui_text(2,y,(i==idx)?">":" ",14);
@@ -1822,7 +1828,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(2,18,"B ACT CHAPTER INDEX",13);
  }
  else if(pause_page==22){int idx=(int)g5_journal_sel;
-  ui_frame(0,19,15);ui_text(2,1,"GUARDIAN // PERSONAL TRIAL",14);
+  ui_text(4,2,"GUARDIAN // PERSONAL TRIAL",14);
   ui_text(2,3,ARC_GUARDIANS[idx].name,15);
   ui_text(2,4,G5_NAME[idx],14);
   ui_text(2,6,(g5_complete&(1u<<idx))?"* OATH HONORED":
@@ -1837,7 +1843,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(2,18,"SEL CANCEL ACTIVE / B BACK",13);
  }
  else if(pause_page==19){int page=(int)(arc_ally_sel/7)*7;
-  ui_frame(0,19,15);ui_text(2,1,"GUARDIAN FELLOWSHIP",14);
+  ui_text(4,2,"GUARDIAN FELLOWSHIP",14);
   ui_text(2,2,"A EQUIP ACTIVE DISCIPLINE",13);
   for(i=page;i<mini(page+7,17);i++){
    int y=4+i-page;ui_text(2,y,i==arc_ally_sel?">":" ",13);
@@ -1853,7 +1859,7 @@ static void draw_pause(void){int i;ui_clear();ui_fill_rows(0,19,63,15);ui_text(2
   ui_text(2,18,"A EQUIP L QUEST R VISIT",13);
  }
  else if(pause_page==15){
-  ui_clear();ui_frame(0,19,15);ui_text(2,2,"CHOOSE YOUR HERO",14);
+  ui_pause_canvas();ui_text(2,2,"CHOOSE YOUR HERO",14);
   for(i=0;i<4;i++){
     ui_text(2,4+i*2,(role_preview==i)?">":" ",13);
     ui_text(4,4+i*2,ROLE_NAMES[i],role_preview==i?14:15);
@@ -2775,7 +2781,7 @@ static void update_surface(u16 k,u16 newk){int speed=(k&KEY_B)?3:2,dx=0,dy=0;u8 
 if(current_world==4&&current_room==0&&(frame&31)==0){int drift=(next_q()&1)?1:-1;if(!blocked_px(player.x+drift,player.y))player.x+=(s16)drift;}enemy_tick();collect_drops();npc_tick();buddy_tick();buddy_combat_assist();workload_buddy_tick();postgame_tick();v9_rift_tick();}
 
 static void update_space(u16 k,u16 newk){int sp=(k&KEY_B)?4:2;if(k&KEY_LEFT)ship_x-=sp;if(k&KEY_RIGHT)ship_x+=sp;if(k&KEY_UP)ship_y-=sp;if(k&KEY_DOWN)ship_y+=sp;ship_x=(s16)clampi(ship_x,8,504);ship_y=(s16)clampi(ship_y,8,504);if(newk&KEY_A)land_ship();if(newk&KEY_SELECT)drop_beacon();}
-static void enter_pause(void){return_mode=game_mode;game_mode=MODE_PAUSE;pause_sel=0;pause_page=0;}
+static void enter_pause(void){return_mode=game_mode;game_mode=MODE_PAUSE;pause_sel=0;pause_page=0;REG_BG1HOFS=0;REG_BG1VOFS=0;ui_clear();}
 static void update_pause(u16 newk){
  if(pause_page==25){if(newk&KEY_UP)completion_sel=(u8)((completion_sel+23)%24);if(newk&KEY_DOWN)completion_sel=(u8)((completion_sel+1)%24);if(newk&KEY_R)completion_warp(completion_sel);if(newk&KEY_B)pause_page=13;return;}
  if(pause_page==13&&(newk&KEY_RIGHT)){pause_page=25;completion_sel=(u8)mini(23,completion_count());return;}
@@ -2884,7 +2890,14 @@ static void update_pause(u16 newk){
  if(pause_page==3&&(newk&KEY_L)){pause_page=16;v9_gear_sel=v9_equipped;return;}
  if(pause_page==8&&(newk&KEY_R)){pause_page=14;chronicle_page=0;return;}
  if(pause_page==4&&(newk&KEY_R)){pause_page=21;p4_craft_sel=0;return;}
- if(pause_page==0){static const u8 P[10]={1,11,18,4,5,28,20,6,26,9};if(newk&KEY_UP){if(pause_sel)pause_sel--;else pause_sel=9;}if(newk&KEY_DOWN)pause_sel=(u8)((pause_sel+1)%10);if(newk&KEY_B){game_mode=return_mode;ui_clear();return;}if(newk&KEY_A){pause_page=P[pause_sel];if(pause_page==18)lc_party_sel=lc_party.active;if(pause_page==28)ability_sel=current_spell;}}else{if(newk&KEY_B)pause_page=0;if(pause_page==12){if((newk&KEY_DOWN)&&npc_log_offset<24)npc_log_offset++;if((newk&KEY_UP)&&npc_log_offset)npc_log_offset--;}if(pause_page==4){if(newk&KEY_UP){if(item_sel)item_sel--;else item_sel=ITEM_COUNT-1;}if(newk&KEY_DOWN)item_sel=(u8)((item_sel+1)%ITEM_COUNT);if(newk&KEY_A)use_item(item_sel);}if(pause_page==5){if(newk&KEY_UP){if(equip_sel)equip_sel--;else equip_sel=3;}if(newk&KEY_DOWN)equip_sel=(u8)((equip_sel+1)&3);if(newk&KEY_A){if(equip_sel==0){if(weapon==0&&gear_owned&2)weapon=1;else if(weapon==1&&gear_owned&16)weapon=2;else weapon=0;}else if(equip_sel==1)armor=(u8)((gear_owned&4)?!armor:0);else if(equip_sel==2)charm=(u8)((gear_owned&8)?!charm:0);else{u8 n=current_spell;do{n=(u8)((n+1)%SPELL_COUNT);}while((n==SPELL_EMBER&&!(keys_found&1))||(n==SPELL_TIDE&&!(keys_found&2))||(n==SPELL_BLOOM&&!(keys_found&4)));current_spell=n;}refresh_player_frames();save_game();}}if(pause_page==9){if(newk&KEY_UP)setting_sel=(u8)(setting_sel?setting_sel-1:4);if(newk&KEY_DOWN)setting_sel=(u8)((setting_sel+1)%5);if(newk&KEY_A){if(setting_sel==0)audio_on=(u8)!audio_on;else if(setting_sel==1)buddy_quantum=(u8)!buddy_quantum;else if(setting_sel==2)buddy_talk=(u8)!buddy_talk;else if(setting_sel==3)touch_mode=(u8)!touch_mode;save_game();}}}}
+ if(pause_page==0){static const u8 P[10]={1,11,18,4,5,28,20,6,26,9};
+  if(newk&KEY_UP)pause_sel=(u8)((pause_sel/5)*5+((pause_sel%5+4)%5));
+  if(newk&KEY_DOWN)pause_sel=(u8)((pause_sel/5)*5+((pause_sel%5+1)%5));
+  if((newk&KEY_LEFT)&&pause_sel>=5)pause_sel=(u8)(pause_sel-5);
+  if((newk&KEY_RIGHT)&&pause_sel<5)pause_sel=(u8)(pause_sel+5);
+  if(newk&KEY_B){game_mode=return_mode;ui_clear();return;}
+  if(newk&KEY_A){pause_page=P[pause_sel];if(pause_page==18)lc_party_sel=lc_party.active;if(pause_page==28)ability_sel=current_spell;}
+ }else{if(newk&KEY_B)pause_page=0;if(pause_page==12){if((newk&KEY_DOWN)&&npc_log_offset<24)npc_log_offset++;if((newk&KEY_UP)&&npc_log_offset)npc_log_offset--;}if(pause_page==4){if(newk&KEY_UP){if(item_sel)item_sel--;else item_sel=ITEM_COUNT-1;}if(newk&KEY_DOWN)item_sel=(u8)((item_sel+1)%ITEM_COUNT);if(newk&KEY_A)use_item(item_sel);}if(pause_page==5){if(newk&KEY_UP){if(equip_sel)equip_sel--;else equip_sel=3;}if(newk&KEY_DOWN)equip_sel=(u8)((equip_sel+1)&3);if(newk&KEY_A){if(equip_sel==0){if(weapon==0&&gear_owned&2)weapon=1;else if(weapon==1&&gear_owned&16)weapon=2;else weapon=0;}else if(equip_sel==1)armor=(u8)((gear_owned&4)?!armor:0);else if(equip_sel==2)charm=(u8)((gear_owned&8)?!charm:0);else{u8 n=current_spell;do{n=(u8)((n+1)%SPELL_COUNT);}while((n==SPELL_EMBER&&!(keys_found&1))||(n==SPELL_TIDE&&!(keys_found&2))||(n==SPELL_BLOOM&&!(keys_found&4)));current_spell=n;}refresh_player_frames();save_game();}}if(pause_page==9){if(newk&KEY_UP)setting_sel=(u8)(setting_sel?setting_sel-1:4);if(newk&KEY_DOWN)setting_sel=(u8)((setting_sel+1)%5);if(newk&KEY_A){if(setting_sel==0)audio_on=(u8)!audio_on;else if(setting_sel==1)buddy_quantum=(u8)!buddy_quantum;else if(setting_sel==2)buddy_talk=(u8)!buddy_talk;else if(setting_sel==3)touch_mode=(u8)!touch_mode;save_game();}}}}
 
 
 /* ---------- boot ---------- */
