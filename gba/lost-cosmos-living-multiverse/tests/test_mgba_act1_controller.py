@@ -47,14 +47,17 @@ def run(rom,elf,out):
    # The earlier experimental run captured a completely blank transition frame
    # and found zero NPCs because it raced generate_surface(). Do not test a
    # fictitious intermediate frame; wait for genuine BG2 + live spawned NPCs.
-   wait(emu,lambda: emu.read_symbol("npc_count")>0 and
-        (emu.read16(0x04000000)&0x0400)!=0,
-        "fully rendered native Brindlemark with spawned NPCs", max_frames=1500)
-   emu.step((),12)
    nav=Navigator(emu)
+   # V10.8+ intentionally keeps an opaque "TRAVERSING COSMOS" cover visible
+   # while the expensive native map build runs. npc_count can still describe
+   # the previous scene during that cover, so generic npc_count>0 is not a
+   # valid readiness signal. Wait for the actual Brindle Elder spawned by the
+   # completed local map instead.
+   wait(emu,lambda: (emu.read16(0x04000000)&0x0400)!=0 and
+        any(n.id==14 for n in nav.npcs()),
+        "fully rendered native Brindlemark with real Elder", max_frames=1800)
+   emu.step((),12)
    report["initial_real_npc_ids"]=[n.id for n in nav.npcs()]
-   if 14 not in report["initial_real_npc_ids"]:
-    raise RuntimeError("Brindle elder NPC missing from fully rendered actual native map")
    mark("01_true_brindlemark")
    nav.talk_npc(14,advances=3)       # Real village elder with actual NPC dialogue.
    if not emu.read_symbol("story_flags")&1:raise RuntimeError("Brindle elder failed to unlock ST_TOWN")

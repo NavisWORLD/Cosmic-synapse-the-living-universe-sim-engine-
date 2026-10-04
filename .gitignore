@@ -9,3 +9,17 @@ app/index.html
 .env
 .env.*
 !/.env.example
+
+# Native GBA build products and local controller evidence.
+gba/lost-cosmos-living-multiverse/artifacts/
+gba/lost-cosmos-living-multiverse/tools/mgba_bridge.so
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/*.gba
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/*.elf
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/*.o
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/*.o.tmp
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/host_qa_v5.c
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_test_host.c
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_test_host
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/host_qa_v5
+__pycache__/
+*.pyc

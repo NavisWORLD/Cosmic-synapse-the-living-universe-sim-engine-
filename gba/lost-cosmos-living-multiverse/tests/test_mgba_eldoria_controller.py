@@ -53,8 +53,12 @@ def run(rom,elf,act2,out):
    emu.step((),20);nav=Navigator(emu)
    if not emu.read_symbol("story_flags")&512:raise RuntimeError("Dream Unity unearned")
    mark("01_real_prior_Dream_save")
-   nav.interact(1,at=(10,53));nav.wait_cinema()
-   if emu.read_symbol("game_mode")!=1:raise RuntimeError("Actual LUNA-ARC was not boarded")
+   nav.goto_trigger(1,at=(10,53));nav.board_ship()
+   if emu.read_symbol("game_mode")!=1 or emu.read_symbol("cinema_active"):
+    raise RuntimeError("Actual LUNA-ARC warp did not finish in playable space")
+   emu.step((),8)
+   if len(set(emu.rgb()[i:i+3] for i in range(0,240*160*3,3)))<6:
+    raise RuntimeError("LUNA-ARC entered space state but framebuffer stayed blank")
    mark("02_actual_LUNA_ARC_flight")
    nav.fly_to(7)
    wait(lambda:nav.location()==(7,0,1),"real Eldoria landing")
@@ -63,9 +67,44 @@ def run(rom,elf,act2,out):
    nav.talk_npc(20,advances=3)
    mark("04_real_Thorne_dialogue")
    for index,tile in enumerate(((15,17),(26,17),(37,17))):
-    nav.interact(21,at=tile)
+    nav.goto_trigger(21,at=tile)
+    before_diag={
+     "near_trigger_x":emu.read_symbol("near_trigger_x"),
+     "near_trigger_y":emu.read_symbol("near_trigger_y"),
+     "last_element_trigger_x":emu.read_symbol("last_element_trigger_x"),
+     "last_element_index":emu.read_symbol("last_element_index"),
+     "last_element_interact_count":emu.read_symbol("last_element_interact_count"),
+     "surface_a_edges":emu.read_symbol("qa_surface_a_edges"),
+     "surface_gate":emu.read_symbol("qa_surface_gate"),
+     "last_surface_k":emu.read_symbol("qa_last_surface_k"),
+     "last_surface_newk":emu.read_symbol("qa_last_surface_newk"),
+     "game_mode":emu.read_symbol("game_mode"),
+     "npc_dialogue_active":emu.read_symbol("npc_dialogue_active"),
+     "cinema_active":emu.read_symbol("cinema_active"),
+     "pending_choice":emu.read_symbol("pending_choice"),
+     "riddle_open":emu.read_symbol("riddle_open"),
+    }
+    emu.tap("A",hold=12,release=12)
+    after_diag={
+     "near_trigger_x":emu.read_symbol("near_trigger_x"),
+     "near_trigger_y":emu.read_symbol("near_trigger_y"),
+     "last_element_trigger_x":emu.read_symbol("last_element_trigger_x"),
+     "last_element_index":emu.read_symbol("last_element_index"),
+     "last_element_interact_count":emu.read_symbol("last_element_interact_count"),
+     "element_mask":emu.read_symbol("element_mask"),
+     "surface_a_edges":emu.read_symbol("qa_surface_a_edges"),
+     "surface_gate":emu.read_symbol("qa_surface_gate"),
+     "last_surface_k":emu.read_symbol("qa_last_surface_k"),
+     "last_surface_newk":emu.read_symbol("qa_last_surface_newk"),
+     "game_mode":emu.read_symbol("game_mode"),
+     "npc_dialogue_active":emu.read_symbol("npc_dialogue_active"),
+     "cinema_active":emu.read_symbol("cinema_active"),
+     "pending_choice":emu.read_symbol("pending_choice"),
+     "riddle_open":emu.read_symbol("riddle_open"),
+    }
+    report.setdefault("shrine_diagnostics",[]).append({"index":index,"tile":tile,"before":before_diag,"after":after_diag})
     if not emu.read_symbol("element_mask")&(1<<index):
-     raise RuntimeError("Actual shrine "+str(index)+" not earned")
+     raise RuntimeError("Actual shrine "+str(index)+" not earned; diagnostic="+repr(after_diag))
     mark("0"+str(5+index)+"_real_element_"+str(index))
    nav.fight_enemy(7)  # Real native guarded last shrine; no forged kill_count.
    mark("08_actual_Storm_Guardian_defeated")

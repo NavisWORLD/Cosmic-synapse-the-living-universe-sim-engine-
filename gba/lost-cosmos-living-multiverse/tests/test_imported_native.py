@@ -3,7 +3,7 @@ The fixture is synthetic: this test is NOT evidence an actual user's BCP1
 pack has been imported or that GBA/Delta gameplay has been recorded.
 """
 from pathlib import Path
-import importlib.util, subprocess, sys, tempfile
+import importlib.util, re, subprocess, sys, tempfile
 BASE=Path(__file__).resolve().parents[1]
 GAME=BASE/'LOST_COSMOS_V10_SOURCE'
 sys.path.insert(0,str(BASE/'tests'))
@@ -16,6 +16,32 @@ with tempfile.TemporaryDirectory() as d:
  receipt=import_export(synthetic,root)
  assert receipt['generator_version']==1
  assert receipt['BCP1_game_profile']['public_identity']==f"{fnv('identity|1|nebula-test'):08x}"
+ header=(root/'imported_companion.h').read_text()
+ assert 'lc_imported_companion_tiles[8192]' in header
+ assert 'lc_imported_companion_field_tiles[2048]' in header
+ assert receipt['field_art'].startswith('compact <=20px silhouettes')
+ assert len(bytes.fromhex(receipt['field_tiles_32_sha256']))==32
+ # Decode the actual generated four-frame GBA 4bpp field asset and enforce the
+ # visual contract, not merely its receipt string. Each visible silhouette
+ # must stay within a <=20x20 bounding box inside the 32x32 hardware canvas.
+ m=re.search(r'lc_imported_companion_field_tiles\[2048\]\s*=\s*\{(.*?)\};',header,re.S)
+ assert m, 'Generated compact field tile array missing'
+ raw=bytes(int(x,16) for x in re.findall(r'0x([0-9a-fA-F]{2})',m.group(1)))
+ assert len(raw)==2048
+ for frame in range(4):
+  px=[[0]*32 for _ in range(32)];base=frame*512
+  for ty in range(4):
+   for tx in range(4):
+    tile=base+(ty*4+tx)*32
+    for y in range(8):
+     for x in range(0,8,2):
+      b=raw[tile+y*4+x//2]
+      px[ty*8+y][tx*8+x]=b&15;px[ty*8+y][tx*8+x+1]=(b>>4)&15
+  visible=[(x,y) for y in range(32) for x in range(32) if px[y][x]]
+  assert visible, f'Imported field frame {frame} became blank'
+  width=max(x for x,_ in visible)-min(x for x,_ in visible)+1
+  height=max(y for _,y in visible)-min(y for _,y in visible)+1
+  assert width<=20 and height<=20, f'Imported field frame {frame} oversized: {width}x{height}'
  source=(GAME/'host_qa_v5.c').read_text().split('\n#ifdef HOST_QA\nint main(',1)[0]
  source+='''
 #include <assert.h>
