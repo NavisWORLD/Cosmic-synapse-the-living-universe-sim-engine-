@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 
 const file = 'standalone/SIM_EARTH_7_08_REALITY_BODY.html';
-const EXPECTED = '6af6374bc4882c67695b3651dc4fe02075e905eab463e1302c8a6dfac12119d5';
+const EXPECTED = '47bf8b6379c425b77dca15bfe2de95e87af451ec994368d43b3253cebe373dfd';
 const fail = (m) => { console.error(`FAIL: ${m}`); process.exitCode = 1; };
 if (!fs.existsSync(file)) { fail(`missing ${file}`); process.exit(1); }
 const buf = fs.readFileSync(file);
@@ -38,6 +38,8 @@ for (const [label, token] of [
   ['WebGL live daylight calculation', 'baseDay=a.renderer.skyInfo().day'],
   ['Lost Cosmos handheld pane', 'sim707-pane-cosmos'],
   ['Lost Cosmos handheld frame', 'lc-arcade-frame'],
+  ['Learner Buddy pane', 'sim707-pane-buddy'],
+  ['Learner Buddy frame', 'lb-buddy-frame'],
   ['Synapse OS pane', 'sim707-pane-synapse'],
   ['Synapse OS frame', 'lc-synapse-frame'],
   ['Pocket Reality brand', 'Cute Beast Pocket Reality Learners']
@@ -55,5 +57,23 @@ for (const req of [
   'docs/TEACHER_GUIDE.md','docs/VISUAL_REALISM.md','docs/REALITY_BODY_7_08.md',
   'BUILD_VERIFICATION_7.08.md','paper/SIM_EARTH_7_07_TECHNICAL_PAPER.md'
 ]) if (!fs.existsSync(req)) fail(`missing packaging/document surface: ${req}`);
+
+const buddyPage = 'arcade/learner-buddy/index.html';
+if (!fs.existsSync(buddyPage)) fail(`missing ${buddyPage}`);
+else {
+  const buddy = fs.readFileSync(buddyPage, 'utf8');
+  if (!buddy.includes('not a medical device')) fail('Learner Buddy disclaimer missing');
+  if (/src="https?:/.test(buddy)) fail('Learner Buddy must not load remote scripts');
+  for (const file of [
+    'arcade/learner-buddy/app.mjs',
+    'arcade/learner-buddy/store.mjs',
+    'arcade/learner-buddy/preferences.mjs',
+    'arcade/learner-buddy/growth.mjs',
+    'arcade/learner-buddy/cue.mjs',
+  ]) {
+    if (!fs.existsSync(file)) fail(`missing ${file}`);
+    else if (/\bfetch\(/.test(fs.readFileSync(file, 'utf8'))) fail(`${file} must not call fetch`);
+  }
+}
 
 if (!process.exitCode) console.log(`PASS: SIM EARTH 7.08 Reality Body verified. Canonical LF SHA-256 ${sha}; WebGL2 Reality Body + LUNA-ARC + Luna field body + 12D/42D/54D surfaces + 7.08 verification receipt + UI/graphics hotfix controls present.`);
