@@ -20,6 +20,10 @@ const head = `
 const boot = `
 <script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.warn));}</script>
 `;
+html = html.replaceAll('../arcade/', 'arcade/');
 html = html.replace('</head>', `${head}</head>`).replace('</body>', `${boot}</body>`);
 fs.writeFileSync(target, html);
+const arcadeSrc = path.join(root, 'arcade');
+const arcadeDest = path.join(outDir, 'arcade');
+if (fs.existsSync(arcadeSrc)) fs.cpSync(arcadeSrc, arcadeDest, { recursive: true });
 console.log(`Prepared ${target} from SIM EARTH 7.08 canonical standalone engine.`);

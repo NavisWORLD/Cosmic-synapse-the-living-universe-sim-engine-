@@ -1,0 +1,62 @@
+name: Publish verified Lost COSMOS V7 editable source
+permissions:
+  actions: read
+  contents: write
+on:
+  push:
+    branches: [feature/lost-cosmos-eridoria-eight-world-campaign-007]
+    paths:
+      - '.github/workflows/pixel-universe-gba-v7-publish.yml'
+jobs:
+  publish-exact-tested-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download passing V7 native mGBA release artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v7-artifact /tmp/v7-exact
+          gh run download 36167103911 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name lost-cosmos-v7-mgba-artifacts \
+            --dir /tmp/v7-artifact
+          echo 'c7909147bbf5e124181f0d0eef1474230f4b26b8966109df6c396e56d4ab1a55  /tmp/v7-artifact/release.gba' | sha256sum -c -
+          unzip -q /tmp/v7-artifact/V7_Exact_Source.zip -d /tmp/v7-exact
+          echo '0308b4596d89d732cc8b3db82cb4132e0e7f54ec3fc80c8b5078f0aeb5e6d1e8  /tmp/v7-exact/lost_cosmos_v5.c' | sha256sum -c -
+          test -s /tmp/v7-artifact/qa-boot1.sav
+          test -s /tmp/v7-artifact/qa-final.sav
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/v7-artifact/qa-boot1.sav').read_bytes()
+          q=Path('/tmp/v7-artifact/qa-final.sav').read_bytes()
+          assert len(p)==len(q)==32768 and p[126]==0xa5 and q[126]==0x5a
+          assert q[5]==7 and q[10]==1
+          print('PASS verified mGBA SRAM proof before publishing source')
+          PY
+      - name: Commit and publish exact CI-tested editable V7 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='gba/lost-cosmos-eridoria-v7/source'
+          mkdir -p "$target"
+          cp -a /tmp/v7-exact/. "$target/"
+          cat >gba/lost-cosmos-eridoria-v7/CI_VERIFICATION.md <<'EOF'
+          # Lost COSMOS V7 — verified native GBA release
+          This branch contains the full editable source produced by the **passing** two-boot native mGBA build.
+          Native CI: https://github.com/NavisWORLD/Cosmic-synapse-the-living-universe-sim-engine-/actions/runs/36167103911
+          ROM SHA-256: c7909147bbf5e124181f0d0eef1474230f4b26b8966109df6c396e56d4ab1a55
+          Gameplay source SHA-256: 0308b4596d89d732cc8b3db82cb4132e0e7f54ec3fc80c8b5078f0aeb5e6d1e8
+          Original 8192-byte archived workload tape SHA-256: 9bcecc3732fe48107554cc2041cff6088f418290fb850ec0c9b89cdc375f54c8
+          SRAM proof: first boot A5 Malakar/Heart/Ember; second boot 5A eight-world campaign, all XYZ keys, Crown ending/postgame.
+          This is a condensed playable five-act campaign. Neither full seventeen guardian campaigns nor multiplayer are implemented. Scripted mGBA success is not physical hardware or Delta-on-iPhone manual verification.
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A "$target" gba/lost-cosmos-eridoria-v7/CI_VERIFICATION.md
+          git diff --cached --quiet && exit 0
+          git commit -m "publish exact mGBA-verified Lost COSMOS V7 editable source [skip ci]"
+          git push origin HEAD:feature/lost-cosmos-eridoria-eight-world-campaign-007

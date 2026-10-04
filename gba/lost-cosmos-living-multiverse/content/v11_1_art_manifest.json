@@ -1,0 +1,4015 @@
+{
+  "version": "11.1",
+  "characters": [
+    {
+      "id": "CHR_001",
+      "source": "npc",
+      "cell": [
+        0,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 16,
+      "visible_pixels": 136
+    },
+    {
+      "id": "CHR_002",
+      "source": "npc",
+      "cell": [
+        1,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 14,
+      "visible_height": 15,
+      "visible_pixels": 119
+    },
+    {
+      "id": "CHR_003",
+      "source": "npc",
+      "cell": [
+        2,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 20,
+      "visible_pixels": 239
+    },
+    {
+      "id": "CHR_004",
+      "source": "npc",
+      "cell": [
+        3,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 20,
+      "visible_pixels": 219
+    },
+    {
+      "id": "CHR_005",
+      "source": "npc",
+      "cell": [
+        4,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 16,
+      "visible_height": 16,
+      "visible_pixels": 156
+    },
+    {
+      "id": "CHR_006",
+      "source": "npc",
+      "cell": [
+        0,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 13,
+      "visible_pixels": 160
+    },
+    {
+      "id": "CHR_007",
+      "source": "npc",
+      "cell": [
+        1,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 16,
+      "visible_height": 14,
+      "visible_pixels": 157
+    },
+    {
+      "id": "CHR_008",
+      "source": "npc",
+      "cell": [
+        3,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 15,
+      "visible_pixels": 216
+    },
+    {
+      "id": "CHR_009",
+      "source": "npc",
+      "cell": [
+        2,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 17,
+      "visible_pixels": 234
+    },
+    {
+      "id": "CHR_010",
+      "source": "npc",
+      "cell": [
+        3,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 14,
+      "visible_height": 20,
+      "visible_pixels": 208
+    },
+    {
+      "id": "CHR_011",
+      "source": "npc",
+      "cell": [
+        5,
+        1
+      ],
+      "adaptation": "Coral Wisp becomes the ancient volcanic signal; warm palette.",
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 18,
+      "visible_height": 20,
+      "visible_pixels": 161
+    },
+    {
+      "id": "CHR_012",
+      "source": "npc",
+      "cell": [
+        4,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 15,
+      "visible_height": 14,
+      "visible_pixels": 116
+    },
+    {
+      "id": "CHR_013",
+      "source": "npc",
+      "cell": [
+        0,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 17,
+      "visible_pixels": 244
+    },
+    {
+      "id": "CHR_014",
+      "source": "npc",
+      "cell": [
+        5,
+        3
+      ],
+      "adaptation": "Mothling becomes the quiet apiary keeper; leaf palette.",
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 12,
+      "visible_height": 7,
+      "visible_pixels": 54
+    },
+    {
+      "id": "CHR_015",
+      "source": "npc",
+      "cell": [
+        1,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 17,
+      "visible_pixels": 211
+    },
+    {
+      "id": "CHR_016",
+      "source": "npc",
+      "cell": [
+        4,
+        3
+      ],
+      "adaptation": "Echo of the Son becomes the cartographer's pale echo.",
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 20,
+      "visible_pixels": 239
+    },
+    {
+      "id": "CHR_017",
+      "source": "npc",
+      "cell": [
+        2,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 17,
+      "visible_height": 20,
+      "visible_pixels": 251
+    },
+    {
+      "id": "CHR_018",
+      "source": "npc",
+      "cell": [
+        3,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 14,
+      "visible_pixels": 200
+    },
+    {
+      "id": "CHR_019",
+      "source": "npc",
+      "cell": [
+        4,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 13,
+      "visible_height": 13,
+      "visible_pixels": 93
+    },
+    {
+      "id": "CHR_020",
+      "source": "npc",
+      "cell": [
+        4,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 20,
+      "visible_pixels": 238
+    },
+    {
+      "id": "CHR_021",
+      "source": "npc",
+      "cell": [
+        0,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 15,
+      "visible_height": 20,
+      "visible_pixels": 164
+    },
+    {
+      "id": "CHR_022",
+      "source": "npc",
+      "cell": [
+        1,
+        4
+      ],
+      "adaptation": "Prayer Keeper becomes the Confessor; deep violet palette.",
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 17,
+      "visible_height": 20,
+      "visible_pixels": 223
+    },
+    {
+      "id": "CHR_023",
+      "source": "npc",
+      "cell": [
+        1,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 12,
+      "visible_pixels": 164
+    },
+    {
+      "id": "CHR_024",
+      "source": "npc",
+      "cell": [
+        2,
+        3
+      ],
+      "adaptation": "Crown Seneschal becomes the fallen saint; dim palette.",
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 18,
+      "visible_height": 20,
+      "visible_pixels": 219
+    },
+    {
+      "id": "CHR_025",
+      "source": "npc",
+      "cell": [
+        2,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 18,
+      "visible_height": 20,
+      "visible_pixels": 219
+    },
+    {
+      "id": "CHR_026",
+      "source": "npc",
+      "cell": [
+        3,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 18,
+      "visible_pixels": 282
+    },
+    {
+      "id": "CHR_027",
+      "source": "npc",
+      "cell": [
+        4,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 20,
+      "visible_pixels": 239
+    },
+    {
+      "id": "CHR_028",
+      "source": "npc",
+      "cell": [
+        0,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 19,
+      "visible_pixels": 206
+    },
+    {
+      "id": "CHR_029",
+      "source": "npc",
+      "cell": [
+        1,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 17,
+      "visible_height": 20,
+      "visible_pixels": 223
+    },
+    {
+      "id": "CHR_030",
+      "source": "npc",
+      "cell": [
+        2,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 20,
+      "visible_pixels": 241
+    },
+    {
+      "id": "CHR_031",
+      "source": "enemy",
+      "cell": [
+        0,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 18,
+      "visible_pixels": 118
+    },
+    {
+      "id": "CHR_032",
+      "source": "enemy",
+      "cell": [
+        1,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 16,
+      "visible_pixels": 157
+    },
+    {
+      "id": "CHR_033",
+      "source": "enemy",
+      "cell": [
+        2,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 15,
+      "visible_pixels": 131
+    },
+    {
+      "id": "CHR_034",
+      "source": "enemy",
+      "cell": [
+        3,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 17,
+      "visible_height": 14,
+      "visible_pixels": 105
+    },
+    {
+      "id": "CHR_035",
+      "source": "enemy",
+      "cell": [
+        4,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 15,
+      "visible_pixels": 101
+    },
+    {
+      "id": "CHR_036",
+      "source": "enemy",
+      "cell": [
+        5,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 20,
+      "visible_pixels": 205
+    },
+    {
+      "id": "CHR_037",
+      "source": "enemy",
+      "cell": [
+        6,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 14,
+      "visible_pixels": 52
+    },
+    {
+      "id": "CHR_038",
+      "source": "enemy",
+      "cell": [
+        7,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 18,
+      "visible_height": 18,
+      "visible_pixels": 197
+    },
+    {
+      "id": "CHR_039",
+      "source": "enemy",
+      "cell": [
+        8,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 20,
+      "visible_pixels": 205
+    },
+    {
+      "id": "CHR_040",
+      "source": "enemy",
+      "cell": [
+        9,
+        0
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 20,
+      "visible_pixels": 188
+    },
+    {
+      "id": "CHR_041",
+      "source": "enemy",
+      "cell": [
+        0,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 16,
+      "visible_pixels": 218
+    },
+    {
+      "id": "CHR_042",
+      "source": "enemy",
+      "cell": [
+        1,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 19,
+      "visible_pixels": 177
+    },
+    {
+      "id": "CHR_043",
+      "source": "enemy",
+      "cell": [
+        2,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 19,
+      "visible_pixels": 199
+    },
+    {
+      "id": "CHR_044",
+      "source": "enemy",
+      "cell": [
+        3,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 17,
+      "visible_height": 20,
+      "visible_pixels": 134
+    },
+    {
+      "id": "CHR_045",
+      "source": "enemy",
+      "cell": [
+        4,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 18,
+      "visible_height": 15,
+      "visible_pixels": 122
+    },
+    {
+      "id": "CHR_046",
+      "source": "enemy",
+      "cell": [
+        5,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 17,
+      "visible_pixels": 185
+    },
+    {
+      "id": "CHR_047",
+      "source": "enemy",
+      "cell": [
+        6,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 14,
+      "visible_height": 20,
+      "visible_pixels": 136
+    },
+    {
+      "id": "CHR_048",
+      "source": "enemy",
+      "cell": [
+        7,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 14,
+      "visible_pixels": 72
+    },
+    {
+      "id": "CHR_049",
+      "source": "enemy",
+      "cell": [
+        8,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 17,
+      "visible_pixels": 102
+    },
+    {
+      "id": "CHR_050",
+      "source": "enemy",
+      "cell": [
+        9,
+        1
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 17,
+      "visible_pixels": 128
+    },
+    {
+      "id": "CHR_051",
+      "source": "enemy",
+      "cell": [
+        0,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 14,
+      "visible_height": 20,
+      "visible_pixels": 218
+    },
+    {
+      "id": "CHR_052",
+      "source": "enemy",
+      "cell": [
+        1,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 17,
+      "visible_height": 20,
+      "visible_pixels": 134
+    },
+    {
+      "id": "CHR_053",
+      "source": "enemy",
+      "cell": [
+        2,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 20,
+      "visible_pixels": 228
+    },
+    {
+      "id": "CHR_054",
+      "source": "enemy",
+      "cell": [
+        3,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 18,
+      "visible_pixels": 133
+    },
+    {
+      "id": "CHR_055",
+      "source": "enemy",
+      "cell": [
+        4,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 16,
+      "visible_pixels": 222
+    },
+    {
+      "id": "CHR_056",
+      "source": "enemy",
+      "cell": [
+        5,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 17,
+      "visible_pixels": 190
+    },
+    {
+      "id": "CHR_057",
+      "source": "enemy",
+      "cell": [
+        6,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 15,
+      "visible_height": 18,
+      "visible_pixels": 166
+    },
+    {
+      "id": "CHR_058",
+      "source": "enemy",
+      "cell": [
+        7,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 16,
+      "visible_height": 20,
+      "visible_pixels": 223
+    },
+    {
+      "id": "CHR_059",
+      "source": "enemy",
+      "cell": [
+        8,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 13,
+      "visible_pixels": 102
+    },
+    {
+      "id": "CHR_060",
+      "source": "enemy",
+      "cell": [
+        9,
+        2
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 15,
+      "visible_height": 20,
+      "visible_pixels": 218
+    },
+    {
+      "id": "CHR_061",
+      "source": "enemy",
+      "cell": [
+        0,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 13,
+      "visible_pixels": 112
+    },
+    {
+      "id": "CHR_062",
+      "source": "enemy",
+      "cell": [
+        1,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 16,
+      "visible_pixels": 210
+    },
+    {
+      "id": "CHR_063",
+      "source": "enemy",
+      "cell": [
+        2,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 17,
+      "visible_height": 11,
+      "visible_pixels": 109
+    },
+    {
+      "id": "CHR_064",
+      "source": "enemy",
+      "cell": [
+        3,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 90
+    },
+    {
+      "id": "CHR_065",
+      "source": "enemy",
+      "cell": [
+        4,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 12,
+      "visible_height": 15,
+      "visible_pixels": 107
+    },
+    {
+      "id": "CHR_066",
+      "source": "enemy",
+      "cell": [
+        5,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 13,
+      "visible_pixels": 116
+    },
+    {
+      "id": "CHR_067",
+      "source": "enemy",
+      "cell": [
+        6,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 16,
+      "visible_pixels": 215
+    },
+    {
+      "id": "CHR_068",
+      "source": "enemy",
+      "cell": [
+        7,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 18,
+      "visible_pixels": 214
+    },
+    {
+      "id": "CHR_069",
+      "source": "enemy",
+      "cell": [
+        8,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 13,
+      "visible_height": 20,
+      "visible_pixels": 158
+    },
+    {
+      "id": "CHR_070",
+      "source": "enemy",
+      "cell": [
+        9,
+        3
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 14,
+      "visible_pixels": 179
+    },
+    {
+      "id": "CHR_071",
+      "source": "enemy",
+      "cell": [
+        0,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 24,
+      "visible_height": 23,
+      "visible_pixels": 396
+    },
+    {
+      "id": "CHR_072",
+      "source": "enemy",
+      "cell": [
+        1,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 24,
+      "visible_pixels": 301
+    },
+    {
+      "id": "CHR_073",
+      "source": "enemy",
+      "cell": [
+        2,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 22,
+      "visible_pixels": 244
+    },
+    {
+      "id": "CHR_074",
+      "source": "enemy",
+      "cell": [
+        3,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 23,
+      "visible_pixels": 374
+    },
+    {
+      "id": "CHR_075",
+      "source": "enemy",
+      "cell": [
+        4,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 24,
+      "visible_height": 22,
+      "visible_pixels": 367
+    },
+    {
+      "id": "CHR_076",
+      "source": "enemy",
+      "cell": [
+        5,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 24,
+      "visible_height": 24,
+      "visible_pixels": 432
+    },
+    {
+      "id": "CHR_077",
+      "source": "enemy",
+      "cell": [
+        6,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 24,
+      "visible_height": 24,
+      "visible_pixels": 418
+    },
+    {
+      "id": "CHR_078",
+      "source": "enemy",
+      "cell": [
+        7,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 23,
+      "visible_pixels": 356
+    },
+    {
+      "id": "CHR_079",
+      "source": "enemy",
+      "cell": [
+        8,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 24,
+      "visible_height": 24,
+      "visible_pixels": 327
+    },
+    {
+      "id": "CHR_080",
+      "source": "enemy",
+      "cell": [
+        9,
+        4
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 24,
+      "visible_height": 23,
+      "visible_pixels": 403
+    },
+    {
+      "id": "CHR_081",
+      "source": "enemy",
+      "cell": [
+        0,
+        5
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 24,
+      "visible_height": 21,
+      "visible_pixels": 341
+    },
+    {
+      "id": "CHR_082",
+      "source": "enemy",
+      "cell": [
+        1,
+        5
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 24,
+      "visible_height": 18,
+      "visible_pixels": 248
+    },
+    {
+      "id": "CHR_083",
+      "source": "enemy",
+      "cell": [
+        2,
+        5
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 19,
+      "visible_pixels": 262
+    },
+    {
+      "id": "CHR_084",
+      "source": "enemy",
+      "cell": [
+        3,
+        5
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 20,
+      "visible_pixels": 296
+    },
+    {
+      "id": "CHR_085",
+      "source": "enemy",
+      "cell": [
+        4,
+        5
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 21,
+      "visible_height": 22,
+      "visible_pixels": 202
+    },
+    {
+      "id": "CHR_086",
+      "source": "enemy",
+      "cell": [
+        0,
+        6
+      ],
+      "adaptation": "Echo palette variant",
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 24,
+      "visible_pixels": 361
+    },
+    {
+      "id": "CHR_087",
+      "source": "enemy",
+      "cell": [
+        5,
+        5
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 24,
+      "visible_height": 21,
+      "visible_pixels": 308
+    },
+    {
+      "id": "CHR_088",
+      "source": "enemy",
+      "cell": [
+        6,
+        5
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 24,
+      "visible_height": 22,
+      "visible_pixels": 326
+    },
+    {
+      "id": "CHR_089",
+      "source": "enemy",
+      "cell": [
+        7,
+        5
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 21,
+      "visible_height": 21,
+      "visible_pixels": 252
+    },
+    {
+      "id": "CHR_090",
+      "source": "enemy",
+      "cell": [
+        8,
+        5
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 19,
+      "visible_height": 24,
+      "visible_pixels": 286
+    },
+    {
+      "id": "CHR_091",
+      "source": "enemy",
+      "cell": [
+        0,
+        6
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 24,
+      "visible_pixels": 361
+    },
+    {
+      "id": "CHR_092",
+      "source": "enemy",
+      "cell": [
+        1,
+        6
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 23,
+      "visible_pixels": 440
+    },
+    {
+      "id": "CHR_093",
+      "source": "enemy",
+      "cell": [
+        2,
+        6
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 23,
+      "visible_pixels": 374
+    },
+    {
+      "id": "CHR_094",
+      "source": "enemy",
+      "cell": [
+        3,
+        6
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 23,
+      "visible_pixels": 369
+    },
+    {
+      "id": "CHR_095",
+      "source": "enemy",
+      "cell": [
+        4,
+        6
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 23,
+      "visible_height": 23,
+      "visible_pixels": 372
+    },
+    {
+      "id": "CHR_096",
+      "source": "enemy",
+      "cell": [
+        5,
+        6
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 23,
+      "visible_pixels": 403
+    },
+    {
+      "id": "CHR_097",
+      "source": "enemy",
+      "cell": [
+        6,
+        6
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 24,
+      "visible_pixels": 425
+    },
+    {
+      "id": "CHR_098",
+      "source": "enemy",
+      "cell": [
+        7,
+        6
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 20,
+      "visible_height": 22,
+      "visible_pixels": 285
+    },
+    {
+      "id": "CHR_099",
+      "source": "enemy",
+      "cell": [
+        8,
+        6
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 21,
+      "visible_height": 23,
+      "visible_pixels": 340
+    },
+    {
+      "id": "CHR_100",
+      "source": "enemy",
+      "cell": [
+        9,
+        6
+      ],
+      "adaptation": null,
+      "palette_colors": 16,
+      "canvas": 32,
+      "visible_width": 22,
+      "visible_height": 24,
+      "visible_pixels": 290
+    }
+  ],
+  "items": [
+    {
+      "id": "ITM_W001",
+      "source": "item",
+      "cell": [
+        0,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 13,
+      "visible_pixels": 56
+    },
+    {
+      "id": "ITM_W002",
+      "source": "item",
+      "cell": [
+        1,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 49
+    },
+    {
+      "id": "ITM_W003",
+      "source": "item",
+      "cell": [
+        2,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 14,
+      "visible_pixels": 69
+    },
+    {
+      "id": "ITM_W004",
+      "source": "item",
+      "cell": [
+        3,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 6,
+      "visible_pixels": 15
+    },
+    {
+      "id": "ITM_W005",
+      "source": "item",
+      "cell": [
+        5,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 13,
+      "visible_pixels": 76
+    },
+    {
+      "id": "ITM_W006",
+      "source": "item",
+      "cell": [
+        6,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 53
+    },
+    {
+      "id": "ITM_W007",
+      "source": "item",
+      "cell": [
+        8,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 12,
+      "visible_pixels": 62
+    },
+    {
+      "id": "ITM_W008",
+      "source": "item",
+      "cell": [
+        9,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 14,
+      "visible_pixels": 62
+    },
+    {
+      "id": "ITM_W009",
+      "source": "item",
+      "cell": [
+        10,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 71
+    },
+    {
+      "id": "ITM_W010",
+      "source": "item",
+      "cell": [
+        12,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 72
+    },
+    {
+      "id": "ITM_W011",
+      "source": "item",
+      "cell": [
+        0,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 48
+    },
+    {
+      "id": "ITM_W012",
+      "source": "item",
+      "cell": [
+        1,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 43
+    },
+    {
+      "id": "ITM_W013",
+      "source": "item",
+      "cell": [
+        2,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 12,
+      "visible_pixels": 51
+    },
+    {
+      "id": "ITM_W014",
+      "source": "item",
+      "cell": [
+        4,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 67
+    },
+    {
+      "id": "ITM_W015",
+      "source": "item",
+      "cell": [
+        5,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 27
+    },
+    {
+      "id": "ITM_W016",
+      "source": "item",
+      "cell": [
+        6,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 12,
+      "visible_pixels": 25
+    },
+    {
+      "id": "ITM_W017",
+      "source": "item",
+      "cell": [
+        8,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 51
+    },
+    {
+      "id": "ITM_W018",
+      "source": "item",
+      "cell": [
+        9,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 11,
+      "visible_pixels": 34
+    },
+    {
+      "id": "ITM_W019",
+      "source": "item",
+      "cell": [
+        11,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 69
+    },
+    {
+      "id": "ITM_W020",
+      "source": "item",
+      "cell": [
+        12,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 12,
+      "visible_pixels": 43
+    },
+    {
+      "id": "ITM_W021",
+      "source": "item",
+      "cell": [
+        0,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 13,
+      "visible_pixels": 53
+    },
+    {
+      "id": "ITM_W022",
+      "source": "item",
+      "cell": [
+        1,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 13,
+      "visible_pixels": 57
+    },
+    {
+      "id": "ITM_W023",
+      "source": "item",
+      "cell": [
+        3,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 70
+    },
+    {
+      "id": "ITM_W024",
+      "source": "item",
+      "cell": [
+        4,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 11,
+      "visible_pixels": 38
+    },
+    {
+      "id": "ITM_W025",
+      "source": "item",
+      "cell": [
+        6,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 9,
+      "visible_pixels": 61
+    },
+    {
+      "id": "ITM_A001",
+      "source": "item",
+      "cell": [
+        7,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 11,
+      "visible_pixels": 55
+    },
+    {
+      "id": "ITM_A002",
+      "source": "item",
+      "cell": [
+        8,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 13,
+      "visible_pixels": 90
+    },
+    {
+      "id": "ITM_A003",
+      "source": "item",
+      "cell": [
+        9,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 11,
+      "visible_pixels": 71
+    },
+    {
+      "id": "ITM_A004",
+      "source": "item",
+      "cell": [
+        10,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 13,
+      "visible_pixels": 63
+    },
+    {
+      "id": "ITM_A005",
+      "source": "item",
+      "cell": [
+        11,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 14,
+      "visible_pixels": 88
+    },
+    {
+      "id": "ITM_A006",
+      "source": "item",
+      "cell": [
+        0,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 13,
+      "visible_pixels": 71
+    },
+    {
+      "id": "ITM_A007",
+      "source": "item",
+      "cell": [
+        1,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 13,
+      "visible_pixels": 80
+    },
+    {
+      "id": "ITM_A008",
+      "source": "item",
+      "cell": [
+        2,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 10,
+      "visible_pixels": 71
+    },
+    {
+      "id": "ITM_A009",
+      "source": "item",
+      "cell": [
+        3,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 13,
+      "visible_pixels": 72
+    },
+    {
+      "id": "ITM_A010",
+      "source": "item",
+      "cell": [
+        4,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 13,
+      "visible_pixels": 93
+    },
+    {
+      "id": "ITM_A011",
+      "source": "item",
+      "cell": [
+        5,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 14,
+      "visible_pixels": 88
+    },
+    {
+      "id": "ITM_A012",
+      "source": "item",
+      "cell": [
+        7,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 13,
+      "visible_pixels": 74
+    },
+    {
+      "id": "ITM_A013",
+      "source": "item",
+      "cell": [
+        8,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 13,
+      "visible_pixels": 70
+    },
+    {
+      "id": "ITM_A014",
+      "source": "item",
+      "cell": [
+        10,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 13,
+      "visible_pixels": 95
+    },
+    {
+      "id": "ITM_A015",
+      "source": "item",
+      "cell": [
+        12,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 9,
+      "visible_pixels": 82
+    },
+    {
+      "id": "ITM_A016",
+      "source": "item",
+      "cell": [
+        0,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 12,
+      "visible_pixels": 47
+    },
+    {
+      "id": "ITM_A017",
+      "source": "item",
+      "cell": [
+        1,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 10,
+      "visible_pixels": 61
+    },
+    {
+      "id": "ITM_A018",
+      "source": "item",
+      "cell": [
+        2,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 12,
+      "visible_pixels": 46
+    },
+    {
+      "id": "ITM_A019",
+      "source": "item",
+      "cell": [
+        3,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 12,
+      "visible_pixels": 55
+    },
+    {
+      "id": "ITM_A020",
+      "source": "item",
+      "cell": [
+        4,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 12,
+      "visible_pixels": 65
+    },
+    {
+      "id": "ITM_A021",
+      "source": "item",
+      "cell": [
+        5,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 13,
+      "visible_pixels": 77
+    },
+    {
+      "id": "ITM_A022",
+      "source": "item",
+      "cell": [
+        7,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 8,
+      "visible_pixels": 53
+    },
+    {
+      "id": "ITM_A023",
+      "source": "item",
+      "cell": [
+        9,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 6,
+      "visible_pixels": 44
+    },
+    {
+      "id": "ITM_A024",
+      "source": "item",
+      "cell": [
+        11,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 10,
+      "visible_pixels": 43
+    },
+    {
+      "id": "ITM_A025",
+      "source": "item",
+      "cell": [
+        12,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 6,
+      "visible_pixels": 35
+    },
+    {
+      "id": "ITM_C001",
+      "source": "item",
+      "cell": [
+        0,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 7,
+      "visible_pixels": 24
+    },
+    {
+      "id": "ITM_C002",
+      "source": "item",
+      "cell": [
+        1,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 10,
+      "visible_pixels": 46
+    },
+    {
+      "id": "ITM_C003",
+      "source": "item",
+      "cell": [
+        2,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 5,
+      "visible_height": 4,
+      "visible_pixels": 17
+    },
+    {
+      "id": "ITM_C004",
+      "source": "item",
+      "cell": [
+        3,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 7,
+      "visible_height": 7,
+      "visible_pixels": 41
+    },
+    {
+      "id": "ITM_C005",
+      "source": "item",
+      "cell": [
+        5,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 10,
+      "visible_pixels": 47
+    },
+    {
+      "id": "ITM_C006",
+      "source": "item",
+      "cell": [
+        7,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 10,
+      "visible_pixels": 78
+    },
+    {
+      "id": "ITM_C007",
+      "source": "item",
+      "cell": [
+        8,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 10,
+      "visible_pixels": 55
+    },
+    {
+      "id": "ITM_C008",
+      "source": "item",
+      "cell": [
+        9,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 6,
+      "visible_pixels": 42
+    },
+    {
+      "id": "ITM_C009",
+      "source": "item",
+      "cell": [
+        11,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 6,
+      "visible_height": 10,
+      "visible_pixels": 45
+    },
+    {
+      "id": "ITM_C010",
+      "source": "item",
+      "cell": [
+        12,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 6,
+      "visible_height": 6,
+      "visible_pixels": 30
+    },
+    {
+      "id": "ITM_C011",
+      "source": "item",
+      "cell": [
+        9,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 10,
+      "visible_pixels": 54
+    },
+    {
+      "id": "ITM_C012",
+      "source": "item",
+      "cell": [
+        6,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 9,
+      "visible_pixels": 73
+    },
+    {
+      "id": "ITM_C013",
+      "source": "item",
+      "cell": [
+        6,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 11,
+      "visible_pixels": 29
+    },
+    {
+      "id": "ITM_C014",
+      "source": "item",
+      "cell": [
+        11,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 10,
+      "visible_pixels": 70
+    },
+    {
+      "id": "ITM_C015",
+      "source": "item",
+      "cell": [
+        6,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 11,
+      "visible_pixels": 29
+    },
+    {
+      "id": "ITM_C016",
+      "source": "item",
+      "cell": [
+        8,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 14,
+      "visible_pixels": 114
+    },
+    {
+      "id": "ITM_C017",
+      "source": "item",
+      "cell": [
+        7,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 11,
+      "visible_pixels": 55
+    },
+    {
+      "id": "ITM_C018",
+      "source": "item",
+      "cell": [
+        10,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 5,
+      "visible_pixels": 25
+    },
+    {
+      "id": "ITM_C019",
+      "source": "item",
+      "cell": [
+        9,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 6,
+      "visible_pixels": 35
+    },
+    {
+      "id": "ITM_C020",
+      "source": "item",
+      "cell": [
+        11,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 10,
+      "visible_pixels": 70
+    },
+    {
+      "id": "ITM_U001",
+      "source": "item",
+      "cell": [
+        0,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 13,
+      "visible_pixels": 58
+    },
+    {
+      "id": "ITM_U002",
+      "source": "item",
+      "cell": [
+        1,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 6,
+      "visible_height": 10,
+      "visible_pixels": 45
+    },
+    {
+      "id": "ITM_U003",
+      "source": "item",
+      "cell": [
+        2,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 7,
+      "visible_height": 10,
+      "visible_pixels": 51
+    },
+    {
+      "id": "ITM_U004",
+      "source": "item",
+      "cell": [
+        4,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 13,
+      "visible_pixels": 59
+    },
+    {
+      "id": "ITM_U005",
+      "source": "item",
+      "cell": [
+        5,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 7,
+      "visible_height": 9,
+      "visible_pixels": 55
+    },
+    {
+      "id": "ITM_U006",
+      "source": "item",
+      "cell": [
+        7,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 11,
+      "visible_pixels": 55
+    },
+    {
+      "id": "ITM_U007",
+      "source": "item",
+      "cell": [
+        8,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 10,
+      "visible_pixels": 55
+    },
+    {
+      "id": "ITM_U008",
+      "source": "item",
+      "cell": [
+        10,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 9,
+      "visible_pixels": 36
+    },
+    {
+      "id": "ITM_U009",
+      "source": "item",
+      "cell": [
+        6,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 11,
+      "visible_pixels": 29
+    },
+    {
+      "id": "ITM_U010",
+      "source": "item",
+      "cell": [
+        12,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 65
+    },
+    {
+      "id": "ITM_U011",
+      "source": "item",
+      "cell": [
+        0,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 10,
+      "visible_pixels": 37
+    },
+    {
+      "id": "ITM_U012",
+      "source": "item",
+      "cell": [
+        2,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 11,
+      "visible_pixels": 38
+    },
+    {
+      "id": "ITM_U013",
+      "source": "item",
+      "cell": [
+        3,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 7,
+      "visible_height": 11,
+      "visible_pixels": 52
+    },
+    {
+      "id": "ITM_U014",
+      "source": "item",
+      "cell": [
+        4,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 7,
+      "visible_height": 9,
+      "visible_pixels": 53
+    },
+    {
+      "id": "ITM_U015",
+      "source": "item",
+      "cell": [
+        5,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 9,
+      "visible_pixels": 49
+    },
+    {
+      "id": "ITM_U016",
+      "source": "item",
+      "cell": [
+        7,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 10,
+      "visible_pixels": 69
+    },
+    {
+      "id": "ITM_U017",
+      "source": "item",
+      "cell": [
+        9,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 8,
+      "visible_height": 10,
+      "visible_pixels": 54
+    },
+    {
+      "id": "ITM_U018",
+      "source": "item",
+      "cell": [
+        10,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 6,
+      "visible_height": 10,
+      "visible_pixels": 41
+    },
+    {
+      "id": "ITM_U019",
+      "source": "item",
+      "cell": [
+        11,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 9,
+      "visible_pixels": 59
+    },
+    {
+      "id": "ITM_U020",
+      "source": "item",
+      "cell": [
+        12,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 8,
+      "visible_pixels": 72
+    },
+    {
+      "id": "ITM_K001",
+      "source": "item",
+      "cell": [
+        0,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 11,
+      "visible_pixels": 62
+    },
+    {
+      "id": "ITM_K002",
+      "source": "item",
+      "cell": [
+        2,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 12,
+      "visible_pixels": 48
+    },
+    {
+      "id": "ITM_K003",
+      "source": "item",
+      "cell": [
+        3,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 12,
+      "visible_pixels": 48
+    },
+    {
+      "id": "ITM_K004",
+      "source": "item",
+      "cell": [
+        4,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 11,
+      "visible_pixels": 64
+    },
+    {
+      "id": "ITM_K005",
+      "source": "item",
+      "cell": [
+        6,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 9,
+      "visible_pixels": 73
+    },
+    {
+      "id": "ITM_K006",
+      "source": "item",
+      "cell": [
+        7,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 9,
+      "visible_pixels": 83
+    },
+    {
+      "id": "ITM_K007",
+      "source": "item",
+      "cell": [
+        8,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 14,
+      "visible_pixels": 114
+    },
+    {
+      "id": "ITM_K008",
+      "source": "item",
+      "cell": [
+        9,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 13,
+      "visible_pixels": 139
+    },
+    {
+      "id": "ITM_K009",
+      "source": "item",
+      "cell": [
+        11,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 10,
+      "visible_pixels": 70
+    },
+    {
+      "id": "ITM_K010",
+      "source": "item",
+      "cell": [
+        12,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 90
+    }
+  ],
+  "skills": [
+    {
+      "id": "SKL_S001",
+      "source": "skill",
+      "cell": [
+        0,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 140
+    },
+    {
+      "id": "SKL_S002",
+      "source": "skill",
+      "cell": [
+        1,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 14,
+      "visible_pixels": 78
+    },
+    {
+      "id": "SKL_S003",
+      "source": "skill",
+      "cell": [
+        2,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 10,
+      "visible_pixels": 94
+    },
+    {
+      "id": "SKL_S004",
+      "source": "skill",
+      "cell": [
+        3,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 12,
+      "visible_pixels": 98
+    },
+    {
+      "id": "SKL_S005",
+      "source": "skill",
+      "cell": [
+        4,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 123
+    },
+    {
+      "id": "SKL_S006",
+      "source": "skill",
+      "cell": [
+        5,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 14,
+      "visible_pixels": 66
+    },
+    {
+      "id": "SKL_S007",
+      "source": "skill",
+      "cell": [
+        6,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 161
+    },
+    {
+      "id": "SKL_S008",
+      "source": "skill",
+      "cell": [
+        7,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 14,
+      "visible_pixels": 46
+    },
+    {
+      "id": "SKL_S009",
+      "source": "skill",
+      "cell": [
+        8,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 11,
+      "visible_pixels": 103
+    },
+    {
+      "id": "SKL_S010",
+      "source": "skill",
+      "cell": [
+        9,
+        0
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 82
+    },
+    {
+      "id": "SKL_S011",
+      "source": "skill",
+      "cell": [
+        0,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 154
+    },
+    {
+      "id": "SKL_S012",
+      "source": "skill",
+      "cell": [
+        1,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 12,
+      "visible_pixels": 129
+    },
+    {
+      "id": "SKL_S013",
+      "source": "skill",
+      "cell": [
+        2,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 158
+    },
+    {
+      "id": "SKL_S014",
+      "source": "skill",
+      "cell": [
+        3,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 120
+    },
+    {
+      "id": "SKL_S015",
+      "source": "skill",
+      "cell": [
+        4,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 12,
+      "visible_pixels": 85
+    },
+    {
+      "id": "SKL_S016",
+      "source": "skill",
+      "cell": [
+        5,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 9,
+      "visible_pixels": 62
+    },
+    {
+      "id": "SKL_S017",
+      "source": "skill",
+      "cell": [
+        6,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 14,
+      "visible_pixels": 90
+    },
+    {
+      "id": "SKL_S018",
+      "source": "skill",
+      "cell": [
+        7,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 58
+    },
+    {
+      "id": "SKL_S019",
+      "source": "skill",
+      "cell": [
+        8,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 86
+    },
+    {
+      "id": "SKL_S020",
+      "source": "skill",
+      "cell": [
+        9,
+        1
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 11,
+      "visible_pixels": 103
+    },
+    {
+      "id": "SKL_S021",
+      "source": "skill",
+      "cell": [
+        0,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 132
+    },
+    {
+      "id": "SKL_S022",
+      "source": "skill",
+      "cell": [
+        1,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 11,
+      "visible_pixels": 44
+    },
+    {
+      "id": "SKL_S023",
+      "source": "skill",
+      "cell": [
+        2,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 97
+    },
+    {
+      "id": "SKL_S024",
+      "source": "skill",
+      "cell": [
+        3,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 14,
+      "visible_pixels": 122
+    },
+    {
+      "id": "SKL_S025",
+      "source": "skill",
+      "cell": [
+        4,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 9,
+      "visible_pixels": 81
+    },
+    {
+      "id": "SKL_S026",
+      "source": "skill",
+      "cell": [
+        5,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 14,
+      "visible_pixels": 136
+    },
+    {
+      "id": "SKL_S027",
+      "source": "skill",
+      "cell": [
+        6,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 80
+    },
+    {
+      "id": "SKL_S028",
+      "source": "skill",
+      "cell": [
+        7,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 14,
+      "visible_pixels": 86
+    },
+    {
+      "id": "SKL_S029",
+      "source": "skill",
+      "cell": [
+        8,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 14,
+      "visible_pixels": 85
+    },
+    {
+      "id": "SKL_S030",
+      "source": "skill",
+      "cell": [
+        9,
+        2
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 12,
+      "visible_pixels": 59
+    },
+    {
+      "id": "SKL_B001",
+      "source": "skill",
+      "cell": [
+        0,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 12,
+      "visible_pixels": 142
+    },
+    {
+      "id": "SKL_B002",
+      "source": "skill",
+      "cell": [
+        1,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 9,
+      "visible_pixels": 92
+    },
+    {
+      "id": "SKL_B003",
+      "source": "skill",
+      "cell": [
+        2,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 68
+    },
+    {
+      "id": "SKL_B004",
+      "source": "skill",
+      "cell": [
+        3,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 115
+    },
+    {
+      "id": "SKL_B005",
+      "source": "skill",
+      "cell": [
+        4,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 154
+    },
+    {
+      "id": "SKL_B006",
+      "source": "skill",
+      "cell": [
+        5,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 115
+    },
+    {
+      "id": "SKL_B007",
+      "source": "skill",
+      "cell": [
+        6,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 149
+    },
+    {
+      "id": "SKL_B008",
+      "source": "skill",
+      "cell": [
+        7,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 11,
+      "visible_pixels": 62
+    },
+    {
+      "id": "SKL_B009",
+      "source": "skill",
+      "cell": [
+        8,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 10,
+      "visible_pixels": 83
+    },
+    {
+      "id": "SKL_B010",
+      "source": "skill",
+      "cell": [
+        9,
+        3
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 13,
+      "visible_pixels": 77
+    },
+    {
+      "id": "SKL_B011",
+      "source": "skill",
+      "cell": [
+        0,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 103
+    },
+    {
+      "id": "SKL_B012",
+      "source": "skill",
+      "cell": [
+        1,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 148
+    },
+    {
+      "id": "SKL_B013",
+      "source": "skill",
+      "cell": [
+        2,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 12,
+      "visible_pixels": 120
+    },
+    {
+      "id": "SKL_B014",
+      "source": "skill",
+      "cell": [
+        3,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 59
+    },
+    {
+      "id": "SKL_B015",
+      "source": "skill",
+      "cell": [
+        4,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 14,
+      "visible_pixels": 109
+    },
+    {
+      "id": "SKL_B016",
+      "source": "skill",
+      "cell": [
+        5,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 14,
+      "visible_pixels": 122
+    },
+    {
+      "id": "SKL_B017",
+      "source": "skill",
+      "cell": [
+        6,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 11,
+      "visible_pixels": 123
+    },
+    {
+      "id": "SKL_B018",
+      "source": "skill",
+      "cell": [
+        7,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 13,
+      "visible_pixels": 69
+    },
+    {
+      "id": "SKL_B019",
+      "source": "skill",
+      "cell": [
+        8,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 116
+    },
+    {
+      "id": "SKL_B020",
+      "source": "skill",
+      "cell": [
+        9,
+        4
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 11,
+      "visible_pixels": 102
+    },
+    {
+      "id": "SKL_P001",
+      "source": "skill",
+      "cell": [
+        0,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 141
+    },
+    {
+      "id": "SKL_P002",
+      "source": "skill",
+      "cell": [
+        1,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 129
+    },
+    {
+      "id": "SKL_P003",
+      "source": "skill",
+      "cell": [
+        2,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 12,
+      "visible_pixels": 111
+    },
+    {
+      "id": "SKL_P004",
+      "source": "skill",
+      "cell": [
+        3,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 14,
+      "visible_pixels": 132
+    },
+    {
+      "id": "SKL_P005",
+      "source": "skill",
+      "cell": [
+        4,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 140
+    },
+    {
+      "id": "SKL_P006",
+      "source": "skill",
+      "cell": [
+        5,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 11,
+      "visible_pixels": 65
+    },
+    {
+      "id": "SKL_P007",
+      "source": "skill",
+      "cell": [
+        6,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 132
+    },
+    {
+      "id": "SKL_P008",
+      "source": "skill",
+      "cell": [
+        7,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 7,
+      "visible_pixels": 64
+    },
+    {
+      "id": "SKL_P009",
+      "source": "skill",
+      "cell": [
+        8,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 13,
+      "visible_pixels": 92
+    },
+    {
+      "id": "SKL_P010",
+      "source": "skill",
+      "cell": [
+        9,
+        5
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 82
+    },
+    {
+      "id": "SKL_P011",
+      "source": "skill",
+      "cell": [
+        0,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 92
+    },
+    {
+      "id": "SKL_P012",
+      "source": "skill",
+      "cell": [
+        1,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 76
+    },
+    {
+      "id": "SKL_P013",
+      "source": "skill",
+      "cell": [
+        2,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 14,
+      "visible_pixels": 126
+    },
+    {
+      "id": "SKL_P014",
+      "source": "skill",
+      "cell": [
+        3,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 107
+    },
+    {
+      "id": "SKL_P015",
+      "source": "skill",
+      "cell": [
+        4,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 12,
+      "visible_pixels": 117
+    },
+    {
+      "id": "SKL_P016",
+      "source": "skill",
+      "cell": [
+        5,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 13,
+      "visible_pixels": 86
+    },
+    {
+      "id": "SKL_P017",
+      "source": "skill",
+      "cell": [
+        6,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 9,
+      "visible_pixels": 121
+    },
+    {
+      "id": "SKL_P018",
+      "source": "skill",
+      "cell": [
+        7,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 14,
+      "visible_pixels": 54
+    },
+    {
+      "id": "SKL_P019",
+      "source": "skill",
+      "cell": [
+        8,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 14,
+      "visible_pixels": 96
+    },
+    {
+      "id": "SKL_P020",
+      "source": "skill",
+      "cell": [
+        9,
+        6
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 12,
+      "visible_pixels": 124
+    },
+    {
+      "id": "SKL_P021",
+      "source": "skill",
+      "cell": [
+        0,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 154
+    },
+    {
+      "id": "SKL_P022",
+      "source": "skill",
+      "cell": [
+        1,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 14,
+      "visible_pixels": 108
+    },
+    {
+      "id": "SKL_P023",
+      "source": "skill",
+      "cell": [
+        2,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 118
+    },
+    {
+      "id": "SKL_P024",
+      "source": "skill",
+      "cell": [
+        3,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 104
+    },
+    {
+      "id": "SKL_P025",
+      "source": "skill",
+      "cell": [
+        4,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 14,
+      "visible_pixels": 109
+    },
+    {
+      "id": "SKL_X001",
+      "source": "skill",
+      "cell": [
+        5,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 125
+    },
+    {
+      "id": "SKL_X002",
+      "source": "skill",
+      "cell": [
+        6,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 155
+    },
+    {
+      "id": "SKL_X003",
+      "source": "skill",
+      "cell": [
+        7,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 9,
+      "visible_height": 14,
+      "visible_pixels": 82
+    },
+    {
+      "id": "SKL_X004",
+      "source": "skill",
+      "cell": [
+        8,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 121
+    },
+    {
+      "id": "SKL_X005",
+      "source": "skill",
+      "cell": [
+        9,
+        7
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 14,
+      "visible_pixels": 172
+    },
+    {
+      "id": "SKL_X006",
+      "source": "skill",
+      "cell": [
+        0,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 12,
+      "visible_pixels": 100
+    },
+    {
+      "id": "SKL_X007",
+      "source": "skill",
+      "cell": [
+        1,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 12,
+      "visible_height": 13,
+      "visible_pixels": 62
+    },
+    {
+      "id": "SKL_X008",
+      "source": "skill",
+      "cell": [
+        2,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 8,
+      "visible_pixels": 74
+    },
+    {
+      "id": "SKL_X009",
+      "source": "skill",
+      "cell": [
+        3,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 73
+    },
+    {
+      "id": "SKL_X010",
+      "source": "skill",
+      "cell": [
+        4,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 156
+    },
+    {
+      "id": "SKL_X011",
+      "source": "skill",
+      "cell": [
+        5,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 12,
+      "visible_pixels": 85
+    },
+    {
+      "id": "SKL_X012",
+      "source": "skill",
+      "cell": [
+        6,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 14,
+      "visible_pixels": 115
+    },
+    {
+      "id": "SKL_X013",
+      "source": "skill",
+      "cell": [
+        7,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 112
+    },
+    {
+      "id": "SKL_X014",
+      "source": "skill",
+      "cell": [
+        8,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 13,
+      "visible_height": 13,
+      "visible_pixels": 93
+    },
+    {
+      "id": "SKL_X015",
+      "source": "skill",
+      "cell": [
+        9,
+        8
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 10,
+      "visible_height": 14,
+      "visible_pixels": 88
+    },
+    {
+      "id": "SKL_U001",
+      "source": "skill",
+      "cell": [
+        0,
+        9
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 7,
+      "visible_height": 13,
+      "visible_pixels": 82
+    },
+    {
+      "id": "SKL_U002",
+      "source": "skill",
+      "cell": [
+        1,
+        9
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 138
+    },
+    {
+      "id": "SKL_U003",
+      "source": "skill",
+      "cell": [
+        2,
+        9
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 109
+    },
+    {
+      "id": "SKL_U004",
+      "source": "skill",
+      "cell": [
+        3,
+        9
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 138
+    },
+    {
+      "id": "SKL_U005",
+      "source": "skill",
+      "cell": [
+        4,
+        9
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 122
+    },
+    {
+      "id": "SKL_U006",
+      "source": "skill",
+      "cell": [
+        5,
+        9
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 65
+    },
+    {
+      "id": "SKL_U007",
+      "source": "skill",
+      "cell": [
+        6,
+        9
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 13,
+      "visible_pixels": 90
+    },
+    {
+      "id": "SKL_U008",
+      "source": "skill",
+      "cell": [
+        7,
+        9
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 104
+    },
+    {
+      "id": "SKL_U009",
+      "source": "skill",
+      "cell": [
+        8,
+        9
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 14,
+      "visible_height": 13,
+      "visible_pixels": 100
+    },
+    {
+      "id": "SKL_U010",
+      "source": "skill",
+      "cell": [
+        9,
+        9
+      ],
+      "palette_colors": 16,
+      "canvas": 16,
+      "visible_width": 11,
+      "visible_height": 13,
+      "visible_pixels": 91
+    }
+  ],
+  "source_hashes": {
+    "npc": "c14838a99558bee3f7da13cdd9b6d06bfd809e8bd1c32975574b469c017c49f5",
+    "enemy": "572e61ad2fce74ee4c7129e29e27210b7ba5d93b5986bc91981851f30cdd3362",
+    "item": "4098bcc4a6fba1134abf9ec78c70e089594d6fa56703e15d394ad7c7f230ceda",
+    "skill": "1b70d331d4f6beb48d34657613cafd0d7037b4fe34949439d76319dd0078712f"
+  }
+}

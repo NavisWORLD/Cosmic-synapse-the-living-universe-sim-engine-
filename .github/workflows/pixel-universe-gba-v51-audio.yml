@@ -1,0 +1,99 @@
+name: Lost COSMOS V5.1 Genuine mGBA Audio Probe
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [feature/lost-cosmos-gba-cinematic-playtest-0051]
+    paths:
+      - '.github/workflows/pixel-universe-gba-v51-audio.yml'
+  workflow_dispatch:
+
+jobs:
+  check-real-mgba-audio:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native GBA tools, X11 window manager, audio loopback
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb openbox xdotool ffmpeg pulseaudio pulseaudio-utils
+
+      - name: Compile independently from the verified editable V5.1 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .qa/v51-audio
+          cp -a gba/lost-cosmos-v5-cinematic/source/. .qa/v51-audio/
+          cd .qa/v51-audio
+          chmod +x build_v5.sh
+          ./build_v5.sh
+          test -s SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5_CINEMATIC.gba
+          python3 verify_v5.py
+          echo "AUDIO_ROM_SHA256 $(sha256sum SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5_CINEMATIC.gba | cut -d' ' -f1)"
+
+      - name: Actual mGBA SDL audio routed to PulseAudio monitor
+        working-directory: .qa/v51-audio
+        shell: bash
+        run: |
+          set -euo pipefail
+          pulseaudio --start --exit-idle-time=-1 >pulse-start.log 2>&1 || true
+          pactl info >pulse-info.log
+          pactl load-module module-null-sink sink_name=cosmosqa rate=44100 channels=2 >pulse-module.log
+          pactl set-default-sink cosmosqa
+          Xvfb :96 -screen 0 800x600x24 -nolisten tcp >xvfb-audio.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:96
+          sleep 1
+          openbox --sm-disable >openbox-audio.log 2>&1 &
+          WMID=$!
+          sleep 1
+          PULSE_SINK=cosmosqa SDL_AUDIODRIVER=pulseaudio mgba -C savegamePath="$PWD" -C videoSync=0 -C audioSync=0 SIM_EARTH_PIXEL_UNIVERSE_LOST_COSMOS_V5_CINEMATIC.gba >mgba-audio.log 2>&1 &
+          MPID=$!
+          sleep 2
+          WIN="$(xdotool search --name 'mGBA' | tail -1 || true)"
+          if [[ -n "$WIN" ]]; then
+            xdotool windowactivate --sync "$WIN" || true
+            xdotool windowfocus --sync "$WIN" || true
+          fi
+          xdotool key --clearmodifiers Return || true
+          sleep 2
+          pactl list short sink-inputs | tee actual-sink-inputs.txt
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :96.0 -frames:v 1 -y audio-probe-gameplay.png
+          timeout 7s parec -d cosmosqa.monitor --raw --format=s16le --channels=2 --rate=44100 >audio-raw-s16le.pcm || test "$?" -eq 124
+          python3 - <<'PY'
+          import json,math,struct,wave
+          from pathlib import Path
+          raw=Path('audio-raw-s16le.pcm').read_bytes()
+          raw=raw[:len(raw)//2*2]
+          n=len(raw)//2
+          mx=0; ss=0; nz=0
+          for (v,) in struct.iter_unpack('<h',raw):
+            a=abs(v);mx=max(mx,a);ss+=v*v;nz+=int(v!=0)
+          rms=math.sqrt(ss/n) if n else 0
+          with wave.open('actual-mgba-pulse-loopback.wav','wb') as w:
+            w.setnchannels(2);w.setsampwidth(2);w.setframerate(44100);w.writeframes(raw)
+          result={'sample_values':n,'seconds':round(n/88200,2),'nonzero_sample_values':nz,'peak':mx,'rms':round(rms,3),
+                  'sink_input_detected':bool(Path('actual-sink-inputs.txt').read_text().strip())}
+          Path('audio_probe.json').write_text(json.dumps(result,indent=2))
+          print('ACTUAL_MGBA_PULSEAUDIO_PROBE',result)
+          assert n>44100,'Missing recorded PulseAudio samples'
+          PY
+          kill -TERM "$MPID" "$WMID" "$XPID" 2>/dev/null || true
+          wait "$MPID" 2>/dev/null || true
+          wait "$WMID" 2>/dev/null || true
+          wait "$XPID" 2>/dev/null || true
+
+      - name: Upload honest audio verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lost-cosmos-v51-actual-mgba-audio-evidence
+          path: |
+            .qa/v51-audio/actual-mgba-pulse-loopback.wav
+            .qa/v51-audio/audio_probe.json
+            .qa/v51-audio/actual-sink-inputs.txt
+            .qa/v51-audio/audio-probe-gameplay.png
+            .qa/v51-audio/mgba-audio.log
+            .qa/v51-audio/pulse-start.log
+            .qa/v51-audio/pulse-info.log

@@ -5,3 +5,5 @@
 *.gif binary
 *.webp binary
 *.zip binary
+*.data binary
+*.gba binary

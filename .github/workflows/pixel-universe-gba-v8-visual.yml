@@ -1,0 +1,86 @@
+name: Lost COSMOS V8 native screenshot diagnostics
+on:
+  push:
+    branches: [feature/lost-cosmos-eridoria-depth-story-ui-008]
+    paths:
+      - '.github/workflows/pixel-universe-gba-v8-visual.yml'
+  workflow_dispatch:
+jobs:
+  actual-framebuffer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore exact V8 code
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .qa/v8 /tmp/v8patch
+          cat gba/lost-cosmos-eridoria-v8/bootstrap/patch.??.b64 | tr -d '\n' | base64 -d >/tmp/v8-patch.tar.xz
+          echo 'f88bc0bb0b7ee0a9af14ef14d7f88702ce5966d08c8f8ed45c798d1513336a5f  /tmp/v8-patch.tar.xz' | sha256sum -c -
+          cp -a gba/lost-cosmos-eridoria-v7/source/. .qa/v8/
+          tar -xJf /tmp/v8-patch.tar.xz -C /tmp/v8patch
+          (cd .qa/v8 && patch -p0 --forward < /tmp/v8patch/engine.patch)
+          for p in build_rom_v5.py verify_v5.py cinema_tests_v51.py v8_view_story_tests.py; do cp "/tmp/v8patch/$p" ".qa/v8/$p"; done
+          echo 'acfd1fd5ac40e27035d21a5240e66352383009ea0d33bfb4dfa582cb19a2af34  .qa/v8/lost_cosmos_v5.c' | sha256sum -c -
+      - name: Install native tools, X11 capture, Pillow
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm mgba-sdl xvfb ffmpeg xdotool openbox python3-pil
+      - name: Create clean player ROM and capture its real framebuffer at 3 stages
+        shell: bash
+        working-directory: .qa/v8
+        run: |
+          set -euo pipefail
+          /usr/bin/python3 cinematic_assets_v51.py
+          bash build_v5.sh
+          cp LOST_COSMOS_ERIDORIA_V8.gba visual-clean.gba
+          rm -f visual-clean.sav
+          Xvfb :91 -screen 0 800x600x24 -nolisten tcp >xvfb.log 2>&1 &
+          XPID=$!
+          export DISPLAY=:91
+          openbox --sm-disable >openbox.log 2>&1 &
+          WMID=$!
+          sleep 2
+          SDL_VIDEODRIVER=x11 SDL_RENDER_DRIVER=software SDL_AUDIODRIVER=dummy mgba -C savegamePath="$PWD" -C videoSync=1 -C audioSync=0 visual-clean.gba >mgba-visual.log 2>&1 &
+          MPID=$!
+          sleep 5
+          xdotool mousemove 760 560
+          WIN="$(xdotool search --name mGBA | tail -1 || true)"
+          echo "WINDOW=$WIN"
+          if [[ -n "$WIN" ]]; then
+            xdotool getwindowgeometry --shell "$WIN" || true
+            xdotool windowactivate --sync "$WIN" || true
+            xdotool windowfocus --sync "$WIN" || true
+          fi
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :91.0 -frames:v 1 -y visual-5s.png
+          if [[ -n "$WIN" ]]; then xdotool key --clearmodifiers Return; fi
+          sleep 5
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :91.0 -frames:v 1 -y visual-start-10s.png
+          if [[ -n "$WIN" ]]; then xdotool key --clearmodifiers Return; fi
+          sleep 5
+          ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 800x600 -i :91.0 -frames:v 1 -y visual-start-15s.png
+          /usr/bin/python3 - <<'PY'
+          from PIL import Image
+          from collections import Counter
+          for name in ('visual-5s.png','visual-start-10s.png','visual-start-15s.png'):
+              im=Image.open(name).convert('RGB')
+              # Default mGBA SDL window center of 800x600 Xvfb; exclude WM borders.
+              p=im.crop((281,240,521,400))
+              c=Counter(p.getdata())
+              print(name,'GAME_VIEW_COLOR_COUNT',len(c),'TOP_COLORS',c.most_common(8),flush=True)
+          PY
+          kill -TERM "$MPID" "$WMID" "$XPID" 2>/dev/null || true
+          for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
+          kill -KILL "$MPID" "$WMID" "$XPID" 2>/dev/null || true
+          wait "$MPID" "$WMID" "$XPID" 2>/dev/null || true
+          cat mgba-visual.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-v8-visual-diagnostic
+          path: |
+            .qa/v8/visual-*.png
+            .qa/v8/*visual.log
+            .qa/v8/xvfb.log
+            .qa/v8/openbox.log

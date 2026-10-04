@@ -1,0 +1,11 @@
+__pycache__/
+*.o
+*.elf
+payload*.bin
+*_host
+host_qa_v5
+host_qa_v5.c
+*_host.c
+hostqa_v5.sav
+.superpowers/
+evidence/

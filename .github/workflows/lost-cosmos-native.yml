@@ -1,0 +1,175 @@
+name: Lost COSMOS native build and controller QA
+on:
+  push:
+    branches: [main, feature/lost-cosmos-living-multiverse-recovery-011, feature/lost-cosmos-v11-enhanced-001]
+    paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
+  pull_request:
+    branches: [main, feature/lost-cosmos-v10-presentation-001, feature/lost-cosmos-v11-enhanced-001]
+    paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: gba/lost-cosmos-living-multiverse
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native compiler and official mGBA library
+        run: sudo apt-get update && sudo apt-get install -y clang lld llvm libmgba-dev ffmpeg gcc python3-pil
+      - name: Build the browser cartridge from current V11.1 source
+        run: |
+          (cd ../.. && bash scripts/build-lost-cosmos-arcade.sh)
+          mkdir -p artifacts/arcade
+          cp LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf artifacts/arcade/lost_cosmos_v5.elf
+      - name: Build the real ARM7TDMI ROM
+        run: cd LOST_COSMOS_V10_SOURCE && IMPORTED_BEAST=1 bash build_v5.sh
+      - name: Verify reproducible build
+        run: |
+          sha256sum LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba > /tmp/first-native.sha256
+          (cd LOST_COSMOS_V10_SOURCE && IMPORTED_BEAST=1 bash build_v5.sh)
+          sha256sum --check /tmp/first-native.sha256
+      - name: Package the editable V11.1 source and matching native ROM
+        run: |
+          mkdir -p artifacts/release
+          cp LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba artifacts/release/LOST_COSMOS_V11_1_CONTENT.gba
+          python3 tools/package_current_source.py --out artifacts/release/LOST_COSMOS_V11_1_EDITABLE_SOURCE.zip
+          (cd artifacts/release && sha256sum *.gba *.zip > SHA256SUMS.txt)
+      - name: Gate all 24 physical story maps, 96 actual objective triggers and six older save pages
+        run: python3 tests/test_completion_maps_v10_8.py
+      - name: Gate all 300 content records, art, native rules and public Beast Box round trip
+        run: |
+          python3 tests/test_content_v11.py
+          python3 tests/test_content_v11_native.py
+          python3 tests/test_mailbox_v11_native.py
+          python3 tests/test_beastbox_roundtrip_v11.py
+          python3 tests/test_bridge.py
+      - name: Gate NPC reachability with the actual native 10px collision footprint
+        run: python3 tests/test_act1_pixel_reachability.py
+      - name: Gate Quantum Beast public import, field-art derivation and native save identity
+        run: |
+          python3 -m py_compile tools/build_quantum_beast_v11.py tools/import_beastbox.py
+          (cd LOST_COSMOS_V10_SOURCE && python3 host_qa_v5.py)
+          python3 tests/test_imported_native.py
+      - name: Gate 351 actual player-hitbox actions across 40 expansion plus six original book realm maps
+        run: python3 tests/test_all_story_pixel_routes.py
+      - name: Verify all three real-game ending credits transitions with native C host
+        run: python3 tests/test_end_credits_v10_8.py
+      - name: Build controller bridge and test journal integrity
+        run: |
+          bash tools/mgba_build.sh
+          gcc -std=c99 -Wall -Wextra -Werror -Wno-misleading-indentation -O2 tests/test_save_journal.c -o /tmp/lc-journal-test
+          /tmp/lc-journal-test
+      - name: Gate living-link mailbox import in real mGBA
+        timeout-minutes: 5
+        run: |
+          python3 tests/test_mgba_mailbox_import.py --out artifacts/mgba_mailbox/compiled
+          python3 tests/test_mgba_mailbox_import.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_mailbox/runtime
+      - name: Real mGBA controller boot, movement, audio, video and two-boot save check
+        run: python3 tests/test_mgba_controller.py --out artifacts/mgba_controller
+      - name: Real mGBA V11.1 full menu visual pilgrimage
+        timeout-minutes: 5
+        run: python3 tests/test_mgba_menu_visual.py --out artifacts/mgba_menu_visual
+      - name: Assert title, options, credits and all prologue text on real rendered pixels
+        run: |
+          python3 tests/test_mgba_title.py --out artifacts/mgba_title/compiled
+          python3 tests/test_mgba_title.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_title/runtime
+      - name: Earn eight beacons, ten bosses, crafting, evolution, three slots and a true cold boot
+        timeout-minutes: 7
+        run: python3 tests/test_mgba_content_v11.py --out artifacts/mgba_v11_content
+      - name: Release gate - real controller-only Act I to Malakar and First Heart, plus real second cold boot
+        timeout-minutes: 7
+        run: |
+          python3 tests/test_mgba_act1_controller.py --out artifacts/mgba_act1
+          python3 tests/test_mgba_act1_resume.py --out artifacts/mgba_act1
+      - name: Release gate - real controller-only Act II from earned SRAM to Sentinel and Dream trials plus cold boot
+        timeout-minutes: 7
+        run: python3 tests/test_mgba_act2_controller.py --act1 artifacts/mgba_act1 --out artifacts/mgba_act2
+      - name: Release gate - actual Dream-to-Eldoria ship and all 4 native elements, Storm boss, second cold boot
+        timeout-minutes: 7
+        run: python3 tests/test_mgba_eldoria_controller.py --act2 artifacts/mgba_act2 --out artifacts/mgba_eldoria
+      - name: Release gate - actual Hollow Grove reflection, real Wraith, Earth crystal and separate new cold boot
+        timeout-minutes: 7
+        run: python3 tests/test_mgba_hollow_grove_controller.py --eldoria artifacts/mgba_eldoria --out artifacts/mgba_grove
+      - name: Bundle portable controller runtime
+        if: always()
+        run: |
+          if test -f tools/mgba_bundle_runtime.py; then python3 tools/mgba_bundle_runtime.py --out artifacts/runner-runtime; fi
+      - name: Collect native candidate
+        if: always()
+        run: |
+          mkdir -p artifacts/native
+          cp LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf artifacts/native/
+          llvm-size LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf > artifacts/native/memory.txt
+          sha256sum artifacts/native/* > artifacts/native/SHA256SUMS.txt
+          git rev-parse HEAD > artifacts/native/COMMIT.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-native-${{ github.sha }}
+          path: |
+            gba/lost-cosmos-living-multiverse/artifacts/native/
+            gba/lost-cosmos-living-multiverse/artifacts/release/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_mailbox/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_controller/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_menu_visual/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_title/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_v11_content/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_act2/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_eldoria/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_grove/
+            gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/parts.json
+            gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/REASSEMBLE.txt
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-000-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-000.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-001-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-001.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-002-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-002.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-003-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-003.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-004-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-004.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-005-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-005.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-006-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-006.bin
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-cosmos-runtime-007-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/runtime-part-007.bin
+          retention-days: 7

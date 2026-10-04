@@ -1,0 +1,26 @@
+import { readFileSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import assert from 'node:assert/strict';
+
+const read = (path) => readFileSync(`app/${path}`);
+const html = read('index.html').toString();
+assert(html.includes('src="arcade/lost-cosmos/index.html"'), 'Prepared handheld iframe is missing');
+for (const path of ['manifest.webmanifest', 'sw.js', 'offline.html', 'icon-192.png',
+  'icon-512.png', 'apple-touch-icon.png', 'arcade/lost-cosmos/index.html',
+  'arcade/lost-cosmos/player.mjs', 'arcade/lost-cosmos/mailbox.mjs',
+  'arcade/third_party/emulatorjs/data/loader.js',
+  'arcade/third_party/emulatorjs/data/emulator.min.js',
+  'arcade/third_party/emulatorjs/data/cores/mgba-wasm.data',
+  'arcade/third_party/emulatorjs/data/cores/mgba-legacy-wasm.data']) {
+  assert(statSync(`app/${path}`).size > 0, `${path} is absent or empty`);
+}
+const rom = read('arcade/lost-cosmos/rom/lost-cosmos.gba');
+const receipt = JSON.parse(read('arcade/lost-cosmos/rom/release.json'));
+assert.equal(rom.length, receipt.bytes);
+assert(rom.length >= 1024 * 1024 && rom.length <= 32 * 1024 * 1024);
+assert.equal(createHash('sha256').update(rom).digest('hex'), receipt.sha256);
+let checksum = 0x19;
+for (let i = 0xa0; i <= 0xbc; i++) checksum += rom[i];
+assert.equal((-checksum) & 0xff, rom[0xbd], 'GBA header checksum is invalid');
+assert.equal(rom[0xb2], 0x96, 'GBA header marker is invalid');
+console.log(`PASS: Pages bundle includes verified V${receipt.version} cartridge ${receipt.sha256}`);

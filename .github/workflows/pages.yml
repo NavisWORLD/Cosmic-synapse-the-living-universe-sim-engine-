@@ -1,5 +1,7 @@
 name: Deploy PWA to Pages
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -18,8 +20,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
+      - name: Install the cartridge compiler
+        run: sudo apt-get update && sudo apt-get install -y clang lld llvm
       - run: npm run verify
+      - run: npm run test:link
+      - run: npm run build:cartridge
       - run: npm run prepare:web
+      - run: npm run verify:web
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: { path: app }
