@@ -1745,7 +1745,7 @@ static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE
  }
  else if(pause_page==18){
   ui_text(4,2,"PARTY // COLLECTION",14);
-  if(!lc_party.count){ui_text(4,6,"NO COMPANIONS YET",15);ui_text(4,8,"BOND WITH A WEAK WILD BEAST",13);}
+  if(!lc_party.count){ui_text(4,6,"NO COMPANIONS YET",15);ui_text(4,8,"BOND WITH A WILD BEAST",13);}
   for(i=0;i<lc_party.count&&i<8;i++){int y=4+i;ui_text(2,y,lc_party_sel==i?">":" ",13);ui_text(4,y,lc_species_name(lc_party.slots[i].species),i==lc_party.active?14:15);}
   if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party_sel];
    ui_text(14,4,"LV",13);ui_num(19,4,c->level,15);
@@ -1756,7 +1756,7 @@ static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE
    if(c->species>=LC_SPECIES_IMPORTED){ui_text(14,9,"Q-BEAST",14);lc_draw_import_portrait(168,40);}
 #endif
   }
-  ui_text(4,16,"A ACTIONS",14);ui_text(16,16,"R JOURNAL",13);ui_text(4,17,"B BACK",13);
+  ui_text(4,16,"A ACTIONS",14);ui_text(16,16,"R BESTIARY",13);ui_text(4,17,"B BACK",13);
  }
  else if(pause_page==20){
   ui_text(4,2,"BESTIARY // FIELD JOURNAL",14);
@@ -1784,7 +1784,7 @@ static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE
   }
 #else
   ui_text(4,6,"BRIDGE READY",14);ui_text(4,8,"NO BEAST SNAPSHOT IMPORTED",15);
-  ui_text(4,10,"IMPORT THROUGH QBEAST BUILDER",13);
+  ui_text(4,10,"USE QBEAST BUILDER",13);
 #endif
   ui_text(22,17,"B BACK",13);
  }
