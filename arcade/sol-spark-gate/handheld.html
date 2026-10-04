@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sol Spark · Lost Cosmos handheld</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #071018; color: #d7f6ff; font: 14px/1.45 ui-monospace, monospace; }
+  header, main { padding: 12px 14px; }
+  h1 { font-size: 15px; letter-spacing: .12em; margin: 0 0 6px; }
+  p { margin: 0 0 8px; color: #9ec4d0; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+  button, label.file { background: #12323c; color: #e8ffff; border: 1px solid #2a6d7c; border-radius: 8px; padding: 8px 10px; font: inherit; cursor: pointer; }
+  button:disabled { opacity: .45; }
+  #traits { display: flex; flex-wrap: wrap; gap: 14px; margin: 8px 0; }
+  #game { width: min(100%, 720px); height: clamp(240px, 60vw, 480px); background: #000; border-radius: 10px; overflow: hidden; }
+  #status { min-height: 2.8em; color: #d7fff4; }
+  .legacy-inputs,#traits {display:none}*{box-sizing:border-box}button{min-height:44px}#game{height:clamp(200px,60vw,400px)}
+  label.consent { display: flex; gap: 8px; align-items: flex-start; }
+</style>
+</head>
+<body>
+<header>
+  <h1>LOST COSMOS // SPARK HANDHELD</h1>
+  <p>Your exact Spark companion, original homebrew cartridge and local battery saves.</p>
+</header>
+<main>
+  <label class="consent"><input id="consent" type="checkbox"> Allow this verified companion save to enter the cartridge.</label>
+  <div id="traits"><span>FOCUS <b id="focus">—</b></span><span>CALM <b id="calm">—</b></span><span>SPARK <b id="spark">—</b></span></div>
+  <div id="status" role="status" aria-live="polite">Choose your Spark Beast in the bridge above.</div>
+  <div class="row legacy-inputs">
+    <button id="mock" type="button">Simulated headband</button>
+    <button id="muse" type="button">Muse headband</button>
+    <button id="world" type="button">Use this living world</button>
+    <label class="file">Beast Box JSON<input id="json" type="file" accept="application/json,.json" hidden></label>
+    <label class="file">BCP1 profile<input id="bin" type="file" accept=".bin,application/octet-stream" hidden></label>
+    <button id="bring" type="button">Bring creature in</button>
+  </div><div class="row">
+    <button id="play" type="button">Start cartridge</button>
+  </div>
+  <div id="game"></div>
+</main>
+<script type="module" src="./handheld.mjs"></script>
+</body>
+</html>
