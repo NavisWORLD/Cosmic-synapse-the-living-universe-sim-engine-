@@ -184,6 +184,7 @@ static const u8 PLANET_COL[8]={1,2,3,4,5,6,2,3};
 static u8 collision[MAP_W*MAP_H];
 static u8 trigger[MAP_W*MAP_H];
 static u8 near_trigger_x=255,near_trigger_y=255;
+static u8 last_element_trigger_x=255,last_element_index=255,last_element_interact_count=0;
 static Actor player;
 static Buddy cosmos;
 static Beacon beacons[8];
@@ -2550,6 +2551,7 @@ static void story_interact(u8 t){if(t>=TR_COMP_ENTER){completion_interact(t);ret
      Direct native host calls fall back to the nearest authored coordinate. */
   if(near_trigger_x<64&&near_trigger_y<64&&trigger[mi(near_trigger_x,near_trigger_y)]==TR_ELEMENT)ex=near_trigger_x;
   for(i=0;i<4;i++){int d=iabs(ex-shrine_x[i]);if(d<best){best=d;k=i;}}
+  last_element_trigger_x=(u8)ex;last_element_index=(u8)k;last_element_interact_count++;
   if(k==3){for(i=0;i<10;i++)if(enemies[i].active&&enemies[i].elite){say("THE STORM GUARDIAN BLOCKS THE FOURTH SHRINE.");return;}}
   if(!(element_mask&(1u<<k))){element_mask|=(u8)(1u<<k);say(k==0?"EARTH CRYSTAL RESTORED.":k==1?"WATER CRYSTAL RESTORED.":k==2?"FIRE CRYSTAL RESTORED.":"AIR CRYSTAL RESTORED.");if(element_mask==15){story_flags|=ST_ELEMENTS;say("FOUR ELEMENTS UNITED. THE COSMIC LATTICE AWAKENS.");}save_game();}
   else say("THIS ELEMENT HAS BEEN RESTORED.");return;}
