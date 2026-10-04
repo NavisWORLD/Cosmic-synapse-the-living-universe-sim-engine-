@@ -19,8 +19,8 @@ static const char* v11_short_world(void){
 }
 static const char* v11_act_goal(void){
  if(v11_story_flags&V11_SF_ENDING)return "ACT I RESTS. COSMOS STAYS.";
- if(v11_story_flags&V11_SF_QUIET)return "LISTENER WAITS AT THE CROWN.";
- if(v11_beacons==255)return "FACE THE QUIET. THREE ECHOES.";
+ if(v11_story_flags&V11_SF_QUIET)return "LISTENER WAITS AT CROWN.";
+ if(v11_beacons==255)return "FACE THE QUIET. 3 ECHOES.";
  if(v11_world()==0&&!(v11_story_flags&V11_SF_BEFRIEND))return "ASK A SPARK IN THE FLOWERS.";
  if(v11_world()==0&&v11_rival_phase<2)return "LYS WAITS ON THE WEST SHELF.";
  return v11_signal_goal(v11_world());
@@ -112,6 +112,7 @@ static int v11_story_befriend(void){
  lc_party_sel=lc_party.active;
  born=&lc_party.slots[lc_party.active];
  born->bond=55;
+ v11_fx_set(3,36);
  v11_story_flags|=V11_SF_BEFRIEND;
  v11_befriend_count=(u8)mini(255,v11_befriend_count+1);
  add_xp((u16)(28+species*4));
@@ -126,6 +127,7 @@ static int v11_wild_retaliate(void){
  int affinity=ally?(ally->affinity%5):0;
  int damage=lc_damage((u8)mini(255,attack),(u8)mini(255,defense),v11_wild_aff,(u8)affinity);
  damage=maxi(1,(int)((u32)damage>>1));
+ v11_fx_set(2,12);
  v11_take_hit(damage);
  if(!v11_hp){
   v11_wild=0;v11_wild_menu=0;v11_gameover=1;v11_choice=0;
@@ -161,6 +163,7 @@ static void v11_wild_strike(int move){
  }
  v11_wild_hp=(u16)(v11_wild_hp-damage);
  if(v11_wild_retaliate())return;
+ v11_fx_set(1,14);
  v11_wild=3;
  v11_message(super?"SUPER EFFECTIVE. IT ANSWERS.":"THE SPARK ANSWERS.");
 }
@@ -178,6 +181,9 @@ static void v11_wild_begin(int rival){
  v11_wild_aff=(u8)((species-1)%5);
  v11_wild_hp=v11_wild_max;
  v11_wild=3;
+ /* Both walk frames upload once, outside the battle draw, so a blink cannot stall vblank. */
+ expand_obj32(V11_TILE_FOE,V108_SPECIES[species-1][0][0],0);
+ expand_obj32(V11_TILE_FOE_B,V108_SPECIES[species-1][0][1],0);
  v11_message(rival?"LYS SENDS HER SKYSPARK.":"A SPARK RISES FROM THE FLOWERS.");
 }
 static void v11_wild_use_item(void){
@@ -216,24 +222,34 @@ static void v11_wild_draw(void){
  int affinity=v11_player_aff();
  const char* foe=v11_wild_rival?"LYS SKYSPARK":ECO_NAMES[v11_wild_species-1];
  LcCreature* ally=lc_party.count?&lc_party.slots[lc_party.active]:0;
- ui_clear();oam_hide_all();
- ui_fill_rows(0,2,63,15);
- ui_text(1,0,foe,13);ui_text(16,0,V11_TYPE_NAME[v11_wild_aff],14);
- v11_hp_bar(1,1,v11_wild_hp,v11_wild_max,10,15);
- expand_obj32(480,V108_SPECIES[v11_wild_species-1][0][(frame>>4)&1],0);
- oam_set32(2,168,20,480,5+v11_wild_species-1);oam_ui_portrait(2);
- oam_set32(0,16,28,272,0);oam_ui_portrait(0);
+ u32 seed=ally?ally->seed:((u32)v11_wild_species*0x9E3779B9u);
+ int blink=v11_anim_blink((u32)v11_wild_species*13u);
+ int ax=20,ay=56,fx=148,fy=28;
+ oam_hide_all();
+ /* Opaque navy first. A transparent clear here let the map show through on torn frames. */
+ ui_frame(0,19,15);
+ ui_text(2,1,foe,13);ui_text(16,1,V11_TYPE_NAME[v11_wild_aff],14);
+ v11_hp_bar(2,2,v11_wild_hp,v11_wild_max,10,15);
+ if(v11_fx==1&&v11_fx_t){ax+=10;fx-=v11_fx_t;}
+ if(v11_fx==2&&v11_fx_t)ax+=(v11_fx_t&2)?3:-3;
+ fy+=v11_anim_bob((u32)v11_wild_species*17u)+(v11_fx==3&&v11_fx_t?-((v11_fx_t&4)?5:1):0);
+ ay+=v11_anim_bob(seed);
+ v11_fx_tick();
+ oam_set32(2,fx,fy,blink?V11_TILE_FOE:(((frame>>4)&1)?V11_TILE_FOE_B:V11_TILE_FOE),5+v11_wild_species-1);
+ oam_ui_portrait(2);
+ oam_set32(0,16,36,272,0);oam_ui_portrait(0);
  if(ally&&ally->species>=1&&ally->species<=8){
-  oam_set(1,28,64,384+(ally->species-1)*24+mini(2,ally->stage)*8+((frame>>4)&1)*4,5+ally->species-1,0);
+  int av=v11_anim_blink(ally->seed)?0:((frame>>4)&1);
+  oam_set(1,ax,ay,384+(ally->species-1)*24+mini(2,ally->stage)*8+av*4,5+ally->species-1,0);
   oam_ui_portrait(1);
-  ui_text(1,8,ECO_NAMES[ally->species-1],14);ui_text(14,8,"LV",13);ui_num(17,8,ally->level,15);
- }else{ui_text(1,8,"ARIN",14);ui_text(8,8,"LV",13);ui_num(11,8,player_level,15);}
- v11_hp_bar(1,9,v11_hp,v11_max_hp(),8,13);
+  ui_text(2,8,ECO_NAMES[ally->species-1],14);ui_text(16,8,"LV",13);ui_num(19,8,ally->level,15);
+ }else{ui_text(2,8,"ARIN",14);ui_text(8,8,"LV",13);ui_num(11,8,player_level,15);}
+ v11_hp_bar(2,9,v11_hp,v11_max_hp(),8,13);
  ui_frame(11,19,15);
  if(v11_wild==2)v11_wild_choices(V11_MOVE_NAME[affinity][0],V11_MOVE_NAME[affinity][1],V11_MOVE_NAME[affinity][2],V11_MOVE_NAME[affinity][3]);
  else if(v11_wild==3)ui_wrap_text(13,v11_notice[0]?v11_notice:"THE SPARK WAITS.",15,3);
  else v11_wild_choices("FIGHT","BEFRIEND","POTION","RUN");
- ui_text(2,18,v11_wild==2?"A MOVE   B BACK":v11_wild==3?"A CLOSE":"A CHOOSE   B RUN",14);
+ ui_text(2,18,v11_wild==2?"A MOVE    B BACK":v11_wild==3?"A CLOSE":"A CHOOSE   B RUN",14);
 }
 static int v11_lore_is_ending(void){
  return v11_lore==1&&v11_world()==7&&(v11_story_flags&V11_SF_QUIET);
@@ -271,8 +287,8 @@ static void v11_lore_update(u16 newk){
  v11_lore=0;
 }
 static void v11_lore_draw(void){
- ui_frame(11,19,15);
- ui_text(2,12,v11_lore==2?"LYS":v11_lore_is_ending()?"ACT I":"LISTENER",13);
+ ui_frame(10,19,15);
+ ui_text(2,11,v11_lore==2?"LYS":v11_lore_is_ending()?"ACT I":"LISTENER",13);
  ui_wrap_text(13,v11_lore_text(),15,4);
  ui_text(2,18,"A NEXT    B CLOSE",14);
 }

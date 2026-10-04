@@ -719,7 +719,9 @@ static void ui_frame(int top,int bottom,int pal){int x,y;volatile u16*m=screenbl
  for(y=top;y<=bottom;y++)for(x=0;x<30;x++)m[y*32+x]=map_attr((y==top||y==bottom||x==0||x==29)?61:62,pal);
 }
 static void ui_pause_canvas(void){ui_clear();ui_fill_rows(0,19,63,15);}
-static void ui_text(int x,int y,const char*s,int pal){ volatile u16*m=screenblock(UI_MAP_BASE); while(*s&&x<30){ int g=font_index(*s++); m[y*32+x]=map_attr((g<0)?62:64+g,pal); x++; } }
+/* Column 29 is the window border. Glyphs stop one tile earlier. */
+static void ui_text(int x,int y,const char*s,int pal){ volatile u16*m=screenblock(UI_MAP_BASE); while(*s&&x<29){ int g=font_index(*s++); m[y*32+x]=map_attr((g<0)?62:64+g,pal); x++; } }
+static void ui_wrap_text(int row,const char*s,int pal,int maxrows);
 static void ui_num(int x,int y,int value,int pal){
  /* Correctly renders 0..60000 XP and every existing stat without non-digit
     glyphs or overflowing the original fixed four-decimal formatter. */
@@ -1282,7 +1284,9 @@ static void world_build_cover(const char*line){
     (PR #24); the cover itself predates that merge and was not introduced by it. */
  REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;
  REG_DISPCNT=MODE0|BG1_ENABLE;
- ui_pause_canvas();ui_text(6,8,"TRAVERSING COSMOS",14);ui_text(6,10,line,13);
+ ui_pause_canvas();ui_frame(4,14,15);
+ ui_text(6,6,"TRAVERSING COSMOS",14);
+ ui_wrap_text(9,line,13,3);
 #ifndef HOST_QA
  wait_vblank();
 #endif
@@ -1397,19 +1401,19 @@ static void draw_cinema_caption(void){
     resident until the actual cinematic changes. */
  if(!cinema_ui_dirty)return;cinema_ui_dirty=0;
  if(v10_opening){const OpeningCard*card=&V10_OPENING[v10_opening_step];
-  ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(14,19,63,15);
-  ui_text(1,0,"LOST COSMOS / PROLOGUE",14);ui_text(2,14,card->head,13);
-  ui_wrap_text(15,card->text,15,3);
-  ui_text(4,18,"A NEXT   START SKIP",14);ui_num(26,18,v10_opening_step+1,13);
+  ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(13,19,63,15);ui_frame(13,19,15);
+  ui_text(2,0,"LOST COSMOS / PROLOGUE",14);ui_text(2,14,card->head,13);
+  ui_wrap_text(15,card->text,15,2);
+  ui_text(2,18,"A NEXT   START SKIP",14);ui_num(24,18,v10_opening_step+1,13);
   return;
  }
  if(v10_ending_card){
-  ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(15,19,63,15);
+  ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(14,19,63,15);ui_frame(14,19,15);
   ui_text(2,0,"LOST COSMOS / EPILOGUE",14);
-  if(ending==1){ui_text(2,15,"OPEN / THE REALMS RETURN",14);ui_wrap_text(16,"THE PATHS REJOIN. NO HEART CAN OWN THE UNKNOWN.",15,3);}
-  else if(ending==2){ui_text(2,15,"PRESERVE / STAND TOGETHER",14);ui_wrap_text(16,"YOU HOLD THE LATTICE. THE PEOPLE CHOOSE WHEN TO OPEN IT.",15,3);}
-  else{ui_text(2,15,"WANDER / THE NEXT SKY",14);ui_wrap_text(16,"YOU AND COSMOS DEPART. THE MAP IS NOT FINISHED.",15,3);}
-  ui_text(2,19,"A CONTINUE",13);return;
+  if(ending==1){ui_text(2,15,"OPEN / THE REALMS RETURN",14);ui_wrap_text(16,"THE PATHS REJOIN. NO HEART CAN OWN THE UNKNOWN.",15,2);}
+  else if(ending==2){ui_text(2,15,"PRESERVE / STAND TOGETHER",14);ui_wrap_text(16,"YOU HOLD THE LATTICE. THE PEOPLE CHOOSE WHEN TO OPEN IT.",15,2);}
+  else{ui_text(2,15,"WANDER / THE NEXT SKY",14);ui_wrap_text(16,"YOU AND COSMOS DEPART. THE MAP IS NOT FINISHED.",15,2);}
+  ui_text(2,18,"A CONTINUE",13);return;
  }
  /* Exhaustive names: NEVER index beyond this array when new original scenes
     are added to the 4bpp cinematic atlas. The previous HEAD[12] was unsafe. */
@@ -1568,10 +1572,12 @@ static void ui_wrap_text(int row,const char*s,int pal,int maxrows){
  int col=2,r=0;char word[28];int wi=0;
  while(*s&&r<maxrows){
   while(*s==' ')s++;
-  wi=0;while(*s&&*s!=' '&&wi<27)word[wi++]=*s++;
+  wi=0;while(*s&&*s!=' '&&wi<26)word[wi++]=*s++;
+  while(*s&&*s!=' ')s++;
   word[wi]=0;if(!wi)break;
-  if(col>2&&col+wi+1>29){r++;col=2;if(r>=maxrows)break;}
+  if(col>2&&col+wi+1>28){r++;col=2;if(r>=maxrows)break;}
   if(col>2){ui_text(col,row+r," ",pal);col++;}
+  if(col+wi>28){wi=28-col;word[wi]=0;}
   ui_text(col,row+r,word,pal);col+=wi;
  }
 }
@@ -1597,10 +1603,10 @@ static void draw_hud(void){ui_clear();ui_fill_rows(0,0,63,15);
  }
 }
 static void draw_shop(void){static const char*lines[4]={"BUY POTION 5 CREDITS","BUY ETHER 7 CREDITS","SELL SHARD +3","SELL CORE +12"};int i;
- ui_clear();ui_frame(0,19,15);ui_text(2,2,"OAKWOOD MARKET // TRADE",14);
+ ui_frame(0,19,15);ui_text(2,2,"OAKWOOD MARKET // TRADE",14);
  for(i=0;i<4;i++){ui_text(2,5+i*2,(shop_sel==i)?">":" ",13);ui_text(4,5+i*2,lines[i],15);}
  ui_text(2,14,"CREDITS",13);ui_num(13,14,credits,15);
- ui_text(2,17,"UP DOWN / A TRADE / B EXIT",13);oam_hide_all();oam_set(0,190,28,116,15,0);oam_ui_portrait(0);
+ ui_text(2,17,"UP DOWN  A TRADE  B EXIT",13);oam_hide_all();oam_set(0,190,36,116,15,0);oam_ui_portrait(0);
 }
 static void shop_trade(void){if(shop_sel==0){if(credits<5){say("NEED FIVE CREDITS.");return;}credits-=5;inv[ITEM_POTION]=(u8)mini(99,inv[ITEM_POTION]+1);}
  else if(shop_sel==1){if(credits<7){say("NEED SEVEN CREDITS.");return;}credits-=7;inv[ITEM_ETHER]=(u8)mini(99,inv[ITEM_ETHER]+1);}
@@ -1610,7 +1616,7 @@ static void shop_trade(void){if(shop_sel==0){if(credits<5){say("NEED FIVE CREDIT
 }
 static void draw_battle(void){if(V11_IS_ROOM){v11_draw_battle();return;}Enemy*e=&enemies[battle_index];
  static const char*ACT[6]={"FIGHT","MAGIC","ITEM","TALK","RUN","ALLY"};int i;
- ui_clear();ui_frame(0,19,15);
+ ui_frame(0,19,15);
  ui_text(2,1,"ERIDORIA // DUEL",14);
  ui_text(3,3,BATTLE_NAMES[e->type%EN_COUNT],13);
  ui_text(3,4,"ENEMY HP",15);ui_num(13,4,e->hp,15);ui_text(16,4,"/",15);ui_num(18,4,e->maxhp,15);
@@ -1630,8 +1636,8 @@ static void draw_battle(void){if(V11_IS_ROOM){v11_draw_battle();return;}Enemy*e=
  if(current_world==0&&current_room==4&&e->elite)ui_text(3,3,"MALAKAR",13);
  /* Show selected REAL native stage/pose in tactical duels, not a preview image. */
  if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];
-  if(c->species>=1&&c->species<=8){oam_set(3,115,71,384+(c->species-1)*24+
-    mini(2,c->stage)*8+((frame>>4)&1)*4,7,0);oam_ui_portrait(3);}
+  if(c->species>=1&&c->species<=8){oam_set(3,115+(v11_fx==1?v11_fx_t:0),71+v11_anim_bob(c->seed),384+(c->species-1)*24+
+    mini(2,c->stage)*8+(v11_anim_blink(c->seed)?0:((frame>>4)&1))*4,7,0);oam_ui_portrait(3);v11_fx_tick();}
   else if(lc_has_import_art(c))
    v11_draw_import_battle(3,104,8,c->identity);
  }
@@ -1643,9 +1649,9 @@ static void draw_intro(void){
  if(!title_ui_dirty)return;title_ui_dirty=0;
  static const char*options[4]={"NEW GAME","CONTINUE","OPTIONS","CREDITS"};int i;
  REG_BG1HOFS=REG_BG1VOFS=0;
- ui_clear();ui_text(9,8,"LOST COSMOS",13);
- ui_fill_rows(10,19,63,15);
- ui_text(1,10,"ERIDORIA // LIVING MULTIVERSE",14);
+ ui_clear();ui_text(9,7,"LOST COSMOS",13);
+ ui_frame(9,19,15);
+ ui_text(2,10,"ERIDORIA // MULTIVERSE",14);
  if(v10_title_sub==1){
   ui_text(2,12,"OVERWRITE THE CURRENT SAVE?",15);
   ui_text(2,14,"A YES / B CANCEL",14);
@@ -1786,7 +1792,7 @@ static const char* spell_name(u8 s){static const char*S[SPELL_COUNT]={"SYNAPSE P
 static const char* weapon_name(void){return weapon==2?"CROWN EDGE":(weapon==1?"EMBER SABER":"RUST BLADE");}
 static const char* armor_name(void){return armor?"TIDE MAIL":"TRAVEL CLOTH";}
 static const char* charm_name(void){return charm?"BLOOM CHARM":"NONE";}
-static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;if(v11_menu_handled(pause_page)&&!v11_ui_dirty)return;oam_hide_all();ui_pause_canvas();if(v11_draw_pause())return;
+static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;if(v11_menu_handled(pause_page)&&!v11_ui_dirty)return;oam_hide_all();ui_pause_canvas();ui_frame(0,19,15);if(v11_draw_pause())return;
  if(pause_page==0){static const char*items[10]={"MAP","QUEST","PARTY","ITEMS","EQUIPMENT","ABILITIES","BESTIARY","MEMORIES","BEAST BOX","SYSTEM"};
   /* Delta-safe 2x5 cartridge menu. The emulator skin owns the top-center and
      outer lower corners, so all actionable text stays inside the native safe area. */

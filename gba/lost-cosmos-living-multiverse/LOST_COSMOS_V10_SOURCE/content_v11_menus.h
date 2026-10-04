@@ -35,9 +35,9 @@ static void v11_menu_palette(void){int i,j;static const u16 colors[5]={RGB5(22,2
  for(j=0;j<16;j++)BG_PALETTE[7*16+j]=BG_PALETTE[15*16+j];BG_PALETTE[7*16+1]=BG_PALETTE[7*16+5]=RGB5(31,12,12);
 }
 static void v11_icon(int id,int skill){int i;if(id<0||id>=100)return;
- vram_copy32(OBJ_VRAM32+400*8,(skill?V11_SKILLS_ART:V11_ITEMS_ART)+id*32,32);
+ vram_copy32(OBJ_VRAM32+V11_TILE_ICON*8,(skill?V11_SKILLS_ART:V11_ITEMS_ART)+id*32,32);
  for(i=0;i<16;i++)OBJ_PALETTE[14*16+i]=(skill?V11_SKILLS_PALETTES:V11_ITEMS_PALETTES)[id*16+i];
- oam_set(44,8,111,400,14,0);oam_ui_portrait(44);
+ oam_set(44,8,96,V11_TILE_ICON,14,0);oam_ui_portrait(44);
 }
 static int v11_compare_name(const char*a,const char*b){while(*a&&*a==*b){a++;b++;}return (u8)*a-(u8)*b;}
 static void v11_items_list(void){static u8 last_qty[100],last_cat=255,last_sort=255;int i,j,same=v11_list_kind==0&&last_cat==v11_cat&&last_sort==v11_sort;
@@ -54,22 +54,31 @@ static void v11_skills_list(void){int i;v11_list_kind=2;v11_list_count=0;for(i=0
 static void v11_gear_list(void){int i;v11_list_kind=1;v11_list_count=1;v11_list[0]=255;for(i=0;i<70;i++)if(V11_ITEMS[i].kind==v11_slot&&v11_qty[i])v11_list[v11_list_count++]=(u8)i;if(v11_sel>=v11_list_count)v11_sel=0;}
 static const char*v11_cosmos_label(void){return v11_cosmos_name[0]?v11_cosmos_name:"COSMOS";}
 static void v11_portrait(int pick,int x,int y,int pulse){int xx,yy,i;u32 tile[512];const u32*src;
+ u32 seed=pick>0&&pick<=lc_party.count?lc_party.slots[pick-1].seed:0x43534d53u;
+ static u8 port_key=255,port_pick=255,port_pulse=255;
+ y+=v11_anim_bob(seed)+(pulse?-((pulse&4)?3:0):0);
  if(pick>0&&pick<=lc_party.count&&lc_party.slots[pick-1].species>=LC_SPECIES_IMPORTED){
   if(v11_battle_pose!=255){lc_upload_import_art();v11_battle_pose=255;}lc_draw_import_portrait(x,y,lc_party.slots[pick-1].identity);
   if(pulse){int scale=256-(pulse%20)*3;OAM16[3*16+3]=scale;OAM16[3*16+7]=0;OAM16[3*16+11]=0;OAM16[3*16+15]=scale;OAM16[42*4]|=0x0100;OAM16[42*4+1]|=(3u<<9);}return;}
- for(i=0;i<512;i++)tile[i]=0;
  int species=pick>0&&pick<=lc_party.count?lc_party.slots[pick-1].species:0;
  int stage=pick>0?lc_party.slots[pick-1].stage:v11_cosmos_stage;
- src=species>=1&&species<=8?V108_SPECIES[species-1][mini(2,stage)][0]:0;
- for(yy=0;yy<64;yy++)for(xx=0;xx<64;xx++){
-  int sx=xx/4,sy=yy/4,n;
-  if(src)n=(src[((sy/8)*2+sx/8)*8+(sy&7)]>>((sx&7)*4))&15;else{volatile u16*obj=(volatile u16*)OBJ_VRAM32;int at=32*16+((sy/8)*2+sx/8)*16+(sy&7)*2+(sx&7)/4;n=(obj[at]>>((sx&3)*4))&15;}
-  tile[((yy/8)*8+xx/8)*8+(yy&7)]|=(u32)(n&15)<<((xx&7)*4);
+ int key=species|(mini(2,stage)<<4);
+ if(port_key!=(u8)key||port_pick!=(u8)pick){
+  for(i=0;i<512;i++)tile[i]=0;
+  src=species>=1&&species<=8?V108_SPECIES[species-1][mini(2,stage)][0]:0;
+  for(yy=0;yy<64;yy++)for(xx=0;xx<64;xx++){
+   int sx=xx/4,sy=yy/4,n;
+   if(src)n=(src[((sy/8)*2+sx/8)*8+(sy&7)]>>((sx&7)*4))&15;else{volatile u16*obj=(volatile u16*)OBJ_VRAM32;int at=32*16+((sy/8)*2+sx/8)*16+(sy&7)*2+(sx&7)/4;n=(obj[at]>>((sx&3)*4))&15;}
+   tile[((yy/8)*8+xx/8)*8+(yy&7)]|=(u32)(n&15)<<((xx&7)*4);
+  }
+  vram_copy32(OBJ_VRAM32+V11_TILE_PORT*8,tile,512);
+  if(src){for(i=0;i<16;i++)OBJ_PALETTE[13*16+i]=OBJ_PALETTE[(5+species-1)*16+i];}
+  else for(i=0;i<16;i++)OBJ_PALETTE[13*16+i]=OBJ_PALETTE[16+i];
+  port_key=(u8)key;port_pick=(u8)pick;port_pulse=0;
  }
- vram_copy32(OBJ_VRAM32+400*8,tile,512);
- if(src){for(i=0;i<16;i++)OBJ_PALETTE[13*16+i]=OBJ_PALETTE[(5+species-1)*16+i];}
- else for(i=0;i<16;i++)OBJ_PALETTE[13*16+i]=OBJ_PALETTE[16+i];
- OAM16[43*4]=(u16)(y&255);OAM16[43*4+1]=(u16)((x&511)|(3u<<14));OAM16[43*4+2]=(u16)(400+(13u<<12));
+ OAM16[43*4]=(u16)(y&255);OAM16[43*4+1]=(u16)((x&511)|(3u<<14));OAM16[43*4+2]=(u16)(V11_TILE_PORT+(13u<<12));
+ if(!pulse&&v11_anim_blink(seed)){OAM16[43*4]|=0x0100;OAM16[43*4+1]|=(2u<<9);
+  OAM16[2*16+3]=256;OAM16[2*16+7]=0;OAM16[2*16+11]=0;OAM16[2*16+15]=176;}
  if(pulse){/* Matrix 3 is local to evolution. Battle owns matrix 4. */
  int scale=256-(pulse%20)*3;OAM16[3*16+3]=scale;OAM16[3*16+7]=0;OAM16[3*16+11]=0;OAM16[3*16+15]=scale;
  OAM16[43*4]|=0x0100;OAM16[43*4+1]|=(3u<<9);}
@@ -79,8 +88,8 @@ static void v11_title_beast(int upload){/* Rebuild art only when the title chang
  int i,x,y;u32 out[128];volatile u16*src=(volatile u16*)OBJ_VRAM32;for(i=0;i<128;i++)out[i]=0;
  for(y=0;y<32;y++)for(x=0;x<32;x++){int sx=x/2,sy=y/2,at=32*16+((sy/8)*2+sx/8)*16+(sy&7)*2+(sx&7)/4;
  int n=(src[at]>>((sx&3)*4))&15;out[((y/8)*4+x/8)*8+(y&7)]|=(u32)n<<((x&7)*4);}
- vram_copy32(OBJ_VRAM32+400*8,out,128);}
- oam_set32(43,188,56+((frame>>5)&1),400,1);oam_ui_portrait(43);
+ vram_copy32(OBJ_VRAM32+V11_TILE_FACE*8,out,128);}
+ oam_set32(43,188,52+v11_anim_bob(frame),V11_TILE_FACE,1);oam_ui_portrait(43);
 }
 /* Public export snapshot in reserved bytes 6208..6399. No private memory. */
 static int v11_export_valid(void){return SRAM[6208]=='L'&&SRAM[6209]=='C'&&SRAM[6210]=='E'&&SRAM[6211]==1&&SRAM[6399]==0xa5&&sr32(6388)==v11_sram_crc(6208,180);}
@@ -130,9 +139,9 @@ static int v11_import_snapshot(void){
  v11_message("OFFLINE MODE. THIS BUILD HAS NO VERIFIED BEAST SNAPSHOT.");return 0;
 #endif
 }
-static void v11_header(const char*name){int t;for(t=0;t<9;t++)if(V11_TABS[t]==pause_page){v11_short(0,0,V11_TAB_NAMES[wrapi(t-1,9)],8,8);ui_text(10,0,V11_TAB_NAMES[t],13);v11_short(22,0,V11_TAB_NAMES[(t+1)%9],8,8);}ui_text(2,2,name,14);ui_text(2,17,"A CHOOSE  B BACK  L/R TABS",13);}
-static void v11_row(int row,int selected,const char*name,int pal){ui_text(2,row,selected?">":" ",13);v11_short(4,row,name,23,pal);}
-static void v11_menu_notice(void){if(v11_notice_timer&&v11_notice[0]&&v11_detail==2){ui_frame(12,18,15);v11_lines(2,13,v11_notice,26,4,14);ui_text(2,18,"A/B CLOSE",13);}}
+static void v11_header(const char*name){int t;for(t=0;t<9;t++)if(V11_TABS[t]==pause_page){v11_short(1,0,V11_TAB_NAMES[wrapi(t-1,9)],8,8);ui_text(10,0,V11_TAB_NAMES[t],13);v11_short(20,0,V11_TAB_NAMES[(t+1)%9],8,8);}ui_text(2,2,name,14);ui_text(2,17,"A CHOOSE  B BACK  L/R TABS",13);}
+static void v11_row(int row,int selected,const char*name,int pal){ui_text(2,row,selected?">":" ",13);v11_short(4,row,name,22,pal);}
+static void v11_menu_notice(void){if(v11_notice_timer&&v11_notice[0]&&v11_detail==2){ui_frame(10,19,15);v11_lines(2,12,v11_notice,26,4,14);ui_text(2,17,"A/B CLOSE",13);}}
 static void v11_recipe_cost(int n,int*out){
  static const u8 scrap[10]={8,6,5,1,1,1,1,1,0,2},herb[10]={2,1,1,0,0,0,0,0,5,1},core[10]={0,0,0,3,3,2,4,1,0,0};
  int i;for(i=0;i<3;i++)out[i]=0;if(n<0||n>=10)return;
@@ -200,7 +209,7 @@ static int v11_draw_pause(void){int i,id,start;
  if(v11_release_confirm)ui_text(2,15,"A AGAIN TO RELEASE. B KEEP.",13);else ui_text(2,15,"BOND AND NAME CARRY FORWARD",13);
  }else if(pause_page==20){v11_header("BEASTS // SEEN");ui_num(20,2,v11_seen_count(),15);ui_text(23,2,"/100",13);start=v11_sel/6*6;
  for(i=start;i<mini(start+6,100);i++)v11_row(4+i-start,i==v11_sel,v11_encounters[i]?V11_CHARACTERS[i].name:"???",v11_encounters[i]?15:8);
- id=v11_sel;if(v11_encounters[id]){vram_copy32(OBJ_VRAM32+400*8,V11_FIELD_ART+id*128,128);for(i=0;i<16;i++)OBJ_PALETTE[14*16+i]=V11_FIELD_PALETTE[i];oam_set32(44,8,93,400,14);oam_ui_portrait(44);
+ id=v11_sel;if(v11_encounters[id]){vram_copy32(OBJ_VRAM32+V11_TILE_FACE*8,V11_FIELD_ART+id*128,128);for(i=0;i<16;i++)OBJ_PALETTE[14*16+i]=V11_FIELD_PALETTE[i];oam_set32(44,8,88+v11_anim_bob((u32)id*9u),V11_TILE_FACE,14);oam_ui_portrait(44);
  v11_short(6,12,V11_CHARACTERS[id].world<8?V11_WORLDS[V11_CHARACTERS[id].world]:"ALL WORLDS",22,14);v11_lines(6,13,V11_CHARACTERS[id].description,22,2,15);ui_text(2,16,"ENCOUNTERS",13);ui_num(15,16,v11_encounters[id],15);
  }else ui_text(4,12,"THE MAP HAS NOT MET IT YET.",8);
  if(lc_mail_live){int spark=0;for(i=0;i<lc_party.count;i++)if(lc_mail_matches(lc_party.slots[i].identity))spark=i+1;
@@ -237,7 +246,7 @@ static int v11_draw_pause(void){int i,id,start;
  if(v11_sel==10)ui_text(2,14,"COST 200 CREDITS",13);else{int cost[3];v11_recipe_cost(v11_sel,cost);ui_text(2,14,"COST S",13);ui_num(8,14,cost[0],v11_scrap>=cost[0]?9:7);ui_text(11,14,"H",13);ui_num(13,14,cost[1],v11_herbs>=cost[1]?9:7);ui_text(17,14,"C",13);ui_num(19,14,cost[2],v11_qty[93]>=cost[2]?9:7);}
  ui_text(2,15,"A BUILD  SELECT REPAIR 10C",14);
  }else if(pause_page==45){v11_header("EVOLUTION // A HELD SIGNAL");v11_short(2,4,v11_assign?v11_creature_name(v11_assign-1):v11_cosmos_label(),26,13);v11_portrait(v11_assign,88,48,v11_evolution?v11_evo_timer:0);ui_text(2,14,v11_evolution?"THE BOND CARRIES FORWARD":"IS CHANGING. LET IT?",14);ui_text(2,17,v11_evolution?"B BACK":"A YES   B NOT YET",13);
- if(v11_evolution){ui_text(2,5,"STAGE",13);ui_num(8,5,v11_evo_old,15);ui_text(11,5,"->",13);ui_num(15,5,v11_evo_old+1,15);if(v11_evo_timer<12){for(i=0;i<256;i++)BG_PALETTE[i]=brighter5(BG_PALETTE[i],20-v11_evo_timer);}}
+ if(v11_evolution){ui_text(2,5,"STAGE",13);ui_num(8,5,v11_evo_old,15);ui_text(11,5,"->",13);ui_num(15,5,v11_evo_old+1,15);}
  }else if(pause_page==46){v11_header("RENAME // DISPLAY NAME");ui_text(2,5,v11_name_edit,14);ui_text(2,7,"A ADD LETTER. SELECT DONE.",15);static const char*letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ ";for(i=0;i<27;i++){char b[2]={letters[i],0};ui_text(3+(i%9)*3,10+(i/9)*2,b,i==v11_rename_letter?13:15);if(i==v11_rename_letter)ui_text(2+(i%9)*3,10+(i/9)*2,">",13);}ui_text(2,16,"L ERASE  B CANCEL",14);
  }
  v11_menu_notice();v11_ui_dirty=0;return 1;
@@ -261,7 +270,7 @@ static void v11_back(void){v11_sel=v11_detail=v11_menu_mode=0;v11_release_confir
  else if(pause_page==26)pause_page=v11_parent==18?18:0;else pause_page=0;v11_page_previous=255;}
 static int v11_update_pause(u16 k){int i,id,n;
  if(pause_page==0){if(k&KEY_A&&pause_sel==8)v11_parent=0;if(k&KEY_SELECT){pause_page=40;v11_menu_reset();return 1;}if(k&KEY_B)v11_resume_art();return 0;}
- if(!v11_menu_handled(pause_page))return 0;if(k||pause_page==45||(pause_page==1&&(frame&31)==0))v11_ui_dirty=1;v11_menu_changed();
+ if(!v11_menu_handled(pause_page))return 0;if(k||pause_page==45||pause_page==18||pause_page==20||pause_page==26||pause_page==27||(pause_page==1&&(frame&31)==0))v11_ui_dirty=1;v11_menu_changed();
  if(v11_detail==2){if(k&(KEY_A|KEY_B)){v11_detail=0;v11_notice_timer=0;}return 1;}
  if(pause_page==45&&v11_evolution){if(v11_evo_timer<60)v11_evo_timer++;v11_ui_dirty=1;if(v11_evo_timer>=60||k&KEY_B){v11_evolution=0;v11_back();}return 1;}
  if(!k)return 1;
@@ -305,4 +314,4 @@ static const u8 V11_SHOP_ITEMS[8]={70,71,72,73,75,80,40,76};
 static int v11_shop_price(int id,int sell){int p=V11_ITEMS[id].price;if(p<1)p=id>=70?12:20+V11_ITEMS[id].rarity*15;if(sell)return maxi(1,p/3);int discount=(v11_charm(65)?15:0)+(v11_passive(70)?10:0)+(v11_speaker==3?v11_corvus_trust/10:0);return maxi(1,p*(100-mini(35,discount))/100);}
 static void v11_shop_list(void){int i;v11_list_count=0;if(v11_shop_sell){for(i=0;i<90;i++)if(v11_qty[i]&&v11_equipment[0]!=i&&v11_equipment[1]!=i&&v11_equipment[2]!=i)v11_list[v11_list_count++]=(u8)i;}else for(i=0;i<8;i++)v11_list[v11_list_count++]=V11_SHOP_ITEMS[i];if(v11_shop_sel>=v11_list_count)v11_shop_sel=0;}
 static int v11_shop_input(u16 k){int id,p;v11_shop_list();if(k&KEY_B){v11_shop=0;v11_resume_art();return 1;}if(k&(KEY_LEFT|KEY_RIGHT)){v11_shop_sell^=1;v11_shop_sel=0;}if(k&KEY_UP)v11_shop_sel=(u8)wrapi(v11_shop_sel-1,maxi(1,v11_list_count));if(k&KEY_DOWN)v11_shop_sel=(u8)wrapi(v11_shop_sel+1,maxi(1,v11_list_count));if(k&KEY_A&&v11_list_count){id=v11_list[v11_shop_sel];p=v11_shop_price(id,v11_shop_sell);if(v11_shop_sell){v11_qty[id]--;v11_credits=(u16)mini(65535,v11_credits+p);v11_message("SOLD. ALL SALES ARE STORIES.");}else if(v11_qty[id]>=99)v11_message("THIS STACK IS FULL. USE OR SELL ONE FIRST.");else if(v11_credits<p)v11_message("NOT ENOUGH CREDITS. THE ROAD WILL PROVIDE.");else if(v11_inventory_add(id,1)){v11_credits-=p;if(v11_speaker==3)v11_corvus_trust=(u8)mini(100,v11_corvus_trust+5);v11_message("PURCHASE COMPLETE.");}v11_unlock();save_game();}return 1;}
-static void v11_draw_shop(void){int i,start;ui_pause_canvas();v11_menu_palette();v11_short(2,2,V11_CHARACTERS[v11_speaker].name,26,14);ui_text(2,3,"CREDITS",13);ui_num(11,3,v11_credits,15);ui_text(19,3,v11_shop_sell?"SELL":"BUY",14);v11_shop_list();start=v11_shop_sel/6*6;for(i=start;i<mini(start+6,v11_list_count);i++){int id=v11_list[i];v11_row(5+i-start,i==v11_shop_sel,V11_ITEMS[id].name,8+V11_ITEMS[id].rarity);ui_num(25,5+i-start,v11_shop_price(id,v11_shop_sell),15);}if(v11_notice[0])v11_lines(2,12,v11_notice,26,3,14);ui_text(2,17,"A TRADE  B EXIT  LEFT/RIGHT",13);}
+static void v11_draw_shop(void){int i,start;ui_frame(0,19,15);v11_menu_palette();v11_short(2,2,V11_CHARACTERS[v11_speaker].name,24,14);ui_text(2,3,"CREDITS",13);ui_num(11,3,v11_credits,15);ui_text(20,3,v11_shop_sell?"SELL":"BUY",14);v11_shop_list();start=v11_shop_sel/6*6;for(i=start;i<mini(start+6,v11_list_count);i++){int id=v11_list[i];v11_row(5+i-start,i==v11_shop_sel,V11_ITEMS[id].name,8+V11_ITEMS[id].rarity);ui_num(24,5+i-start,v11_shop_price(id,v11_shop_sell),15);}if(v11_notice[0])v11_lines(2,12,v11_notice,26,3,14);ui_text(2,17,"A TRADE   B EXIT   L/R",13);}

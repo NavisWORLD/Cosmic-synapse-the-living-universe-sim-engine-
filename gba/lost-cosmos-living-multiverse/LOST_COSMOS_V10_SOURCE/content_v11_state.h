@@ -96,6 +96,20 @@ static u8 v11_act,v11_story_flags,v11_spark_wins,v11_befriend_count,v11_rival_ph
 static u8 v11_wild,v11_wild_rival,v11_wild_species,v11_wild_sel,v11_wild_aff,v11_wild_menu;
 static u16 v11_wild_hp,v11_wild_max;
 static u8 v11_lore,v11_lore_page;
+/* Scratch OBJ tiles sit past the species bank (384-575) and player pages (576-639).
+   Writing portraits into tile 400 used to erase Spark Beast art mid-frame. */
+#define V11_TILE_ICON 640
+#define V11_TILE_ALLY 648
+#define V11_TILE_FOE 672
+#define V11_TILE_FOE_B 704
+#define V11_TILE_FACE 720
+#define V11_TILE_PORT 752
+#define V11_TILE_ADD 816
+static u8 v11_fx,v11_fx_t;
+static void v11_fx_set(int kind,int frames){v11_fx=(u8)kind;v11_fx_t=(u8)frames;}
+static void v11_fx_tick(void){if(v11_fx_t)v11_fx_t--;else v11_fx=0;}
+static int v11_anim_bob(u32 seed){int t=(int)((frame+(seed&15u))>>3);return (t&2)?((t&1)?1:-1):0;}
+static int v11_anim_blink(u32 seed){unsigned span=70u+(seed&31u);return (unsigned)(frame+(seed>>4))%span<4u;}
 static void v11_story_sync(void);
 static void v11_story_place(void);
 static void v11_story_boot(void);

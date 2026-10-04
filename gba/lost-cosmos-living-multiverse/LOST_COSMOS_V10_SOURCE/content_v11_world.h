@@ -277,37 +277,43 @@ static void v11_update_field(u16 k,u16 newk){int dx=0,dy=0,i,t,speed=(k&KEY_B)?3
  if(newk&KEY_L){if(v11_qty[70]){v11_qty[70]--;v11_heal(20);save_game();v11_message("POTION USED. HP RESTORED.");}else v11_message("NO POTIONS. THE CAMPFIRE WILL WAIT.");}
  if(newk&KEY_SELECT){v11_use_skill(v11_skill_known(92)?92:30+1);}
 }
-static void v11_draw_field(void){int i;ui_clear();oam_hide_all();
+static void v11_draw_field(void){int i,box;
  if(v11_wild){v11_wild_draw();return;}
- ui_fill_rows(0,0,63,15);ui_text(1,0,v11_short_world(),14);
- ui_text(11,0,"LV",13);ui_num(14,0,player_level,15);
- v11_hp_bar(18,0,v11_hp,v11_max_hp(),8,v11_hp*3<v11_max_hp()?13:15);
+ if(v11_shop){oam_hide_all();v11_draw_shop();return;}
+ box=v11_gameover||v11_lore||v11_dialogue||v11_notice[0];
+ ui_clear();oam_hide_all();
+ ui_fill_rows(0,0,62,15);ui_text(2,0,v11_short_world(),14);
+ ui_text(10,0,"LV",13);ui_num(13,0,player_level,15);
+ v11_hp_bar(17,0,v11_hp,v11_max_hp(),8,v11_hp*3<v11_max_hp()?13:15);
  if(location_banner)location_banner--;
- ui_fill_rows(18,19,63,15);
+ ui_fill_rows(18,19,62,15);
  if(v11_track>=8&&v11_track<15&&!(v11_quest_done&(1u<<v11_track))&&((v11_ticks/480)&1)){
   static const char*hint[7]={"RETURN TO ASTRID","REPAIR PRIME BEACON","FIND BRINDLE ELDER","FIND FIRST OUTCAST","VISIT THE CONFESSOR","MEND THE WOUNDED ROOT","CRAFT THE BUILDER SET"};
-  ui_text(1,18,hint[v11_track-8],13);
- }else ui_text(1,18,v11_act_goal(),13);
- ui_text(1,19,v11_field_action(),15);ui_text(22,19,"START",14);
- oam_set(0,player.x-cam_x-8,player.y-cam_y-12,576+(player.face*4+(player.anim&3))*4,0,0);
- oam_set(1,cosmos.x-cam_x-8,cosmos.y-cam_y-8,32+(cosmos.mood&3)*4,1,0);
- if(!v11_active_cosmos&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];
-  if(c->species>=1&&c->species<=8){vram_copy32(OBJ_VRAM32+416*8,V108_SPECIES[c->species-1][mini(2,c->stage)][(frame>>4)&1],32);oam_set(42,cosmos.x-cam_x+7,cosmos.y-cam_y-8,416,5+c->species-1,0);}
-  else if(lc_has_import_art(c)){spark_follow_place();lc_draw_import_field(42,spark_follow_x-cam_x-16,spark_follow_y-cam_y-24,player.face==2,0,c->identity);}}
- spark_field_sprites();
- for(i=0;i<10;i++)if(enemies[i].active){oam_set32(2+i,enemies[i].x-cam_x-16,enemies[i].y-cam_y-24,224+i*16,14);
-  if(enemies[i].x-cam_x<-32||enemies[i].x-cam_x>272||enemies[i].y-cam_y<-32||enemies[i].y-cam_y>192)OAM16[(2+i)*4]=0x0200;}
- for(i=0;i<v11_npc_count;i++){int xx=v11_npc_x[i]-cam_x-16,yy=v11_npc_y[i]-cam_y-24; if(xx>-32&&xx<240&&yy>-32&&yy<160)oam_set32(16+i,xx,yy-(int)((frame>>5)&1),128+i*16,14);}
- if(v11_field_scout||v11_equipment[1]==49||v11_qty[97])for(i=0;i<4;i++)if(!(v11_caches&(1u<<(v11_world()*4+i)))){int x=(V11_CACHE_X[i]*8-cam_x)/8,y=(V11_CACHE_Y[i]*8-cam_y)/8;if(x>=0&&x<30&&y>=3&&y<18)ui_text(x,y,"*",13);}
- if(v11_gameover){ui_pause_canvas();ui_text(3,6,"THE SIGNAL FADES...",13);ui_text(5,11,v11_choice?"  RETRY":"> RETRY",15);
-  ui_text(5,13,v11_choice?"> TITLE":"  TITLE",15);ui_text(4,17,"A CONFIRM",14);oam_set(1,164,72,32,1,0);oam_ui_portrait(1);return;}
+  ui_text(2,18,hint[v11_track-8],13);
+ }else ui_text(2,18,v11_act_goal(),13);
+ ui_text(2,19,v11_field_action(),15);ui_text(22,19,"START",14);
+ if(!box){
+  oam_set(0,player.x-cam_x-8,player.y-cam_y-12,576+(player.face*4+(player.anim&3))*4,0,0);
+  oam_set(1,cosmos.x-cam_x-8,cosmos.y-cam_y-8,32+(cosmos.mood&3)*4,1,0);
+  if(!v11_active_cosmos&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];
+   int bob=v11_anim_bob(c->seed)+(v11_fx==3&&v11_fx_t?-((v11_fx_t&4)?4:1):0);
+   if(v11_fx)v11_fx_tick();
+   if(c->species>=1&&c->species<=8)oam_set(42,cosmos.x-cam_x+7,cosmos.y-cam_y-8+bob,384+(c->species-1)*24+mini(2,c->stage)*8+(v11_anim_blink(c->seed)?0:((frame>>4)&1))*4,5+c->species-1,0);
+   else if(lc_has_import_art(c)){spark_follow_place();lc_draw_import_field(42,spark_follow_x-cam_x-16,spark_follow_y-cam_y-24+bob,player.face==2,0,c->identity);}}
+  spark_field_sprites();
+  for(i=0;i<10;i++)if(enemies[i].active){oam_set32(2+i,enemies[i].x-cam_x-16,enemies[i].y-cam_y-24,224+i*16,14);
+   if(enemies[i].x-cam_x<-32||enemies[i].x-cam_x>272||enemies[i].y-cam_y<-32||enemies[i].y-cam_y>192)OAM16[(2+i)*4]=0x0200;}
+  for(i=0;i<v11_npc_count;i++){int xx=v11_npc_x[i]-cam_x-16,yy=v11_npc_y[i]-cam_y-24; if(xx>-32&&xx<240&&yy>-32&&yy<160)oam_set32(16+i,xx,yy-(int)((frame>>5)&1),128+i*16,14);}
+  if(v11_field_scout||v11_equipment[1]==49||v11_qty[97])for(i=0;i<4;i++)if(!(v11_caches&(1u<<(v11_world()*4+i)))){int x=(V11_CACHE_X[i]*8-cam_x)/8,y=(V11_CACHE_Y[i]*8-cam_y)/8;if(x>=2&&x<28&&y>=3&&y<18)ui_text(x,y,"*",13);}
+ }
+ if(v11_gameover){ui_frame(3,17,15);ui_text(4,6,"THE SIGNAL FADES...",13);ui_text(6,10,v11_choice?"  RETRY":"> RETRY",15);
+  ui_text(6,12,v11_choice?"> TITLE":"  TITLE",15);ui_text(4,15,"A CONFIRM",14);oam_set(1,164,48,32,1,0);oam_ui_portrait(1);return;}
  if(v11_lore){v11_lore_draw();return;}
- if(v11_dialogue){int id=v11_speaker;ui_frame(12,19,15);ui_text(2,12,V11_CHARACTERS[id].name,13);
+ if(v11_dialogue){int id=v11_speaker;static u8 face_id=255;ui_frame(10,19,15);ui_text(2,11,V11_CHARACTERS[id].name,13);
   if(v11_dialogue_page==2){ui_wrap_text(13,"LAY ONE ECHO TO REST?",15,2);ui_text(2,16,v11_choice?"  LET IT REST":"> LET IT REST",14);ui_text(2,17,v11_choice?"> KEEP CARRYING":"  KEEP CARRYING",15);}
   else v11_dialogue_draw();
   ui_text(2,18,"A NEXT    B CLOSE",14);
-  vram_copy32(OBJ_VRAM32+400*8,V11_BATTLE_ART+id*128,128);for(i=0;i<16;i++)OBJ_PALETTE[13*16+i]=V11_BATTLE_PALETTES[id*16+i];
-  oam_set32(43,8,62,400,13);oam_ui_portrait(43);
- }else if(v11_notice[0]){ui_frame(13,19,15);ui_text(2,14,"ARIN'S JOURNAL",13);ui_wrap_text(15,v11_notice,15,3);}
- if(v11_shop){oam_hide_all();v11_draw_shop();}
+  if(face_id!=id){vram_copy32(OBJ_VRAM32+V11_TILE_FACE*8,V11_BATTLE_ART+id*128,128);for(i=0;i<16;i++)OBJ_PALETTE[13*16+i]=V11_BATTLE_PALETTES[id*16+i];face_id=(u8)id;}
+  oam_set32(43,8,36,V11_TILE_FACE,13);oam_ui_portrait(43);
+ }else if(v11_notice[0]){ui_frame(10,19,15);ui_text(2,11,"ARIN'S JOURNAL",13);ui_wrap_text(13,v11_notice,15,4);}
 }

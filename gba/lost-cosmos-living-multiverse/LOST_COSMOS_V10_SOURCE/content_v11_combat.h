@@ -15,7 +15,7 @@ static void v11_take_hit(int damage){if(damage<1||v11_invincible||v11_decoy)retu
  if(v11_hp<=damage&&v11_stand){v11_hp=1;return;}
  if(v11_hp<=damage&&v11_passive(59)&&!v11_second_wind){v11_second_wind=1;v11_hp=1;return;}
  if(v11_hp<=damage&&v11_charm(62)&&!v11_revived){v11_revived=1;v11_hp=(u16)maxi(1,v11_max_hp()/4);return;}
- v11_hp=(u16)maxi(0,v11_hp-damage);v11_ult_charge=(u8)mini(100,v11_ult_charge+maxi(1,damage/2));
+ v11_hp=(u16)maxi(0,v11_hp-damage);v11_fx_set(2,10);v11_ult_charge=(u8)mini(100,v11_ult_charge+maxi(1,damage/2));
  if(v11_equipment[1]==35&&v11_enemy_hp[battle_index])v11_enemy_hp[battle_index]=(u16)maxi(0,v11_enemy_hp[battle_index]-maxi(1,damage/10));
  if(v11_charm(54)&&(v9_next()%100)<5)v11_enemy_hp[battle_index]=(u16)maxi(0,v11_enemy_hp[battle_index]-v11_str());
 }
@@ -196,7 +196,7 @@ static void v11_start_battle(int index){int id;if(index<0||index>9||!enemies[ind
  v11_revived=v11_second_wind=v11_invincible=v11_stand=v11_echo_turns=v11_enemy_buff=v11_phase=0;
  v11_last_spell=255;v11_last_action=255;v11_judgment_used=v11_add_count=v11_command_used=v11_flare=v11_tide_phase=0;
  v11_mark_seen(id);v11_bestiary_rewards();
- vram_copy32(OBJ_VRAM32+384*8,V11_BATTLE_ART+id*128,128);for(int i=0;i<16;i++)OBJ_PALETTE[13*16+i]=V11_BATTLE_PALETTES[id*16+i];
+ vram_copy32(OBJ_VRAM32+V11_TILE_FACE*8,V11_BATTLE_ART+id*128,128);for(int i=0;i<16;i++)OBJ_PALETTE[13*16+i]=V11_BATTLE_PALETTES[id*16+i];
  if(id==92)v11_tide_anchors();else if(id==70)v11_add(52,2);else if(id==80||id==96)v11_add(61,2);
  v11_message(V11_CHARACTERS[id].description);tone(1150);
 }
@@ -263,7 +263,7 @@ static void v11_turn_end(void){if(v11_status_turn&&!--v11_status_turn)v11_status
 }
 static void v11_commit_action(void){if(!v11_enemy_hp[battle_index]&&!v11_add_count){v11_battle_reward(0);return;}
  battle_phase=1;battle_timer=24;battle_evade=0;v11_battle_sub=0;}
-static void v11_fight(void){int damage=v11_str();if(v11_status&VS_ROOT)damage=damage*3/4;
+static void v11_fight(void){int damage=v11_str();v11_fx_set(1,12);if(v11_status&VS_ROOT)damage=damage*3/4;
  v11_damage_target(damage,0,1,0);if(v11_equipment[0]==10&&v11_turn%2==0)v11_damage_target(damage,0,1,0);
  v11_message("ARIN STRUCK. COSMOS WATCHES THE OPENING.");v11_commit_action();}
 static void v11_talk(void){int id=v11_enemy_id[battle_index];
@@ -310,16 +310,23 @@ static void v11_update_battle(u16 newk){int i,id=v11_enemy_id[battle_index];
  else{v11_battle_sub=3;v11_battle_sel=0;v11_target=0;v11_list_count=0;for(i=30;i<50;i++)if(v11_skill_known(i))v11_list[v11_list_count++]=(u8)i;}
 }
 static void v11_draw_battle(void){int i,id=v11_enemy_id[battle_index];static const char*act[6]={"FIGHT","MAGIC","ITEM","TALK","RUN","ALLY"};
- ui_clear();ui_frame(0,19,15);oam_hide_all();ui_text(2,1,"ERIDORIA // DUEL",14);
+ static u8 add_key=255;
+ ui_frame(0,19,15);oam_hide_all();ui_text(2,1,"ERIDORIA // DUEL",14);
  ui_text(2,3,V11_CHARACTERS[id].name,13);ui_text(2,4,"HP",15);ui_num(5,4,v11_enemy_hp[battle_index],15);
  ui_text(9,4,"/",15);ui_num(11,4,v11_enemy_max[battle_index],15);if(v11_add_count){ui_text(18,4,"ADDS",13);ui_num(24,4,v11_add_count,15);}
- oam_set32(0,32,40,272,0);oam_ui_portrait(0);oam_set32(2,169,40,384,13);oam_ui_portrait(2);
+ oam_set32(0,28,44+v11_anim_bob(3),272,0);oam_ui_portrait(0);
+ oam_set32(2,164-(v11_fx==1&&v11_fx_t?v11_fx_t:0)+(v11_fx==2&&v11_fx_t?((v11_fx_t&2)?3:-3):0),36+v11_anim_bob((u32)id*5u),V11_TILE_FACE,13);oam_ui_portrait(2);
  if(!v11_active_cosmos&&lc_party.count&&lc_party.slots[lc_party.active].species>=LC_SPECIES_IMPORTED)v11_draw_import_battle(3,104,8,lc_party.slots[lc_party.active].identity);
  else{oam_set(1,90,53,32+(cosmos.mood&3)*4,1,0);oam_ui_portrait(1);
-  if(!v11_active_cosmos&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];if(c->species>=1&&c->species<=8){vram_copy32(OBJ_VRAM32+416*8,V108_SPECIES[c->species-1][mini(2,c->stage)][0],32);oam_set(3,62,53,416,5+c->species-1,0);oam_ui_portrait(3);}}}
- for(i=0;i<v11_add_count;i++){int x,y;u32 art[32];const u32*src=V11_FIELD_ART+v11_add_id[i]*128;for(x=0;x<32;x++)art[x]=0;
-  for(y=0;y<16;y++)for(x=0;x<16;x++){int sx=x*2,sy=y*2,n=(src[((sy/8)*4+sx/8)*8+(sy&7)]>>((sx&7)*4))&15;art[((y/8)*2+x/8)*8+(y&7)]|=(u32)n<<((x&7)*4);}
-  vram_copy32(OBJ_VRAM32+(480+i*4)*8,art,32);oam_set(5+i,i==0?146:i==1?207:224,55,480+i*4,14,0);oam_ui_portrait(5+i);}
+  if(!v11_active_cosmos&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];if(c->species>=1&&c->species<=8){
+   int lunge=(v11_fx==1&&v11_fx_t)?v11_fx_t:0,shake=(v11_fx==2&&v11_fx_t)?((v11_fx_t&2)?3:-3):0;
+   oam_set(3,62+lunge+shake,53+v11_anim_bob(c->seed),384+(c->species-1)*24+mini(2,c->stage)*8+(v11_anim_blink(c->seed)?0:((frame>>4)&1))*4,5+c->species-1,0);oam_ui_portrait(3);}}}
+ {u8 key=(u8)(v11_add_count*17u+v11_add_id[0]+v11_add_id[1]*3u+v11_add_id[2]*5u);
+  if(key!=add_key){for(i=0;i<v11_add_count;i++){int x,y;u32 art[32];const u32*src=V11_FIELD_ART+v11_add_id[i]*128;for(x=0;x<32;x++)art[x]=0;
+   for(y=0;y<16;y++)for(x=0;x<16;x++){int sx=x*2,sy=y*2,n=(src[((sy/8)*4+sx/8)*8+(sy&7)]>>((sx&7)*4))&15;art[((y/8)*2+x/8)*8+(y&7)]|=(u32)n<<((x&7)*4);}
+   vram_copy32(OBJ_VRAM32+(V11_TILE_ADD+i*4)*8,art,32);}add_key=key;}}
+ for(i=0;i<v11_add_count;i++){oam_set(5+i,i==0?146:i==1?190:210,55+v11_anim_bob((u32)v11_add_id[i]),V11_TILE_ADD+i*4,14,0);oam_ui_portrait(5+i);}
+ v11_fx_tick();
  ui_text(2,9,"ARIN",14);ui_text(8,9,"LV",15);ui_num(11,9,player_level,15);
  ui_text(16,9,"BOND",13);ui_num(23,9,v11_bond(),15);
  ui_text(2,10,"HP",13);ui_num(5,10,v11_hp,15);ui_text(8,10,"/",15);ui_num(9,10,v11_max_hp(),15);
