@@ -196,12 +196,15 @@ static const char*v11_creature_name(int index){if(index>=0&&index<12&&v11_names[
  return index>=0&&index<lc_party.count?lc_species_name(lc_party.slots[index].species):"NO SIGNAL";
 }
 static void v11_draw_import_battle(int oi,int x,int y,u32 identity){
- int pose=cosmos.mood&3;const u8*src=lc_import_field_art(identity,pose);if(!src)return;
- /* 64x64 BATTLE art is made from the FIELD frame, never the portrait. Matrix 4
-    scales this canvas to 32x32 on-screen; it remains reserved exclusively here. */
- if(lc_mail_matches(identity))lc_mail_blit();else lc_import_palette();
- if(v11_battle_pose!=pose||v11_battle_identity!=identity){lc_expand_import_field(src);v11_battle_pose=(u8)pose;v11_battle_identity=identity;}
- OAM16[4*16+3]=512;OAM16[4*16+7]=0;OAM16[4*16+11]=0;OAM16[4*16+15]=512;
+ int form=lc_spark_form_for(identity);int pose=spark_walk_phase;
+ /* Matrix 4 stays reserved for this canvas. 256 draws the 64px portrait
+    at 1:1. A cage beast with no baked form still expands its own 32px art. */
+ if(form>=0)spark_upload_portrait(form);
+ else{const u8*src=lc_import_field_art(identity,cosmos.mood&3);if(!src)return;
+  if(lc_mail_matches(identity))lc_mail_blit();else lc_import_palette();
+  if(v11_battle_pose!=pose||v11_battle_identity!=identity)lc_expand_import_field(src);}
+ v11_battle_pose=(u8)pose;v11_battle_identity=identity;
+ OAM16[4*16+3]=256;OAM16[4*16+7]=0;OAM16[4*16+11]=0;OAM16[4*16+15]=256;
  OAM16[oi*4]=(u16)((y&255)|0x0100);OAM16[oi*4+1]=(u16)((x&511)|(3u<<14)|(4u<<9));
  OAM16[oi*4+2]=(u16)(LC_IMPORT_OBJ_TILE+(LC_IMPORT_OBJ_PAL<<12));
 }

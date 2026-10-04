@@ -208,6 +208,7 @@ static u32 lc_mail_identity=0;
 static u8 lc_mail_tiles[512];
 static u8 lc_mail_pal[32];
 static char lc_mail_name[13];
+#include "spark_art.h"
 static volatile u8 lc_mail_species=0,lc_mail_ready=0;
 static volatile u32 lc_mail_epoch=0;
 static volatile u8 lc_mail_trade=0,lc_mail_grown=0;
@@ -286,6 +287,15 @@ static void lc_upload_import_art(void){
 #endif
 }
 static int lc_mail_matches(u32 identity){return lc_mail_live&&identity==lc_mail_identity;}
+static u8 spark_walk_phase;
+static int lc_spark_form_for(u32 identity){
+ int i,stage=0;
+ if(!lc_mail_matches(identity)||!lc_mail_name[0])return -1;
+ for(i=0;i<lc_party.count;i++)if(lc_party.slots[i].identity==identity){stage=lc_party.slots[i].stage;break;}
+ if(stage<0)stage=0;
+ if(stage>2)stage=2;
+ return spark_form_index(lc_mail_name,stage);
+}
 static int lc_compiled_matches(u32 identity){
 #if defined(LC_IMPORT_HAS_BCP1)
  const u8*p=lc_imported_companion_bcp1+24;
@@ -348,6 +358,12 @@ static int lc_has_import_art(const LcCreature*c){
   lc_import_field_art(c->identity,0)!=0;
 }
 static void lc_draw_import_portrait(int x,int y,u32 identity){
+ int form=lc_spark_form_for(identity);
+ if(form>=0){
+  spark_upload_portrait(form);
+  OAM16[42*4]=(u16)(y&255);OAM16[42*4+1]=(u16)((x&511)|(3u<<14));
+  OAM16[42*4+2]=(u16)(LC_IMPORT_OBJ_TILE+(LC_IMPORT_OBJ_PAL<<12));return;
+ }
  if(lc_mail_matches(identity)){
   lc_mail_blit();lc_expand_import_field(lc_mail_tiles);
   OAM16[42*4]=(u16)(y&255);OAM16[42*4+1]=(u16)((x&511)|(3u<<14));
@@ -366,7 +382,16 @@ static void lc_draw_import_portrait(int x,int y,u32 identity){
 #endif
 }
 static void lc_draw_import_field(int oi,int x,int y,int hflip,int ui,u32 identity){
- const u8*src=lc_import_field_art(identity,cosmos.mood&3);int i;if(!src)return;
+ int form=lc_spark_form_for(identity);const u8*src;int i;
+ if(form>=0){
+  if(x<-32||x>239||y<-32||y>159){OAM16[oi*4]=0x0200;return;}
+  spark_upload_field(form,spark_walk_phase);
+  OAM16[oi*4]=(u16)(y&255);
+  OAM16[oi*4+1]=(u16)((x&511)|(2u<<14)|(hflip?0x1000:0));
+  OAM16[oi*4+2]=(u16)(LC_IMPORT_FIELD_OBJ_TILE+((ui?0:1u)<<10)+(LC_IMPORT_OBJ_PAL<<12));
+  return;
+ }
+ src=lc_import_field_art(identity,cosmos.mood&3);if(!src)return;
  if(x<-32||x>239||y<-32||y>159){OAM16[oi*4]=0x0200;return;}
  if(lc_mail_matches(identity))lc_mail_blit();else lc_import_palette();
  {volatile u16*dst=(volatile u16*)OBJ_VRAM32;
@@ -1608,7 +1633,7 @@ static void draw_battle(void){if(V11_IS_ROOM){v11_draw_battle();return;}Enemy*e=
   if(c->species>=1&&c->species<=8){oam_set(3,115,71,384+(c->species-1)*24+
     mini(2,c->stage)*8+((frame>>4)&1)*4,7,0);oam_ui_portrait(3);}
   else if(lc_has_import_art(c))
-   v11_draw_import_battle(3,91,40,c->identity);
+   v11_draw_import_battle(3,104,8,c->identity);
  }
  if(current_world==0&&current_room==6&&e->elite)ui_text(3,3,"NIHILOS ECHO",13);
 
@@ -2737,7 +2762,7 @@ static void world_light_tick(void){
  BG_PALETTE[5*16+3]=brighter5(signal,phase==1?2:0);
  BG_PALETTE[7*16+3]=brighter5(danger,phase==3?1:0);
 }
-static void render(void){if(!intro&&!cinema_active&&game_mode==MODE_SURFACE&&V11_IS_ROOM){refresh_camera();v11_draw_field();return;}if((frame&15)==0&&!cinema_active&&!intro&&game_mode!=MODE_PAUSE&&!V11_IS_ROOM){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){qa_surface_gate=2;draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
+static void render(void){spark_walk_phase=(u8)((frame>>4)&1);if(!intro&&!cinema_active&&game_mode==MODE_SURFACE&&V11_IS_ROOM){refresh_camera();v11_draw_field();return;}if((frame&15)==0&&!cinema_active&&!intro&&game_mode!=MODE_PAUSE&&!V11_IS_ROOM){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){qa_surface_gate=2;draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
 
 /* ---------- postgame anomaly ---------- */
 static void postgame_tick(void){if(!postgame||game_mode!=MODE_SURFACE||current_room)return;anomaly_counter++;if(anomaly_counter==600){int tx=12+((current_world*9+ending*7+keys_found*3)%40),ty=12+((current_world*13+ending*11)%40);map_put(tx,ty,T_CRYSTAL,3,C_FREE,TR_ANOMALY);say("A NEW ANOMALY JUST WROTE ITSELF INTO THE MAP.");}}

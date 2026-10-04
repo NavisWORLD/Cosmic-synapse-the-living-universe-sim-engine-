@@ -69,9 +69,8 @@ static const char* spark_field_near_name(void){
  }
  return id<0?0:SPARK_FIELD[id].name;
 }
-static void spark_field_draw(void){
+static void spark_field_sprites(void){
  int i,k,shown[3],rank[3];
- const char*near;
  spark_field_ensure();
  spark_follow_place();
  for(k=0;k<3;k++){shown[k]=-1;rank[k]=9999;}
@@ -94,10 +93,14 @@ static void spark_field_draw(void){
   sx=spark_fx[id]-cam_x-16;sy=spark_fy[id]-cam_y-24;
   if(sx<-32||sx>239||sy<-32||sy>159){OAM16[oi*4]=0x0200;continue;}
   tile=SPARK_OBJ_TILE+i*16;
-  dst=(volatile u16*)OBJ_VRAM32;src=SPARK_FIELD_TILES[id];
+  dst=(volatile u16*)OBJ_VRAM32;src=SPARK_FIELD_TILES[id][(frame>>4)&1];
   for(b=0;b<256;b++)dst[tile*16+b]=(u16)src[b*2]|((u16)src[b*2+1]<<8);
   oam_set32(oi,sx,sy,tile,SPARK_OBJ_PAL);
  }
+}
+static void spark_field_draw(void){
+ const char*near;
+ spark_field_sprites();
  if(lc_mail_live&&lc_mail_name[0])ui_text(18,1,lc_mail_name,14);
  near=spark_field_near_name();
  if(near){ui_text(2,2,near,14);ui_text(16,2,"RECORDED/SEED",13);}

@@ -312,7 +312,7 @@ static void v11_draw_battle(void){int i,id=v11_enemy_id[battle_index];static con
  ui_text(2,3,V11_CHARACTERS[id].name,13);ui_text(2,4,"HP",15);ui_num(5,4,v11_enemy_hp[battle_index],15);
  ui_text(9,4,"/",15);ui_num(11,4,v11_enemy_max[battle_index],15);if(v11_add_count){ui_text(18,4,"ADDS",13);ui_num(24,4,v11_add_count,15);}
  oam_set32(0,32,40,272,0);oam_ui_portrait(0);oam_set32(2,169,40,384,13);oam_ui_portrait(2);
- if(!v11_active_cosmos&&lc_party.count&&lc_party.slots[lc_party.active].species>=LC_SPECIES_IMPORTED)v11_draw_import_battle(3,91,24,lc_party.slots[lc_party.active].identity);
+ if(!v11_active_cosmos&&lc_party.count&&lc_party.slots[lc_party.active].species>=LC_SPECIES_IMPORTED)v11_draw_import_battle(3,104,8,lc_party.slots[lc_party.active].identity);
  else{oam_set(1,90,53,32+(cosmos.mood&3)*4,1,0);oam_ui_portrait(1);
   if(!v11_active_cosmos&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];if(c->species>=1&&c->species<=8){vram_copy32(OBJ_VRAM32+416*8,V108_SPECIES[c->species-1][mini(2,c->stage)][0],32);oam_set(3,62,53,416,5+c->species-1,0);oam_ui_portrait(3);}}}
  for(i=0;i<v11_add_count;i++){int x,y;u32 art[32];const u32*src=V11_FIELD_ART+v11_add_id[i]*128;for(x=0;x<32;x++)art[x]=0;
