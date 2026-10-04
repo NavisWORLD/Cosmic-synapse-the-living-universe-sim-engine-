@@ -185,6 +185,8 @@ static u8 collision[MAP_W*MAP_H];
 static u8 trigger[MAP_W*MAP_H];
 static u8 near_trigger_x=255,near_trigger_y=255;
 volatile u8 last_element_trigger_x=255,last_element_index=255,last_element_interact_count=0;
+volatile u16 qa_last_surface_k=0,qa_last_surface_newk=0;
+volatile u8 qa_surface_a_edges=0,qa_surface_gate=0;
 static Actor player;
 static Buddy cosmos;
 static Beacon beacons[8];
@@ -1446,7 +1448,7 @@ static void draw_hud(void){ui_clear();ui_fill_rows(0,0,63,15);
  ui_text(12,0,"LV",13);ui_num(15,0,player_level,15);
  ui_text(20,0,"MP",14);ui_num(23,0,player_mp,15);ui_text(25,0,"/",15);ui_num(26,0,max_mp,15);
  if(location_banner){ui_fill_rows(1,1,62,15);ui_text(2,1,game_mode==MODE_SPACE?"DEEP SPACE":location_name(),13);location_banner--;}
- if(riddle_open){ui_frame(11,19,15);ui_text(2,12,"TRIAL OF WISDOM",14);
+ if(riddle_open){qa_surface_gate=9;ui_frame(11,19,15);ui_text(2,12,"TRIAL OF WISDOM",14);
   ui_wrap_text(13,"BORN OF LIGHT BRIEF AS NIGHT",15,2);
   ui_text(2,16,"LEFT SHADOW   UP MOON",13);ui_text(2,17,"RIGHT SHOOTING STAR",15);
   ui_text(2,18,"D-PAD CHOOSE   B LEAVE",14);
@@ -2616,7 +2618,7 @@ static void world_light_tick(void){
  BG_PALETTE[5*16+3]=brighter5(signal,phase==1?2:0);
  BG_PALETTE[7*16+3]=brighter5(danger,phase==3?1:0);
 }
-static void render(void){if((frame&15)==0&&!cinema_active&&!intro){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){oam_hide_all();draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
+static void render(void){if((frame&15)==0&&!cinema_active&&!intro){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){oam_hide_all();draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){qa_surface_gate=2;draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
 
 /* ---------- postgame anomaly ---------- */
 static void postgame_tick(void){if(!postgame||game_mode!=MODE_SURFACE||current_room)return;anomaly_counter++;if(anomaly_counter==600){int tx=12+((current_world*9+ending*7+keys_found*3)%40),ty=12+((current_world*13+ending*11)%40);map_put(tx,ty,T_CRYSTAL,3,C_FREE,TR_ANOMALY);say("A NEW ANOMALY JUST WROTE ITSELF INTO THE MAP.");}}
@@ -2753,15 +2755,15 @@ static int nearest_battle_enemy(int range){int i,best=range,id=-1;
  return id;
 }
 static int enemy_near_player(int range){int i;for(i=0;i<10;i++)if(enemies[i].active&&iabs(enemies[i].x-player.x)+iabs(enemies[i].y-player.y)<range)return 1;return 0;}
-static void update_surface(u16 k,u16 newk){int speed=(k&KEY_B)?3:2,dx=0,dy=0;u8 t;
+static void update_surface(u16 k,u16 newk){int speed=(k&KEY_B)?3:2,dx=0,dy=0;u8 t;qa_last_surface_k=k;qa_last_surface_newk=newk;if(newk&KEY_A)qa_surface_a_edges++;qa_surface_gate=1;
  if((k&(KEY_A|KEY_SELECT))==(KEY_A|KEY_SELECT)&&(newk&(KEY_A|KEY_SELECT))){
   int e=nearest_battle_enemy(50);if(e>=0){battle_enter(e);return;}
  }if(shop_open){if(newk&KEY_B){shop_open=0;return;}if(newk&KEY_UP)shop_sel=(u8)((shop_sel+3)%4);if(newk&KEY_DOWN)shop_sel=(u8)((shop_sel+1)%4);if(newk&KEY_A)shop_trade();return;}
- if(completion_pending){completion_input(newk);return;}
- if(g7_pending){g7_answer(newk);return;}
- if(g6_pending){g6_answer(newk);return;}
- if(arc_pending){arc_answer(newk);return;}
- if(v10_realm_riddle){u8 q=v10_realm_riddle;
+ if(completion_pending){qa_surface_gate=3;completion_input(newk);return;}
+ if(g7_pending){qa_surface_gate=4;g7_answer(newk);return;}
+ if(g6_pending){qa_surface_gate=5;g6_answer(newk);return;}
+ if(arc_pending){qa_surface_gate=6;arc_answer(newk);return;}
+ if(v10_realm_riddle){qa_surface_gate=7;u8 q=v10_realm_riddle;
    if((q==1&&(newk&KEY_RIGHT))||(q==2&&(newk&KEY_LEFT))||(q==3&&(newk&KEY_UP))){
      v10_relic|=q==1?RF_ICE_RUNE:q==2?RF_GROVE_RIDDLE:RF_PEAK_RUNE;
      v10_realm_riddle=0;spawn_monsters();tone(1550);
@@ -2771,7 +2773,7 @@ static void update_surface(u16 k,u16 newk){int speed=(k&KEY_B)?3:2,dx=0,dy=0;u8 
      v10_realm_riddle=0;say("THE RUNE DIMMED. RETURN TO TRY AGAIN.");
    }return;
  }
- if(v10_hw_riddle){
+ if(v10_hw_riddle){qa_surface_gate=8;
   if(newk&KEY_RIGHT){v10_hw_riddle=0;story_flags|=ST_HW_WISDOM;   spawn_monsters();say("THE ROOT RUNE ANSWERS. THE WOUNDED SENTINEL AWAKENS.");save_game();}
   else if(newk&(KEY_LEFT|KEY_UP|KEY_B)){v10_hw_riddle=0;say("THE ROOTS CLOSE. THE RUNE CAN BE TRIED AGAIN.");}
   return;
@@ -2784,16 +2786,16 @@ static void update_surface(u16 k,u16 newk){int speed=(k&KEY_B)?3:2,dx=0,dy=0;u8 
  if(dodge_timer)dodge_timer--;if(dodge_cooldown)dodge_cooldown--;if(heavy_cooldown)heavy_cooldown--;
  if(v9_jump)v9_jump--;if(v9_jump_cd)v9_jump_cd--;
  if(v9_combo_time)v9_combo_time--;else v9_combo=0;
- if(npc_dialogue_active){
+ if(npc_dialogue_active){qa_surface_gate=10;
  if(newk&KEY_B)npc_close();else if(newk&KEY_A)npc_advance();return;
- }if(pending_choice){if(newk&KEY_LEFT){finalize_choice(1);return;}if(newk&KEY_UP){finalize_choice(2);return;}if(newk&KEY_RIGHT){finalize_choice(3);return;}return;}if(k&KEY_LEFT)dx=-speed;if(k&KEY_RIGHT)dx=speed;if(k&KEY_UP)dy=-speed;if(k&KEY_DOWN)dy=speed;if(dx&&dy){if((frame&1)==0)dy=0;else dx=0;}move_player(dx,dy,speed==3);if(player.hurt)player.hurt--;if(attack_timer)attack_timer--;if(magic_timer)magic_timer--;t=trigger_near();if(touch_mode&&(k&KEY_A)&&!t&&npc_near()<0&&!(k&KEY_B)){
+ }if(pending_choice){qa_surface_gate=11;if(newk&KEY_LEFT){finalize_choice(1);return;}if(newk&KEY_UP){finalize_choice(2);return;}if(newk&KEY_RIGHT){finalize_choice(3);return;}return;}if(k&KEY_LEFT)dx=-speed;if(k&KEY_RIGHT)dx=speed;if(k&KEY_UP)dy=-speed;if(k&KEY_DOWN)dy=speed;if(dx&&dy){if((frame&1)==0)dy=0;else dx=0;}move_player(dx,dy,speed==3);if(player.hurt)player.hurt--;if(attack_timer)attack_timer--;if(magic_timer)magic_timer--;t=trigger_near();if(touch_mode&&(k&KEY_A)&&!t&&npc_near()<0&&!(k&KEY_B)){
   if(hold_a_frames<26)hold_a_frames++;
   if(hold_a_frames==22)player_heavy_attack();
  }else if(!(k&KEY_A))hold_a_frames=0;
  if(newk&KEY_A){int ni=npc_near();
  if(v9_jump&&t==TR_NONE&&ni<0){v9_air_slam();}
  else if(k&KEY_B){if(t==TR_NONE&&ni<0)player_heavy_attack();} /* B+A never triggers travel/NPC. */
- else if(t)interact();else if(ni>=0)npc_speak(ni);else if(enemy_near_player(36))player_attack();
+ else if(t){qa_surface_gate=12;interact();}else if(ni>=0)npc_speak(ni);else if(enemy_near_player(36))player_attack();
  else if(iabs(cosmos.x-player.x)<18&&iabs(cosmos.y-player.y)<18)buddy_speak_context();else player_attack();}
  if(newk&KEY_SELECT){if(k&(KEY_R|KEY_L)){}
  else if((touch_mode&&!(k&KEY_B))||(!touch_mode&&(k&KEY_B)))player_dodge(k);else drop_beacon();}
