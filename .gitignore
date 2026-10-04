@@ -18,6 +18,7 @@ gba/lost-cosmos-living-multiverse/artifacts/
 gba/lost-cosmos-living-multiverse/tools/mgba_bridge.so
 gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/*.gba
 gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/*.elf
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/spark_field_beasts.h
 gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/*.o
 gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/*.o.tmp
 gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/host_qa_v5.c

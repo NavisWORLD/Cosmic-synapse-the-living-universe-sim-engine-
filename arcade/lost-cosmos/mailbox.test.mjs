@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import {
   FIXTURE, MAILBOX_BYTES, MAILBOX_OFFSET, SRAM_SIZE,
   beastProfile, buildSave, crc32, expectedGenesis, fixtureSave, livingProfile, livingSeed, profileFromBeastJson,
+  attachFieldArt, MAIL_BODY,
 } from './mailbox.mjs';
 import { deriveTraits, encodeCommand, mockTraits } from './muse.mjs';
 
@@ -88,4 +89,30 @@ test('trait derivation uses band power and Muse commands do not enter the save',
   assert.equal(new TextDecoder().decode(command.subarray(1)), 'p21\n');
   const sav = buildSave(livingProfile({ ...FIXTURE, ...traits }));
   assert.equal(Buffer.from(sav).includes(command), false);
+});
+
+test('field art stays inside the mailbox and does not change a plain buildSave', () => {
+  const { sav, profile } = fixtureSave();
+  const plain = createHash('sha256').update(sav).digest('hex');
+  const palette = [0, 0x7fff, 0x03e0, 0x7c00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const tiles = new Uint8Array(512);
+  tiles[0] = 0x21;
+  const painted = attachFieldArt(sav, { palette, tiles });
+  assert.equal(createHash('sha256').update(sav).digest('hex'), plain);
+  assert.equal(painted[MAILBOX_OFFSET + 5] & 2, 2);
+  assert.equal(painted[MAILBOX_OFFSET + 128], 0x21);
+  assert.equal(painted[MAILBOX_OFFSET + 96], 0);
+  assert.equal(painted[MAILBOX_OFFSET + 98], 0xff);
+  assert.equal(painted[MAILBOX_OFFSET + 99], 0x7f);
+  const sum = crc32(painted.subarray(MAILBOX_OFFSET, MAILBOX_OFFSET + MAIL_BODY));
+  const stored = painted[MAILBOX_OFFSET + 640]
+    | (painted[MAILBOX_OFFSET + 641] << 8)
+    | (painted[MAILBOX_OFFSET + 642] << 16)
+    | (painted[MAILBOX_OFFSET + 643] << 24);
+  assert.equal(stored >>> 0, sum);
+  for (let i = 0; i < painted.length; i++) {
+    const inMail = i >= MAILBOX_OFFSET && i < MAILBOX_OFFSET + MAILBOX_BYTES;
+    if (!inMail) assert.equal(painted[i], 0xff);
+  }
+  assert.equal(profile.callsign.length > 0, true);
 });

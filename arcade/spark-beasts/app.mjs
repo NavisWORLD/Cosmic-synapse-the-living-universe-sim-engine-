@@ -1,4 +1,6 @@
 import { renderSprite } from './render.mjs';
+import { spriteToGba } from './gba-tiles.mjs';
+import { attachFieldArt } from '../lost-cosmos/mailbox.mjs';
 import { paintSprite } from './draw.mjs';
 import { buildGenome } from './genome.mjs';
 import { loadTable, runChoices } from './runs.mjs';
@@ -377,7 +379,12 @@ function bind() {
   $('send').addEventListener('click', async () => {
     try {
       const record = await currentRecord();
-      const bytes = cageSave(record, buildSave, buildGrowth, attachGrowth);
+      const entry = activeEntry();
+      let bytes = cageSave(record, buildSave, buildGrowth, attachGrowth);
+      if (entry?.genome) {
+        const stage = entry.stage || 1;
+        bytes = attachFieldArt(bytes, spriteToGba(renderSprite(entry.genome, stage, { shadow: false })));
+      }
       if (window.parent === window) { status('Open Spark Beasts from the Living Universe SPARK tab to reach the handheld.'); return; }
       window.parent.postMessage({ type: 'lc-cage-save', save: bytes, callsign: record.callsign, species: record.speciesName, play: true }, '*');
       status(`${record.callsign} is in the handheld mailbox. Start a new game on the cartridge.`);

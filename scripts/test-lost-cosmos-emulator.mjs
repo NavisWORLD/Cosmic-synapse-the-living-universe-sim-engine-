@@ -99,6 +99,50 @@ function listen(server) {
   });
 }
 
+async function bootFromSite(page, port) {
+  await page.goto(`http://127.0.0.1:${port}/standalone/SIM_EARTH_7_08_REALITY_BODY.html`, { waitUntil: 'domcontentloaded' });
+  const enter = page.getByRole('button', { name: /enter cute beast pocket reality/i });
+  await enter.waitFor({ timeout: 30000 });
+  await enter.click();
+  const tab = page.getByRole('button', { name: 'PLAY GBA' });
+  await tab.waitFor({ timeout: 30000 });
+  await tab.click();
+  const hand = page.frameLocator('#lc-arcade-frame');
+  await hand.locator('#play').click({ timeout: 30000 });
+  const start = hand.getByText(/^start game$/i);
+  await start.waitFor({ timeout: 30000 });
+  await start.click();
+  await hand.locator('#status').filter({ hasText: 'title screen' }).waitFor({ timeout: 90000 });
+  await page.waitForFunction(() => {
+    const frame = document.getElementById('sb-spark-frame');
+    return frame && frame.contentWindow && frame.contentWindow.location.href.includes('spark-beasts');
+  }, null, { timeout: 60000 });
+  const spark = page.frame({ url: /spark-beasts/ });
+  const handheld = page.frame({ url: /lost-cosmos\/index\.html/ });
+  if (!spark || !handheld) throw new Error('PLAY GBA did not keep the Spark and handheld frames');
+  await handheld.evaluate(() => {
+    window.__lcImport = null;
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (data && data.type === 'lc-import-save') window.__lcImport = data;
+    });
+  });
+  await spark.evaluate(() => {
+    parent.postMessage({
+      type: 'lc-cage-save',
+      save: [76, 67, 88, 49],
+      callsign: 'CHARLET',
+      species: 'PLASMA',
+      play: false,
+    }, '*');
+  });
+  await handheld.waitForFunction(() => window.__lcImport && window.__lcImport.callsign === 'CHARLET', null, { timeout: 10000 });
+  const png = await hand.locator('#game canvas').first().screenshot({ type: 'png' });
+  const { writeFile } = await import('node:fs/promises');
+  await writeFile('/tmp/lost-cosmos-emulator/play-gba-title.png', png);
+  console.log('PASS: PLAY GBA tab booted the cartridge and forwarded lc-cage-save. Screenshot /tmp/lost-cosmos-emulator/play-gba-title.png');
+}
+
 async function main() {
   const rom = join(root, 'arcade', 'lost-cosmos', 'rom', 'lost-cosmos.gba');
   await readFile(rom);
@@ -167,6 +211,7 @@ async function main() {
     if (misses.length) throw new Error(`404 responses:\n${misses.join('\n')}`);
     if (cdn.length) throw new Error(`CDN was contacted even though cores are vendored:\n${cdn.join('\n')}`);
     console.log(`PASS: Lost Cosmos title screen ${pixels.width}x${pixels.height}, ${pixels.colored} colored pixels, no 404s. Screenshot /tmp/lost-cosmos-emulator/title-screen.png`);
+    await bootFromSite(page, port);
   } finally {
     if (browser) await browser.close();
     await new Promise((resolve) => server.close(resolve));

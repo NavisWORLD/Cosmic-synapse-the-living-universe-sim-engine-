@@ -78,6 +78,8 @@ jobs:
         run: |
           python3 tests/test_mgba_sol_nursery.py --out artifacts/mgba_sol/compiled
           python3 tests/test_mgba_sol_nursery.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_sol/runtime
+          python3 tests/test_mgba_cage_overworld.py --out artifacts/mgba_cage/compiled
+          python3 tests/test_mgba_cage_overworld.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_cage/runtime
       - name: Gate traded and grown beasts in real mGBA
         timeout-minutes: 5
         run: |

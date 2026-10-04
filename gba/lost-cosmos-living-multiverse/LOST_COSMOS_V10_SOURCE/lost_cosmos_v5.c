@@ -919,6 +919,16 @@ static void set_world_palette(int w){int i,j;const u16 (*mat)[4]=V8_MATERIAL[w&7
 
 /* ---------- map painting ---------- */
 static int mi(int x,int y){return y*MAP_W+x;}
+/* A 64x64 rebuild is many VRAM writes. Yielding on vblank keeps the transit
+   cover on a real frame boundary instead of one long burst. */
+static void map_build_yield(void){
+ static unsigned yielded;
+ if((++yielded&255u)==0){
+#ifndef HOST_QA
+  wait_vblank();
+#endif
+ }
+}
 static void map_put(int x,int y,int tile,int pal,int col,int trig){
  int material;
  (void)pal;
@@ -926,6 +936,7 @@ static void map_put(int x,int y,int tile,int pal,int col,int trig){
  material=v8_mat_for_tile(tile);
  pal=view12_material_shade(x,y,tile,material);
  set_map_entry(x,y,map_attr(tile,pal));collision[mi(x,y)]=(u8)col;trigger[mi(x,y)]=(u8)trig;
+ map_build_yield();
 }
 static void map_fill(int tile,int pal){int x,y;for(y=0;y<MAP_H;y++)for(x=0;x<MAP_W;x++)map_put(x,y,tile,pal,C_FREE,TR_NONE);}
 static void map_border(void){int i;for(i=0;i<MAP_W;i++){map_put(i,0,T_WALL,0,C_WALL,0);map_put(i,MAP_H-1,T_WALL,0,C_WALL,0);}for(i=0;i<MAP_H;i++){map_put(0,i,T_WALL,0,C_WALL,0);map_put(MAP_W-1,i,T_WALL,0,C_WALL,0);}}
@@ -1239,22 +1250,24 @@ static void v9_generate_rift(void){int x,y,d,pal;
 }
 #include "visual_world_v10_8.h"
 static void world_build_cover(const char*line){
- /* Keep a stable, opaque UI frame on screen while procedural tilemaps are
-    rebuilt. The old implementation blanked DISPCNT and exposed ~0.7 s of
-    black video on real mGBA/Delta. BG1 has highest priority and hides BG0/BG2
-    writes until the new world is complete. */
+ /* Opaque transit card. BG0, BG2 and sprites stay off while their maps are
+    rewritten. Leaving them on made mGBA 0.10.5 Qt alternate blank black and
+    white frames, and the following battery write ran before the next present,
+    so this card was the last picture on screen. This path is the Sol cartridge
+    (PR #24); the cover itself predates that merge and was not introduced by it. */
  REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;
- REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;
+ REG_DISPCNT=MODE0|BG1_ENABLE;
  ui_pause_canvas();ui_text(6,8,"TRAVERSING COSMOS",14);ui_text(6,10,line,13);
 #ifndef HOST_QA
  wait_vblank();
 #endif
 }
 static void world_build_reveal(void){
+ REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;
+ ui_clear();
 #ifndef HOST_QA
  wait_vblank();
 #endif
- ui_clear();
 }
 static void generate_surface(void){int i;if(V11_IS_ROOM){world_build_cover("FOLLOWING THE NEW SIGNAL");v11_generate();return;}location_banner=150;world_build_cover("BUILDING LOCAL MAP");for(i=0;i<MAP_W*MAP_H;i++){collision[i]=C_FREE;trigger[i]=TR_NONE;}set_world_palette(COMP_IS_ROOM?COMPLETION_SCENES[current_room-COMPLETION_FIRST_ROOM].theme:current_world==0?(current_room==6?4:current_room==7?3:current_room==8?2:current_room==9?1:current_room==12?5:
  current_room>=ARC_FIRST_ROOM&&current_room<ARC_FIRST_ROOM+ARC_STAGES?
@@ -2672,6 +2685,7 @@ static void interact(void){u8 t=trigger_near();if(t==TR_V11_ENTER){v11_enter(0);
 static void drop_beacon(void){if(game_mode!=MODE_SURFACE){say("BEACONS ANCHOR SURFACE MEMORY. LAND FIRST.");return;}if(beacon_count<8){Beacon*b=&beacons[beacon_count++];b->world=current_world;b->room=current_room;b->layer=current_layer;b->x=player.x;b->y=player.y;say("BEACON DROPPED. THIS PLACE NOW HAS A RETURNING NAME.");save_game();}else{beacon_count=0;say("BEACON TABLE CLEARED. THE WORLD ITSELF REMAINS.");save_game();}}
 
 /* ---------- render sprites ---------- */
+#include "spark_field.h"
 static void render_surface_sprites(void){int sx=player.x-cam_x-8,sy=player.y-cam_y-12,frameid=player.face*4+(player.anim&3);int bx=cosmos.x-cam_x-8,by=cosmos.y-cam_y-8,i,oi=2;
  int lift=v9_jump?((v9_jump<=12?v9_jump:24-v9_jump)*2):0;
  oam_set(0,sx,sy-lift,576+frameid*4,0,0);
@@ -2688,7 +2702,8 @@ static void render_surface_sprites(void){int sx=player.x-cam_x-8,sy=player.y-cam
     }
     else if(lc_has_import_art(&lc_party.slots[lc_party.active]))imported=1;
    }
-   if(imported)lc_draw_import_field(42,cosmos.x-cam_x-8,cosmos.y-cam_y-13,cosmos.vx<0,0,lc_party.slots[lc_party.active].identity);
+   spark_follow_place();
+   if(imported)lc_draw_import_field(42,spark_follow_x-cam_x-16,spark_follow_y-cam_y-24,player.face==2,0,lc_party.slots[lc_party.active].identity);
    else
    oam_set(42,cosmos.x-cam_x+6+((tile>=384)?((int)((frame>>5)&3)-1):0),cosmos.y-cam_y+1+(int)((frame>>3)&1),tile,pal,0);
   }
@@ -2698,6 +2713,7 @@ static void render_surface_sprites(void){int sx=player.x-cam_x-8,sy=player.y-cam
     drops[i].type==ITEM_COUNT?(drops[i].rarity==4?4:drops[i].rarity==3?7:10):10,0);for(i=0;i<beacon_count&&oi<28;i++)if(beacons[i].world==current_world&&beacons[i].room==current_room&&beacons[i].layer==current_layer){oam_set(oi++,beacons[i].x-cam_x-8,beacons[i].y-cam_y-12,56,7,0);}if(attack_timer&&oi<30){int ax=sx,ay=sy;if(player.face==0)ay-=14;else if(player.face==1)ay+=14;else if(player.face==2)ax-=14;else ax+=14;oam_set(oi++,ax,ay,88,11,player.face==2);}for(i=0;i<npc_count&&oi<38;i++){NPC*n=&npc_runtime[i];
  oam_set(oi++,n->x-cam_x-8,n->y-cam_y-12,92+n->kind*8+((frame>>4)&1)*4,13+(n->kind&1),0);
  }while(oi<40){OAM16[oi*4]=0x0200;oi++;}
+ spark_field_draw();
  if(npc_dialogue_active){
   /* Portrait appears ABOVE the panel: world actors cannot obscure framed text.
      It stays priority 1, so even the portrait cannot draw across opaque UI. */
@@ -2908,7 +2924,7 @@ static void update_surface(u16 k,u16 newk){if(V11_IS_ROOM){v11_update_field(k,ne
  if((k&(KEY_SELECT|KEY_L))==(KEY_SELECT|KEY_L)&&(newk&(KEY_SELECT|KEY_L))){
   int e=nearest_battle_enemy(46);if(e>=0)v9_bond(&enemies[e]);else say("NO WEAKENED BEAST NEARBY.");
  }else if(newk&KEY_L){if(t==TR_LIFT)shift_layer(-1);else use_potion();}
-if(current_world==4&&current_room==0&&(frame&31)==0){int drift=(next_q()&1)?1:-1;if(!blocked_px(player.x+drift,player.y))player.x+=(s16)drift;}enemy_tick();collect_drops();npc_tick();buddy_tick();buddy_combat_assist();workload_buddy_tick();postgame_tick();v9_rift_tick();}
+if(current_world==4&&current_room==0&&(frame&31)==0){int drift=(next_q()&1)?1:-1;if(!blocked_px(player.x+drift,player.y))player.x+=(s16)drift;}enemy_tick();collect_drops();npc_tick();buddy_tick();spark_field_tick();buddy_combat_assist();workload_buddy_tick();postgame_tick();v9_rift_tick();}
 
 static void update_space(u16 k,u16 newk){int sp=(k&KEY_B)?4:2;if(k&KEY_LEFT)ship_x-=sp;if(k&KEY_RIGHT)ship_x+=sp;if(k&KEY_UP)ship_y-=sp;if(k&KEY_DOWN)ship_y+=sp;ship_x=(s16)clampi(ship_x,8,504);ship_y=(s16)clampi(ship_y,8,504);if(newk&KEY_A)land_ship();if(newk&KEY_SELECT)drop_beacon();}
 static void enter_pause(void){v11_menu_reset();return_mode=game_mode;game_mode=MODE_PAUSE;pause_sel=0;pause_page=0;REG_BG1HOFS=0;REG_BG1VOFS=0;ui_clear();}

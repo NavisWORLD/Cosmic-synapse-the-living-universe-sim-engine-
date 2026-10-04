@@ -255,6 +255,35 @@ export function buildGrowth({ publicId, epoch = 0, layer = 0, points = 0, memory
   return buf;
 }
 
+/**
+ * Optional 32x32 4bpp art inside the LCX1 body. buildSave stays flag 1 only.
+ * Palette is 16 BGR555 words. Tiles are 512 bytes, GBA 4-tile-wide order.
+ */
+export function attachFieldArt(sav, art) {
+  if (!(sav instanceof Uint8Array) || sav.length !== SRAM_SIZE) throw new Error('save size');
+  if (!art || art.tiles?.length !== 512 || art.palette?.length !== 16) throw new Error('field art');
+  const out = sav.slice();
+  const o = MAILBOX_OFFSET;
+  if (out[o] !== 0x4c || out[o + 1] !== 0x43 || out[o + 2] !== 0x58 || out[o + 3] !== 0x31 || out[o + 4] !== 1) {
+    throw new Error('field art needs an LCX1 mailbox');
+  }
+  const flags = out[o + 5];
+  if (flags & ~7) throw new Error('mailbox flags are not a cage record');
+  out[o + 5] = flags | 2;
+  for (let i = 0; i < 16; i++) {
+    const word = art.palette[i] & 0xffff;
+    out[o + 96 + i * 2] = word & 255;
+    out[o + 96 + i * 2 + 1] = (word >> 8) & 255;
+  }
+  out.set(art.tiles, o + 128);
+  const sum = crc32(out.subarray(o, o + MAIL_BODY));
+  out[o + 640] = sum & 255;
+  out[o + 641] = (sum >>> 8) & 255;
+  out[o + 642] = (sum >>> 16) & 255;
+  out[o + 643] = (sum >>> 24) & 255;
+  return out;
+}
+
 export function attachGrowth(sav, growth) {
   if (!(sav instanceof Uint8Array) || sav.length !== SRAM_SIZE) throw new Error('save size');
   if (!(growth instanceof Uint8Array) || growth.length !== GROWTH_BYTES) throw new Error('growth size');
