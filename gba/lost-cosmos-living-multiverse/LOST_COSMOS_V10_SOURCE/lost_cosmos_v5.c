@@ -234,11 +234,21 @@ static LcResult lc_recruit_mercy(u8 type,u8 world,u8 room){
  }
  return result;
 }
+static void lc_apply_import_progress(LcCreature*c){
+#if defined(LC_IMPORT_HAS_PROGRESS)
+ const u8*p=lc_imported_companion_progress;c->level=p[0];c->bond=p[1];c->stage=p[2];
+ c->xp=(u16)(p[3]|((u16)p[4]<<8));c->hp=(u16)(p[5]|((u16)p[6]<<8));
+ c->attack=p[7];c->defense=p[8];c->flags=p[9];c->affinity=p[10];
+#else
+ (void)c;
+#endif
+}
 static void lc_add_exported_profile(void){
 #if defined(LC_IMPORT_HAS_BCP1)
  LcProfile g;
- if(lc_parse_bcp1(lc_imported_companion_bcp1,LC_BCP_BYTES,&g)==LC_OK)
-  (void)lc_add_import(&lc_party,&g,LC_IMPORT_SEED_HASH);
+ if(lc_parse_bcp1(lc_imported_companion_bcp1,LC_BCP_BYTES,&g)==LC_OK&&
+    lc_add_import(&lc_party,&g,LC_IMPORT_SEED_HASH)==LC_OK)
+  lc_apply_import_progress(&lc_party.slots[lc_party.count-1]);
 #endif
 }
 /* Only the imported 64x64 PORTRAIT uses OBJ bank 15 and reserved tile 640..895.
@@ -461,6 +471,7 @@ static const NPCDef NPCS[]={
 #define MEM_ENDING         (1u<<5)
 #define MEM_ANOMALY        (1u<<6)
 #define MEM_SHIP           (1u<<7)
+#include "content_v11_state.h"
 
 /* ---------- quantum tape ---------- */
 static u8 next_q(void){ u8 v=QSEED[qi++]; if(qi>=QSEED_LEN)qi=0; return v; }
@@ -1166,7 +1177,7 @@ static void world_build_reveal(void){
 #endif
  ui_clear();
 }
-static void generate_surface(void){int i;location_banner=150;world_build_cover("BUILDING LOCAL MAP");for(i=0;i<MAP_W*MAP_H;i++){collision[i]=C_FREE;trigger[i]=TR_NONE;}set_world_palette(COMP_IS_ROOM?COMPLETION_SCENES[current_room-COMPLETION_FIRST_ROOM].theme:current_world==0?(current_room==6?4:current_room==7?3:current_room==8?2:current_room==9?1:current_room==12?5:
+static void generate_surface(void){int i;if(V11_IS_ROOM){world_build_cover("FOLLOWING THE NEW SIGNAL");v11_generate();return;}location_banner=150;world_build_cover("BUILDING LOCAL MAP");for(i=0;i<MAP_W*MAP_H;i++){collision[i]=C_FREE;trigger[i]=TR_NONE;}set_world_palette(COMP_IS_ROOM?COMPLETION_SCENES[current_room-COMPLETION_FIRST_ROOM].theme:current_world==0?(current_room==6?4:current_room==7?3:current_room==8?2:current_room==9?1:current_room==12?5:
  current_room>=ARC_FIRST_ROOM&&current_room<ARC_FIRST_ROOM+ARC_STAGES?
  (current_room-ARC_FIRST_ROOM)%8:
  current_room==ARC_EPILOGUE_ROOM?(ending==1?6:ending==2?3:4):G6_IS_ROOM?
@@ -1209,6 +1220,7 @@ static void generate_surface(void){int i;location_banner=150;world_build_cover("
  if(current_world==2&&current_room==0&&current_layer==1)map_put(30,31,T_ARCHIVE,3,C_FREE,TR_CHRONO);
  if(current_world==4&&current_room==0&&current_layer==1)map_put(31,17,T_RUNE,3,C_FREE,TR_VOID_SIGIL);
  completion_patch_portal();spawn_monsters();spawn_npcs();v108_paint_world();
+ if(current_world==0&&current_room==2){map_put(34,44,T_RUNE,3,C_FREE,TR_V11_ENTER);map_put(34,43,T_PATH,1,C_FREE,0);}
  {int x,y;volatile u16*fg=screenblock(V8_FOREGROUND_MAP);
   for(y=0;y<32;y++)for(x=0;x<32;x++){
    int t=V8_FG_EMPTY,p=3;
@@ -1475,7 +1487,7 @@ static void shop_trade(void){if(shop_sel==0){if(credits<5){say("NEED FIVE CREDIT
  else{if(!inv[ITEM_CORE]){say("YOU HAVE NO CORES TO TRADE.");return;}inv[ITEM_CORE]--;credits=(u8)mini(255,credits+12);}
  tone(1550);save_game();
 }
-static void draw_battle(void){Enemy*e=&enemies[battle_index];
+static void draw_battle(void){if(V11_IS_ROOM){v11_draw_battle();return;}Enemy*e=&enemies[battle_index];
  static const char*ACT[6]={"FIGHT","MAGIC","ITEM","TALK","RUN","ALLY"};int i;
  ui_clear();ui_frame(0,19,15);
  ui_text(2,1,"ERIDORIA // DUEL",14);
@@ -1501,13 +1513,14 @@ static void draw_battle(void){Enemy*e=&enemies[battle_index];
     mini(2,c->stage)*8+((frame>>4)&1)*4,7,0);oam_ui_portrait(3);}
 #if defined(LC_IMPORTED_COMPANION)
   else if(c->species>=LC_SPECIES_IMPORTED&&c->species<LC_SPECIES_IMPORTED+7)
-   lc_draw_import_field(3,108,59,0,1);
+   v11_draw_import_battle(3,91,40);
 #endif
  }
  if(current_world==0&&current_room==6&&e->elite)ui_text(3,3,"NIHILOS ECHO",13);
 
 }
 static void draw_intro(void){
+ v11_title_beast();
  static const char*options[4]={"NEW GAME","CONTINUE","OPTIONS","CREDITS"};int i;
  ui_clear();ui_fill_rows(0,1,63,15);ui_text(2,0,"LOST COSMOS / ERIDORIA",14);
  ui_fill_rows(10,19,63,15);
@@ -1651,7 +1664,7 @@ static const char* spell_name(u8 s){static const char*S[SPELL_COUNT]={"SYNAPSE P
 static const char* weapon_name(void){return weapon==2?"CROWN EDGE":(weapon==1?"EMBER SABER":"RUST BLADE");}
 static const char* armor_name(void){return armor?"TIDE MAIL":"TRAVEL CLOTH";}
 static const char* charm_name(void){return charm?"BLOOM CHARM":"NONE";}
-static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;ui_pause_canvas();
+static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;if(v11_menu_handled(pause_page)&&!v11_ui_dirty)return;oam_hide_all();ui_pause_canvas();if(v11_draw_pause())return;
  if(pause_page==0){static const char*items[10]={"MAP","QUEST","PARTY","ITEMS","EQUIPMENT","ABILITIES","BESTIARY","MEMORIES","BEAST BOX","SYSTEM"};
   /* Delta-safe 2x5 cartridge menu. The emulator skin owns the top-center and
      outer lower corners, so all actionable text stays inside the native safe area. */
@@ -1660,7 +1673,7 @@ static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE
    ui_text(4,y,(i==pause_sel)?">":" ",13);ui_text(6,y,items[i],(i==pause_sel)?14:15);
    ui_text(16,y,(i+5==pause_sel)?">":" ",13);ui_text(18,y,items[i+5],(i+5==pause_sel)?14:15);
   }
-  ui_text(6,17,"A OPEN",14);ui_text(19,17,"B CLOSE",13);
+  ui_text(4,3,"SELECT ARIN STATUS",13);ui_text(6,17,"A OPEN",14);ui_text(19,17,"B CLOSE",13);
  }
  else if(pause_page==1){ui_text(4,2,"MAP // KNOWN WORLDS",14);for(i=0;i<8;i++){ui_text(2,5+i,(visited_mask&(1u<<i))?"*":"-",13);ui_text(4,5+i,WORLDS[i].name,15);}ui_text(2,17,"B BACK",13);}
  else if(pause_page==2){ui_text(2,3,"COSMOS // QUANTUM BUDDY",14);ui_text(2,5,"MOOD",13);ui_text(10,5,mood_name(),15);ui_text(2,6,"GOAL",13);ui_text(10,6,goal_name(cosmos.goal),15);ui_text(2,7,"TRUST",13);ui_num(10,7,cosmos.trust,15);ui_text(2,8,"CURIOSITY",13);ui_num(13,8,cosmos.curiosity,15);ui_text(2,9,"RHYTHM",13);ui_num(12,9,qstate.phase,15);ui_text(2,10,"FOCUS",13);ui_num(14,10,qstate.coherence,15);ui_text(2,11,"SPARK",13);ui_num(12,11,qstate.spread,15);ui_text(2,13,buddy_quantum?"COSMIC REPLAY ON":"COSMIC REPLAY OFF",14);ui_text(2,14,buddy_talk?"AUTO TALK ON":"AUTO TALK OFF",15);ui_text(2,16,"R CREATURE COLLECTION",14);ui_text(2,17,"B BACK",13);}
@@ -1922,7 +1935,7 @@ static void save_game(void){int i,o=40;SRAM[0]='L';SRAM[1]='C';SRAM[2]='V';SRAM[
  SRAM[233]=0xD3;SRAM[234]=(u8)v10_relic;SRAM[235]=(u8)(v10_relic>>8);
  SRAM[236]=v10_realm_choices&7;
  SRAM[237]=(u8)(0x72^SRAM[233]^SRAM[234]^SRAM[235]^SRAM[236]^SRAM[200]^SRAM[201]);
- lc_save_roster();arc_save();p4_save();g5_save();g6_save();g7_save();completion_save();journal_commit();}
+ lc_save_roster();arc_save();p4_save();g5_save();g6_save();g7_save();completion_save();v11_save();journal_commit();}
 
 static void lc_save_roster(void){
  u8 bytes[LC_ROSTER_BYTES];unsigned i;
@@ -1977,7 +1990,7 @@ static void load_game(void){int i;if(save_valid()||save_valid_v4()||save_valid_v
  if(!old_v3&&!old_v4&&SRAM[233]==0xD3&&SRAM[237]==(u8)(0x72^SRAM[233]^SRAM[234]^SRAM[235]^SRAM[236]^SRAM[200]^SRAM[201])){
     v10_relic=(u16)SRAM[234]|((u16)SRAM[235]<<8);v10_realm_choices=SRAM[236]&7;
  }else{v10_relic=0;v10_realm_choices=0;}
- lc_restore_roster();arc_restore();p4_restore();g5_restore();g6_restore();g7_restore();completion_restore();
+ lc_restore_roster();arc_restore();p4_restore();g5_restore();g6_restore();g7_restore();completion_restore();v11_restore();
  touch_mode=(!old_v3&&!old_v4&&((SRAM[168]&0xFE)==0xC0))?(SRAM[168]&1):0;if(old_v3||old_v4||((SRAM[168]&0xFE)!=0xC0))save_game();
  return;}if(save_valid_v2()){load_common();player_level=1;player_xp=0;max_hp=6;player.hp=clampi(player.hp?player.hp:3,1,max_hp);player_mp=max_mp=6;str_stat=2;def_stat=1;mag_stat=2;inv[ITEM_POTION]=2;inv[ITEM_ETHER]=1;gear_owned=1;weapon=armor=charm=0;buddy_talk=buddy_quantum=1;quest_started=quest_completed=0;npc_seen=0;npc_recent=0;workload_qi=qi;touch_mode=0;actor_style=0;save_game();}}
 
@@ -2134,7 +2147,7 @@ static void battle_enter(int index){Enemy*e;
  battle_index=(u8)index;battle_cursor=battle_phase=battle_evade=0;battle_timer=0;
  p4_guard=p4_ward=p4_slow=0;p4_charges=(u8)(lc_party.count?
    (2+(lc_party.slots[lc_party.active].stage>=2)):0);
- e->hurt=0;e->windup=0;game_mode=MODE_BATTLE;
+ v11_battle_pose=255;e->hurt=0;e->windup=0;game_mode=MODE_BATTLE;
  battle_notice=(ARC_IS_ROOM&&e->elite&&e==&enemies[8])?
   "ATLAS GUARDIAN: FIGHT OR OFFER AN ETHER.":
   (e->elite&&e==&enemies[8]&&current_world==0&&current_room==8)?"FROST WOLF: YOU MAY TALK WITH AN ETHER.":
@@ -2185,7 +2198,7 @@ static void battle_act(void){Enemy*e=&enemies[battle_index];int damage;
  battle_phase=1;battle_evade=0;battle_timer=e->elite?50:35;
  if(p4_slow){battle_timer=(u16)(battle_timer+22);p4_slow=0;}
 }
-static void update_battle(u16 newk){Enemy*e=&enemies[battle_index];
+static void update_battle(u16 newk){if(V11_IS_ROOM){v11_update_battle(newk);return;}Enemy*e=&enemies[battle_index];
  if(battle_phase==3){if(battle_timer)battle_timer--;else battle_exit();return;}
  if(battle_phase==1){
   if(newk&KEY_B){battle_evade=1;battle_notice="ARIN BRACES FOR THE IMPACT!";}
@@ -2295,7 +2308,7 @@ static void workload_buddy_tick(void){if(!buddy_quantum)return;if((frame&15)==0)
 /* ---------- movement / collisions ---------- */
 static int blocked_px(int x,int y){int tx=x>>3,ty=y>>3;if((unsigned)tx>=64u||(unsigned)ty>=64u)return 1;return collision[mi(tx,ty)]==C_WALL;}
 static u8 tile_collision_at(int x,int y){int tx=clampi(x>>3,0,63),ty=clampi(y>>3,0,63);return collision[mi(tx,ty)];}
-static void hurt_player(int dx,int dy){int dmg;if(player.hurt||dodge_timer||v9_jump)return;player.hurt=40;dmg=1+(current_world/2);dmg-=((def_stat+armor_bonus()+arc_guardian_guard())/5);if(dmg<1)dmg=1;player.hp=(u8)((dmg>=player.hp)?0:player.hp-dmg);player.x=(s16)clampi(player.x-dx*10,10,502);player.y=(s16)clampi(player.y-dy*10,10,502);tone(1000);cosmos.avoid=(u8)clampi(cosmos.avoid+10,0,255);if(player.hp==0){player.hp=max_hp;player_mp=max_mp;credits=(u8)(credits/2);player.x=80;player.y=400;say("I PULLED YOUR LAST STABLE POSITION FROM MEMORY. YOU LOST HALF YOUR CREDITS.");save_game();}}
+static void hurt_player(int dx,int dy){int dmg;if(V11_IS_ROOM){if(player.hurt||v11_passive(53)||v11_equipment[1]==42)return;player.hurt=40;v11_hp=(u16)maxi(0,v11_hp-3);if(!v11_hp){v11_gameover=1;v11_choice=0;}return;}if(player.hurt||dodge_timer||v9_jump)return;player.hurt=40;dmg=1+(current_world/2);dmg-=((def_stat+armor_bonus()+arc_guardian_guard())/5);if(dmg<1)dmg=1;player.hp=(u8)((dmg>=player.hp)?0:player.hp-dmg);player.x=(s16)clampi(player.x-dx*10,10,502);player.y=(s16)clampi(player.y-dy*10,10,502);tone(1000);cosmos.avoid=(u8)clampi(cosmos.avoid+10,0,255);if(player.hp==0){player.hp=max_hp;player_mp=max_mp;credits=(u8)(credits/2);player.x=80;player.y=400;say("I PULLED YOUR LAST STABLE POSITION FROM MEMORY. YOU LOST HALF YOUR CREDITS.");save_game();}}
 static int can_stand(int x,int y){return !blocked_px(x-5,y-5)&&!blocked_px(x+5,y-5)&&!blocked_px(x-5,y+5)&&!blocked_px(x+5,y+5);}
 static void move_player(int dx,int dy,int running){int nx=player.x+dx,ny=player.y+dy;player.dx=(s8)dx;player.dy=(s8)dy;if(dx<0)player.face=2;else if(dx>0)player.face=3;else if(dy<0)player.face=0;else if(dy>0)player.face=1;if(can_stand(nx,player.y))player.x=(s16)nx;if(can_stand(player.x,ny))player.y=(s16)ny;player.x=(s16)clampi(player.x,8,MAP_PX-9);player.y=(s16)clampi(player.y,8,MAP_PX-9);if(dx||dy){player.anim=(u8)((frame>>(running?2:3))&3);player.run=(u8)running;}else player.anim=0;if(tile_collision_at(player.x,player.y)==C_HAZARD&&!v9_jump)hurt_player(dx,dy);}
 static u8 trigger_near(void){int tx=player.x>>3,ty=player.y>>3,x,y;near_trigger_x=near_trigger_y=255;
@@ -2561,7 +2574,7 @@ static void story_interact(u8 t){if(t>=TR_COMP_ENTER){completion_interact(t);ret
  if(t==TR_VOID_SIGIL){if((story_flags&ST_HEART)&&(keys_found&7)==7){story_flags|=ST_VOID;say("VOID SIGIL RECOVERED. NIHILOS CANNOT CLAIM THIS MEMORY.");save_game();}
   else say("THE VOID SIGIL REQUIRES THE HEART AND THREE AXES.");return;}
 }
-static void interact(void){u8 t=trigger_near();if(t>=TR_GATE){story_interact(t);return;}if(t==TR_SHIP){board_ship();return;}if(t==TR_DOOR){enter_room();return;}if(t==TR_EXIT){exit_room();return;}if(t==TR_KEY_X){recover_key(1,"X AXIS RESTORED. HORIZONTAL DISTANCE FEELS REAL AGAIN.");return;}if(t==TR_KEY_Y){recover_key(2,"Y AXIS RESTORED. NEAR AND FAR AGREE AGAIN.");return;}if(t==TR_KEY_Z){recover_key(4,"Z AXIS RESTORED. THE WORLD REMEMBERS UP AND DOWN.");return;}if(t==TR_TERMINAL){terminal_interact();return;}if(t==TR_SECRET){secret_interact();return;}if(t==TR_CROWN_CORE){crown_interact();return;}if(t==TR_ANOMALY){cosmos.memory_flags|=MEM_ANOMALY;say("POSTGAME ANOMALY RECORDED. IT WAS NOT HERE IN THE OLD STORY.");save_game();return;}buddy_speak_context();}
+static void interact(void){u8 t=trigger_near();if(t==TR_V11_ENTER){v11_enter(0);return;}if(t>=TR_GATE){story_interact(t);return;}if(t==TR_SHIP){board_ship();return;}if(t==TR_DOOR){enter_room();return;}if(t==TR_EXIT){exit_room();return;}if(t==TR_KEY_X){recover_key(1,"X AXIS RESTORED. HORIZONTAL DISTANCE FEELS REAL AGAIN.");return;}if(t==TR_KEY_Y){recover_key(2,"Y AXIS RESTORED. NEAR AND FAR AGREE AGAIN.");return;}if(t==TR_KEY_Z){recover_key(4,"Z AXIS RESTORED. THE WORLD REMEMBERS UP AND DOWN.");return;}if(t==TR_TERMINAL){terminal_interact();return;}if(t==TR_SECRET){secret_interact();return;}if(t==TR_CROWN_CORE){crown_interact();return;}if(t==TR_ANOMALY){cosmos.memory_flags|=MEM_ANOMALY;say("POSTGAME ANOMALY RECORDED. IT WAS NOT HERE IN THE OLD STORY.");save_game();return;}buddy_speak_context();}
 static void drop_beacon(void){if(game_mode!=MODE_SURFACE){say("BEACONS ANCHOR SURFACE MEMORY. LAND FIRST.");return;}if(beacon_count<8){Beacon*b=&beacons[beacon_count++];b->world=current_world;b->room=current_room;b->layer=current_layer;b->x=player.x;b->y=player.y;say("BEACON DROPPED. THIS PLACE NOW HAS A RETURNING NAME.");save_game();}else{beacon_count=0;say("BEACON TABLE CLEARED. THE WORLD ITSELF REMAINS.");save_game();}}
 
 /* ---------- render sprites ---------- */
@@ -2618,7 +2631,7 @@ static void world_light_tick(void){
  BG_PALETTE[5*16+3]=brighter5(signal,phase==1?2:0);
  BG_PALETTE[7*16+3]=brighter5(danger,phase==3?1:0);
 }
-static void render(void){if((frame&15)==0&&!cinema_active&&!intro){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){oam_hide_all();draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){qa_surface_gate=2;draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
+static void render(void){if(!intro&&!cinema_active&&game_mode==MODE_SURFACE&&V11_IS_ROOM){refresh_camera();v11_draw_field();return;}if((frame&15)==0&&!cinema_active&&!intro&&game_mode!=MODE_PAUSE&&!V11_IS_ROOM){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){qa_surface_gate=2;draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
 
 /* ---------- postgame anomaly ---------- */
 static void postgame_tick(void){if(!postgame||game_mode!=MODE_SURFACE||current_room)return;anomaly_counter++;if(anomaly_counter==600){int tx=12+((current_world*9+ending*7+keys_found*3)%40),ty=12+((current_world*13+ending*11)%40);map_put(tx,ty,T_CRYSTAL,3,C_FREE,TR_ANOMALY);say("A NEW ANOMALY JUST WROTE ITSELF INTO THE MAP.");}}
@@ -2755,7 +2768,7 @@ static int nearest_battle_enemy(int range){int i,best=range,id=-1;
  return id;
 }
 static int enemy_near_player(int range){int i;for(i=0;i<10;i++)if(enemies[i].active&&iabs(enemies[i].x-player.x)+iabs(enemies[i].y-player.y)<range)return 1;return 0;}
-static void update_surface(u16 k,u16 newk){int speed=(k&KEY_B)?3:2,dx=0,dy=0;u8 t;qa_last_surface_k=k;qa_last_surface_newk=newk;if(newk&KEY_A)qa_surface_a_edges++;qa_surface_gate=1;
+static void update_surface(u16 k,u16 newk){if(V11_IS_ROOM){v11_update_field(k,newk);return;}int speed=(k&KEY_B)?3:2,dx=0,dy=0;u8 t;qa_last_surface_k=k;qa_last_surface_newk=newk;if(newk&KEY_A)qa_surface_a_edges++;qa_surface_gate=1;
  if((k&(KEY_A|KEY_SELECT))==(KEY_A|KEY_SELECT)&&(newk&(KEY_A|KEY_SELECT))){
   int e=nearest_battle_enemy(50);if(e>=0){battle_enter(e);return;}
  }if(shop_open){if(newk&KEY_B){shop_open=0;return;}if(newk&KEY_UP)shop_sel=(u8)((shop_sel+3)%4);if(newk&KEY_DOWN)shop_sel=(u8)((shop_sel+1)%4);if(newk&KEY_A)shop_trade();return;}
@@ -2808,8 +2821,9 @@ static void update_surface(u16 k,u16 newk){int speed=(k&KEY_B)?3:2,dx=0,dy=0;u8 
 if(current_world==4&&current_room==0&&(frame&31)==0){int drift=(next_q()&1)?1:-1;if(!blocked_px(player.x+drift,player.y))player.x+=(s16)drift;}enemy_tick();collect_drops();npc_tick();buddy_tick();buddy_combat_assist();workload_buddy_tick();postgame_tick();v9_rift_tick();}
 
 static void update_space(u16 k,u16 newk){int sp=(k&KEY_B)?4:2;if(k&KEY_LEFT)ship_x-=sp;if(k&KEY_RIGHT)ship_x+=sp;if(k&KEY_UP)ship_y-=sp;if(k&KEY_DOWN)ship_y+=sp;ship_x=(s16)clampi(ship_x,8,504);ship_y=(s16)clampi(ship_y,8,504);if(newk&KEY_A)land_ship();if(newk&KEY_SELECT)drop_beacon();}
-static void enter_pause(void){return_mode=game_mode;game_mode=MODE_PAUSE;pause_sel=0;pause_page=0;REG_BG1HOFS=0;REG_BG1VOFS=0;ui_clear();}
+static void enter_pause(void){v11_menu_reset();return_mode=game_mode;game_mode=MODE_PAUSE;pause_sel=0;pause_page=0;REG_BG1HOFS=0;REG_BG1VOFS=0;ui_clear();}
 static void update_pause(u16 newk){
+ if(v11_update_pause(newk))return;
  if(pause_page==25){if(newk&KEY_UP)completion_sel=(u8)((completion_sel+23)%24);if(newk&KEY_DOWN)completion_sel=(u8)((completion_sel+1)%24);if(newk&KEY_R)completion_warp(completion_sel);if(newk&KEY_B)pause_page=13;return;}
  if(pause_page==13&&(newk&KEY_RIGHT)){pause_page=25;completion_sel=(u8)mini(23,completion_count());return;}
  if(pause_page==16){
@@ -2929,13 +2943,13 @@ static void update_pause(u16 newk){
 
 /* ---------- boot ---------- */
 static void init_graphics(void){int i;REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));make_all_tiles();make_obj_tiles();lc_upload_import_art();oam_hide_all();for(i=0;i<4*1024;i++)screenblock(BG_MAP_BASE)[i]=0;ui_clear();}
-static void init_new_game(void){int i;arc_reset();p4_reset();g5_reset();g6_reset();g7_reset();completion_reset();story_flags=0;rune_progress=element_mask=shop_open=shop_sel=npc_log_offset=riddle_open=0;quest_started=quest_completed=0;npc_seen=0;npc_recent=0;npc_dialogue_active=0;player.x=80;player.y=408;player.face=1;player_level=1;player_xp=0;max_hp=6;player.hp=max_hp;max_mp=6;player_mp=max_mp;str_stat=2;def_stat=1;mag_stat=2;credits=0;for(i=0;i<ITEM_COUNT;i++)inv[i]=0;inv[ITEM_POTION]=2;inv[ITEM_ETHER]=1;gear_owned=1;weapon=armor=charm=0;current_spell=SPELL_PULSE;buddy_talk=buddy_quantum=1;qstate.mean=128;qstate.coherence=128;qstate.phase=0;cosmos.x=100;cosmos.y=396;cosmos.goal=GOAL_FOLLOW;cosmos.trust=96;cosmos.curiosity=205;cosmos.avoid=30;cosmos.energy=240;cosmos.focus=130;dodge_timer=dodge_cooldown=heavy_cooldown=0;touch_mode=0;hold_a_frames=0;workload_qi=0;v10_tutorial=0;v10_ending_card=0;v108_credits_reset();v10_hw_choice=v10_hw_riddle=0;v10_relic=0;v10_realm_choices=v10_realm_riddle=v10_festival_notes=0;actor_style=0;role_preview=0;chronicle_page=0;
+static void init_new_game(void){int i;keys_found=secrets_mask=chapter=ending=postgame=cosmos_preference=player_choice=beacon_count=0;visited_mask=1;arc_reset();p4_reset();g5_reset();g6_reset();g7_reset();completion_reset();story_flags=0;rune_progress=element_mask=shop_open=shop_sel=npc_log_offset=riddle_open=0;quest_started=quest_completed=0;npc_seen=0;npc_recent=0;npc_dialogue_active=0;player.x=80;player.y=408;player.face=1;player_level=1;player_xp=0;max_hp=6;player.hp=max_hp;max_mp=6;player_mp=max_mp;str_stat=2;def_stat=1;mag_stat=2;credits=0;for(i=0;i<ITEM_COUNT;i++)inv[i]=0;inv[ITEM_POTION]=2;inv[ITEM_ETHER]=1;gear_owned=1;weapon=armor=charm=0;current_spell=SPELL_PULSE;buddy_talk=buddy_quantum=1;qstate.mean=128;qstate.coherence=128;qstate.phase=0;cosmos.x=100;cosmos.y=396;cosmos.goal=GOAL_FOLLOW;cosmos.trust=96;cosmos.curiosity=205;cosmos.avoid=30;cosmos.energy=240;cosmos.focus=130;dodge_timer=dodge_cooldown=heavy_cooldown=0;touch_mode=0;hold_a_frames=0;workload_qi=0;v10_tutorial=0;v10_ending_card=0;v108_credits_reset();v10_hw_choice=v10_hw_riddle=0;v10_relic=0;v10_realm_choices=v10_realm_riddle=v10_festival_notes=0;actor_style=0;role_preview=0;chronicle_page=0;
  kill_count=0;v9_wave=1;v9_best_wave=v9_completed=v9_bonded=v9_bond_type=0;
  v9_jump=v9_jump_cd=v9_combo=v9_combo_time=v9_wave_delay=0;
  v9_equipped=v9_gear_sel=0;v9_rng=0xC0A571D5u;
  for(i=0;i<5;i++)v9_loot[i]=0;
  lc_roster_init(&lc_party);lc_party_sel=0;lc_add_exported_profile();
- current_world=0;current_room=0;current_layer=1;game_mode=MODE_SURFACE;ship_world=0;ship_x=PLANET_X[0];ship_y=PLANET_Y[0]+26;copystr(dialogue,"I REMEMBER A SKY MADE OF SQUARES.",90);}
+ current_world=0;current_room=0;current_layer=1;game_mode=MODE_SURFACE;ship_world=0;ship_x=PLANET_X[0];ship_y=PLANET_Y[0]+26;copystr(dialogue,"I REMEMBER A SKY MADE OF SQUARES.",90);v11_reset();}
 /* These are actual user-facing transitions, not fabricated quest-flag jumps. */
 static void v10_start_opening(void){
  init_new_game();intro=0;v10_opening=1;v10_opening_step=0;v10_title_sub=0;
@@ -2981,6 +2995,10 @@ static void v10_title_input(u16 newk){
   else v10_title_sub=3;
  }
 }
+#include "content_v11_core.h"
+#include "content_v11_world.h"
+#include "content_v11_combat.h"
+#include "content_v11_menus.h"
 void gba_main(void){u16 k,newk;
  journal_recover();
  v10_has_save=(u8)(save_valid()||save_valid_v4()||save_valid_v3()||save_valid_v2());
@@ -3007,7 +3025,7 @@ void gba_main(void){u16 k,newk;
    if(newk&(KEY_A|KEY_START))cinema_end();
    else if(cinema_timer&&!--cinema_timer)cinema_end();
   }else{
-   if(game_mode!=MODE_PAUSE&&(newk&KEY_START))enter_pause();
+   if(game_mode!=MODE_PAUSE&&!v11_gameover&&(newk&KEY_START))enter_pause();
    else if(game_mode==MODE_PAUSE)update_pause(newk);
    else if(game_mode==MODE_SURFACE)update_surface(k,newk);
    else if(game_mode==MODE_BATTLE)update_battle(newk);
@@ -3016,6 +3034,6 @@ void gba_main(void){u16 k,newk;
    if((frame&255)==0&&player_mp<max_mp)player_mp++;
    if(dialogue_timer)dialogue_timer--;
   }
-  music_step();v108_credits_tick();wait_vblank();frame++;render();
+  v11_clock();music_step();v108_credits_tick();wait_vblank();frame++;render();
  }
 }
