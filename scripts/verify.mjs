@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 
 const file = 'standalone/SIM_EARTH_7_08_REALITY_BODY.html';
-const EXPECTED = '47bf8b6379c425b77dca15bfe2de95e87af451ec994368d43b3253cebe373dfd';
+const EXPECTED = '677c51f8a392737ea0de3cdb87a6a6fb5cf61914696013449fbd7bceff1144c4';
 const fail = (m) => { console.error(`FAIL: ${m}`); process.exitCode = 1; };
 if (!fs.existsSync(file)) { fail(`missing ${file}`); process.exit(1); }
 const buf = fs.readFileSync(file);
@@ -42,6 +42,8 @@ for (const [label, token] of [
   ['Learner Buddy frame', 'lb-buddy-frame'],
   ['Synapse OS pane', 'sim707-pane-synapse'],
   ['Synapse OS frame', 'lc-synapse-frame'],
+  ['Spark Beasts pane', 'sim707-pane-spark'],
+  ['Spark Beasts frame', 'sb-spark-frame'],
   ['Pocket Reality brand', 'Cute Beast Pocket Reality Learners']
 ]) if (!html.includes(token)) fail(`missing ${label}`);
 
@@ -73,6 +75,29 @@ else {
   ]) {
     if (!fs.existsSync(file)) fail(`missing ${file}`);
     else if (/\bfetch\(/.test(fs.readFileSync(file, 'utf8'))) fail(`${file} must not call fetch`);
+  }
+}
+
+const sparkPage = 'arcade/spark-beasts/index.html';
+if (!fs.existsSync(sparkPage)) fail(`missing ${sparkPage}`);
+else {
+  const spark = fs.readFileSync(sparkPage, 'utf8');
+  if (!spark.includes('not a medical device')) fail('Spark Beasts disclaimer missing');
+  if (!spark.includes('no live entanglement')) fail('Spark Beasts quantum disclaimer missing');
+  if (/src="https?:/.test(spark)) fail('Spark Beasts must not load remote scripts');
+  for (const file of [
+    'arcade/spark-beasts/app.mjs',
+    'arcade/spark-beasts/genome.mjs',
+    'arcade/spark-beasts/render.mjs',
+    'arcade/spark-beasts/showcase.mjs',
+    'arcade/spark-beasts/data/quantum-runs.json',
+    'arcade/spark-beasts/media/rare/manifest.json',
+    'arcade/spark-beasts/media/rare/Ferrotitan.mp4',
+  ]) if (!fs.existsSync(file)) fail(`missing ${file}`);
+  const manifest = JSON.parse(fs.readFileSync('arcade/spark-beasts/media/rare/manifest.json', 'utf8'));
+  const names = (manifest.clips || []).map((clip) => clip.name);
+  for (const name of ['Ferrotitan', 'Gearwarden', 'Cogknight', 'Nyxleviath', 'Nyxwyrm', 'Noctveil', 'Chartyrant', 'Calderwyvern', 'Snowleviath', 'Frostphoenix', 'Reefwing', 'Calderwarden', 'Montage']) {
+    if (!names.includes(name)) fail(`rare showcase manifest is missing ${name}`);
   }
 }
 

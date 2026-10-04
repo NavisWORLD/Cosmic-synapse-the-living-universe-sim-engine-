@@ -1,0 +1,78 @@
+{
+  "schema": "spark-beasts-rare-showcase-v1",
+  "note": "Showcase clips of the twelve rarest sparked beasts, plus one montage. Paths are relative to arcade/spark-beasts/media/. The gallery skips any file that is not in this copy yet, so a later video drop can land without waiting on this list. Nothing plays until a person taps play.",
+  "clips": [
+    {
+      "name": "Ferrotitan",
+      "video": "rare/Ferrotitan.mp4",
+      "audioLog": "rare/Ferrotitan.audio_log.json",
+      "seconds": 18
+    },
+    {
+      "name": "Gearwarden",
+      "video": "rare/Gearwarden.mp4",
+      "audioLog": "rare/Gearwarden.audio_log.json",
+      "seconds": 18
+    },
+    {
+      "name": "Cogknight",
+      "video": "rare/Cogknight.mp4",
+      "audioLog": "rare/Cogknight.audio_log.json",
+      "seconds": 18
+    },
+    {
+      "name": "Nyxleviath",
+      "video": "rare/Nyxleviath.mp4",
+      "audioLog": "rare/Nyxleviath.audio_log.json",
+      "seconds": 18
+    },
+    {
+      "name": "Nyxwyrm",
+      "video": "rare/Nyxwyrm.mp4",
+      "audioLog": "rare/Nyxwyrm.audio_log.json",
+      "seconds": 18
+    },
+    {
+      "name": "Noctveil",
+      "video": "rare/Noctveil.mp4",
+      "audioLog": "rare/Noctveil.audio_log.json",
+      "seconds": 18
+    },
+    {
+      "name": "Chartyrant",
+      "video": "rare/Chartyrant.mp4",
+      "audioLog": "rare/Chartyrant.audio_log.json",
+      "seconds": 18
+    },
+    {
+      "name": "Calderwyvern",
+      "video": "rare/Calderwyvern.mp4",
+      "seconds": 18
+    },
+    {
+      "name": "Snowleviath",
+      "video": "rare/Snowleviath.mp4",
+      "seconds": 18
+    },
+    {
+      "name": "Frostphoenix",
+      "video": "rare/Frostphoenix.mp4",
+      "seconds": 18
+    },
+    {
+      "name": "Reefwing",
+      "video": "rare/Reefwing.mp4",
+      "seconds": 18
+    },
+    {
+      "name": "Calderwarden",
+      "video": "rare/Calderwarden.mp4",
+      "seconds": 18
+    },
+    {
+      "name": "Montage",
+      "video": "montage.mp4",
+      "seconds": 80
+    }
+  ]
+}
