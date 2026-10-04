@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#10152c">
+  <title>Sol Beast Nursery · Lost COSMOS</title>
+  <link rel="icon" href="data:,"><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top"><a class="brand" href="../lost-cosmos/">✦ <span>LOST COSMOS</span></a><span class="edition">SOL / NURSERY 01</span><a class="game-link" href="../lost-cosmos/rom/lost-cosmos.gba" download="LOST_COSMOS_SOL.gba">↓ Get the GBA game</a></header>
+  <main>
+    <div class="intro"><p class="eyebrow">CORY DAVIS · THE LIVING MULTIVERSE</p><h1>A little light.<br><span>An entire cosmos.</span></h1><p>Eight islands. Twenty-four forms. A companion that grows through the journey you share.</p></div>
+    <div class="nursery">
+      <section class="habitat panel" aria-labelledby="creature-name">
+        <div class="habitat-top"><span id="origin" class="chip">ERIDORIA PRIME</span><span id="state-label" class="state">YOUR COMPANION</span></div>
+        <canvas id="scene" width="320" height="208" role="img" aria-label="Your pixel companion in its island habitat"></canvas>
+        <div class="creature-heading"><div><p id="form-label" class="eyebrow">FIRST LIGHT / 01</p><h2 id="creature-name">Cinderkip</h2></div><span class="heart" aria-hidden="true">♡</span></div>
+        <p id="habitat-copy" class="description">A warm forge, a softer heart.</p>
+        <div class="progress"><span id="level">LV 1</span><span id="bond">BOND 16 / 100</span><span id="identity">ID —</span></div>
+        <div class="care"><button data-care="pet">♡ Pet</button><button data-care="play">✧ Play</button><button data-care="rest">☾ Rest</button></div>
+        <p id="care-note" class="small">Nursery gestures are for play. Grow your native bond by training together in the game.</p>
+      </section>
+      <section class="birth panel" aria-labelledby="birth-title">
+        <p class="eyebrow">MAKE YOUR LITTLE BEAST</p><h2 id="birth-title">Begin with a spark.</h2>
+        <label for="seed">Seed phrase <span class="small">· public on your receipt</span></label>
+        <div class="seed-row"><input id="seed" maxlength="96" value="CORY-SOL-001" autocomplete="off" spellcheck="false"><button id="random-seed" aria-label="Choose a new random seed">↻</button></div>
+        <fieldset class="traits"><legend>Three game cues</legend>
+          <label for="focus"><span>Focus <small>signal · memory</small></span><output id="focus-value" for="focus">65</output></label><input type="range" id="focus" min="0" max="100" value="65">
+          <label for="calm"><span>Calm <small>HP · resonance</small></span><output id="calm-value" for="calm">72</output></label><input type="range" id="calm" min="0" max="100" value="72">
+          <label for="spark"><span>Spark <small>energy · agility</small></span><output id="spark-value" for="spark">48</output></label><input type="range" id="spark" min="0" max="100" value="48">
+        </fieldset>
+        <div class="sensor"><span id="source-label">MANUAL CUES</span><div><button id="simulate">Simulate</button><button id="muse">Connect Muse</button></div></div>
+        <p class="small">Manual values work on any device. Muse uses derived beta, alpha, and gamma proportions; raw samples stay in memory.</p>
+        <button id="hatch" class="primary" disabled>Hatch + keep this companion <span>↗</span></button>
+        <p id="status" role="status" aria-live="polite">Checking the preserved seed archive…</p>
+      </section>
+    </div>
+    <section class="island-section" aria-labelledby="islands-title"><div class="section-title"><div><p class="eyebrow">FIND THEIR HOME</p><h2 id="islands-title">Eight different kinds of wonder.</h2></div><span class="small">Choose an island to preview a new companion.</span></div><div id="islands" class="islands"></div></section>
+    <section class="evolution panel" aria-labelledby="evolution-title"><div class="section-title"><div><p class="eyebrow">SAME IDENTITY. A BIGGER LITTLE HEART.</p><h2 id="evolution-title">Every light has a lineage.</h2></div><span id="lineage-island" class="chip">ERIDORIA PRIME</span></div><div id="stages" class="stages"></div><p class="small">Forms two and three are previews until earned in LOST COSMOS. Evolve at LV 12 / Bond 55, then LV 28 / Bond 80. A Heartwood Sigil is needed if the creature’s Evolution stat is below 50.</p></section>
+    <section class="travel panel" aria-labelledby="travel-title"><div><p class="eyebrow">TAKE YOUR LIGHT WITH YOU</p><h2 id="travel-title">From nursery to cartridge.</h2><p>Download a starter save with your creature’s traits and pixel art. After playing, read your battery save here to see its earned level, bond, and form.</p></div><div class="travel-actions"><button id="save" class="primary" disabled>↓ Starter .sav</button><button id="receipt" disabled>↓ Companion receipt</button><button id="portrait" disabled>↓ Pixel portrait</button><button id="read-save-button">↑ Read game progress</button><input id="read-save" type="file" accept=".sav" hidden><button id="read-receipt-button">↑ Load companion receipt</button><input id="read-receipt" type="file" accept=".json" hidden></div><p id="journey-note" class="small">Starter saves are for a new journey. Reading your own game save enables an updated .sav that preserves your existing journey.</p></section>
+    <section class="shelf" aria-labelledby="shelf-title"><div class="section-title"><div><p class="eyebrow">KEPT ON THIS DEVICE</p><h2 id="shelf-title">Your little lights.</h2></div><span class="small">Keep the receipt to open a companion elsewhere.</span></div><div id="shelf" class="shelf-items"></div></section>
+    <details class="mapping panel"><summary>Look inside the generator <span>+</span></summary><div class="mapping-content"><p>The same island, seed phrase, and cues recreate the same companion. A 32-byte window from the game’s preserved 8,192-byte QSEED archive seeds the genome. Separate hashes derive its public identity and art seed. Choosing another phrase creates another companion.</p><table><thead><tr><th>Input</th><th>Game traits</th><th>Appearance</th></tr></thead><tbody><tr><td>Focus / beta cue</td><td>Signal + memory; paid from chaos + evolution</td><td>Final-form cyan crest at high focus</td></tr><tr><td>Calm / alpha cue</td><td>HP + resonance; paid from chaos + curiosity</td><td>Rounder body at high calm</td></tr><tr><td>Spark / gamma cue</td><td>Energy + agility; paid from memory + stability</td><td>Ember-tail fullness on Prime</td></tr><tr><td>Archive + seed phrase</td><td>Balanced genesis: 10 stats, 500 total, each 20–80</td><td>Color tint, body width, forehead mark</td></tr><tr><td>Island + earned stage</td><td>Existing native family and evolution rules</td><td>Eight silhouettes × three growing forms</td></tr></tbody></table><p id="archive-note" class="small"></p><p class="small">Cues shape a game character, not a health assessment. This uses recorded seed replay, not live entanglement. Your beast is a game companion; it is not a conscious being or a medical device.</p></div></details>
+  </main>
+  <footer>Made for Cory Davis / NavisWORLD <span>✦</span> Sol’s corner of the cosmos.</footer>
+  <script type="module" src="app.mjs"></script>
+</body>
+</html>

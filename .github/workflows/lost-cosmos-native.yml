@@ -2,10 +2,10 @@ name: Lost COSMOS native build and controller QA
 on:
   push:
     branches: [main, feature/lost-cosmos-living-multiverse-recovery-011, feature/lost-cosmos-v11-enhanced-001]
-    paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
+    paths: ['gba/lost-cosmos-living-multiverse/**', 'arcade/sol-beast-lab/**', '.github/workflows/lost-cosmos-native.yml']
   pull_request:
     branches: [main, feature/lost-cosmos-v10-presentation-001, feature/lost-cosmos-v11-enhanced-001]
-    paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
+    paths: ['gba/lost-cosmos-living-multiverse/**', 'arcade/sol-beast-lab/**', '.github/workflows/lost-cosmos-native.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -47,6 +47,12 @@ jobs:
           python3 tests/test_mailbox_v11_native.py
           python3 tests/test_beastbox_roundtrip_v11.py
           python3 tests/test_bridge.py
+      - name: Gate Sol nursery genome, sprite parity, earned evolution and navigation
+        run: |
+          (cd ../.. && node --test arcade/sol-beast-lab/design.test.mjs)
+          python3 tests/test_sol_beast_art.py
+          python3 tests/test_sol_nursery_native.py
+          python3 tests/test_sol_navigation_native.py
       - name: Gate NPC reachability with the actual native 10px collision footprint
         run: python3 tests/test_act1_pixel_reachability.py
       - name: Gate Quantum Beast public import, field-art derivation and native save identity
@@ -68,6 +74,10 @@ jobs:
         run: |
           python3 tests/test_mgba_mailbox_import.py --out artifacts/mgba_mailbox/compiled
           python3 tests/test_mgba_mailbox_import.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_mailbox/runtime
+      - name: Gate custom Sol sprites and cold-boot import in both cartridge variants
+        run: |
+          python3 tests/test_mgba_sol_nursery.py --out artifacts/mgba_sol/compiled
+          python3 tests/test_mgba_sol_nursery.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_sol/runtime
       - name: Gate traded and grown beasts in real mGBA
         timeout-minutes: 5
         run: |
@@ -85,6 +95,9 @@ jobs:
       - name: Earn eight beacons, ten bosses, crafting, evolution, three slots and a true cold boot
         timeout-minutes: 7
         run: python3 tests/test_mgba_content_v11.py --out artifacts/mgba_v11_content
+      - name: Earn the same full route with a nursery creature in the runtime cartridge
+        timeout-minutes: 7
+        run: python3 tests/test_mgba_content_v11.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --starter artifacts/mgba_sol/runtime/sol_starter.sav --out artifacts/mgba_sol/journey
       - name: Release gate - real controller-only Act I to Malakar and First Heart, plus real second cold boot
         timeout-minutes: 7
         run: |
@@ -119,6 +132,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/native/
             gba/lost-cosmos-living-multiverse/artifacts/release/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_mailbox/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_sol/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_controller/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_menu_visual/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_title/

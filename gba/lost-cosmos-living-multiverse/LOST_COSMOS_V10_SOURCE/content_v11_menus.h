@@ -133,6 +133,27 @@ static int v11_import_snapshot(void){
 static void v11_header(const char*name){int t;for(t=0;t<9;t++)if(V11_TABS[t]==pause_page){v11_short(0,0,V11_TAB_NAMES[wrapi(t-1,9)],8,8);ui_text(10,0,V11_TAB_NAMES[t],13);v11_short(22,0,V11_TAB_NAMES[(t+1)%9],8,8);}ui_text(2,2,name,14);ui_text(2,17,"A CHOOSE  B BACK  L/R TABS",13);}
 static void v11_row(int row,int selected,const char*name,int pal){ui_text(2,row,selected?">":" ",13);v11_short(4,row,name,23,pal);}
 static void v11_menu_notice(void){if(v11_notice_timer&&v11_notice[0]&&v11_detail==2){ui_frame(12,18,15);v11_lines(2,13,v11_notice,26,4,14);ui_text(2,18,"A/B CLOSE",13);}}
+static void v11_recipe_cost(int n,int*out){
+ static const u8 scrap[10]={8,6,5,1,1,1,1,1,0,2},herb[10]={2,1,1,0,0,0,0,0,5,1},core[10]={0,0,0,3,3,2,4,1,0,0};
+ int i;for(i=0;i<3;i++)out[i]=0;if(n<0||n>=10)return;
+ out[0]=scrap[n];out[1]=herb[n];out[2]=core[n];
+ if(v11_passive(50))for(i=0;i<3;i++)out[i]=(out[i]*80+99)/100;
+ if(v11_charm(67)){if(out[2])out[2]--;else if(out[0])out[0]--;else if(out[1])out[1]--;}
+}
+static void v11_local_mark(int tx,int ty,const char*s,int pal){ui_text(2+tx*26/64,4+ty*10/64,s,pal);}
+static void v11_draw_local_map(void){int x,y,i,w=v11_world();
+ v11_header("MAP // LOCAL SIGNALS");v11_short(2,3,v11_signal_goal(w),26,14);
+ for(y=0;y<10;y++)for(x=0;x<26;x++){int tx=x*64/26,ty=y*64/10;
+  ui_text(2+x,4+y,collision[ty*64+tx]==C_WALL?"*":".",8);}
+ v11_local_mark(30,53,"F",13);v11_local_mark(45,16,"B",v11_beacons&(1u<<w)?9:13);
+ v11_local_mark(54,52,">",14);v11_local_mark(32,55,"R",14);
+ if(!(v11_cores_found&(1u<<w)))v11_local_mark(32,10,"C",10);
+ if(!(v11_echo_found&(1u<<w)))v11_local_mark(27,30,"M",11);
+ if(v11_field_track)for(i=0;i<10;i++)if(enemies[i].active)v11_local_mark(enemies[i].x/8,enemies[i].y/8,"E",7);
+ v11_local_mark(player.x/8,player.y/8,"A",14);
+ ui_text(2,14,"A YOU  C CORE  M ECHO",13);ui_text(2,15,"F CAMP  B BEACON  > GATE",13);
+ ui_text(2,16,v11_field_track?"R RETURN  E FOE  * WALL":"R RETURN  TRACK SHOWS FOES",14);ui_text(2,17,"B BACK TO WORLD MAP",13);
+}
 static int v11_draw_pause(void){int i,id,start;
  if(pause_page==0)return 0;
  if(pause_page!=40&&pause_page!=4&&pause_page!=5&&pause_page!=28&&pause_page!=18&&pause_page!=20&&pause_page!=11&&pause_page!=1&&pause_page!=9&&pause_page!=26&&pause_page!=27&&pause_page!=41&&pause_page!=42&&pause_page!=44&&pause_page!=45&&pause_page!=46&&pause_page!=47&&pause_page!=48)return 0;
@@ -184,14 +205,14 @@ static int v11_draw_pause(void){int i,id,start;
  }else ui_text(4,12,"THE MAP HAS NOT MET IT YET.",8);
  }else if(pause_page==11){v11_header(v11_sub?"QUESTS // DONE":"QUESTS // ACTIVE");v11_list_count=0;for(i=0;i<15;i++)if(v11_quest_started&(1u<<i)){if(((v11_quest_done>>i)&1)==(v11_sub&1))v11_list[v11_list_count++]=(u8)i;}if(v11_sel>=v11_list_count)v11_sel=0;start=v11_sel/5*5;
  for(i=start;i<mini(start+5,v11_list_count);i++){id=v11_list[i];v11_row(4+i-start,i==v11_sel,V11_QUEST_NAMES[id],v11_track==id?14:15);}
- if(v11_list_count){id=v11_list[v11_sel];v11_short(2,10,V11_QUEST_GIVERS[id],26,13);v11_lines(2,11,V11_QUEST_VOICE[id],26,3,15);int progress=id<8?mini(3,v11_world_kills[id])+((v11_cores_found>>id)&1)+((v11_echo_found>>id)&1):v11_quest[id];ui_text(2,14,"PROGRESS",13);ui_num(13,14,progress,15);ui_text(16,14,"/5",15);}
+ if(v11_list_count){id=v11_list[v11_sel];v11_short(2,10,V11_QUEST_GIVERS[id],26,13);v11_lines(2,11,V11_QUEST_VOICE[id],26,3,15);
+ if(id<8){ui_text(2,14,"CORE",13);ui_text(7,14,v11_cores_found&(1u<<id)?"+":"-",14);ui_text(10,14,"ECHO",13);ui_text(15,14,v11_echo_found&(1u<<id)?"+":"-",14);ui_text(18,14,"FOES",13);ui_num(23,14,mini(3,v11_world_kills[id]),15);ui_text(24,14,"/3",15);v11_short(2,15,v11_signal_goal(id),26,14);}
+ else ui_text(2,14,v11_quest_done&(1u<<id)?"QUEST COMPLETE":"A TO TRACK THIS QUEST",14);}
  else ui_text(4,6,"NO SIGNAL",13);ui_text(2,16,"SELECT CAMPAIGN JOURNAL",14);
  }else if(pause_page==1){v11_header(v11_map_legacy?"MAP // ORIGINAL CAMPAIGN":"MAP // EIGHT SIGNALS");
  for(i=0;i<8;i++){int known=v11_map_legacy?(visited_mask&(1u<<i)):(v11_visited&(1u<<i));ui_text(2,4+i,i==v11_sel?">":" ",13);ui_text(4,4+i,known?(v11_map_legacy?"*":(v11_beacons&(1u<<i))?"*":"."):"-",known?14:8);v11_short(6,4+i,known?(v11_map_legacy?WORLDS[i].name:V11_WORLDS[i]):"???",22,known?15:8);if(!v11_map_legacy&&V11_IS_ROOM&&i==v11_world()&&(frame>>4)&1)ui_text(4,4+i,">",13);}
- ui_text(2,14,"THE MAP FILLS AS YOU REMEMBER",14);ui_text(2,16,v11_field_track?"SELECT CAMPAIGN START TRACK":"SELECT CAMPAIGN / SIGNALS",13);
- }else if(pause_page==47){v11_header("TRACK // LOCAL MOB MAP");int x,y;for(y=0;y<10;y++)for(x=0;x<26;x++){int tx=x*64/26,ty=y*64/10;ui_text(2+x,5+y,collision[ty*64+tx]==C_WALL?"*":".",8);}
- for(i=0;i<10;i++)if(enemies[i].active)ui_text(2+enemies[i].x*26/512,5+enemies[i].y*10/512,"E",13);
- ui_text(2+player.x*26/512,5+player.y*10/512,"A",14);ui_text(2,16,"A ARIN   E ENEMY   B BACK",13);
+ ui_text(2,14,"THE MAP FILLS AS YOU REMEMBER",14);ui_text(2,15,V11_IS_ROOM?"START LOCAL LANDMARK MAP":"* KNOWN WORLD",14);ui_text(2,16,"SELECT CAMPAIGN / SIGNALS",13);
+ }else if(pause_page==47){v11_draw_local_map();
  }else if(pause_page==9){static const char*s[11]={"AUDIO","TEXT SPEED","BRIGHTNESS","SAVE GAME","LOAD GAME","BEAST BOX","TOUCH CONTROLS","COSMIC REPLAY","AUTO TALK","HERO","CAMPAIGN PACK"};v11_header("SYSTEM");start=v11_sel/6*6;for(i=start;i<mini(start+6,11);i++){v11_row(4+i-start,i==v11_sel,s[i],15);if(i==0)ui_text(22,4+i-start,audio_on?"ON":"OFF",14);if(i==1)ui_text(22,4+i-start,v11_text_speed==0?"SLOW":v11_text_speed==1?"NORM":"FAST",14);if(i==2)ui_num(24,4+i-start,v11_brightness,14);if(i==6)ui_text(22,4+i-start,touch_mode?"ON":"OFF",14);if(i==7)ui_text(22,4+i-start,buddy_quantum?"ON":"OFF",14);if(i==8)ui_text(22,4+i-start,buddy_talk?"ON":"OFF",14);}
  ui_text(2,15,"LOST COSMOS V11.1",13);ui_text(2,16,"THREE VERIFIED BATTERY SLOTS",14);
  }else if(pause_page==44){v11_header(v11_sub?"LOAD // THREE SLOTS":"SAVE // THREE SLOTS");for(i=0;i<3;i++){int o=25600+i*2048;ui_text(2,5+i*3,i==v11_sel?">":" ",13);ui_text(4,5+i*3,"SLOT",15);ui_num(10,5+i*3,i+1,15);
@@ -209,18 +230,19 @@ static int v11_draw_pause(void){int i,id,start;
  if(pick)v11_portrait(pick,168,48,0);ui_text(2,15,"PRIVATE MEMORY STAYS OUTSIDE",14);ui_text(2,17,"A IMPORT BEAST   B BACK",13);
  }else if(pause_page==42||pause_page==48){v11_header(pause_page==42?"CAMPAIGN PACK":"CAMPAIGN GEAR");if(pause_page==42){for(i=0;i<4;i++){v11_row(5+i*2,i==v11_sel,item_name(i),15);ui_num(24,5+i*2,inv[i],13);}ui_text(2,15,"SELECT ORIGINAL WORKSHOP",14);}
  else{static const char*n[4]={"WEAPON","ARMOR","CHARM","SPELL"};for(i=0;i<4;i++){v11_row(5+i*2,i==v11_sel,n[i],13);v11_short(12,5+i*2,i==0?weapon_name():i==1?armor_name():i==2?charm_name():spell_name(current_spell),16,15);}}
- }else if(pause_page==41){v11_header("WORKSHOP // THE BUILDER");static const u8 r[11]={22,49,67,12,37,47,63,81,79,83,69};start=v11_sel/6*6;for(i=start;i<mini(start+6,11);i++)v11_row(4+i-start,i==v11_sel,i==10?"PACK MULE / 200C":V11_ITEMS[r[i]].name,15);ui_text(2,12,"SCRAP",13);ui_num(9,12,v11_scrap,15);ui_text(16,12,"HERBS",13);ui_num(24,12,v11_herbs,15);ui_text(2,13,"CORES",13);ui_num(9,13,v11_qty[93],15);ui_text(16,13,"CREDITS",13);ui_num(24,13,v11_credits,15);ui_text(2,15,"A BUILD  SELECT REPAIR 10C",14);
+ }else if(pause_page==41){v11_header("WORKSHOP // THE BUILDER");static const u8 r[11]={22,49,67,12,37,47,63,81,79,83,69};start=v11_sel/6*6;for(i=start;i<mini(start+6,11);i++)v11_row(4+i-start,i==v11_sel,i==10?"PACK MULE / 200C":V11_ITEMS[r[i]].name,15);ui_text(2,12,"SCRAP",13);ui_num(9,12,v11_scrap,15);ui_text(16,12,"HERBS",13);ui_num(24,12,v11_herbs,15);ui_text(2,13,"CORES",13);ui_num(9,13,v11_qty[93],15);ui_text(16,13,"CREDITS",13);ui_num(24,13,v11_credits,15);
+ if(v11_sel==10)ui_text(2,14,"COST 200 CREDITS",13);else{int cost[3];v11_recipe_cost(v11_sel,cost);ui_text(2,14,"COST S",13);ui_num(8,14,cost[0],v11_scrap>=cost[0]?9:7);ui_text(11,14,"H",13);ui_num(13,14,cost[1],v11_herbs>=cost[1]?9:7);ui_text(17,14,"C",13);ui_num(19,14,cost[2],v11_qty[93]>=cost[2]?9:7);}
+ ui_text(2,15,"A BUILD  SELECT REPAIR 10C",14);
  }else if(pause_page==45){v11_header("EVOLUTION // A HELD SIGNAL");v11_short(2,4,v11_assign?v11_creature_name(v11_assign-1):v11_cosmos_label(),26,13);v11_portrait(v11_assign,88,48,v11_evolution?v11_evo_timer:0);ui_text(2,14,v11_evolution?"THE BOND CARRIES FORWARD":"IS CHANGING. LET IT?",14);ui_text(2,17,v11_evolution?"B BACK":"A YES   B NOT YET",13);
  if(v11_evolution){ui_text(2,5,"STAGE",13);ui_num(8,5,v11_evo_old,15);ui_text(11,5,"->",13);ui_num(15,5,v11_evo_old+1,15);if(v11_evo_timer<12){for(i=0;i<256;i++)BG_PALETTE[i]=brighter5(BG_PALETTE[i],20-v11_evo_timer);}}
  }else if(pause_page==46){v11_header("RENAME // DISPLAY NAME");ui_text(2,5,v11_name_edit,14);ui_text(2,7,"A ADD LETTER. SELECT DONE.",15);static const char*letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ ";for(i=0;i<27;i++){char b[2]={letters[i],0};ui_text(3+(i%9)*3,10+(i/9)*2,b,i==v11_rename_letter?13:15);if(i==v11_rename_letter)ui_text(2+(i%9)*3,10+(i/9)*2,">",13);}ui_text(2,16,"L ERASE  B CANCEL",14);
  }
  v11_menu_notice();v11_ui_dirty=0;return 1;
 }
-static void v11_craft(void){static const u8 item[10]={22,49,67,12,37,47,63,81,79,83},scrap[10]={8,6,5,1,1,1,1,1,0,2},herb[10]={2,1,1,0,0,0,0,0,5,1},core[10]={0,0,0,3,3,2,4,1,0,0};int n=v11_sel;
+static void v11_craft(void){static const u8 item[10]={22,49,67,12,37,47,63,81,79,83};int n=v11_sel;
  if(n==10){if(v11_skill_known(69)){v11_message("PACK MULE IS ALREADY LEARNED.");return;}if(v11_credits<200){v11_message("PACK MULE NEEDS 200 CREDITS.");return;}v11_credits-=200;v11_learn(69);v11_message("PACK MULE LEARNED. EQUIP IT FOR 60 SLOTS.");save_game();return;}
  if(!v11_qty[95]){v11_message("THE BUILDER'S KIT IS IN RUST MERIDIAN.");return;}
- int s=scrap[n],h=herb[n],c=core[n];if(v11_passive(50)){s=(s*80+99)/100;h=(h*80+99)/100;c=(c*80+99)/100;}
- if(v11_charm(67)){if(c)c--;else if(s)s--;else if(h)h--;}
+ int cost[3];v11_recipe_cost(n,cost);int s=cost[0],h=cost[1],c=cost[2];
  if(v11_scrap<s||v11_herbs<h||v11_qty[93]<c){v11_message("MORE MATERIALS NEEDED. CACHES HOLD SCRAP AND HERBS; RIFTS HOLD CORES.");return;}
  if(!v11_inventory_add(item[n],1))return;v11_scrap-=s;v11_herbs-=h;v11_qty[93]-=c;v11_crafted++;
  if(v11_qty[22]&&v11_qty[49]&&v11_qty[67])v11_quest_finish(14);v11_unlock();v11_message("OLD PIECES. MY ASSEMBLY. ITEM CRAFTED.");save_game();
@@ -267,7 +289,7 @@ static int v11_update_pause(u16 k){int i,id,n;
  else if(pause_page==46){if(k&KEY_LEFT)v11_rename_letter=(u8)wrapi(v11_rename_letter-1,27);if(k&KEY_RIGHT)v11_rename_letter=(u8)wrapi(v11_rename_letter+1,27);if(k&KEY_UP)v11_rename_letter=(u8)wrapi(v11_rename_letter-9,27);if(k&KEY_DOWN)v11_rename_letter=(u8)wrapi(v11_rename_letter+9,27);if(k&KEY_A&&v11_rename_pos<11){v11_name_edit[v11_rename_pos++]=v11_rename_letter==26?' ':'A'+v11_rename_letter;v11_name_edit[v11_rename_pos]=0;}if(k&KEY_L&&v11_rename_pos)v11_name_edit[--v11_rename_pos]=0;if(k&KEY_SELECT){if(v11_name_edit[0])copystr(v11_assign?v11_names[v11_assign-1]:v11_cosmos_name,v11_name_edit,12);save_game();v11_back();}}
  else if(pause_page==20){if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,100);if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,100);}
  else if(pause_page==11){if(k&(KEY_LEFT|KEY_RIGHT)){v11_sub^=1;v11_sel=0;}if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,maxi(1,v11_list_count));if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,maxi(1,v11_list_count));if(k&KEY_A&&v11_list_count){id=v11_list[v11_sel];v11_track=v11_track==id?255:id;save_game();}if(k&KEY_SELECT){pause_page=13;v11_page_previous=255;}}
- else if(pause_page==1){if(k&KEY_UP)v11_sel=(v11_sel+7)%8;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%8;if(k&KEY_SELECT)v11_map_legacy^=1;if(k&KEY_START&&v11_field_track&&V11_IS_ROOM){pause_page=47;v11_page_previous=255;return 1;}if(k&KEY_A){if(v11_map_legacy)v11_message("THE ORIGINAL WORLDS ARE REACHED WITH LUNA-ARC.");else if(v11_beacons&(1u<<v11_sel))v11_enter(v11_sel);else v11_message("THIS BEACON IS NOT LIT. WALK THERE AND RETURN ITS SIGNAL.");v11_detail=2;}}
+ else if(pause_page==1){if(k&KEY_UP)v11_sel=(v11_sel+7)%8;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%8;if(k&KEY_SELECT)v11_map_legacy^=1;if(k&KEY_START&&V11_IS_ROOM){pause_page=47;v11_page_previous=255;return 1;}if(k&KEY_A){if(v11_map_legacy)v11_message("THE ORIGINAL WORLDS ARE REACHED WITH LUNA-ARC.");else if(v11_beacons&(1u<<v11_sel))v11_enter(v11_sel);else v11_message("THIS BEACON IS NOT LIT. WALK THERE AND RETURN ITS SIGNAL.");v11_detail=2;}}
  else if(pause_page==9){if(k&KEY_UP)v11_sel=(v11_sel+10)%11;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%11;if(k&KEY_A){if(v11_sel==0)audio_on^=1;if(v11_sel==1)v11_text_speed=(v11_text_speed+1)%3;if(v11_sel==2)v11_brightness=v11_brightness%5+1;
  if(v11_sel==3||v11_sel==4){v11_sub=v11_sel==4;pause_page=44;v11_sel=0;v11_page_previous=44;}else if(v11_sel==5){pause_page=26;v11_parent=9;v11_page_previous=255;}else if(v11_sel==6){touch_mode^=1;save_game();}else if(v11_sel==7){buddy_quantum^=1;save_game();}else if(v11_sel==8){buddy_talk^=1;save_game();}else if(v11_sel==9){pause_page=15;role_preview=actor_style;}else if(v11_sel==10){pause_page=42;v11_menu_reset();}else save_game();}}
  else if(pause_page==44){if(!v11_menu_mode){if(k&KEY_UP)v11_sel=(v11_sel+2)%3;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%3;}if(k&KEY_A){if(!v11_menu_mode&&v11_slot_valid(v11_sel))v11_menu_mode=1;else{if(v11_sub)v11_slot_load(v11_sel);else v11_slot_save(v11_sel);v11_menu_mode=0;if(game_mode==MODE_PAUSE)v11_detail=2;}}}

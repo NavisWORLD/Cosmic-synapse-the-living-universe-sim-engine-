@@ -24,6 +24,33 @@ static const u8 V11_CACHE_LOOT[8][8]={
  {5,30,19,44,55,75,64,85},{6,31,20,45,56,76,86,78},
  {7,32,21,57,77,87,48,78},{23,39,68,88,88,88,78,79}};
 static const u8 V11_CACHE_X[4]={13,50,16,49},V11_CACHE_Y[4]={45,43,24,25};
+/* Navigation reads earned progress; it never changes quests or save fields. */
+static const char*v11_signal_goal(int w){
+ if(!(v11_beacons&(1u<<w))){
+  if(!(v11_cores_found&(1u<<w)))return "FIND SIGNAL CORE";
+  if(!(v11_echo_found&(1u<<w)))return "CARRY MEMORY ECHO";
+  if(v11_world_kills[w]<3)return "FACE THREE FOES";
+  return "LIGHT THE BEACON";
+ }
+ if(w==6&&!v11_qty[92]&&keys_found!=7)return "FACE VESPER FOR Z";
+ if(w==7){if(!(v11_boss_done&256))return "FACE THE CROWN";
+  if(v11_boss_done==1023)return "EVERY SIGNAL RESTORED";
+  return v11_boss_done&512?"FACE REMAINING BOSSES":"FIND THE QUIET";}
+ return "FOLLOW THE EAST GATE";
+}
+static const char*v11_field_action(void){int t=trigger_near(),i;
+ if(t==TR_V11_CAMP)return "A REST";
+ if(t==TR_V11_EXIT)return "A RETURN";
+ if(t==TR_V11_NEXT)return "A NEXT GATE";
+ if(t==TR_V11_BEACON)return "A BEACON";
+ if(t==TR_V11_CACHE)return "A OPEN CACHE";
+ if(t==TR_V11_CORE)return "A SIGNAL CORE";
+ if(t==TR_V11_ECHO)return "A MEMORY ECHO";
+ if(t==TR_V11_FORGE)return "A QUIET FORGE";
+ if(t==TR_V11_TRIAL)return v11_world()==0||v11_world()==3?"A MEND ROOT":"A COSMOS";
+ for(i=0;i<v11_npc_count;i++)if(iabs(v11_npc_x[i]-player.x)+iabs(v11_npc_y[i]-player.y)<28)return "A TALK";
+ return nearest_battle_enemy(48)>=0?"A DUEL":"A COSMOS";
+}
 static void v11_palette(void){int i;set_world_palette(V11_THEME[v11_world()]);
  if(v11_world()==4){ /* ice and snow have a distinct native palette */
   for(i=0;i<8;i++){BG_PALETTE[i*16+1]=RGB5(8,14,20);BG_PALETTE[i*16+2]=RGB5(15,23,28);
@@ -245,9 +272,11 @@ static void v11_draw_field(void){int i;ui_clear();oam_hide_all();
  if(location_banner){ui_fill_rows(0,0,63,15);ui_text(1,0,V11_WORLDS[v11_world()],13);location_banner--;}
  ui_fill_rows(1,1,63,15);ui_text(1,1,"HP",14);ui_num(4,1,v11_hp,15);ui_text(7,1,"/",15);ui_num(8,1,v11_max_hp(),15);
  ui_text(13,1,"LV",13);ui_num(16,1,player_level,15);ui_text(20,1,"MP",14);ui_num(23,1,v11_mp,15);
- ui_fill_rows(18,19,63,15);ui_text(2,18,"A TALK/DUEL  START MENU",14);
- if(v11_track<15&&(((int)v11_ticks)/480)&1)ui_text(2,19,v11_track<8?"FIND CORE/ECHO; FACE 3 FOES":v11_track==8?"RETURN TO ASTRID AFTER 3":v11_track==11?"FIND THE FIRST OUTCAST":v11_track==12?"LAY AN ECHO TO REST":v11_track==13?"MEND THE WOUNDED ROOT":"FOLLOW THE JOURNAL",13);
- else ui_text(2,19,"B RUN  L POTION  R SKILLS",15);
+ ui_fill_rows(18,19,63,15);ui_text(2,18,v11_field_action(),14);ui_text(17,18,"START MENU",15);
+ if(v11_track>=8&&v11_track<15&&!(v11_quest_done&(1u<<v11_track))&&((v11_ticks/480)&1)){
+  static const char*hint[7]={"RETURN TO ASTRID","REPAIR PRIME BEACON","FIND BRINDLE ELDER","FIND FIRST OUTCAST","VISIT THE CONFESSOR","MEND THE WOUNDED ROOT","CRAFT THE BUILDER SET"};
+  ui_text(2,19,"QUEST:",13);ui_text(9,19,hint[v11_track-8],15);
+ }else{ui_text(2,19,"NEXT:",13);ui_text(8,19,v11_signal_goal(v11_world()),15);}
  oam_set(0,player.x-cam_x-8,player.y-cam_y-12,576+(player.face*4+(player.anim&3))*4,0,0);
  oam_set(1,cosmos.x-cam_x-8,cosmos.y-cam_y-8,32+(cosmos.mood&3)*4,1,0);
  if(!v11_active_cosmos&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];if(c->species>=1&&c->species<=8){vram_copy32(OBJ_VRAM32+416*8,V108_SPECIES[c->species-1][mini(2,c->stage)][(frame>>4)&1],32);oam_set(42,cosmos.x-cam_x+7,cosmos.y-cam_y-8,416,5+c->species-1,0);}}
