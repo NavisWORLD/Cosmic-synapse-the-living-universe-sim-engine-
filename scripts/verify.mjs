@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 
 const file = 'standalone/SIM_EARTH_7_08_REALITY_BODY.html';
-const EXPECTED = '30a156ff15539b2a6ba5a41d0c16cad828f04f5e61fccbb8dbee708ef3a7da08';
+const EXPECTED = '47bf8b6379c425b77dca15bfe2de95e87af451ec994368d43b3253cebe373dfd';
 const fail = (m) => { console.error(`FAIL: ${m}`); process.exitCode = 1; };
 if (!fs.existsSync(file)) { fail(`missing ${file}`); process.exit(1); }
 const buf = fs.readFileSync(file);
@@ -39,7 +39,10 @@ for (const [label, token] of [
   ['Lost Cosmos handheld pane', 'sim707-pane-cosmos'],
   ['Lost Cosmos handheld frame', 'lc-arcade-frame'],
   ['Learner Buddy pane', 'sim707-pane-buddy'],
-  ['Learner Buddy frame', 'lb-buddy-frame']
+  ['Learner Buddy frame', 'lb-buddy-frame'],
+  ['Synapse OS pane', 'sim707-pane-synapse'],
+  ['Synapse OS frame', 'lc-synapse-frame'],
+  ['Pocket Reality brand', 'Cute Beast Pocket Reality Learners']
 ]) if (!html.includes(token)) fail(`missing ${label}`);
 
 if (fs.existsSync('standalone/SIM_EARTH_7_07_ALIEN_CONTROL_CENTER.html')) fail('legacy 7.07 canonical still present beside 7.08');

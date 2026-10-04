@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cute Beast Pocket Reality Learners // Synapse OS</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #071018; color: #d7f6ff; font: 14px/1.45 ui-monospace, monospace; }
+  header, main { padding: 12px 14px; }
+  h1 { font-size: 15px; letter-spacing: .08em; margin: 0 0 6px; }
+  h2 { font-size: 12px; letter-spacing: .14em; margin: 14px 0 6px; color: #9ec4d0; }
+  p, .note { margin: 0 0 8px; color: #9ec4d0; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+  button, label.file { background: #12323c; color: #e8ffff; border: 1px solid #2a6d7c; border-radius: 8px; padding: 8px 10px; font: inherit; cursor: pointer; }
+  button:disabled { opacity: .45; }
+  input, select { background: #0c1c24; color: #e8ffff; border: 1px solid #2a6d7c; border-radius: 8px; padding: 8px; font: inherit; }
+  input[type="password"], input[type="url"], input[type="text"] { min-width: min(100%, 280px); }
+  label.consent { display: flex; gap: 8px; align-items: flex-start; }
+  #status, #cage { min-height: 2.6em; color: #d7fff4; }
+  #qr { background: #f4fffd; border-radius: 8px; max-width: 100%; }
+  ul { margin: 6px 0; padding-left: 18px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CUTE BEAST POCKET REALITY LEARNERS</h1>
+  <p>Synapse OS is a game cage for a Lost Cosmos V11.1 creature. Growth, memory, and trade are play mechanics. They are not a claim that the beast is aware.</p>
+</header>
+<main>
+  <label class="consent"><input id="consent" type="checkbox"> I agree to derive focus, calm, and spark on this device. Raw samples are not stored.</label>
+  <div id="traits"><span>FOCUS <b id="focus">—</b></span> <span>CALM <b id="calm">—</b></span> <span>SPARK <b id="spark">—</b></span></div>
+  <div id="status" role="status" aria-live="polite">The cage is empty. Shape a beast from this world, a file, or a model label.</div>
+  <h2>SIGNAL</h2>
+  <div class="row">
+    <button id="mock" type="button">Simulated headband</button>
+    <button id="muse" type="button">Muse headband</button>
+    <button id="world" type="button">Use this living world</button>
+    <button id="shape" type="button">Shape beast from this world</button>
+  </div>
+  <p class="note">Muse plug-and-play uses Web Bluetooth in Chrome or Edge on this HTTPS page, after you click the button. The simulated headband stays available.</p>
+  <h2>MODEL OR FILE</h2>
+  <p class="note">Any label suggestion is rebuilt here from the seed. The model cannot set stats or the public identity. An API key stays in this page session and is never saved.</p>
+  <div class="row">
+    <select id="protocol" aria-label="Model protocol">
+      <option value="openai">OpenAI-compatible</option>
+      <option value="ollama">Ollama</option>
+    </select>
+    <input id="endpoint" type="url" placeholder="https://example.test/v1/chat/completions" autocomplete="off">
+    <input id="model" type="text" placeholder="model name" autocomplete="off">
+    <input id="key" type="password" placeholder="optional session key" autocomplete="off">
+    <button id="ask" type="button">Ask for a label</button>
+  </div>
+  <div class="row">
+    <label class="file">Import beast<input id="file" type="file" accept=".qbeast,.json,.zip,.bin,application/json,application/zip,application/octet-stream" hidden></label>
+    <input id="passphrase" type="password" placeholder="optional share passphrase" autocomplete="off">
+  </div>
+  <h2>CAGE</h2>
+  <div id="cage">No beast is held.</div>
+  <ul id="memories"></ul>
+  <div class="row">
+    <button id="tend" type="button">Tend the cage</button>
+    <button id="export" type="button">Download share</button>
+    <button id="link" type="button">Copy trade link</button>
+    <button id="showqr" type="button">Show QR</button>
+    <button id="send" type="button">Send to handheld</button>
+  </div>
+  <canvas id="qr" hidden></canvas>
+  <p class="note">A checksum catches a damaged file. A passphrase seal stops edits in transit. The cartridge and this ledger refuse a second copy of the same identity. Copying a file before you send it cannot be undone without a server.</p>
+</main>
+<script type="module" src="./synapse.mjs"></script>
+</body>
+</html>
