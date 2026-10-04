@@ -79,12 +79,24 @@ export class IslandExplore {
     }
   }
 
+  setLabel(label) {
+    const beast = this.beasts.find((row) => row.follow);
+    if (beast) beast.label = label || '';
+  }
+
+  setCompanionStage(stage) {
+    const beast = this.beasts.find((row) => row.follow);
+    if (!beast || beast.stage === stage) return;
+    beast.stage = stage;
+    beast.sheet = sheetOf(beast.genome, stage);
+  }
+
   setCompanion(entry) {
     this.companionSeed = entry?.seed || null;
     this.beasts = this.beasts.filter((beast) => !beast.follow);
     if (!entry?.genome) return;
     const home = ISLANDS.find((island) => island.name === entry.genome.island) || ISLANDS[0];
-    this.beasts.push(this.makeBeast(entry.genome, home, true, entry.stage || 1));
+    this.beasts.push(this.makeBeast(entry.genome, home, true, entry.stage || 1, entry.label || ''));
   }
 
   setWilds(wilds, knownSeeds) {
@@ -96,13 +108,14 @@ export class IslandExplore {
     });
   }
 
-  makeBeast(genome, island, follow, stage) {
+  makeBeast(genome, island, follow, stage, label = '') {
     const rnd = mulberry32(genome.behavior.prng_seed);
     return {
       genome,
       island,
       follow,
       stage,
+      label,
       sheet: sheetOf(genome, stage),
       x: island.x + (rnd() - 0.5) * 0.06,
       y: island.y + (rnd() - 0.5) * 0.06,
@@ -287,6 +300,12 @@ export class IslandExplore {
       ctx.drawImage(beast.sheet, x - size / 2, y - size + 8, size, size);
     }
     ctx.restore();
+    if (beast.follow && beast.label) {
+      ctx.fillStyle = '#f0c14a';
+      ctx.font = '700 12px ui-monospace, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(beast.label, x, y - size - 2);
+    }
     if (beast.act === 'nap') {
       ctx.fillStyle = '#cfe8ff';
       ctx.font = '12px ui-monospace, monospace';

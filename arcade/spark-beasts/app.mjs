@@ -5,7 +5,10 @@ import { loadTable, runChoices } from './runs.mjs';
 import { SensorHub } from './sensors.mjs';
 import { LiveShow } from './live.mjs';
 import { IslandExplore, sparkWilds } from './explore.mjs';
-import { eraseStore, grant, loadStore, rememberBeast, saveStore, stageFromXp } from './store.mjs';
+import { eraseStore, grant, loadStore, rememberBeast, rememberChat, renameBeast, saveStore, shownName, stageFromXp } from './store.mjs';
+import { resolveBubble } from './bubble.mjs';
+import { replyToBeast } from './chat.mjs';
+import { applyTraining, nextStageGoal, scoreFocus, scoreMemory, trainingBlurb } from './train.mjs';
 import { sha256Hex } from './hash.mjs';
 import { sanitizeName } from './trade.mjs';
 import {
@@ -31,6 +34,9 @@ const state = {
   sensors: null,
   live: null,
   explore: null,
+  preview: false,
+  chats: new Map(),
+  game: null,
 };
 
 function consented() {
@@ -101,31 +107,87 @@ async function hold(genome, runIndex, xp) {
   return admitted;
 }
 
+function activeBeast() {
+  if (!state.genome) return null;
+  return state.store.beasts[state.genome.seed] || null;
+}
+
+function speciesAt(stage) {
+  return state.genome?.names?.[String(stage)] || 'Beast';
+}
+
+function titleOf(stage) {
+  const beast = activeBeast();
+  const earned = beast?.stage || stage || 1;
+  return shownName(beast, speciesAt(stage || earned));
+}
+
+function publicLabel(beast, species) {
+  const nick = shownName(beast, species);
+  if (!species || nick.toLowerCase() === String(species).toLowerCase()) return nick;
+  return `${nick} (${species})`;
+}
+
 function paintStages(genome) {
   const root = $('stages');
   root.replaceChildren();
+  const earned = state.store.beasts[genome.seed]?.stage || 1;
+  const nick = shownName(state.store.beasts[genome.seed], genome.names['1']);
   for (const stage of [1, 2, 3]) {
     const figure = document.createElement('figure');
+    if (stage <= earned) figure.className = 'earned';
     const canvas = document.createElement('canvas');
     paintSprite(canvas, renderSprite(genome, stage), 2);
     const caption = document.createElement('figcaption');
-    caption.textContent = `${genome.names[String(stage)]} · stage ${stage}`;
+    const mark = stage <= earned ? 'earned' : 'locked until trained';
+    caption.textContent = `${nick} · ${genome.names[String(stage)]} · stage ${stage} · ${mark}`;
     figure.append(canvas, caption);
     root.append(figure);
   }
   const q = genome.quantum;
-  $('provenance').textContent = `${genome.names['1']} the ${genome.temperament} ${genome.body} of ${genome.island}. Voice ${genome.voice.style} at ${genome.voice.base_pitch_hz} Hz. Quantum seed ${q.backend} job ${q.job_id} pub ${q.pub_index}, ${q.num_bits}-bit recorded counts ${q.counts_sha256.slice(0, 12)}. These counts are historical. They are not a live link.`;
+  const keeper = genome.inputs.user_id || 'no keeper name';
+  $('provenance').textContent = `${nick} the ${genome.temperament} ${genome.body} of ${genome.island}. Sparked form ${genome.names['1']}. Voice ${genome.voice.style} at ${genome.voice.base_pitch_hz} Hz. Quantum seed ${q.backend} job ${q.job_id} pub ${q.pub_index}, ${q.num_bits}-bit recorded counts ${q.counts_sha256.slice(0, 12)}. These counts are historical. They are not a live link.`;
+  $('seed-lock').textContent = `Look locked. Seed keeper name: ${keeper}. Traits ${genome.inputs.traits.focus}/${genome.inputs.traits.calm}/${genome.inputs.traits.spark}. Run ${genome.inputs.quantum_run}. Renaming ${nick} does not change this seed.`;
   $('portrait').hidden = false;
   $('live-meta').textContent = `${genome.island} · ${genome.temperament} · reacts to ${genome.behavior.reacts_most_to} · tic ${genome.behavior.tic}`;
 }
 
+function syncCompanion({ place = false, announce = true } = {}) {
+  const beast = activeBeast();
+  if (!state.genome || !beast) return;
+  const earned = beast.stage || 1;
+  const showing = state.preview && earned < 3 ? earned + 1 : earned;
+  const species = speciesAt(showing);
+  const title = titleOf(earned);
+  if (state.live.stage !== showing) state.live.setStage(showing);
+  if (announce) state.live.hooks.onName?.(`${title} · ${species}  ${'I'.repeat(showing)}`);
+  $('beast-title').textContent = publicLabel(beast, speciesAt(earned));
+  if (document.activeElement !== $('beast-name')) $('beast-name').value = beast.displayName || '';
+  $('preview-note').hidden = !state.preview;
+  $('preview-note').textContent = state.preview
+    ? `Preview of stage ${showing}, ${species}. This form is not earned yet. Train to evolve.`
+    : '';
+  $('preview-next').textContent = state.preview ? 'Show earned form' : (earned < 3 ? 'Preview next form' : 'Final form earned');
+  const goal = nextStageGoal(beast.xp || 0);
+  const effort = beast.effort || { hp: 0, atk: 0, def: 0, spd: 0, spark: 0 };
+  const next = goal ? `${beast.xp}/${goal} xp to the next form` : 'final form earned';
+  $('care-stats').textContent = `${title} · stage ${earned} · energy ${Math.round(beast.energy ?? 100)} · bond ${Math.round(beast.bond || 0)} · ${next} · effort HP ${effort.hp} ATK ${effort.atk} DEF ${effort.def} SPD ${effort.spd} SPK ${effort.spark}`;
+  if (place) state.explore.setCompanion({ ...beast, genome: state.genome, label: title });
+  else {
+    state.explore.setLabel(title);
+    state.explore.setCompanionStage(earned);
+  }
+}
+
 function activate(entry) {
   state.genome = entry.genome;
+  state.preview = false;
   const stage = entry.stage || 1;
   paintStages(entry.genome);
   state.live.show(entry.genome, stage);
   state.live.setTarget(state.traits);
-  state.explore.setCompanion(entry);
+  syncCompanion({ place: true, announce: false });
+  renderChat();
   renderBestiary();
 }
 
@@ -137,7 +199,7 @@ function sparkFrom(traits, runIndex, origin) {
   const entry = entryFromGenome(genome, runIndex, origin, xp, state.store.beasts[genome.seed]?.bond || 0);
   hold(genome, runIndex, entry.xp).catch((error) => status(error.message));
   activate(entry);
-  status(`${genome.names['1']} sparked on ${genome.island}. Same signal, same run, same name: the same beast.`);
+  status(`${publicLabel(entry, genome.names['1'])} sparked on ${genome.island}. The look is locked to this signal, run, and keeper name. Name them on the Live tab without changing the seed.`);
   return entry;
 }
 
@@ -161,8 +223,9 @@ function renderBestiary() {
     const canvas = document.createElement('canvas');
     paintSprite(canvas, renderSprite(genome, beast.stage || 1), 2);
     card.append(canvas);
+    const form = genome.names[String(beast.stage || 1)] || beast.name;
     const label = document.createElement('div');
-    label.textContent = `${beast.name} · ${beast.island} · stage ${beast.stage} · bond ${Math.round(beast.bond)} · ${beast.origin}`;
+    label.textContent = `${publicLabel(beast, form)} · ${beast.island} · stage ${beast.stage} · bond ${Math.round(beast.bond)} · energy ${Math.round(beast.energy ?? 100)} · ${beast.origin}`;
     card.append(label);
     card.addEventListener('click', () => {
       activate({ ...beast, genome });
@@ -226,7 +289,10 @@ function showView(name) {
   document.querySelectorAll('nav button').forEach((button) => button.classList.toggle('on', button.dataset.view === name));
   document.querySelectorAll('.view').forEach((view) => view.classList.toggle('on', view.id === `view-${name}`));
   if (name === 'live') state.live.start();
-  else state.live.stop();
+  else {
+    state.live.stop();
+    stopGame();
+  }
   if (name === 'explore') {
     state.explore.start();
     if (!state.wilds.length && state.table) wakeWilds();
@@ -240,7 +306,7 @@ function wakeWilds() {
   state.explore.setWilds(state.wilds, known);
   if (state.genome) {
     const beast = state.store.beasts[state.genome.seed];
-    state.explore.setCompanion({ genome: state.genome, seed: state.genome.seed, stage: beast?.stage || 1 });
+    state.explore.setCompanion({ genome: state.genome, seed: state.genome.seed, stage: beast?.stage || 1, label: shownName(beast, state.genome.names[String(beast?.stage || 1)]) });
   }
 }
 
@@ -316,11 +382,29 @@ function bind() {
     const rolled = simulateStable(profiles[index % profiles.length]);
     sparkFrom({ focus: rolled.focus, calm: rolled.calm, spark: rolled.spark }, index, 'wild');
   });
-  document.querySelectorAll('[data-stage]').forEach((button) => button.addEventListener('click', () => {
-    const stage = Number(button.dataset.stage);
-    state.live.setStage(stage);
-    if (state.genome) state.live.hooks.onName?.(`${state.genome.names[String(stage)]}  ${'I'.repeat(stage)}`);
-  }));
+  $('rename').addEventListener('click', () => saveBeastName());
+  $('beast-name').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') saveBeastName();
+  });
+  $('preview-next').addEventListener('click', () => {
+    const beast = activeBeast();
+    if (!beast) { status('Spark a beast before previewing a form.'); return; }
+    if ((beast.stage || 1) >= 3 && !state.preview) {
+      status(`${titleOf()} is already the final earned form.`);
+      return;
+    }
+    state.preview = !state.preview;
+    syncCompanion();
+    status(state.preview ? $('preview-note').textContent : `${titleOf()} is showing the earned form.`);
+  });
+  $('act-play').addEventListener('click', () => finishTraining('play', { quality: 1 }));
+  $('act-rest').addEventListener('click', () => finishTraining('rest', { quality: 1 }));
+  $('act-focus').addEventListener('click', () => startFocus());
+  $('act-memory').addEventListener('click', () => startMemory());
+  $('chat-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    sendChat();
+  });
   $('voice').addEventListener('click', () => {
     state.live.enableVoice();
     $('voice').classList.add('on');
@@ -434,10 +518,17 @@ async function boot() {
   $('consent').addEventListener('change', () => state.sensors.setConsent($('consent').checked));
   state.live = new LiveShow($('live-view'), {
     onBubble(text, line) {
-      $('bubble').innerHTML = text ? `<b></b><span></span>` : '';
-      if (!text) return;
-      $('bubble').querySelector('b').textContent = text;
-      if (line) $('bubble').querySelector('span').textContent = line;
+      const spoken = resolveBubble(text, line, '...');
+      const gloss = String(line || '').trim();
+      $('bubble').replaceChildren();
+      const strong = document.createElement('b');
+      strong.textContent = spoken;
+      $('bubble').append(strong);
+      if (gloss && gloss !== spoken) {
+        const span = document.createElement('span');
+        span.textContent = gloss;
+        $('bubble').append(span);
+      }
     },
     onMood(text) { $('mood').textContent = text; },
     onName(text) { $('mood').dataset.name = text; },
@@ -483,13 +574,11 @@ async function boot() {
     if (!state.genome) return;
     const playing = $('view-live').classList.contains('on') || $('view-explore').classList.contains('on');
     if (!playing) return;
-    const result = grant(state.store, state.genome.seed, 1, 0.4);
+    const exploring = $('view-explore').classList.contains('on');
+    const result = grant(state.store, state.genome.seed, 0, exploring ? 0.4 : 0.1);
     if (!result) return;
     saveStore(state.store, localStorage);
-    if (result.grew) {
-      state.live.setStage(result.beast.stage);
-      status(`${state.genome.names[String(result.beast.stage)]} grew to stage ${result.beast.stage}. Growth does not shrink.`);
-    }
+    syncCompanion();
   }, 5000);
   window.addEventListener('message', (event) => {
     const data = event.data;
@@ -499,6 +588,223 @@ async function boot() {
     $('world-name').textContent = state.world;
   });
   if (window.parent !== window) window.parent.postMessage({ type: 'sb-spark-ready' }, '*');
+}
+
+function saveBeastName() {
+  const beast = activeBeast();
+  if (!beast) { status('Spark a beast before naming it.'); return; }
+  const renamed = renameBeast(state.store, beast.seed, $('beast-name').value);
+  if (!renamed) { status('Use letters or numbers, up to 16 characters.'); return; }
+  saveStore(state.store, localStorage);
+  paintStages(state.genome);
+  syncCompanion();
+  renderBestiary();
+  status(`${renamed.displayName} is saved on this device. The sparked look stays ${state.genome.names['1']}.`);
+}
+
+function renderChat() {
+  const root = $('chat-log');
+  root.replaceChildren();
+  const lines = state.genome ? (state.chats.get(state.genome.seed) || []) : [];
+  if (!lines.length) {
+    const empty = document.createElement('p');
+    empty.textContent = 'Say hello. The beast remembers your name and short notes on this device.';
+    root.append(empty);
+    return;
+  }
+  for (const line of lines) {
+    const row = document.createElement('p');
+    row.className = line.who;
+    const strong = document.createElement('b');
+    strong.textContent = line.who === 'you' ? 'You' : (line.name || 'Beast');
+    row.append(strong, document.createTextNode(` ${line.text}`));
+    root.append(row);
+  }
+  root.scrollTop = root.scrollHeight;
+}
+
+function pushChat(who, text, name) {
+  if (!state.genome) return;
+  const lines = state.chats.get(state.genome.seed) || [];
+  lines.push({ who, text, name });
+  state.chats.set(state.genome.seed, lines.slice(-24));
+  renderChat();
+}
+
+async function sendChat() {
+  const beast = activeBeast();
+  if (!beast || !state.genome) { status('Spark a beast before talking.'); return; }
+  const message = $('chat-input').value.trim();
+  if (!message) return;
+  $('chat-input').value = '';
+  pushChat('you', message);
+  const result = await replyToBeast(message, {
+    temperament: state.genome.temperament,
+    island: state.genome.island,
+    element: state.genome.element,
+    body: state.genome.body,
+    displayName: titleOf(),
+    speciesName: speciesAt(beast.stage || 1),
+    stage: beast.stage || 1,
+    bond: beast.bond || 0,
+    mood: 'neutral',
+    energy: beast.energy,
+    keeperName: state.store.playerName || '',
+    memory: beast.memory,
+  }, {
+    url: $('chat-endpoint').value,
+    protocol: $('chat-protocol').value,
+    model: $('chat-model').value,
+    key: $('chat-key').value,
+  });
+  rememberChat(state.store, beast.seed, result.memory);
+  saveStore(state.store, localStorage);
+  pushChat('beast', result.text, titleOf());
+  state.live.present(result.text, result.text, 3.4);
+  status(result.source === 'model'
+    ? 'Reply from your local model. The beast is still a game companion, not a conscious being.'
+    : 'Reply from the on-device rules.');
+}
+
+function stopGame() {
+  if (state.game?.stop) state.game.stop();
+  state.game = null;
+  $('game-panel').hidden = true;
+  $('rhythm').hidden = true;
+  $('memory-pad').hidden = true;
+}
+
+function finishTraining(activity, score) {
+  const beast = activeBeast();
+  if (!beast) { status('Spark a beast before training.'); return; }
+  const result = applyTraining(state.store, beast.seed, activity, score);
+  if (!result.ok) {
+    status(trainingBlurb(result, titleOf()));
+    return;
+  }
+  saveStore(state.store, localStorage);
+  state.preview = false;
+  const beforeSpecies = speciesAt(result.before || 1);
+  const species = speciesAt(result.beast.stage);
+  syncCompanion();
+  paintStages(state.genome);
+  const line = trainingBlurb(result, titleOf());
+  state.live.present(line, line, 2.8);
+  if (result.grew) {
+    status(`${titleOf()} evolved from ${beforeSpecies} into ${species}, stage ${result.beast.stage}. This form was earned by training.`);
+    state.live.say(`${species}.`, 'spark', 2.6);
+  } else {
+    const goal = nextStageGoal(result.beast.xp);
+    status(goal ? `${line} ${result.beast.xp}/${goal} xp.` : `${line} Final form.`);
+  }
+}
+
+function startFocus() {
+  const beast = activeBeast();
+  if (!beast) { status('Spark a beast before training.'); return; }
+  if ((beast.energy ?? 100) < 16) { status(trainingBlurb({ ok: false, reason: 'tired' }, titleOf())); return; }
+  stopGame();
+  $('game-panel').hidden = false;
+  $('rhythm').hidden = false;
+  $('game-title').textContent = 'Tap Spark when the gold mark sits in the bright band. Six beats.';
+  $('game-status').textContent = 'Beat 1 of 6.';
+  const mark = $('rhythm-mark');
+  let pos = 8;
+  let dir = 1;
+  let hits = 0;
+  let beat = 0;
+  let armed = true;
+  let beatStarted = performance.now();
+  let last = beatStarted;
+  let running = true;
+  const finish = () => {
+    if (!running) return;
+    running = false;
+    stopGame();
+    finishTraining('focus', scoreFocus(hits, 6));
+  };
+  const settle = (clicked) => {
+    if (!armed || !running) return;
+    armed = false;
+    const center = clicked && Math.abs(pos - 50) <= 12;
+    if (center) hits += 1;
+    beat += 1;
+    $('game-status').textContent = `${hits} of ${beat} in the band. Beat ${Math.min(beat + 1, 6)} of 6.`;
+    if (beat >= 6) finish();
+    else {
+      beatStarted = performance.now();
+      setTimeout(() => { if (running) armed = true; }, 220);
+    }
+  };
+  const frame = (now) => {
+    if (!running) return;
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    pos += dir * dt * 62;
+    if (pos > 92) { pos = 92; dir = -1; }
+    if (pos < 8) { pos = 8; dir = 1; }
+    mark.style.left = `${pos}%`;
+    if (armed && now - beatStarted > 1200) settle(false);
+    requestAnimationFrame(frame);
+  };
+  $('rhythm-hit').onclick = () => settle(true);
+  state.game = { stop() { running = false; } };
+  requestAnimationFrame(frame);
+}
+
+function startMemory() {
+  const beast = activeBeast();
+  if (!beast) { status('Spark a beast before training.'); return; }
+  if ((beast.energy ?? 100) < 16) { status(trainingBlurb({ ok: false, reason: 'tired' }, titleOf())); return; }
+  stopGame();
+  const glyphs = ['sun', 'drop', 'leaf', 'bolt'];
+  const length = Math.min(5, 3 + ((beast.stage || 1) - 1));
+  const shown = Array.from({ length }, () => glyphs[Math.floor(Math.random() * glyphs.length)]);
+  const answer = [];
+  $('game-panel').hidden = false;
+  $('memory-pad').hidden = false;
+  $('game-title').textContent = 'Watch the sparks, then repeat them in order.';
+  $('game-status').textContent = 'Watch...';
+  const pad = $('memory-pad');
+  pad.replaceChildren();
+  const buttons = glyphs.map((glyph) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = glyph;
+    button.disabled = true;
+    button.addEventListener('click', () => {
+      answer.push(glyph);
+      button.classList.add('on');
+      setTimeout(() => button.classList.remove('on'), 160);
+      if (answer.length >= shown.length) {
+        pad.querySelectorAll('button').forEach((node) => { node.disabled = true; });
+        const score = scoreMemory(shown, answer);
+        stopGame();
+        finishTraining('memory', score);
+      }
+    });
+    pad.append(button);
+    return button;
+  });
+  let step = 0;
+  let timer = null;
+  const play = () => {
+    if (step >= shown.length) {
+      $('game-status').textContent = 'Your turn.';
+      buttons.forEach((button) => { button.disabled = false; });
+      return;
+    }
+    const glyph = shown[step];
+    $('game-status').textContent = glyph;
+    buttons.forEach((button) => button.classList.toggle('on', button.textContent === glyph));
+    step += 1;
+    timer = setTimeout(() => {
+      buttons.forEach((button) => button.classList.remove('on'));
+      timer = setTimeout(play, 220);
+    }, 560);
+  };
+  state.game = { stop() { clearTimeout(timer); } };
+  timer = setTimeout(play, 400);
 }
 
 boot();

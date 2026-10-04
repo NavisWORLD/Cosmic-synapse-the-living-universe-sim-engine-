@@ -3,6 +3,8 @@
  * No samples and no network. The same seed, stage, mood, and drive speak the same line.
  */
 
+import { resolveBubble } from './bubble.mjs';
+
 function mulberry(a) {
   return function next() {
     a |= 0;
@@ -30,7 +32,8 @@ export function utterance(v, stage, mood, idx, drive) {
   const gain = v.gain * (1 - 0.45 * dc + 0.1 * ds);
   const jump = v.jump_semitones * (1 + 0.8 * ds - 0.45 * dc - 0.3 * df);
   const [lo, hi] = v.phrase_syllables;
-  const n = lo + Math.floor(r() * (hi - lo + 1)) + (ds > 0.6 ? 1 : 0) - (dc > 0.7 && lo > 2 ? 1 : 0);
+  let n = lo + Math.floor(r() * (hi - lo + 1)) + (ds > 0.6 ? 1 : 0) - (dc > 0.7 && lo > 2 ? 1 : 0);
+  if (!Number.isFinite(n) || n < 1) n = 1;
   const contour = ds > 0.6 ? 'bounce' : v.contour;
   const syl = [];
   const words = [];
@@ -55,10 +58,12 @@ export function utterance(v, stage, mood, idx, drive) {
     words.push(cons + vw);
     t += dur + (0.22 + 0.25 * dc - 0.08 * ds) / rate * (0.7 + 0.6 * r());
   }
-  let text = words.join(r() < 0.5 ? '-' : ' ');
+  let text = words.filter(Boolean).join(r() < 0.5 ? '-' : ' ').trim();
+  if (!text) text = `${(v.consonants && v.consonants[0]) || 'm'}${(v.vowels && v.vowels[0]) || 'a'}`;
   text = text[0].toUpperCase() + text.slice(1) + (END[mood] || '!');
   if (mood === 'spark' && r() < 0.6) text += '!';
-  return { syl, text, dur: t, style: v.style };
+  text = resolveBubble(text, 'Mmm');
+  return { syl, text, dur: Math.max(t, 0.4), style: v.style };
 }
 
 const noiseCache = new WeakMap();

@@ -4,6 +4,7 @@
  */
 import { renderSprite } from './render.mjs';
 import { utterance, schedule, master } from './voice-synth.mjs';
+import { holdBubble, resolveBubble } from './bubble.mjs';
 
 const LINES = {
   Serene: { calm: ['Mm. The stars are humming.', 'So soft. Stay like this.'], focus: ['I see it too.', 'Quiet eyes, clear sky.'], spark: ['Oh. Little lights.', 'A warm fizz in my core.'], neutral: ['Breathe with me.', 'The island is calm today.'] },
@@ -91,7 +92,7 @@ export class LiveShow {
       habits: behavior.habits.map((habit) => ({ ...habit, next: 2 + habit.every_s * 0.5 })),
       quirks: behavior.quirks.map((quirk) => ({ ...quirk, next: 1.5 + quirk.every_s * 0.5 })),
       act: null, qact: null, wx: 0, wv: 0, parts: [], mood: 'neutral', moodSince: 0,
-      lastSay: -99, bubbleUntil: -1, prev: { ...this.felt }, dash: 0, paceDir: 1, lastBeat: -1, echo: 0, talk: null, lookFlip: false,
+      lastSay: -99, bubbleUntil: -1, bubbleText: '', bubbleLine: '', prev: { ...this.felt }, dash: 0, paceDir: 1, lastBeat: -1, echo: 0, talk: null, lookFlip: false,
     };
     this.hooks.onName?.(`${genome.names[String(stage)]}  ${'I'.repeat(stage)}`);
     this.say(this.ruleLine('neutral'), 'neutral', 2.2);
@@ -117,16 +118,35 @@ export class LiveShow {
     return line;
   }
 
-  say(line, mood, dur = 2.4, drive = null) {
-    if (!this.genome) return;
-    const felt = drive || this.frameDrive || { focus: 0, calm: 0, spark: 0 };
-    const spoken = utterance(this.genome.voice, this.stage, mood, this.utteranceCount, felt);
-    this.utteranceCount += 1;
-    this.hooks.onBubble?.(spoken.text, this.translate ? line : '');
-    this.state.bubbleUntil = this.T + Math.max(dur, spoken.dur + 1.1);
+  present(text, line, dur = 2.2) {
+    if (!this.state) return;
+    const next = holdBubble(
+      { text: this.state.bubbleText, line: this.state.bubbleLine, until: this.state.bubbleUntil },
+      { text, line, dur },
+      this.T,
+    );
+    this.state.bubbleText = next.text;
+    this.state.bubbleLine = next.line;
+    this.state.bubbleUntil = next.until;
     this.state.lastSay = this.T;
-    this.state.talk = { u: spoken, t0: this.T };
-    if (this.voiceOn && this.audio) schedule(this.audio, this.output, this.audio.currentTime + 0.03, this.genome.voice, spoken);
+    const gloss = this.translate ? next.line : '';
+    this.hooks.onBubble?.(next.text, gloss && gloss !== next.text ? gloss : '');
+  }
+
+  say(line, mood, dur = 2.4, drive = null) {
+    if (!this.genome || !this.state) return;
+    const safeLine = resolveBubble(line, this.genome.behavior?.tic, '...');
+    try {
+      const felt = drive || this.frameDrive || { focus: 0, calm: 0, spark: 0 };
+      const spoken = utterance(this.genome.voice, this.stage, mood, this.utteranceCount, felt);
+      this.utteranceCount += 1;
+      const text = resolveBubble(spoken.text, safeLine, this.genome.behavior?.tic);
+      this.present(text, safeLine, Math.max(dur, spoken.dur + 1.1));
+      this.state.talk = { u: spoken, t0: this.T };
+      if (this.voiceOn && this.audio) schedule(this.audio, this.output, this.audio.currentTime + 0.03, this.genome.voice, spoken);
+    } catch {
+      this.present(safeLine, safeLine, dur);
+    }
   }
 
   glyph(ch, x, y, color) {
@@ -223,7 +243,7 @@ export class LiveShow {
       }
       if (this.T >= quirk.next) {
         quirk.next = this.T + quirk.every_s * (0.6 + 0.8 * S.rnd());
-        if (quirk.name === 'hiccups') { S.qact = { name: 'hic', until: this.T + 0.15 }; if (S.rnd() < 0.5) this.hooks.onBubble?.('hic!', ''); }
+        if (quirk.name === 'hiccups') { S.qact = { name: 'hic', until: this.T + 0.15 }; if (S.rnd() < 0.5) this.present('hic!', '', 1.6); }
         if (quirk.name === 'shivers') S.qact = { name: 'shiver', until: this.T + 0.6 };
         if (quirk.name === 'freezes_mid_beat') S.qact = { name: 'freezes_mid_beat', until: this.T + 0.7 };
       }
@@ -246,7 +266,7 @@ export class LiveShow {
         habit.next = this.T + habit.every_s * (0.6 + 0.8 * S.rnd());
         const dur = { look_around: 1.6, stretch: 1.2, turn_around: 0.2, double_hop: 0.9, doze_off: 2.2, shake: 0.7, sparkle_burst: 0.3, tail_flick: 0.6, peek: 1.0, spin_hop: 0.8, yawn: 1.4, sniff: 1.2 }[habit.name] || 1;
         S.act = { name: habit.name, t0: this.T, dur };
-        if (HABIT_LINE[habit.name] && S.rnd() < 0.6 * be.chattiness + 0.2 && this.T > S.bubbleUntil) this.hooks.onBubble?.(HABIT_LINE[habit.name], '');
+        if (HABIT_LINE[habit.name] && S.rnd() < 0.6 * be.chattiness + 0.2 && this.T > S.bubbleUntil) this.present(HABIT_LINE[habit.name], '', 1.8);
         if (habit.name === 'turn_around') S.facing *= -1;
         if (habit.name === 'sparkle_burst') this.emit('s', 8);
         break;
@@ -281,7 +301,6 @@ export class LiveShow {
       if (part.kind === 's') part.vy += 10 * dt;
     }
     S.parts = S.parts.filter((part) => part.t < part.life).slice(-80);
-    if (this.T > S.bubbleUntil) this.hooks.onBubble?.('', '');
     this.hooks.onMood?.(`${S.mood} · ${be.gait} ${tempo.toFixed(2)} beats/s`);
     return { dx, dy, sw, sh, eyes, breath, appX, appY, facing: S.facing * (S.lookFlip ? -1 : 1), wx: S.wx };
   }
