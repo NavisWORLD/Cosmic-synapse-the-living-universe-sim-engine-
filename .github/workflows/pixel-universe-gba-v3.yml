@@ -93,7 +93,19 @@ jobs:
           sleep 1
           mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot1.log 2>&1 &
           MPID=$!
-          sleep 4
+          # Runner speed varies. Wait for the actual boot-1 SRAM completion
+          # marker instead of assuming four wall-clock seconds is enough.
+          for i in $(seq 1 40); do
+            if python - <<'PY'
+from pathlib import Path
+p=Path('qa.sav')
+if not p.exists() or p.stat().st_size < 128: raise SystemExit(1)
+d=p.read_bytes()
+raise SystemExit(0 if d[126] == 0xA5 else 1)
+PY
+            then break; fi
+            sleep 0.5
+          done
           kill -TERM "$MPID" 2>/dev/null || true
           for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
           kill -KILL "$MPID" 2>/dev/null || true
@@ -126,7 +138,19 @@ jobs:
           sleep 1
           mgba -C savegamePath="$PWD" -C audioSync=0 -C videoSync=0 qa.gba >mgba-boot2.log 2>&1 &
           MPID=$!
-          sleep 4
+          # Boot 2 advances the same real SRAM through the remaining authored
+          # QA route. Poll its explicit 0x5A completion marker.
+          for i in $(seq 1 40); do
+            if python - <<'PY'
+from pathlib import Path
+p=Path('qa.sav')
+if not p.exists() or p.stat().st_size < 128: raise SystemExit(1)
+d=p.read_bytes()
+raise SystemExit(0 if d[126] == 0x5A else 1)
+PY
+            then break; fi
+            sleep 0.5
+          done
           kill -TERM "$MPID" 2>/dev/null || true
           for i in $(seq 1 20); do kill -0 "$MPID" 2>/dev/null || break; sleep 0.1; done
           kill -KILL "$MPID" 2>/dev/null || true
