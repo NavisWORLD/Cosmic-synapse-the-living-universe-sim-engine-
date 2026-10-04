@@ -19,7 +19,8 @@ const root=process.argv[2]||'http://127.0.0.1:8765',out=process.argv[3]||'artifa
  }
  try{
   const hand=await open();
-  const initial=await hand.evaluate(()=>{const gm=EJS_emulator.gameManager;return {path:gm.getSaveFilePath(),name:EJS_gameName,save:Array.from(gm.getSaveFile(false))}});
+  const initial=await hand.evaluate(()=>{const gm=EJS_emulator.gameManager,s=gm.getSaveFile(false);return {path:gm.getSaveFilePath(),name:EJS_gameName,files:gm.FS.readdir('/data/saves'),save:s?Array.from(s):null}});
+  console.log('Native battery admission:',JSON.stringify({...initial,save:initial.save?.length}));
   assert.equal(initial.save.length,32768);assert.equal(Buffer.from(initial.save).toString('ascii',24704,24708),'SPK1');
   assert.ok(initial.path.includes(initial.name.replace('.gba','')),'native battery uses the selected identity namespace');
   console.log('Native core battery path:',initial.path);
