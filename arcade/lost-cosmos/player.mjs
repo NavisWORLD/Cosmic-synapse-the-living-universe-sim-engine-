@@ -42,7 +42,8 @@ function bringIn() {
   }
   const profile = currentProfile();
   state.save = buildSave(profile);
-  status(`${profile.speciesName} is ready in the cartridge mailbox as ${profile.callsign}. Sense traits only.`);
+  state.mailNote = `${profile.speciesName} is ready in the cartridge mailbox as ${profile.callsign}. Sense traits only.`;
+  status(state.mailNote);
 }
 
 function acceptCageSave(bytes) {
@@ -170,7 +171,8 @@ function onWorldMessage(data) {
     biosphere: Number(data.biosphere) || 0,
     lifeEvents: Math.trunc(Number(data.lifeEvents) || 0),
   };
-  status(`Linked to ${state.world.world}. Biosphere ${state.world.biosphere.toFixed(3)}, life events ${state.world.lifeEvents}.`);
+  const link = `Linked to ${state.world.world}. Biosphere ${state.world.biosphere.toFixed(3)}, life events ${state.world.lifeEvents}.`;
+  status(state.mailNote ? `${state.mailNote} ${link}` : link);
 }
 
 window.addEventListener('message', (event) => {
@@ -186,7 +188,8 @@ window.addEventListener('message', (event) => {
         return;
       }
       state.save = bytes;
-      status(`${data.callsign || 'A beast'} is in the cartridge mailbox from the Synapse OS cage.`);
+      state.mailNote = `${data.callsign || 'A beast'} is in the cartridge mailbox from the Synapse OS cage.`;
+      status(state.mailNote);
     } catch (err) {
       status(err.message || 'The cage save was rejected.');
     }

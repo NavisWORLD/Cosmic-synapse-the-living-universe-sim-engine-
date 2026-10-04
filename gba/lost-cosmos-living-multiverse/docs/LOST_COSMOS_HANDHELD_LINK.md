@@ -40,7 +40,7 @@ npm run prepare:web
 npm run serve
 ```
 
-Open http://127.0.0.1:7070/ , choose INITIATE SIM EARTH 7.08, then HANDHELD. Consent, use the simulated headband or a Muse headband, then Bring creature in and Start cartridge. Inside the game, start a new game. The creature is on the field, the party page, and the Beast Box page.
+Open http://127.0.0.1:7070/ , choose ENTER CUTE BEAST POCKET REALITY, then HANDHELD or MODELS. Consent, use the simulated headband or a Muse headband, then bring a creature in and start the cartridge. Inside the game, start a new game. The creature is on the field, the party page, and the Beast Box page. A world update after Send to handheld keeps the mailbox confirmation on screen.
 
 `arcade/lost-cosmos/index.html?demo=1` uses the shared EARTH fixture and starts the cartridge without a sensor.
 
