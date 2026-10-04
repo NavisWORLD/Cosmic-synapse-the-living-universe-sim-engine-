@@ -1,0 +1,74 @@
+name: Sol nursery browser verification
+on:
+  push:
+    branches: [main]
+    paths: ['arcade/sol-beast-lab/**', '.github/workflows/sol-nursery.yml']
+  pull_request:
+    branches: [main]
+    paths: ['arcade/sol-beast-lab/**', '.github/workflows/sol-nursery.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install official cartridge and controller tools
+        run: sudo apt-get update && sudo apt-get install -y clang lld llvm libmgba-dev ffmpeg gcc python3-pil
+      - name: Build both native cartridge variants
+        run: |
+          bash scripts/build-lost-cosmos-arcade.sh
+          mkdir -p gba/lost-cosmos-living-multiverse/artifacts/sol-ci/runtime
+          cp gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf gba/lost-cosmos-living-multiverse/artifacts/sol-ci/runtime/
+          (cd gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE && IMPORTED_BEAST=1 bash build_v5.sh)
+      - name: Verify art, imports, evolution, local map and recipe costs
+        working-directory: gba/lost-cosmos-living-multiverse
+        run: |
+          python3 tests/test_sol_beast_art.py
+          python3 tests/test_sol_nursery_native.py
+          python3 tests/test_sol_navigation_native.py
+          bash tools/mgba_build.sh
+          python3 tests/test_mgba_sol_nursery.py --out artifacts/sol-ci/compiled
+          python3 tests/test_mgba_sol_nursery.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/sol-ci/runtime/lost_cosmos_v5.elf --out artifacts/sol-ci/runtime-import
+      - name: Earn both full eight-island journeys and verify old campaign routes
+        working-directory: gba/lost-cosmos-living-multiverse
+        run: |
+          python3 tests/test_mgba_content_v11.py --out artifacts/sol-ci/journey
+          python3 tests/test_mgba_content_v11.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/sol-ci/runtime/lost_cosmos_v5.elf --starter artifacts/sol-ci/runtime-import/sol_starter.sav --out artifacts/sol-ci/sol-journey
+          python3 tests/test_mgba_act1_controller.py --out artifacts/sol-ci/act1
+          python3 tests/test_mgba_act1_resume.py --out artifacts/sol-ci/act1
+          python3 tests/test_mgba_act2_controller.py --act1 artifacts/sol-ci/act1 --out artifacts/sol-ci/act2
+          python3 tests/test_mgba_eldoria_controller.py --act2 artifacts/sol-ci/act2 --out artifacts/sol-ci/eldoria
+          python3 tests/test_mgba_hollow_grove_controller.py --eldoria artifacts/sol-ci/eldoria --out artifacts/sol-ci/grove
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sol-native-${{ github.sha }}
+          path: gba/lost-cosmos-living-multiverse/artifacts/sol-ci/
+          retention-days: 30
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check deterministic genome and save preservation
+        run: node --test arcade/sol-beast-lab/design.test.mjs
+      - name: Install isolated browser test runtime
+        run: |
+          npm install --prefix /tmp/sol-browser --no-save --ignore-scripts playwright@1.62.1
+          /tmp/sol-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify nursery in a real browser
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/sol-http.log 2>&1 &
+          NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-beast-lab/browser-check.cjs http://127.0.0.1:8765 artifacts/sol-browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sol-nursery-browser-${{ github.sha }}
+          path: artifacts/sol-browser/
+          retention-days: 30

@@ -315,8 +315,28 @@ static void lc_expand_import_field(const u8*src){
  }
 }
 static void lc_draw_import_field(int oi,int x,int y,int hflip,int ui,u32 identity);
+#include "sol_beast_art.h"
+/* Nursery-only evolution art. This updates RAM/VRAM, never a save or roster.
+   All other LCX1 profiles keep their supplied art exactly as before. */
+static void sol_refresh_mail_art(void){
+ unsigned meta;int i,stage=-1,x,y;
+ if(!lc_mail_live||lc_mail_pal[26]!=0x35||lc_mail_pal[27]!=0x2d||
+    lc_mail_pal[28]!=0xc7||lc_mail_pal[29]!=0x16)return;
+ meta=(unsigned)lc_mail_pal[30]|((unsigned)lc_mail_pal[31]<<8);
+ if((meta&0xe000u)!=0x6000u)return;
+ for(i=0;i<lc_party.count;i++)if(lc_party.slots[i].identity==lc_mail_identity){stage=lc_party.slots[i].stage;break;}
+ if(stage<0||stage>2||((meta>>11)&3u)==(unsigned)stage)return;
+ for(y=0;y<32;y++)for(x=0;x<32;x+=2){
+  unsigned at=((y/8)*4+x/8)*32+(y&7)*4+(x&7)/2;
+  lc_mail_tiles[at]=(u8)(sol_beast_pixel(x,y,lc_party.slots[i].seed,meta,stage,0)|
+    (sol_beast_pixel(x+1,y,lc_party.slots[i].seed,meta,stage,0)<<4));
+ }
+ meta=(meta&0x67ffu)|((unsigned)stage<<11);
+ lc_mail_pal[30]=(u8)meta;lc_mail_pal[31]=(u8)(meta>>8);
+}
 static void lc_mail_blit(void){
  int i;if(!lc_mail_live)return;
+ sol_refresh_mail_art();
  for(i=0;i<16;i++)OBJ_PALETTE[LC_IMPORT_OBJ_PAL*16+i]=
   (u16)lc_mail_pal[i*2]|(u16)((u16)lc_mail_pal[i*2+1]<<8);
  {volatile u16 *dst=(volatile u16*)OBJ_VRAM32;

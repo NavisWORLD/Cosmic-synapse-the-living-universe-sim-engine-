@@ -4,15 +4,16 @@ All state changes use ordinary buttons. ELF reads guide input; no memory writes
 or savestates. Failing paths produce screenshots and an incomplete report.
 """
 from pathlib import Path
-import argparse,json,struct,sys,traceback
+import argparse,json,struct,sys,traceback,shutil
 R=Path(__file__).resolve().parents[1];sys.path.insert(0,str(R/'tools'))
 from mgba import Mgba,sha256
 from mgba_navigate import Navigator
 CAT=json.loads((R/'content/v11_1_catalog.json').read_text())
 PAGES={1:0,11:1,18:2,4:3,5:4,28:5,20:6,26:8,9:9}
-def run(rom,elf,out):
+def run(rom,elf,out,starter=None):
  out.mkdir(parents=True,exist_ok=True);save=out/'expedition_earned.sav'
- if save.exists():save.unlink()
+ if starter:shutil.copyfile(starter,save)
+ elif save.exists():save.unlink()
  report=dict(rom_sha256=sha256(rom),elf_sha256=sha256(elf),controller_only=True,memory_writes=False,savestates=False,passed=False,stages=[])
  with Mgba(rom,elf=elf,save_path=save,trace_path=out/'controller_inputs.jsonl') as e:
   nav=Navigator(e)
@@ -238,4 +239,4 @@ def run(rom,elf,out):
    assert val('v11_beacons')==255 and val('v11_boss_done')==1023
   report['cold_boot_passed']=True;report['manual_slot_loads_passed']=True;report['passed']=True;(out/'content_controller_report.json').write_text(json.dumps(report,indent=2)+'\n');e.screenshot(out/'23_cold_boot_progress.png')
 if __name__=='__main__':
- a=argparse.ArgumentParser();a.add_argument('--out',type=Path,default=R/'artifacts/v11_content');a.add_argument('--rom',type=Path,default=R/'LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba');a.add_argument('--elf',type=Path,default=R/'LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf');o=a.parse_args();run(o.rom,o.elf,o.out)
+ a=argparse.ArgumentParser();a.add_argument('--out',type=Path,default=R/'artifacts/v11_content');a.add_argument('--rom',type=Path,default=R/'LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba');a.add_argument('--elf',type=Path,default=R/'LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf');a.add_argument('--starter',type=Path);o=a.parse_args();run(o.rom,o.elf,o.out,o.starter)
