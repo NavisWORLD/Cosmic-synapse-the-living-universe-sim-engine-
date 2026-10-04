@@ -181,7 +181,8 @@ function paintBeasts(state) {
   }
   for (const label of document.querySelectorAll('.stage-label')) label.textContent = stageName(stage);
   el('buddy-name').textContent = state.buddyName;
-  el('growth-line').textContent = `${state.buddyName} is a ${stageName(stage)}. ${state.growth.goalsCompleted} goals finished. ${state.buddyName} only grows.`;
+  const finished = state.growth.goalsCompleted;
+  el('growth-line').textContent = `${state.buddyName} is a ${stageName(stage)}. ${finished} ${finished === 1 ? 'goal' : 'goals'} finished. ${state.buddyName} only grows.`;
   document.title = `${state.buddyName} · Learner Buddy`;
 }
 
