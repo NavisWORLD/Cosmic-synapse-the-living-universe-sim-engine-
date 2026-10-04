@@ -1,6 +1,6 @@
 import { verifySparkArt } from './cartridge.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
-import {batteryName,prepareBattery} from './battery.mjs';
+import {batteryName,prepareBattery,keepCoreBattery} from './battery.mjs';
 /* Sol Spark handheld adapter. Original living-link player stays unchanged. */
 import { FIXTURE, GROWTH_BYTES, GROWTH_OFFSET, MAILBOX_BYTES, MAILBOX_OFFSET, SRAM_SIZE, buildSave, livingProfile, profileFromBcp1, profileFromBeastJson } from '../lost-cosmos/mailbox.mjs';
 import { MuseLink, mockTraits } from '../lost-cosmos/muse.mjs';
@@ -125,6 +125,7 @@ async function installEmulator(bytes) {
     if (!gm || !bytes) return;
     try {
       const path = gm.getSaveFilePath?.();
+      if(path)keepCoreBattery(gm.FS,bytes,path);
       if (path && !gm.FS.analyzePath(path).exists) {
         const parent = path.split('/').slice(0, -1).join('/') || '/data/saves';
         if (!gm.FS.analyzePath(parent).exists) gm.FS.mkdir(parent);

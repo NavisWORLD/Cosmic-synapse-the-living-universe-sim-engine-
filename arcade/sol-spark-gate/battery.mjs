@@ -21,7 +21,9 @@ export function chooseBattery(incoming,cached,{journey=false}={}){
 }
 export function prepareBattery(fs,incoming,{journey=false}={}){
  const name=batteryName(incoming),paths=[`/data/saves/${name}.srm`,`/data/saves/${name}.gba.srm`];
- const cached=paths.find(path=>fs.analyzePath(path).exists);
+ const existing=paths.filter(path=>fs.analyzePath(path).exists);
+ // Old adapters prepared both core filename conventions. Prefer earned data.
+ const cached=existing.find(path=>String.fromCharCode(...fs.readFile(path).subarray(0,4))==='LCV5')||existing[0];
  let selected=chooseBattery(incoming,cached?fs.readFile(cached):null,{journey});
  // Migrate only a verified matching battery from the older common filename.
  if(!cached&&!journey)for(const path of ['/data/saves/lost-cosmos.srm','/data/saves/lost-cosmos.gba.srm']){
@@ -31,4 +33,11 @@ export function prepareBattery(fs,incoming,{journey=false}={}){
  if(!fs.analyzePath('/data/saves').exists)fs.mkdir('/data/saves');
  for(const path of paths)fs.writeFile(path,selected);
  return {bytes:selected,resumed:String.fromCharCode(...selected.subarray(0,4))==='LCV5'};
+}
+export function keepCoreBattery(fs,incoming,corePath){
+ const name=batteryName(incoming),paths=[`/data/saves/${name}.srm`,`/data/saves/${name}.gba.srm`];
+ if(!paths.includes(corePath))throw Error('The native core returned an unsupported battery path.');
+ // Once the core reveals its filename, remove our redundant starter alias.
+ // Leaving that alias would select stale progress on the next page opening.
+ for(const path of paths)if(path!==corePath&&fs.analyzePath(path).exists)fs.unlink(path);
 }

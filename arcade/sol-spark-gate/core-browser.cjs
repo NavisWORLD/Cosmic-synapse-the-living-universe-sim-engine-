@@ -22,10 +22,11 @@ const root=process.argv[2]||'http://127.0.0.1:8765',out=process.argv[3]||'artifa
   const initial=await hand.evaluate(()=>{const gm=EJS_emulator.gameManager;return {path:gm.getSaveFilePath(),name:EJS_gameName,save:Array.from(gm.getSaveFile(false))}});
   assert.equal(initial.save.length,32768);assert.equal(Buffer.from(initial.save).toString('ascii',24704,24708),'SPK1');
   assert.ok(initial.path.includes(initial.name.replace('.gba','')),'native battery uses the selected identity namespace');
+  console.log('Native core battery path:',initial.path);
   await hand.locator('#game canvas').first().screenshot({path:out+'/native-title.png'});
   async function press(button){await hand.evaluate(b=>EJS_emulator.gameManager.simulateInput(0,b,1),button);await page.waitForTimeout(150);await hand.evaluate(b=>EJS_emulator.gameManager.simulateInput(0,b,0),button);await page.waitForTimeout(650);}
   await page.waitForTimeout(1800);await press(8);await page.waitForTimeout(900);await press(3);
-  await hand.waitForFunction(()=>{const gm=EJS_emulator.gameManager;gm.saveSaveFiles();const s=gm.getSaveFile(false);return s&&String.fromCharCode(...s.subarray(1024,1028))==='LCR1'},{timeout:90000});
+  await hand.waitForFunction(()=>{const gm=EJS_emulator.gameManager;gm.saveSaveFiles();const s=gm.getSaveFile(false);return s&&String.fromCharCode(...s.subarray(1024,1028))==='LCR1'},null,{timeout:90000});
   const earned=await hand.evaluate(async()=>{const gm=EJS_emulator.gameManager;gm.saveSaveFiles();await new Promise((resolve,reject)=>gm.FS.syncfs(false,e=>e?reject(e):resolve()));return Array.from(gm.getSaveFile(false))});
   assert.equal(Buffer.from(earned).toString('ascii',0,4),'LCV5');
   assert.deepEqual(earned.slice(24704,24832),initial.save.slice(24704,24832));
