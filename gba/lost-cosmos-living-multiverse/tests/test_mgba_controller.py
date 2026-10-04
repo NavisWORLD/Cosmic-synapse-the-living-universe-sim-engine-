@@ -12,6 +12,7 @@ import struct
 import subprocess
 import sys
 import wave
+import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
@@ -143,7 +144,7 @@ def run(rom, elf, output):
                 "Actual controller direction inputs did not move the actor")
         emu.screenshot(output / "04_exploration_native.png")
         # Save through the actual V11.1 player menu: SYSTEM is the right-column
-        # fifth entry, then SAVE GAME is the fifth SYSTEM option.
+        # fifth entry; SAVE GAME opens the three-slot picker.
         emu.tap("START", hold=12, release=12)
         wait(emu, lambda: emu.read_symbol("game_mode") == 2, "pause menu")
         emu.tap("RIGHT", hold=10, release=10)
@@ -152,20 +153,36 @@ def run(rom, elf, output):
         require(emu.read_symbol("pause_sel") == 9, "Real menu did not select SYSTEM")
         emu.tap("A", hold=12, release=12)
         require(emu.read_symbol("pause_page") == 9, "SYSTEM page did not open")
-        for _ in range(4):
+        for _ in range(3):
             emu.tap("DOWN", hold=10, release=10)
-        require(emu.read_symbol("setting_sel") == 4, "Real SYSTEM page did not select SAVE GAME")
+        require(emu.read_symbol("v11_sel") == 3, "Real SYSTEM page did not select SAVE GAME")
+        emu.tap("A", hold=12, release=12)
+        wait(emu, lambda: emu.read_symbol("pause_page") == 44,
+             "real three-slot SAVE picker")
+        require(emu.read_symbol("v11_sub") == 0 and emu.read_symbol("v11_sel") == 0,
+                "SAVE picker did not select the first manual save slot")
         save_started_frame = emu.frame
         emu.tap("A", hold=12, release=12)
         # The native two-bank CRC journal is synchronous and can take more than
-        # the 24 emulated frames covered by tap(). Wait for the actual save UI,
-        # not a guessed clock delay; fail if the transaction never finishes.
-        wait(emu, lambda: emu.read_symbol("pause_page") == 10,
-             "real dual-bank SAVE journal completion", budget=600)
+        # tap(). Wait for the save notice, then independently check the committed
+        # manual slot and its CRC using read-only SRAM inspection.
+        wait(emu, lambda: emu.read_symbol("pause_page") == 44 and
+                         emu.read_symbol("v11_detail") == 2,
+             "real manual-slot SAVE completion", budget=600)
         report["save_transaction_emulated_frames"] = emu.frame - save_started_frame
+        slot = emu.read_range(0x0E000000 + 25600, 1920)
+        require(slot[:4] == b"LCM\x01" and slot[31] == 0xA5,
+                "SAVE did not commit the actual first manual slot")
+        slot_crc = struct.unpack_from("<I", slot, 16)[0]
+        require(slot_crc == zlib.crc32(slot[32:]) & 0xFFFFFFFF,
+                "Controller-written manual slot failed its independent CRC check")
+        report["manual_slot"] = {"slot": 0, "payload_bytes": len(slot) - 32,
+                                 "crc32": f"{slot_crc:08x}", "verified": True}
         emu.screenshot(output / "05_save_menu_native.png")
-        emu.tap("B", hold=12, release=12)
-        emu.tap("B", hold=12, release=12)
+        for _ in range(6):
+            if emu.read_symbol("game_mode") == 0:
+                break
+            emu.tap("B", hold=12, release=12)
         wait(emu, lambda: emu.read_symbol("game_mode") == 0, "return from menu")
         first_state = scalar_state(emu)
         report["boot1"] = {"state": first_state, "position": moved, "initial_position": original,
