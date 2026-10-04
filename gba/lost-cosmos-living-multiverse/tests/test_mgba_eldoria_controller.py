@@ -74,7 +74,8 @@ def run(rom,elf,act2,out):
      "last_element_trigger_x":emu.read_symbol("last_element_trigger_x"),
      "last_element_index":emu.read_symbol("last_element_index"),
      "last_element_interact_count":emu.read_symbol("last_element_interact_count"),
-     "player_x":emu.read_symbol("player"),
+     "player_x":emu.read_symbol("player",width=2,offset=0,signed=True),
+     "player_y":emu.read_symbol("player",width=2,offset=2,signed=True),
     }
     emu.tap("A",hold=12,release=12)
     after_diag={
