@@ -74,6 +74,15 @@ def run(rom,elf,act2,out):
      "last_element_trigger_x":emu.read_symbol("last_element_trigger_x"),
      "last_element_index":emu.read_symbol("last_element_index"),
      "last_element_interact_count":emu.read_symbol("last_element_interact_count"),
+     "surface_a_edges":emu.read_symbol("qa_surface_a_edges"),
+     "surface_gate":emu.read_symbol("qa_surface_gate"),
+     "last_surface_k":emu.read_symbol("qa_last_surface_k"),
+     "last_surface_newk":emu.read_symbol("qa_last_surface_newk"),
+     "game_mode":emu.read_symbol("game_mode"),
+     "npc_dialogue_active":emu.read_symbol("npc_dialogue_active"),
+     "cinema_active":emu.read_symbol("cinema_active"),
+     "pending_choice":emu.read_symbol("pending_choice"),
+     "riddle_open":emu.read_symbol("riddle_open"),
     }
     emu.tap("A",hold=12,release=12)
     after_diag={
@@ -83,6 +92,15 @@ def run(rom,elf,act2,out):
      "last_element_index":emu.read_symbol("last_element_index"),
      "last_element_interact_count":emu.read_symbol("last_element_interact_count"),
      "element_mask":emu.read_symbol("element_mask"),
+     "surface_a_edges":emu.read_symbol("qa_surface_a_edges"),
+     "surface_gate":emu.read_symbol("qa_surface_gate"),
+     "last_surface_k":emu.read_symbol("qa_last_surface_k"),
+     "last_surface_newk":emu.read_symbol("qa_last_surface_newk"),
+     "game_mode":emu.read_symbol("game_mode"),
+     "npc_dialogue_active":emu.read_symbol("npc_dialogue_active"),
+     "cinema_active":emu.read_symbol("cinema_active"),
+     "pending_choice":emu.read_symbol("pending_choice"),
+     "riddle_open":emu.read_symbol("riddle_open"),
     }
     report.setdefault("shrine_diagnostics",[]).append({"index":index,"tile":tile,"before":before_diag,"after":after_diag})
     if not emu.read_symbol("element_mask")&(1<<index):
