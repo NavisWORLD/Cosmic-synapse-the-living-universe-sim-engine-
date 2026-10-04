@@ -8,7 +8,7 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "verify": "node scripts/verify.mjs",
-    "test:link": "node --test arcade/lost-cosmos/mailbox.test.mjs",
+    "test:link": "node --test arcade/lost-cosmos/mailbox.test.mjs arcade/lost-cosmos/qbeast.test.mjs",
     "build:cartridge": "bash scripts/build-lost-cosmos-arcade.sh",
     "verify:web": "node scripts/verify-web-package.mjs",
     "prepare:web": "node scripts/prepare-web.mjs",

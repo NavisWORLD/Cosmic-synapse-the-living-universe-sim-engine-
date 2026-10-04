@@ -209,6 +209,8 @@ static u8 lc_mail_tiles[512];
 static u8 lc_mail_pal[32];
 static char lc_mail_name[13];
 static volatile u8 lc_mail_species=0,lc_mail_ready=0;
+static volatile u32 lc_mail_epoch=0;
+static volatile u8 lc_mail_trade=0,lc_mail_grown=0;
 static u8 lc_sanctuary_mask=0,eco_guide_sel=0,lc_release_armed=0;
 /* V10.4: game-only disjoint 32-byte PRG4 SRAM page, separate from legacy, roster, atlas. */
 #define P4_SRAM 3072
@@ -3016,7 +3018,7 @@ static void init_new_game(void){int i;keys_found=secrets_mask=chapter=ending=pos
  v9_jump=v9_jump_cd=v9_combo=v9_combo_time=v9_wave_delay=0;
  v9_equipped=v9_gear_sel=0;v9_rng=0xC0A571D5u;
  for(i=0;i<5;i++)v9_loot[i]=0;
- lc_roster_init(&lc_party);lc_party_sel=0;lc_mail_live=lc_mail_ready=0;lc_add_exported_profile();
+ lc_roster_init(&lc_party);lc_party_sel=0;lc_mail_live=lc_mail_ready=0;lc_mail_identity=0;lc_mail_epoch=0;lc_mail_trade=lc_mail_grown=0;lc_add_exported_profile();
  current_world=0;current_room=0;current_layer=1;game_mode=MODE_SURFACE;ship_world=0;ship_x=PLANET_X[0];ship_y=PLANET_Y[0]+26;copystr(dialogue,"I REMEMBER A SKY MADE OF SQUARES.",90);v11_reset();}
 /* These are actual user-facing transitions, not fabricated quest-flag jumps. */
 static void v10_start_opening(void){

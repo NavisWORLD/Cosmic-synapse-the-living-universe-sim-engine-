@@ -68,6 +68,11 @@ jobs:
         run: |
           python3 tests/test_mgba_mailbox_import.py --out artifacts/mgba_mailbox/compiled
           python3 tests/test_mgba_mailbox_import.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_mailbox/runtime
+      - name: Gate traded and grown beasts in real mGBA
+        timeout-minutes: 5
+        run: |
+          python3 tests/test_mgba_trade_growth.py --out artifacts/mgba_trade/compiled
+          python3 tests/test_mgba_trade_growth.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_trade/runtime
       - name: Real mGBA controller boot, movement, audio, video and two-boot save check
         run: python3 tests/test_mgba_controller.py --out artifacts/mgba_controller
       - name: Real mGBA V11.1 full menu visual pilgrimage

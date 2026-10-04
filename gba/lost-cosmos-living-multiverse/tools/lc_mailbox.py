@@ -21,6 +21,8 @@ from import_beastbox import expected_genesis, fnv
 MAILBOX_OFFSET = 24832
 MAILBOX_BYTES = 644
 MAIL_BODY = 640
+GROWTH_OFFSET = 25476
+GROWTH_BYTES = 64
 SRAM_SIZE = 32768
 FAMILIES = ('nebula', 'aurora', 'void', 'plasma', 'memory', 'signal', 'starlight')
 LOOKS = {'nebula': 0, 'aurora': 1, 'starlight': 2}
@@ -129,11 +131,40 @@ def build_mailbox(profile: dict) -> bytes:
 
 def build_save(profile: dict) -> bytes:
     mail = build_mailbox(profile)
-    if MAILBOX_OFFSET + len(mail) > 25600:
-        raise AssertionError('mailbox collides with the reserved LCM1 region')
+    if MAILBOX_OFFSET + len(mail) > GROWTH_OFFSET:
+        raise AssertionError('mailbox collides with the cage record')
     sav = bytearray(b'\xff' * SRAM_SIZE)
     sav[MAILBOX_OFFSET:MAILBOX_OFFSET + len(mail)] = mail
     return bytes(sav)
+
+
+def build_growth(public_id: int, epoch: int = 0, layer: int = 0, points: int = 0,
+                 memory_crc: int = 0, chain_crc: int = 0, trade: bool = False, grown: bool = False) -> bytes:
+    if not public_id:
+        raise ValueError('public id is zero')
+    if not 0 <= int(epoch) <= 0xFFFFFFFF:
+        raise ValueError('epoch does not fit the cartridge field')
+    if not 0 <= int(layer) <= 999 or not 0 <= int(points) <= 999:
+        raise ValueError('growth layer')
+    buf = bytearray(GROWTH_BYTES)
+    buf[0:4] = b'LCG1'
+    buf[4] = 1
+    buf[5] = (1 if trade else 0) | (2 if grown else 0)
+    struct.pack_into('<I', buf, 8, int(epoch) & 0xFFFFFFFF)
+    struct.pack_into('<HH', buf, 12, int(layer), int(points))
+    struct.pack_into('<III', buf, 16, int(memory_crc) & 0xFFFFFFFF, int(chain_crc) & 0xFFFFFFFF, int(public_id) & 0xFFFFFFFF)
+    struct.pack_into('<I', buf, 60, zlib.crc32(buf[:60]) & 0xFFFFFFFF)
+    return bytes(buf)
+
+
+def attach_growth(sav: bytes, growth: bytes) -> bytes:
+    if len(sav) != SRAM_SIZE or len(growth) != GROWTH_BYTES:
+        raise ValueError('growth size')
+    if GROWTH_OFFSET + GROWTH_BYTES > 25600:
+        raise AssertionError('growth collides with the reserved LCM1 region')
+    out = bytearray(sav)
+    out[GROWTH_OFFSET:GROWTH_OFFSET + GROWTH_BYTES] = growth
+    return bytes(out)
 
 
 def fixture_save() -> tuple[bytes, dict]:

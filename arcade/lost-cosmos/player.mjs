@@ -1,4 +1,4 @@
-import { FIXTURE, buildSave, livingProfile, profileFromBcp1, profileFromBeastJson } from './mailbox.mjs';
+import { FIXTURE, GROWTH_BYTES, GROWTH_OFFSET, MAILBOX_BYTES, MAILBOX_OFFSET, SRAM_SIZE, buildSave, livingProfile, profileFromBcp1, profileFromBeastJson } from './mailbox.mjs';
 import { MuseLink, mockTraits } from './muse.mjs';
 
 const $ = (id) => document.getElementById(id);
@@ -42,7 +42,22 @@ function bringIn() {
   }
   const profile = currentProfile();
   state.save = buildSave(profile);
-  status(`${profile.speciesName} is ready in the cartridge mailbox as ${profile.callsign}. Sense traits only.`);
+  state.mailNote = `${profile.speciesName} is ready in the cartridge mailbox as ${profile.callsign}. Sense traits only.`;
+  status(state.mailNote);
+}
+
+function acceptCageSave(bytes) {
+  if (!(bytes instanceof Uint8Array) || bytes.length !== SRAM_SIZE) throw new Error('The cage save was rejected.');
+  const mail = MAILBOX_OFFSET;
+  const growth = GROWTH_OFFSET;
+  for (let i = 0; i < bytes.length; i++) {
+    const inMail = i >= mail && i < mail + MAILBOX_BYTES;
+    const inGrowth = i >= growth && i < growth + GROWTH_BYTES;
+    if (!inMail && !inGrowth && bytes[i] !== 0xff) throw new Error('The cage save touches a protected region.');
+  }
+  const magic = String.fromCharCode(...bytes.subarray(mail, mail + 4));
+  if (magic !== 'LCX1') throw new Error('The cage save has no mailbox.');
+  return bytes;
 }
 
 function writeSav(fs, bytes) {
@@ -156,14 +171,29 @@ function onWorldMessage(data) {
     biosphere: Number(data.biosphere) || 0,
     lifeEvents: Math.trunc(Number(data.lifeEvents) || 0),
   };
-  status(`Linked to ${state.world.world}. Biosphere ${state.world.biosphere.toFixed(3)}, life events ${state.world.lifeEvents}.`);
+  const link = `Linked to ${state.world.world}. Biosphere ${state.world.biosphere.toFixed(3)}, life events ${state.world.lifeEvents}.`;
+  status(state.mailNote ? `${state.mailNote} ${link}` : link);
 }
 
 window.addEventListener('message', (event) => {
   const data = event.data;
-  if (!data || data.source !== 'living-universe' || data.type !== 'lu-state') return;
+  if (!data || data.source !== 'living-universe') return;
   if (event.source !== window.parent) return;
-  onWorldMessage(data);
+  if (data.type === 'lu-state') onWorldMessage(data);
+  if (data.type === 'lc-import-save') {
+    try {
+      const bytes = acceptCageSave(data.save instanceof Uint8Array ? data.save : new Uint8Array(data.save));
+      if (state.started) {
+        status('Reload the handheld before another creature enters.');
+        return;
+      }
+      state.save = bytes;
+      state.mailNote = `${data.callsign || 'A beast'} is in the cartridge mailbox from the Synapse OS cage.`;
+      status(state.mailNote);
+    } catch (err) {
+      status(err.message || 'The cage save was rejected.');
+    }
+  }
 });
 
 $('mock').addEventListener('click', () => {
