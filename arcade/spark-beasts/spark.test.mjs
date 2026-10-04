@@ -165,18 +165,28 @@ test('the rare gallery lists twelve beasts plus the montage and skips missing fi
   assert.deepEqual(manifest.clips.map((clip) => clip.name), [...RARE_NAMES, 'Montage']);
   assert.equal(manifest.clips.at(-1).video, 'montage.mp4');
   assert.equal(manifest.clips.at(-1).seconds, 80);
-  for (const name of RARE_NAMES.slice(0, 7)) {
+  for (const name of RARE_NAMES) {
     const clip = manifest.clips.find((row) => row.name === name);
-    assert.equal(clip.video, `rare/${name}.mp4`);
-    assert.equal(clip.audioLog, `rare/${name}.audio_log.json`);
+    assert.ok(clip, name);
+    if (RARE_NAMES.indexOf(name) < 7) {
+      assert.equal(clip.video, `rare/${name}.mp4`);
+      assert.equal(clip.audioLog, `rare/${name}.audio_log.json`);
+    }
+    const audioLog = clip.audioLog || clip.video.replace(/\.mp4$/, '.audio_log.json');
     assert.equal(existsSync(new URL(`./media/${clip.video}`, import.meta.url)), true, clip.video);
-    assert.equal(existsSync(new URL(`./media/${clip.audioLog}`, import.meta.url)), true, clip.audioLog);
+    assert.equal(existsSync(new URL(`./media/${audioLog}`, import.meta.url)), true, audioLog);
   }
+  assert.equal(existsSync(new URL('./media/montage.mp4', import.meta.url)), true, 'montage.mp4');
   const onDisk = (rel) => existsSync(new URL(`./media/${rel}`, import.meta.url));
   const shown = await presentClips(manifest, onDisk);
-  assert.deepEqual(shown.map((clip) => clip.name), RARE_NAMES.slice(0, 7));
-  const withLater = await presentClips(manifest, async (rel) => onDisk(rel) || rel === 'montage.mp4' || rel.endsWith('/Calderwyvern.mp4'));
-  assert.deepEqual(withLater.map((clip) => clip.name), [...RARE_NAMES.slice(0, 7), 'Calderwyvern', 'Montage']);
+  assert.deepEqual(shown.map((clip) => clip.name), [...RARE_NAMES, 'Montage']);
+  const early = new Set(RARE_NAMES.slice(0, 7));
+  const partial = await presentClips(manifest, async (rel) => {
+    if (rel === 'montage.mp4') return true;
+    const clip = manifest.clips.find((row) => row.video === rel || row.audioLog === rel);
+    return Boolean(clip && early.has(clip.name));
+  });
+  assert.deepEqual(partial.map((clip) => clip.name), [...RARE_NAMES.slice(0, 7), 'Montage']);
   assert.equal(safeMediaPath('../secret.mp4'), null);
   assert.equal(safeMediaPath('/etc/passwd'), null);
   assert.equal(safeMediaPath('rare/Calderwyvern.mp4'), 'rare/Calderwyvern.mp4');
