@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory() as d:
  # Decode the actual generated four-frame GBA 4bpp field asset and enforce the
  # visual contract, not merely its receipt string. Each visible silhouette
  # must stay within a <=20x20 bounding box inside the 32x32 hardware canvas.
- m=re.search(r'lc_imported_companion_field_tiles\\[2048\\]\\s*=\\s*\\{(.*?)\\};',header,re.S)
+ m=re.search(r'lc_imported_companion_field_tiles\[2048\]\s*=\s*\{(.*?)\};',header,re.S)
  assert m, 'Generated compact field tile array missing'
  raw=bytes(int(x,16) for x in re.findall(r'0x([0-9a-fA-F]{2})',m.group(1)))
  assert len(raw)==2048
