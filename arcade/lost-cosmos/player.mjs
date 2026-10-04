@@ -68,6 +68,7 @@ function installEmulator(bytes) {
   window.EJS_pathtodata = '../third_party/emulatorjs/data/';
   window.EJS_startOnLoaded = false;
   window.EJS_threads = false;
+  window.EJS_disableAutoLang = false;
   window.EJS_forceLegacyCores = !webgl2;
   window.EJS_color = '#14343d';
   window.EJS_ready = () => {
