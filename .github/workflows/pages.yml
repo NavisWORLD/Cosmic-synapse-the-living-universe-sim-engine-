@@ -25,6 +25,10 @@ jobs:
       - run: npm run verify
       - run: npm run test:link
       - run: npm run build:cartridge
+      - name: Install headless Chromium
+        run: npm install --no-save playwright@1.55.1 && npx playwright install --with-deps chromium
+      - name: Boot the vendored GBA emulator
+        run: npm run test:emulator
       - run: npm run prepare:web
       - run: npm run verify:web
       - uses: actions/configure-pages@v5
