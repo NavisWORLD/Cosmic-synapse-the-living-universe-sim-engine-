@@ -206,7 +206,7 @@ async function bootFromSite(page, port) {
   }, null, { timeout: 15000 });
   await bay.locator('#care-input').fill('my name is Cory');
   await bay.locator('#care-chat button').click();
-  await bay.locator('#care-log').getByText(/Cory/).waitFor({ timeout: 10000 });
+  await bay.locator('#care-log .beast').getByText(/Cory/).waitFor({ timeout: 10000 });
   await bay.locator('#care-focus').click();
   await bay.waitForFunction(() => {
     const saved = JSON.parse(localStorage.getItem('spark-beasts-v1') || '{"beasts":{}}');
