@@ -4,44 +4,44 @@
   "clips": [
     {
       "name": "Ferrotitan",
-      "video": "rare/Ferrotitan_4a10.mp4",
-      "audioLog": "rare/Ferrotitan.audio_log_4e49.json",
+      "video": "rare/Ferrotitan.mp4",
+      "audioLog": "rare/Ferrotitan.audio_log.json",
       "seconds": 18
     },
     {
       "name": "Gearwarden",
-      "video": "rare/Gearwarden_9c15.mp4",
-      "audioLog": "rare/Gearwarden.audio_log_e652.json",
+      "video": "rare/Gearwarden.mp4",
+      "audioLog": "rare/Gearwarden.audio_log.json",
       "seconds": 18
     },
     {
       "name": "Cogknight",
-      "video": "rare/Cogknight_93d9.mp4",
-      "audioLog": "rare/Cogknight.audio_log_d865.json",
+      "video": "rare/Cogknight.mp4",
+      "audioLog": "rare/Cogknight.audio_log.json",
       "seconds": 18
     },
     {
       "name": "Nyxleviath",
-      "video": "rare/Nyxleviath_93bb.mp4",
-      "audioLog": "rare/Nyxleviath.audio_log_2178.json",
+      "video": "rare/Nyxleviath.mp4",
+      "audioLog": "rare/Nyxleviath.audio_log.json",
       "seconds": 18
     },
     {
       "name": "Nyxwyrm",
-      "video": "rare/Nyxwyrm_2b01.mp4",
-      "audioLog": "rare/Nyxwyrm.audio_log_1c3f.json",
+      "video": "rare/Nyxwyrm.mp4",
+      "audioLog": "rare/Nyxwyrm.audio_log.json",
       "seconds": 18
     },
     {
       "name": "Noctveil",
-      "video": "rare/Noctveil_db19.mp4",
-      "audioLog": "rare/Noctveil.audio_log_c20e.json",
+      "video": "rare/Noctveil.mp4",
+      "audioLog": "rare/Noctveil.audio_log.json",
       "seconds": 18
     },
     {
       "name": "Chartyrant",
-      "video": "rare/Chartyrant_73e4.mp4",
-      "audioLog": "rare/Chartyrant.audio_log_49d7.json",
+      "video": "rare/Chartyrant.mp4",
+      "audioLog": "rare/Chartyrant.audio_log.json",
       "seconds": 18
     },
     {

@@ -92,7 +92,7 @@ else {
     'arcade/spark-beasts/showcase.mjs',
     'arcade/spark-beasts/data/quantum-runs.json',
     'arcade/spark-beasts/media/rare/manifest.json',
-    'arcade/spark-beasts/media/rare/Ferrotitan_4a10.mp4',
+    'arcade/spark-beasts/media/rare/Ferrotitan.mp4',
   ]) if (!fs.existsSync(file)) fail(`missing ${file}`);
   const manifest = JSON.parse(fs.readFileSync('arcade/spark-beasts/media/rare/manifest.json', 'utf8'));
   const names = (manifest.clips || []).map((clip) => clip.name);

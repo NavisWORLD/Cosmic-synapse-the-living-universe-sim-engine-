@@ -167,6 +167,8 @@ test('the rare gallery lists twelve beasts plus the montage and skips missing fi
   assert.equal(manifest.clips.at(-1).seconds, 80);
   for (const name of RARE_NAMES.slice(0, 7)) {
     const clip = manifest.clips.find((row) => row.name === name);
+    assert.equal(clip.video, `rare/${name}.mp4`);
+    assert.equal(clip.audioLog, `rare/${name}.audio_log.json`);
     assert.equal(existsSync(new URL(`./media/${clip.video}`, import.meta.url)), true, clip.video);
     assert.equal(existsSync(new URL(`./media/${clip.audioLog}`, import.meta.url)), true, clip.audioLog);
   }

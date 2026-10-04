@@ -22,7 +22,7 @@ for (const path of ['manifest.webmanifest', 'sw.js', 'offline.html', 'icon-192.p
   'arcade/spark-beasts/genome.mjs', 'arcade/spark-beasts/showcase.mjs',
   'arcade/spark-beasts/data/quantum-runs.json',
   'arcade/spark-beasts/media/rare/manifest.json',
-  'arcade/spark-beasts/media/rare/Ferrotitan_4a10.mp4',
+  'arcade/spark-beasts/media/rare/Ferrotitan.mp4',
   'arcade/third_party/emulatorjs/data/loader.js',
   'arcade/third_party/emulatorjs/data/emulator.min.js',
   'arcade/third_party/emulatorjs/data/cores/mgba-wasm.data',
