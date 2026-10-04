@@ -183,6 +183,7 @@ static const u8 PLANET_COL[8]={1,2,3,4,5,6,2,3};
 /* Runtime map state in IWRAM. */
 static u8 collision[MAP_W*MAP_H];
 static u8 trigger[MAP_W*MAP_H];
+static u8 near_trigger_x=255,near_trigger_y=255;
 static Actor player;
 static Buddy cosmos;
 static Beacon beacons[8];
@@ -2294,7 +2295,10 @@ static u8 tile_collision_at(int x,int y){int tx=clampi(x>>3,0,63),ty=clampi(y>>3
 static void hurt_player(int dx,int dy){int dmg;if(player.hurt||dodge_timer||v9_jump)return;player.hurt=40;dmg=1+(current_world/2);dmg-=((def_stat+armor_bonus()+arc_guardian_guard())/5);if(dmg<1)dmg=1;player.hp=(u8)((dmg>=player.hp)?0:player.hp-dmg);player.x=(s16)clampi(player.x-dx*10,10,502);player.y=(s16)clampi(player.y-dy*10,10,502);tone(1000);cosmos.avoid=(u8)clampi(cosmos.avoid+10,0,255);if(player.hp==0){player.hp=max_hp;player_mp=max_mp;credits=(u8)(credits/2);player.x=80;player.y=400;say("I PULLED YOUR LAST STABLE POSITION FROM MEMORY. YOU LOST HALF YOUR CREDITS.");save_game();}}
 static int can_stand(int x,int y){return !blocked_px(x-5,y-5)&&!blocked_px(x+5,y-5)&&!blocked_px(x-5,y+5)&&!blocked_px(x+5,y+5);}
 static void move_player(int dx,int dy,int running){int nx=player.x+dx,ny=player.y+dy;player.dx=(s8)dx;player.dy=(s8)dy;if(dx<0)player.face=2;else if(dx>0)player.face=3;else if(dy<0)player.face=0;else if(dy>0)player.face=1;if(can_stand(nx,player.y))player.x=(s16)nx;if(can_stand(player.x,ny))player.y=(s16)ny;player.x=(s16)clampi(player.x,8,MAP_PX-9);player.y=(s16)clampi(player.y,8,MAP_PX-9);if(dx||dy){player.anim=(u8)((frame>>(running?2:3))&3);player.run=(u8)running;}else player.anim=0;if(tile_collision_at(player.x,player.y)==C_HAZARD&&!v9_jump)hurt_player(dx,dy);}
-static u8 trigger_near(void){int tx=player.x>>3,ty=player.y>>3,x,y;for(y=ty-1;y<=ty+1;y++)for(x=tx-1;x<=tx+1;x++)if((unsigned)x<64u&&(unsigned)y<64u&&trigger[mi(x,y)])return trigger[mi(x,y)];return TR_NONE;}
+static u8 trigger_near(void){int tx=player.x>>3,ty=player.y>>3,x,y;near_trigger_x=near_trigger_y=255;
+ for(y=ty-1;y<=ty+1;y++)for(x=tx-1;x<=tx+1;x++)if((unsigned)x<64u&&(unsigned)y<64u&&trigger[mi(x,y)]){
+  near_trigger_x=(u8)x;near_trigger_y=(u8)y;return trigger[mi(x,y)];
+ }return TR_NONE;}
 static void refresh_camera(void){int maxx=current_room==1?16:272,maxy=current_room==1?96:352;cam_x=(s16)clampi(player.x-120,0,maxx);cam_y=(s16)clampi(player.y-80,0,maxy);REG_BG0HOFS=(u16)cam_x;REG_BG0VOFS=(u16)cam_y;
  if(game_mode==MODE_SURFACE){view12_project();
    REG_BG2HOFS=(u16)view_parallax_x;REG_BG2VOFS=(u16)view_parallax_y;
@@ -2540,13 +2544,11 @@ static void story_interact(u8 t){if(t>=TR_COMP_ENTER){completion_interact(t);ret
  if(t==TR_COURAGE){if(story_flags&ST_COURAGE)say("COURAGE IS YOURS. YOU SPARED THE SHADOWS.");else say("THE DREAM GUARDIAN IS STILL ALIVE. FACE IT FIRST.");return;}
  if(t==TR_UNITY){if((story_flags&(ST_WISDOM|ST_COURAGE))!=(ST_WISDOM|ST_COURAGE))say("UNITY REQUIRES WISDOM AND COURAGE FIRST.");
   else{story_flags|=ST_DREAM;cosmos.trust=(u8)mini(255,cosmos.trust+12);say("THREE TRIALS PASSED. ELDORIA IS NOW REACHABLE.");save_game();}return;}
- if(t==TR_ELEMENT){static const u8 shrine_x[4]={15,26,37,48};int k=0,best=999,ex=tx,x,y,i;
-  /* All four Eldoria shrines intentionally share TR_ELEMENT. Resolve identity
-     from the actual nearby trigger tile, not the player's standing tile:
-     a 10px actor can interact from either side of a shrine. Direct native host
-     calls that bypass trigger_near() fall back to the nearest authored shrine. */
-  for(y=ty-1;y<=ty+1;y++)for(x=tx-1;x<=tx+1;x++)
-   if((unsigned)x<64u&&(unsigned)y<64u&&trigger[mi(x,y)]==TR_ELEMENT)ex=x;
+ if(t==TR_ELEMENT){static const u8 shrine_x[4]={15,26,37,48};int k=0,best=999,ex=tx,i;
+  /* Use the exact tile selected by trigger_near(). A legal 10px actor may
+     stand left/right of Water, Fire or Air, so player X is not shrine ID.
+     Direct native host calls fall back to the nearest authored coordinate. */
+  if(near_trigger_x<64&&near_trigger_y<64&&trigger[mi(near_trigger_x,near_trigger_y)]==TR_ELEMENT)ex=near_trigger_x;
   for(i=0;i<4;i++){int d=iabs(ex-shrine_x[i]);if(d<best){best=d;k=i;}}
   if(k==3){for(i=0;i<10;i++)if(enemies[i].active&&enemies[i].elite){say("THE STORM GUARDIAN BLOCKS THE FOURTH SHRINE.");return;}}
   if(!(element_mask&(1u<<k))){element_mask|=(u8)(1u<<k);say(k==0?"EARTH CRYSTAL RESTORED.":k==1?"WATER CRYSTAL RESTORED.":k==2?"FIRE CRYSTAL RESTORED.":"AIR CRYSTAL RESTORED.");if(element_mask==15){story_flags|=ST_ELEMENTS;say("FOUR ELEMENTS UNITED. THE COSMIC LATTICE AWAKENS.");}save_game();}
