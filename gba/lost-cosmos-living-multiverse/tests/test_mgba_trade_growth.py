@@ -48,6 +48,12 @@ def goto_index(emu, target):
     raise RuntimeError(f"Menu navigation failed: {emu.read_symbol('pause_sel')} != {target}")
 
 
+# lc_imported_companion_bcp1 public id, little-endian at byte 24.
+# IMPORTED_BEAST=1 new games also keep this baked snapshot. It is a different
+# identity from the cage trade, and cold boot must leave it beside the trade.
+COMPILED_SNAPSHOT_ID = 0xF5A4CB6D
+
+
 def roster_entry(data, profile):
     roster = data[1024:1024 + 252]
     if roster[:4] != b"LCR1" or zlib.crc32(roster[:248]) != int.from_bytes(roster[248:252], "little"):
@@ -57,6 +63,17 @@ def roster_entry(data, profile):
     if len(matches) != 1 or matches[0][0] != profile["species"] or matches[0][3] != 14:
         raise RuntimeError("Traded beast identity, species, bond, or duplicate check failed")
     return entries, matches[0]
+
+
+def trade_roster_ok(entries, profile):
+    """The traded identity is already unique. One baked snapshot may sit with it."""
+    others = [p for p in entries if int.from_bytes(p[8:12], "little") != profile["public_id"]]
+    if not others:
+        return True
+    if len(others) != 1:
+        return False
+    extra = others[0]
+    return int.from_bytes(extra[8:12], "little") == COMPILED_SNAPSHOT_ID and extra[0] == 128
 
 
 def ui_row(emu, row):
@@ -69,6 +86,10 @@ def ui_row(emu, row):
 
 
 def run(rom: Path, elf: Path, out: Path) -> None:
+    header = (ROOT / "LOST_COSMOS_V10_SOURCE/imported_companion.h").read_text()
+    snapshot = ", ".join(f"0x{b:02x}" for b in COMPILED_SNAPSHOT_ID.to_bytes(4, "little"))
+    if snapshot not in header:
+        raise RuntimeError("Compiled snapshot id no longer matches imported_companion.h")
     out.mkdir(parents=True, exist_ok=True)
     base, profile = fixture_save()
     growth = build_growth(profile["public_id"], epoch=4, layer=2, points=10, memory_crc=1, chain_crc=2, trade=True, grown=True)
@@ -148,8 +169,9 @@ def run(rom: Path, elf: Path, out: Path) -> None:
             emu.tap("A", hold=12, release=12)
             wait(emu, lambda: emu.read_symbol("intro") == 0 and emu.read_symbol("lc_mail_epoch") == 4, "cold-boot epoch")
             entries, _creature = roster_entry(emu.read_range(0x0E000000, 8192), profile)
-            if len(entries) != 1:
-                raise RuntimeError("Cold boot duplicated or removed the traded beast")
+            if not trade_roster_ok(entries, profile):
+                ids = [hex(int.from_bytes(p[8:12], "little")) for p in entries]
+                raise RuntimeError(f"Cold boot duplicated or removed the traded beast: {ids}")
             emu.screenshot(out / "03_cold_boot.png")
             report["cold_boot_verified"] = True
             report["passed"] = True
