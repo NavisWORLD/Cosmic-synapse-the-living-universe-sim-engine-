@@ -10,5 +10,6 @@ Each clip is seeded from recorded IBM measurement counts. There is no live quant
 | `rare/Snowleviath.mp4` | Rare find #9 | 18 s |
 | `rare/Frostphoenix.mp4` | Rare find #10 | 18 s |
 | `rare/Reefwing.mp4` | Rare find #11 | 18 s |
+| `rare/Calderwarden.mp4` | Rare find #12 | 18 s |
 
 Video is 1280×720, 30 fps, H.264 (`yuv420p`, faststart) with AAC. Each mp4 has a sibling `.audio_log.json` of the utterances the page synth rendered.
