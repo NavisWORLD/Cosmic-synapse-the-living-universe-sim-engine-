@@ -52,7 +52,7 @@ jobs:
           retention-days: 30
   browser:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -64,11 +64,16 @@ jobs:
         run: |
           npm install --prefix /tmp/sol-browser --no-save --ignore-scripts playwright@1.62.1
           /tmp/sol-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Build the current native cartridge for the real browser
+        run: |
+          sudo apt-get update && sudo apt-get install -y clang lld llvm
+          bash scripts/build-lost-cosmos-arcade.sh
       - name: Verify nursery in a real browser
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/sol-http.log 2>&1 &
           NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-beast-lab/browser-check.cjs http://127.0.0.1:8765 artifacts/sol-browser
           NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-spark-gate/browser-check.cjs http://127.0.0.1:8765 artifacts/sol-spark-browser
+          NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-spark-gate/core-browser.cjs http://127.0.0.1:8765 artifacts/sol-spark-core
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -76,4 +81,5 @@ jobs:
           path: |
             artifacts/sol-browser/
             artifacts/sol-spark-browser/
+            artifacts/sol-spark-core/
           retention-days: 30

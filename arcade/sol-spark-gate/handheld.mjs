@@ -1,5 +1,6 @@
 import { verifySparkArt } from './cartridge.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
+import {batteryName,prepareBattery} from './battery.mjs';
 /* Sol Spark handheld adapter. Original living-link player stays unchanged. */
 import { FIXTURE, GROWTH_BYTES, GROWTH_OFFSET, MAILBOX_BYTES, MAILBOX_OFFSET, SRAM_SIZE, buildSave, livingProfile, profileFromBcp1, profileFromBeastJson } from '../lost-cosmos/mailbox.mjs';
 import { MuseLink, mockTraits } from '../lost-cosmos/muse.mjs';
@@ -13,6 +14,7 @@ const state = {
   beast: null,
   save: null,
   started: false,
+  journey: false,
 };
 
 function consented() {
@@ -63,22 +65,15 @@ function acceptCageSave(bytes, journey = false) {
   return bytes;
 }
 
-function writeSav(fs, bytes) {
-  const dir = '/data/saves';
-  if (!fs.analyzePath(dir).exists) fs.mkdir(dir);
-  const names = ['lost-cosmos.srm', 'lost-cosmos.gba.srm'];
-  for (const name of names) {
-    const path = `${dir}/${name}`;
-    if (fs.analyzePath(path).exists) fs.unlink(path);
-    fs.writeFile(path, bytes);
-  }
-}
-
 async function installEmulator(bytes) {
   if (state.started) return;
+  if(!bytes){status('Send your Spark companion into this handheld first.');return;}
+  try{verifySparkArt(bytes);}catch(err){status(err.message);return;}
+  if(bytes&&!consented()){status('Allow the verified companion import before starting the cartridge.');return;}
   state.started = true;
   $('play').disabled = true;
   let receipt;
+  let cartridge;
   try {
     const response = await fetch('../lost-cosmos/rom/release.json', { cache: 'no-cache' });
     if (!response.ok) throw new Error('The cartridge release is unavailable. Reload and try again.');
@@ -86,6 +81,7 @@ async function installEmulator(bytes) {
     const rom = await fetch(`../lost-cosmos/rom/lost-cosmos.gba?v=${receipt.sha256}`);
     if (!rom.ok) throw new Error('The cartridge could not be downloaded. Reload and try again.');
     const data = await rom.arrayBuffer();
+    cartridge=data;
     if (data.byteLength !== receipt.bytes || data.byteLength < 0xc0 || new Uint8Array(data)[0xb2] !== 0x96)
       throw new Error('The cartridge download is incomplete. Reload and try again.');
     const digest = await crypto.subtle.digest('SHA-256', data);
@@ -107,8 +103,9 @@ async function installEmulator(bytes) {
   const webgl2 = !!document.createElement('canvas').getContext('webgl2');
   window.EJS_player = '#lc-ejs';
   window.EJS_core = 'gba';
-  window.EJS_gameName = 'lost-cosmos';
-  window.EJS_gameUrl = `../lost-cosmos/rom/lost-cosmos.gba?v=${receipt.sha256}`;
+  window.EJS_gameName = (bytes?batteryName(bytes):'lost-cosmos')+'.gba';
+  // The verified bytes use the creature's stable filename, including its battery.
+  window.EJS_gameUrl = URL.createObjectURL(new Blob([cartridge],{type:'application/octet-stream'}));
   window.EJS_pathtodata = '../third_party/emulatorjs/data/';
   window.EJS_startOnLoaded = false;
   window.EJS_threads = false;
@@ -118,11 +115,12 @@ async function installEmulator(bytes) {
   window.EJS_color = '#14343d';
   window.EJS_ready = () => {
     window.EJS_emulator.on('saveDatabaseLoaded', (fs) => {
-      if (bytes) writeSav(fs, bytes);
+      if(bytes)try{state.battery=prepareBattery(fs,bytes,{journey:state.journey});}catch(err){state.batteryError=err.message;status(err.message);}
     });
   };
   window.EJS_onGameStart = () => {
     const gm = window.EJS_emulator?.gameManager;
+    if(state.batteryError){gm?.toggleMainLoop?.(1);status(state.batteryError);return;}
     status(`Lost Cosmos V${receipt.version} is running. Choose NEW GAME or CONTINUE on the title screen.`);
     if (!gm || !bytes) return;
     try {
@@ -130,13 +128,13 @@ async function installEmulator(bytes) {
       if (path && !gm.FS.analyzePath(path).exists) {
         const parent = path.split('/').slice(0, -1).join('/') || '/data/saves';
         if (!gm.FS.analyzePath(parent).exists) gm.FS.mkdir(parent);
-        gm.FS.writeFile(path, bytes);
+        gm.FS.writeFile(path, state.battery?.bytes||bytes);
         if (typeof gm.loadSaveFiles === 'function') gm.loadSaveFiles();
       }
     } catch (err) {
       console.warn(err);
     }
-    status('Cartridge running. Start a new game to receive your verified Spark companion.');
+    status(state.battery?.resumed?'Journey restored. Choose CONTINUE to keep your Spark companion and earned progress.':'Cartridge running. Choose NEW GAME to receive your verified Spark companion.');
     if (new URLSearchParams(location.search).get('demo') === '1') demoPress(gm);
   };
   const script = document.createElement('script');
@@ -191,6 +189,7 @@ window.addEventListener('message', (event) => {
         return;
       }
       state.save = bytes;
+      state.journey = data.type === 'sol-spark-journey';
       state.mailNote = `${data.callsign || 'A beast'} is in the cartridge mailbox with verified Spark art.`;
       status(state.mailNote);
     } catch (err) {
@@ -262,7 +261,7 @@ $('play').addEventListener('click', () => {
     return;
   }
   installEmulator(state.save);
-  status(state.save ? 'Starting the cartridge with the living-link save.' : 'Starting the cartridge.');
+  if(!state.save||consented())status(state.save ? 'Starting the cartridge with your Spark companion.' : 'Starting the cartridge.');
 });
 
 if (new URLSearchParams(location.search).get('demo') === '1') {

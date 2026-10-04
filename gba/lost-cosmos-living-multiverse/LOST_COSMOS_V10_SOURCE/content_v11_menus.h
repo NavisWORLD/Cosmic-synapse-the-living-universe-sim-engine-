@@ -262,7 +262,7 @@ static void v11_back(void){v11_sel=v11_detail=v11_menu_mode=0;v11_release_confir
  else if(pause_page==26)pause_page=v11_parent==18?18:0;else pause_page=0;v11_page_previous=255;}
 static int v11_update_pause(u16 k){int i,id,n;
  if(pause_page==0){if(k&KEY_A&&pause_sel==8)v11_parent=0;if(k&KEY_SELECT){pause_page=40;v11_menu_reset();return 1;}if(k&KEY_B)v11_resume_art();return 0;}
- if(!v11_menu_handled(pause_page))return 0;if(k||pause_page==45||((pause_page==18||pause_page==26)&&lc_mail_live&&(frame&3)==0)||(pause_page==1&&(frame&31)==0))v11_ui_dirty=1;v11_menu_changed();
+ if(!v11_menu_handled(pause_page))return 0;if(k||pause_page==45||(pause_page==1&&(frame&31)==0))v11_ui_dirty=1;v11_menu_changed();
  if(v11_detail==2){if(k&(KEY_A|KEY_B)){v11_detail=0;v11_notice_timer=0;}return 1;}
  if(pause_page==45&&v11_evolution){if(v11_evo_timer<60)v11_evo_timer++;v11_ui_dirty=1;if(v11_evo_timer>=60||k&KEY_B){v11_evolution=0;v11_back();}return 1;}
  if(!k)return 1;

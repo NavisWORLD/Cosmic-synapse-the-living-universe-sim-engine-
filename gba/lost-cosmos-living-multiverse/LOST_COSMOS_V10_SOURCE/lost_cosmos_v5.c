@@ -1806,7 +1806,16 @@ static const char* spell_name(u8 s){static const char*S[SPELL_COUNT]={"SYNAPSE P
 static const char* weapon_name(void){return weapon==2?"CROWN EDGE":(weapon==1?"EMBER SABER":"RUST BLADE");}
 static const char* armor_name(void){return armor?"TIDE MAIL":"TRAVEL CLOTH";}
 static const char* charm_name(void){return charm?"BLOOM CHARM":"NONE";}
-static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;if(v11_menu_handled(pause_page)&&!v11_ui_dirty)return;oam_hide_all();ui_pause_canvas();if(v11_draw_pause())return;
+static void v11_portrait(int pick,int x,int y,int pulse);
+static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;if(v11_menu_handled(pause_page)&&!v11_ui_dirty){
+ /* Animate only the imported portrait while keeping cached UI and OAM live.
+    Rebuilding the entire menu cleared old portraits between native frames. */
+ if(lc_mail_live&&sol_spark_valid()&&(frame&3)==0){
+  if(pause_page==18&&v11_sel)v11_portrait(v11_sel,168,40,0);
+  else if(pause_page==26){int pick;for(pick=0;pick<lc_party.count;pick++)if(lc_mail_matches(lc_party.slots[pick].identity)){v11_portrait(pick+1,168,48,0);break;}}
+ }
+ return;
+ }oam_hide_all();ui_pause_canvas();if(v11_draw_pause())return;
  if(pause_page==0){static const char*items[10]={"MAP","QUEST","PARTY","ITEMS","EQUIPMENT","ABILITIES","BESTIARY","MEMORIES","BEAST BOX","SYSTEM"};
   /* Delta-safe 2x5 cartridge menu. The emulator skin owns the top-center and
      outer lower corners, so all actionable text stays inside the native safe area. */
