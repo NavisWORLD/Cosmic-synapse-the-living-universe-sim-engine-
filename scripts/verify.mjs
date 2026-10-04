@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
+import { verifyEmulatorJsAssets } from './verify-emulatorjs-assets.mjs';
 
 const file = 'standalone/SIM_EARTH_7_08_REALITY_BODY.html';
 const EXPECTED = '677c51f8a392737ea0de3cdb87a6a6fb5cf61914696013449fbd7bceff1144c4';
@@ -99,6 +100,12 @@ else {
   for (const name of ['Ferrotitan', 'Gearwarden', 'Cogknight', 'Nyxleviath', 'Nyxwyrm', 'Noctveil', 'Chartyrant', 'Calderwyvern', 'Snowleviath', 'Frostphoenix', 'Reefwing', 'Calderwarden', 'Montage']) {
     if (!names.includes(name)) fail(`rare showcase manifest is missing ${name}`);
   }
+}
+
+try {
+  verifyEmulatorJsAssets();
+} catch (error) {
+  fail(error.message || String(error));
 }
 
 if (!process.exitCode) console.log(`PASS: SIM EARTH 7.08 Reality Body verified. Canonical LF SHA-256 ${sha}; WebGL2 Reality Body + LUNA-ARC + Luna field body + 12D/42D/54D surfaces + 7.08 verification receipt + UI/graphics hotfix controls present.`);

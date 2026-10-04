@@ -25,8 +25,16 @@ for (const path of ['manifest.webmanifest', 'sw.js', 'offline.html', 'icon-192.p
   'arcade/spark-beasts/media/rare/Ferrotitan.mp4',
   'arcade/third_party/emulatorjs/data/loader.js',
   'arcade/third_party/emulatorjs/data/emulator.min.js',
+  'arcade/third_party/emulatorjs/data/emulator.min.css',
   'arcade/third_party/emulatorjs/data/cores/mgba-wasm.data',
-  'arcade/third_party/emulatorjs/data/cores/mgba-legacy-wasm.data']) {
+  'arcade/third_party/emulatorjs/data/cores/mgba-legacy-wasm.data',
+  'arcade/third_party/emulatorjs/data/cores/reports/mgba.json',
+  'arcade/third_party/emulatorjs/data/compression/extract7z.js',
+  'arcade/third_party/emulatorjs/data/compression/extractzip.js',
+  'arcade/third_party/emulatorjs/data/compression/libunrar.js',
+  'arcade/third_party/emulatorjs/data/compression/libunrar.wasm',
+  'arcade/third_party/emulatorjs/data/localization/en-US.json',
+  'arcade/third_party/emulatorjs/LICENSE']) {
   assert(statSync(`app/${path}`).size > 0, `${path} is absent or empty`);
 }
 const rom = read('arcade/lost-cosmos/rom/lost-cosmos.gba');

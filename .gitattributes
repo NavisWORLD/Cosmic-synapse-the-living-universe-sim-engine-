@@ -6,4 +6,6 @@
 *.webp binary
 *.zip binary
 *.data binary
+*.wasm binary
 *.gba binary
+arcade/third_party/emulatorjs/** -text
