@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spark Beasts</title>
+<style>
+  :root { color-scheme: dark; --ink:#d7f4ff; --dim:#8fb4c4; --gold:#f0c14a; --cyan:#7ee7ff; --panel:#102033; --line:#2a6a86; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #071018; color: var(--ink); font: 14px/1.45 ui-monospace, monospace; }
+  header, main, footer { padding: 10px 12px; }
+  h1 { margin: 0; font-size: 16px; letter-spacing: .14em; }
+  h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: .12em; color: var(--gold); }
+  p { margin: 6px 0; color: var(--dim); }
+  nav { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 12px 8px; }
+  button, .file { background: #12323c; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font: inherit; cursor: pointer; }
+  button.on, button[aria-pressed="true"] { border-color: var(--cyan); color: var(--cyan); }
+  input, select { background: #0c1c24; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 7px; font: inherit; }
+  label.row { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  .view { display: none; }
+  .view.on { display: block; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
+  canvas.pixel { image-rendering: pixelated; image-rendering: crisp-edges; background: #101834; border-radius: 8px; width: min(100%, 420px); height: auto; }
+  #live-view { width: min(100%, 520px); height: auto; }
+  #explore-view { width: 100%; height: min(460px, 58vh); background: #07111c; border-radius: 12px; touch-action: none; }
+  .stages { display: flex; gap: 8px; flex-wrap: wrap; }
+  .stages figure { margin: 0; text-align: center; }
+  .stages canvas { width: 128px; height: 128px; image-rendering: pixelated; background: #101834; border-radius: 8px; }
+  #status, #bubble { min-height: 1.4em; color: #e9fff8; }
+  #bubble b { display: block; color: white; }
+  #bubble span { color: var(--dim); }
+  .rare { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .rare video { width: 100%; border-radius: 8px; background: #000; }
+  .note { font-size: 12px; }
+  footer { border-top: 1px solid #1c3a4a; }
+  .move { display: flex; gap: 6px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SPARK BEASTS</h1>
+  <p>A companion sparked from your signal and one recorded quantum run. It stays on this device.</p>
+</header>
+<nav>
+  <button type="button" data-view="spark" class="on">Spark</button>
+  <button type="button" data-view="live">Live</button>
+  <button type="button" data-view="explore">Explore</button>
+  <button type="button" data-view="bestiary">Bestiary</button>
+  <button type="button" data-view="trade">Trade</button>
+</nav>
+<main>
+  <p id="status" role="status">Check the consent box, then spark a beast. Nothing is uploaded.</p>
+
+  <section id="view-spark" class="view on">
+    <div class="card">
+      <label class="row"><input id="consent" type="checkbox"> I agree to derive focus, calm, and spark on this device. Raw samples are not stored.</label>
+      <label class="row">Player name <input id="player-name" maxlength="16" autocomplete="off" placeholder="optional"></label>
+      <div class="row" style="display:flex;gap:12px;flex-wrap:wrap">
+        <span>FOCUS <b id="focus-read">30</b></span>
+        <span>CALM <b id="calm-read">30</b></span>
+        <span>SPARK <b id="spark-read">20</b></span>
+      </div>
+      <label class="row">focus <input id="focus" type="range" min="0" max="100" value="30"></label>
+      <label class="row">calm <input id="calm" type="range" min="0" max="100" value="30"></label>
+      <label class="row">spark <input id="spark" type="range" min="0" max="100" value="20"></label>
+      <div class="move">
+        <button type="button" id="sim">Simulated headband</button>
+        <button type="button" id="muse">Muse headband</button>
+        <select id="profile" aria-label="Simulated profile">
+          <option value="mock">mock</option>
+          <option value="serene">serene</option>
+          <option value="focused">focused</option>
+          <option value="sparky">sparky</option>
+          <option value="dreamy">dreamy</option>
+          <option value="balanced" selected>balanced</option>
+          <option value="restless">restless</option>
+          <option value="steady">steady</option>
+        </select>
+      </div>
+      <h2>SOFT SENSORS</h2>
+      <p class="note">Each one is off until you turn it on. They only nudge the three traits. Loudness, tilt, brightness, and tap rhythm are not saved.</p>
+      <div class="move">
+        <button type="button" id="mic">Microphone</button>
+        <button type="button" id="motion">Motion</button>
+        <button type="button" id="camera">Camera brightness</button>
+        <button type="button" id="rhythm">Key and pointer rhythm</button>
+      </div>
+      <h2>RECORDED RUN</h2>
+      <label class="row">Quantum run
+        <select id="run"></select>
+      </label>
+      <div class="move">
+        <button type="button" id="spark-btn">Spark this beast</button>
+        <button type="button" id="wild-btn">Spark a wild beast</button>
+      </div>
+    </div>
+    <div class="card" id="portrait" hidden>
+      <h2>THREE STAGES</h2>
+      <div class="stages" id="stages"></div>
+      <p id="provenance"></p>
+    </div>
+  </section>
+
+  <section id="view-live" class="view">
+    <div class="card">
+      <canvas id="live-view" class="pixel" width="112" height="104"></canvas>
+      <p id="bubble"></p>
+      <p id="mood">Waiting for a sparked beast.</p>
+      <div class="move">
+        <button type="button" data-stage="1">Stage I</button>
+        <button type="button" data-stage="2">Stage II</button>
+        <button type="button" data-stage="3">Stage III</button>
+        <button type="button" id="voice">Voice</button>
+        <button type="button" id="drift">Auto-drift</button>
+        <button type="button" id="translate" aria-pressed="true">Translate</button>
+      </div>
+      <p class="note" id="live-meta"></p>
+    </div>
+  </section>
+
+  <section id="view-explore" class="view">
+    <div class="card">
+      <h2>EIGHT ISLANDS</h2>
+      <p class="note" id="place">Walk with WASD or the buttons. Your beast follows. Wild sparks roam. Step close to meet one.</p>
+      <canvas id="explore-view" width="640" height="420"></canvas>
+      <div class="move">
+        <button type="button" data-move="0,-1">North</button>
+        <button type="button" data-move="-1,0">West</button>
+        <button type="button" data-move="1,0">East</button>
+        <button type="button" data-move="0,1">South</button>
+        <button type="button" data-move="0,0">Stop</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-bestiary" class="view">
+    <div class="card">
+      <h2>DISCOVERED</h2>
+      <div class="grid" id="bestiary"></div>
+    </div>
+    <div class="card">
+      <h2>RARE SPARKS</h2>
+      <p class="note">Showcase clips of rare sparked beasts. They stay quiet until you tap play.</p>
+      <div class="rare" id="rare-gallery"></div>
+    </div>
+  </section>
+
+  <section id="view-trade" class="view">
+    <div class="card">
+      <h2>SHARE</h2>
+      <p class="note">A .qbeast file uses the Synapse OS cage: checksum, optional passphrase seal, and the anti-dupe ledger. Sending it to the handheld uses the same mailbox as MODELS.</p>
+      <label class="row">Passphrase <input id="passphrase" type="password" autocomplete="off" placeholder="optional, 4 to 80 characters"></label>
+      <div class="move">
+        <button type="button" id="export">Download .qbeast</button>
+        <button type="button" id="link">Copy trade link</button>
+        <button type="button" id="qr-btn">Show QR</button>
+        <button type="button" id="send">Send to handheld</button>
+        <label class="file">Import<input id="import-file" type="file" accept=".qbeast,.json,.zip,.bin,application/json" hidden></label>
+      </div>
+      <canvas id="qr" hidden></canvas>
+      <div class="move">
+        <button type="button" id="export-ledger">Export ledger</button>
+        <button type="button" id="erase">Erase this device</button>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>
+  <p class="note">Quantum data is recorded historical IBM Quantum counts used as a seed. There is no live entanglement. Beasts are game companions, not conscious beings. This is not a medical device. It works offline, has no account, and keeps only a local ledger until you export or erase it. Linked world: <b id="world-name">this page</b>.</p>
+</footer>
+<script type="module" src="./app.mjs"></script>
+</body>
+</html>

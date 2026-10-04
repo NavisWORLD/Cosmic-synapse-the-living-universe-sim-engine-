@@ -7,6 +7,7 @@ const html = read('index.html').toString();
 assert(html.includes('src="arcade/lost-cosmos/index.html"'), 'Prepared handheld iframe is missing');
 assert(html.includes('src="arcade/learner-buddy/index.html"'), 'Prepared Learner Buddy iframe is missing');
 assert(html.includes('src="arcade/lost-cosmos/synapse.html"'), 'Prepared Synapse OS iframe is missing');
+assert(html.includes('src="arcade/spark-beasts/index.html"'), 'Prepared Spark Beasts iframe is missing');
 assert(html.includes('Cute Beast Pocket Reality Learners'), 'Pocket Reality brand is missing');
 for (const path of ['manifest.webmanifest', 'sw.js', 'offline.html', 'icon-192.png',
   'icon-512.png', 'apple-touch-icon.png', 'arcade/lost-cosmos/index.html',
@@ -17,6 +18,11 @@ for (const path of ['manifest.webmanifest', 'sw.js', 'offline.html', 'icon-192.p
   'arcade/lost-cosmos/synapse.html', 'arcade/lost-cosmos/synapse.mjs',
   'arcade/lost-cosmos/qbeast.mjs', 'arcade/lost-cosmos/synapse-os.mjs',
   'arcade/lost-cosmos/qr.mjs', 'arcade/lost-cosmos/qrcodegen.mjs',
+  'arcade/spark-beasts/index.html', 'arcade/spark-beasts/app.mjs',
+  'arcade/spark-beasts/genome.mjs', 'arcade/spark-beasts/showcase.mjs',
+  'arcade/spark-beasts/data/quantum-runs.json',
+  'arcade/spark-beasts/media/rare/manifest.json',
+  'arcade/spark-beasts/media/rare/Ferrotitan_4a10.mp4',
   'arcade/third_party/emulatorjs/data/loader.js',
   'arcade/third_party/emulatorjs/data/emulator.min.js',
   'arcade/third_party/emulatorjs/data/cores/mgba-wasm.data',
