@@ -2413,7 +2413,7 @@ static void v9_rift_travel(void){
  }
  refresh_camera();save_game();
 }
-static void story_interact(u8 t){if(t>=TR_COMP_ENTER){completion_interact(t);return;}int tx=player.x>>3;
+static void story_interact(u8 t){if(t>=TR_COMP_ENTER){completion_interact(t);return;}int tx=player.x>>3,ty=player.y>>3;
  if(t>=TR_G7_PORTAL && t<=TR_G7_ORB_LAST){g7_interact(t);return;}
  if(t>=TR_G6_PORTAL && t<=TR_G6_NODE_E){g6_interact(t);return;}
  if(t==TR_ECO_SHRINE){eco_shrine_interact();return;}
@@ -2540,8 +2540,15 @@ static void story_interact(u8 t){if(t>=TR_COMP_ENTER){completion_interact(t);ret
  if(t==TR_COURAGE){if(story_flags&ST_COURAGE)say("COURAGE IS YOURS. YOU SPARED THE SHADOWS.");else say("THE DREAM GUARDIAN IS STILL ALIVE. FACE IT FIRST.");return;}
  if(t==TR_UNITY){if((story_flags&(ST_WISDOM|ST_COURAGE))!=(ST_WISDOM|ST_COURAGE))say("UNITY REQUIRES WISDOM AND COURAGE FIRST.");
   else{story_flags|=ST_DREAM;cosmos.trust=(u8)mini(255,cosmos.trust+12);say("THREE TRIALS PASSED. ELDORIA IS NOW REACHABLE.");save_game();}return;}
- if(t==TR_ELEMENT){int k=0;if(tx>=43)k=3;else if(tx>=32)k=2;else if(tx>=21)k=1;
-  if(k==3){int i;for(i=0;i<10;i++)if(enemies[i].active&&enemies[i].elite){say("THE STORM GUARDIAN BLOCKS THE FOURTH SHRINE.");return;}}
+ if(t==TR_ELEMENT){static const u8 shrine_x[4]={15,26,37,48};int k=0,best=999,ex=tx,x,y,i;
+  /* All four Eldoria shrines intentionally share TR_ELEMENT. Resolve identity
+     from the actual nearby trigger tile, not the player's standing tile:
+     a 10px actor can interact from either side of a shrine. Direct native host
+     calls that bypass trigger_near() fall back to the nearest authored shrine. */
+  for(y=ty-1;y<=ty+1;y++)for(x=tx-1;x<=tx+1;x++)
+   if((unsigned)x<64u&&(unsigned)y<64u&&trigger[mi(x,y)]==TR_ELEMENT)ex=x;
+  for(i=0;i<4;i++){int d=iabs(ex-shrine_x[i]);if(d<best){best=d;k=i;}}
+  if(k==3){for(i=0;i<10;i++)if(enemies[i].active&&enemies[i].elite){say("THE STORM GUARDIAN BLOCKS THE FOURTH SHRINE.");return;}}
   if(!(element_mask&(1u<<k))){element_mask|=(u8)(1u<<k);say(k==0?"EARTH CRYSTAL RESTORED.":k==1?"WATER CRYSTAL RESTORED.":k==2?"FIRE CRYSTAL RESTORED.":"AIR CRYSTAL RESTORED.");if(element_mask==15){story_flags|=ST_ELEMENTS;say("FOUR ELEMENTS UNITED. THE COSMIC LATTICE AWAKENS.");}save_game();}
   else say("THIS ELEMENT HAS BEEN RESTORED.");return;}
  if(t==TR_CHRONO){if(keys_found&2){story_flags|=ST_CHRONO;say("TIDE'S CHRONOHEART STABILIZED. ACT TWO COMPLETE.");save_game();}else say("THE CHRONOHEART REQUIRES THE Y AXIS.");return;}
