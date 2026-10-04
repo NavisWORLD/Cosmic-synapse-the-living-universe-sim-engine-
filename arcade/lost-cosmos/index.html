@@ -13,8 +13,8 @@
   .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
   button, label.file { background: #12323c; color: #e8ffff; border: 1px solid #2a6d7c; border-radius: 8px; padding: 8px 10px; font: inherit; cursor: pointer; }
   button:disabled { opacity: .45; }
-  #traits { display: flex; gap: 14px; margin: 8px 0; }
-  #game { width: min(100%, 720px); height: 480px; background: #000; border-radius: 10px; overflow: hidden; }
+  #traits { display: flex; flex-wrap: wrap; gap: 14px; margin: 8px 0; }
+  #game { width: min(100%, 720px); height: clamp(240px, 60vw, 480px); background: #000; border-radius: 10px; overflow: hidden; }
   #status { min-height: 2.8em; color: #d7fff4; }
   label.consent { display: flex; gap: 8px; align-items: flex-start; }
 </style>
@@ -27,7 +27,7 @@
 <main>
   <label class="consent"><input id="consent" type="checkbox"> I agree to derive traits on this device. Samples are not stored in the cartridge.</label>
   <div id="traits"><span>FOCUS <b id="focus">—</b></span><span>CALM <b id="calm">—</b></span><span>SPARK <b id="spark">—</b></span></div>
-  <div id="status">Waiting for this world.</div>
+  <div id="status" role="status" aria-live="polite">Waiting for this world.</div>
   <div class="row">
     <button id="mock" type="button">Simulated headband</button>
     <button id="muse" type="button">Muse headband</button>

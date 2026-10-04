@@ -20,7 +20,7 @@ def wait(emu,predicate,what,max_frames=750):
   emu.step((),8)
  raise RuntimeError(f"{what} not reached after {max_frames} frames")
 
-def run(rom,elf,out):
+def run(rom,elf,out,record=False):
  out.mkdir(parents=True,exist_ok=True)
  save=out/"act1_fresh.sav"
  if save.exists():save.unlink()
@@ -36,12 +36,24 @@ def run(rom,elf,out):
        [emu.read_symbol("player",width=2,signed=True),emu.read_symbol("player",width=2,offset=2,signed=True)]
        if "player" in emu.symbols else None})
   try:
+   if record:emu.start_recording(out/"LOST_COSMOS_OPENING_AND_ACT_I.mp4")
    emu.step((),180)
    if emu.read_symbol("intro")!=1:raise RuntimeError("Real mGBA title missing")
+   if record:emu.step((),180);mark("00_readable_title")
    emu.tap("A",hold=12,release=12)
    wait(emu,lambda:emu.read_symbol("v10_opening")==1,"actual opening")
-   # Legitimate documented START input skips the visual prologue, not story flags.
-   emu.tap("START",hold=12,release=12)
+   if record:
+    report["prologue_cards"]=[]
+    for card in range(10):
+     emu.step((),300)
+     if emu.read_symbol("v10_opening_step")!=card:
+      raise RuntimeError(f"Prologue card {card+1} missing")
+     mark(f"prologue_{card+1:02d}")
+     report["prologue_cards"].append(card+1)
+     emu.tap("A",hold=12,release=12)
+   else:
+    # Controller QA may skip; the requested recording shows every prologue card.
+    emu.tap("START",hold=12,release=12)
    wait(emu,lambda:emu.read_symbol("v10_opening")==0 and emu.read_symbol("current_room")==2,"Brindlemark arrival")
    # current_room changes before the slow real map upload and CRC save finish.
    # The earlier experimental run captured a completely blank transition frame
@@ -59,7 +71,7 @@ def run(rom,elf,out):
    emu.step((),12)
    report["initial_real_npc_ids"]=[n.id for n in nav.npcs()]
    mark("01_true_brindlemark")
-   nav.talk_npc(14,advances=3)       # Real village elder with actual NPC dialogue.
+   nav.talk_npc(14,advances=3,read_frames=180 if record else 0)
    if not emu.read_symbol("story_flags")&1:raise RuntimeError("Brindle elder failed to unlock ST_TOWN")
    mark("02_earned_village_quest")
    nav.interact(12,at=(54,8))       # Real northeast gate to Oakwood.
@@ -72,7 +84,7 @@ def run(rom,elf,out):
         "fully rendered genuine Oakwood with Ravenswood", max_frames=1500)
    emu.step((),12)
    mark("03_true_oakwood")
-   nav.talk_npc(16,advances=6)      # Ravenswood's actual real three-page conversation.
+   nav.talk_npc(16,advances=6,read_frames=180 if record else 0)
    if not emu.read_symbol("story_flags")&2:raise RuntimeError("Ravenswood did not earn ST_OAKWOOD")
    mark("04_earned_ravenswood_map")
    nav.interact(12,at=(54,12))     # Authored Oakwood -> Cragstone route, no forced warp.
@@ -111,6 +123,10 @@ def run(rom,elf,out):
     "bank0_commit":emu.read8(0x0e000000+24576+15),
     "bank1_commit":emu.read8(0x0e000000+24576+64+15)}
    mark("08_real_First_Heart")
+   if record:
+    nav.wait_cinema()
+    emu.step((),180)
+    report["recording"]=emu.stop_recording()
    report["passed"]=True
   except Exception as exc:
    report["passed"]=False
@@ -130,4 +146,5 @@ if __name__=="__main__":
  p.add_argument("--rom",type=Path,default=R/"LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba")
  p.add_argument("--elf",type=Path,default=R/"LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf")
  p.add_argument("--out",type=Path,default=R/"artifacts/mgba_act1")
- a=p.parse_args();run(a.rom.resolve(),a.elf.resolve(),a.out.resolve())
+ p.add_argument("--record-opening",action="store_true",help="Record all ten prologue cards and the entire controller-only first chapter")
+ a=p.parse_args();run(a.rom.resolve(),a.elf.resolve(),a.out.resolve(),a.record_opening)

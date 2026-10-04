@@ -1,10 +1,10 @@
 name: Lost COSMOS native build and controller QA
 on:
   push:
-    branches: [feature/lost-cosmos-living-multiverse-recovery-011, feature/lost-cosmos-v11-enhanced-001]
+    branches: [main, feature/lost-cosmos-living-multiverse-recovery-011, feature/lost-cosmos-v11-enhanced-001]
     paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
   pull_request:
-    branches: [feature/lost-cosmos-v10-presentation-001, feature/lost-cosmos-v11-enhanced-001]
+    branches: [main, feature/lost-cosmos-v10-presentation-001, feature/lost-cosmos-v11-enhanced-001]
     paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
   workflow_dispatch:
 permissions:
@@ -73,6 +73,10 @@ jobs:
       - name: Real mGBA V11.1 full menu visual pilgrimage
         timeout-minutes: 5
         run: python3 tests/test_mgba_menu_visual.py --out artifacts/mgba_menu_visual
+      - name: Assert title, options, credits and all prologue text on real rendered pixels
+        run: |
+          python3 tests/test_mgba_title.py --out artifacts/mgba_title/compiled
+          python3 tests/test_mgba_title.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_title/runtime
       - name: Earn eight beacons, ten bosses, crafting, evolution, three slots and a true cold boot
         timeout-minutes: 7
         run: python3 tests/test_mgba_content_v11.py --out artifacts/mgba_v11_content
@@ -112,6 +116,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/mgba_mailbox/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_controller/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_menu_visual/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_title/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_v11_content/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act2/

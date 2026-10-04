@@ -411,6 +411,7 @@ static u8 cinema_active=0,cinema_scene=0;
 /* V10 presentation state is transient; V2-V9 gameplay state/save layout is kept. */
 static u8 v10_title_sel=0,v10_title_sub=0,v10_has_save=0,v10_opening=0;
 static u8 v10_opening_step=0,v10_tutorial=0,v10_ending_card=0;
+static u8 title_ui_dirty=1,cinema_ui_dirty=1;
 static u8 v10_hw_riddle=0,v10_hw_choice=0; /* 0 unset, 1 fought, 2 healed/bonded */
 /* Manuscript quest arc beyond Heartwood: isolated versioned 32KiB SRAM extension. */
 static u16 v10_relic=0;
@@ -1319,7 +1320,7 @@ static void cinema_end(void){
 }
 static void cinema_start(u8 id,u16 ticks){int i;u16 off,count;
  if(id>=V51_SCENE_COUNT)return;
- cinema_scene=id;cinema_timer=ticks;cinema_active=1;
+ cinema_scene=id;cinema_timer=ticks;cinema_active=1;cinema_ui_dirty=1;title_ui_dirty=1;
  REG_DISPCNT=0; /* VRAM uploads can safely occur with LCD temporarily blanked. */
  off=V51_SCENE_OFFSETS[id];count=V51_SCENE_COUNTS[id];
  for(i=0;i<count;i++)vram_copy32(VRAM32+(CINEMA_CB*4096)+(i*8),V51_SCENE_TILES[off+i],8);
@@ -1331,6 +1332,10 @@ static void cinema_start(u8 id,u16 ticks){int i;u16 off,count;
 }
 static void ui_wrap_text(int row,const char*s,int pal,int maxrows);
 static void draw_cinema_caption(void){
+ /* Clearing a full tile map every frame outruns VBlank on the real ARM7 and
+    erases the lower caption while the LCD is scanning it. Keep static text
+    resident until the actual cinematic changes. */
+ if(!cinema_ui_dirty)return;cinema_ui_dirty=0;
  if(v10_opening){const OpeningCard*card=&V10_OPENING[v10_opening_step];
   ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(14,19,63,15);
   ui_text(1,0,"LOST COSMOS / PROLOGUE",14);ui_text(2,14,card->head,13);
@@ -1574,11 +1579,13 @@ static void draw_battle(void){if(V11_IS_ROOM){v11_draw_battle();return;}Enemy*e=
 
 }
 static void draw_intro(void){
- v11_title_beast();
+ v11_title_beast(title_ui_dirty);
+ if(!title_ui_dirty)return;title_ui_dirty=0;
  static const char*options[4]={"NEW GAME","CONTINUE","OPTIONS","CREDITS"};int i;
- ui_clear();ui_fill_rows(0,1,63,15);ui_text(2,0,"LOST COSMOS / ERIDORIA",14);
+ REG_BG1HOFS=REG_BG1VOFS=0;
+ ui_clear();ui_text(9,8,"LOST COSMOS",13);
  ui_fill_rows(10,19,63,15);
- ui_text(2,10,"THE LIVING MULTIVERSE",14);
+ ui_text(1,10,"ERIDORIA // LIVING MULTIVERSE",14);
  if(v10_title_sub==1){
   ui_text(2,12,"OVERWRITE THE CURRENT SAVE?",15);
   ui_text(2,14,"A YES / B CANCEL",14);
@@ -1590,7 +1597,7 @@ static void draw_intro(void){
   ui_text(2,16,"MORE OPTIONS: START MENU",14);
  }else if(v10_title_sub==3){
   ui_text(2,12,"CREATED BY CORY DAVIS",14);
-  ui_text(2,14,"COSMIC SYNAPSE / COSMOS",15);
+  ui_text(2,14,"COSMIC SYNAPSE",15);
   ui_text(2,16,"ERIDORIA / LOST COSMOS",13);
   ui_text(4,17,"B RETURN",14);
  }else{
@@ -1598,7 +1605,8 @@ static void draw_intro(void){
    ui_text(2,12+i,(v10_title_sel==i)?">":" ",14);
    ui_text(4,12+i,options[i],(!v10_has_save&&i==1)?13:15);
   }
-  ui_text(4,17,"UP/DOWN SELECT   A CONFIRM",14);
+  ui_text(v10_has_save?8:4,18,v10_has_save?"SAVE DETECTED":"START A NEW ADVENTURE",13);
+  ui_text(2,19,"UP/DOWN SELECT   A CONFIRM",14);
  }
 }
 /* Thirty original, unlockable narrative passages grounded in the five existing
@@ -3036,6 +3044,7 @@ static void v10_continue_game(void){
  refresh_camera();say("WELCOME BACK. COSMOS KEPT YOUR MEMORY.");
 }
 static void v10_title_input(u16 newk){
+ if(newk&(KEY_UP|KEY_DOWN|KEY_A|KEY_B|KEY_START))title_ui_dirty=1;
  if(v10_title_sub==1){
   if(newk&KEY_B){v10_title_sub=0;return;}
   if(newk&KEY_A)v10_start_opening();return;

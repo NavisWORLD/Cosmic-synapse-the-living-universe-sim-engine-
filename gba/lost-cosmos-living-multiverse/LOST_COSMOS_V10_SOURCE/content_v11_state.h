@@ -78,7 +78,7 @@ static int v11_inventory_add(int id,int quantity);
 static int v11_skill_known(int id);
 static void v11_unlock(void);
 static void v11_menu_reset(void);
-static void v11_title_beast(void);
+static void v11_title_beast(int upload);
 static void v11_resume_art(void);
 static void v11_dialogue_advance(void);
 static void v11_dialogue_draw(void);

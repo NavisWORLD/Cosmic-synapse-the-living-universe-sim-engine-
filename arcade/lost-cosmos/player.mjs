@@ -32,6 +32,10 @@ function currentProfile() {
 }
 
 function bringIn() {
+  if (state.started) {
+    status('The cartridge is already running. Reload the handheld before preparing an import.');
+    return;
+  }
   if (!consented()) {
     status('Consent is required before a creature can cross over.');
     return;
@@ -52,7 +56,29 @@ function writeSav(fs, bytes) {
   }
 }
 
-function installEmulator(bytes) {
+async function installEmulator(bytes) {
+  if (state.started) return;
+  state.started = true;
+  $('play').disabled = true;
+  let receipt;
+  try {
+    const response = await fetch('rom/release.json', { cache: 'no-cache' });
+    if (!response.ok) throw new Error('The cartridge release is unavailable. Reload and try again.');
+    receipt = await response.json();
+    const rom = await fetch(`rom/lost-cosmos.gba?v=${receipt.sha256}`);
+    if (!rom.ok) throw new Error('The cartridge could not be downloaded. Reload and try again.');
+    const data = await rom.arrayBuffer();
+    if (data.byteLength !== receipt.bytes || data.byteLength < 0xc0 || new Uint8Array(data)[0xb2] !== 0x96)
+      throw new Error('The cartridge download is incomplete. Reload and try again.');
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    const hash = Array.from(new Uint8Array(digest), (v) => v.toString(16).padStart(2, '0')).join('');
+    if (hash !== receipt.sha256) throw new Error('The cartridge download does not match this release. Reload and try again.');
+  } catch (err) {
+    state.started = false;
+    $('play').disabled = false;
+    status(err?.message || 'The cartridge could not start. Please try again.');
+    return;
+  }
   const div = $('game');
   div.replaceChildren();
   const slot = document.createElement('div');
@@ -64,10 +90,11 @@ function installEmulator(bytes) {
   window.EJS_player = '#lc-ejs';
   window.EJS_core = 'gba';
   window.EJS_gameName = 'lost-cosmos';
-  window.EJS_gameUrl = 'rom/lost-cosmos.gba';
+  window.EJS_gameUrl = `rom/lost-cosmos.gba?v=${receipt.sha256}`;
   window.EJS_pathtodata = '../third_party/emulatorjs/data/';
   window.EJS_startOnLoaded = false;
   window.EJS_threads = false;
+  // This pinned loader disables automatic locale fetches only with false.
   window.EJS_disableAutoLang = false;
   window.EJS_forceLegacyCores = !webgl2;
   window.EJS_color = '#14343d';
@@ -78,6 +105,7 @@ function installEmulator(bytes) {
   };
   window.EJS_onGameStart = () => {
     const gm = window.EJS_emulator?.gameManager;
+    status(`Lost Cosmos V${receipt.version} is running. Choose NEW GAME or CONTINUE on the title screen.`);
     if (!gm || !bytes) return;
     try {
       const path = gm.getSaveFilePath?.();
@@ -95,6 +123,11 @@ function installEmulator(bytes) {
   };
   const script = document.createElement('script');
   script.src = '../third_party/emulatorjs/data/loader.js';
+  script.onerror = () => {
+    state.started = false;
+    $('play').disabled = false;
+    status('The emulator could not load. Reload the handheld and try again.');
+  };
   document.body.appendChild(script);
   state.started = true;
 }

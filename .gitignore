@@ -1,5 +1,6 @@
 node_modules/
 arcade/lost-cosmos/rom/*.gba
+arcade/lost-cosmos/rom/release.json
 dist/
 android/
 ios/

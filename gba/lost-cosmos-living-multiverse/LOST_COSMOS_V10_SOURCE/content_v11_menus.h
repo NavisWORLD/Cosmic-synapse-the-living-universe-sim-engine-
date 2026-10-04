@@ -74,11 +74,13 @@ static void v11_portrait(int pick,int x,int y,int pulse){int xx,yy,i;u32 tile[51
  int scale=256-(pulse%20)*3;OAM16[3*16+3]=scale;OAM16[3*16+7]=0;OAM16[3*16+11]=0;OAM16[3*16+15]=scale;
  OAM16[43*4]|=0x0100;OAM16[43*4+1]|=(3u<<9);}
 }
-static void v11_title_beast(void){/* Small native COSMOS on the starfield title. */
+static void v11_title_beast(int upload){/* Rebuild art only when the title changes. */
+ if(upload){
  int i,x,y;u32 out[128];volatile u16*src=(volatile u16*)OBJ_VRAM32;for(i=0;i<128;i++)out[i]=0;
  for(y=0;y<32;y++)for(x=0;x<32;x++){int sx=x/2,sy=y/2,at=32*16+((sy/8)*2+sx/8)*16+(sy&7)*2+(sx&7)/4;
  int n=(src[at]>>((sx&3)*4))&15;out[((y/8)*4+x/8)*8+(y&7)]|=(u32)n<<((x&7)*4);}
- vram_copy32(OBJ_VRAM32+400*8,out,128);oam_set32(43,188,68+((frame>>5)&1),400,1);oam_ui_portrait(43);
+ vram_copy32(OBJ_VRAM32+400*8,out,128);}
+ oam_set32(43,188,56+((frame>>5)&1),400,1);oam_ui_portrait(43);
 }
 /* Public export snapshot in reserved bytes 6208..6399. No private memory. */
 static int v11_export_valid(void){return SRAM[6208]=='L'&&SRAM[6209]=='C'&&SRAM[6210]=='E'&&SRAM[6211]==1&&SRAM[6399]==0xa5&&sr32(6388)==v11_sram_crc(6208,180);}

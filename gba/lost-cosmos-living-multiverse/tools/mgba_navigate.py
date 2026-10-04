@@ -260,7 +260,7 @@ class Navigator:
             result.append(Npc(slot, data[offset], data[offset + 2], x, y))
         return result
 
-    def talk_npc(self, npc_id, *, advances=3):
+    def talk_npc(self, npc_id, *, advances=3, read_frames=0):
         """Approach the actual on-map NPC and use A through its dialogue."""
         triggers = self.triggers()
         def goals(start, board):
@@ -290,6 +290,7 @@ class Navigator:
         for _ in range(advances):
             if not self.value("npc_dialogue_active"):
                 break
+            self.emu.step((), read_frames)
             self.emu.tap("A", hold=12, release=12)
         if self.value("npc_dialogue_active"):
             self.emu.tap("B", hold=12, release=12)

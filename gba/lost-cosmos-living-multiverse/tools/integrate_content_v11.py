@@ -44,6 +44,6 @@ replace('music_step();v108_credits_tick();wait_vblank();frame++;render();',
         'v11_clock();music_step();v108_credits_tick();wait_vblank();frame++;render();')
 replace('ui_text(6,17,"A OPEN",14);ui_text(19,17,"B CLOSE",13);',
         'ui_text(4,3,"SELECT ARIN STATUS",13);ui_text(6,17,"A OPEN",14);ui_text(19,17,"B CLOSE",13);')
-replace('static void draw_intro(void){\n', 'static void draw_intro(void){\n v11_title_beast();\n')
+replace('static void draw_intro(void){\n', 'static void draw_intro(void){\n v11_title_beast(1);\n')
 path.write_text(s)
 print('Installed additive content hooks; original native campaign functions retained.')
