@@ -184,7 +184,7 @@ static const u8 PLANET_COL[8]={1,2,3,4,5,6,2,3};
 static u8 collision[MAP_W*MAP_H];
 static u8 trigger[MAP_W*MAP_H];
 static u8 near_trigger_x=255,near_trigger_y=255;
-static u8 last_element_trigger_x=255,last_element_index=255,last_element_interact_count=0;
+volatile u8 last_element_trigger_x=255,last_element_index=255,last_element_interact_count=0;
 static Actor player;
 static Buddy cosmos;
 static Beacon beacons[8];
