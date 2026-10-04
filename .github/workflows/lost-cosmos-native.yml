@@ -4,7 +4,7 @@ on:
     branches: [feature/lost-cosmos-living-multiverse-recovery-011, feature/lost-cosmos-v11-enhanced-001]
     paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
   pull_request:
-    branches: [feature/lost-cosmos-v10-presentation-001]
+    branches: [feature/lost-cosmos-v10-presentation-001, feature/lost-cosmos-v11-enhanced-001]
     paths: ['gba/lost-cosmos-living-multiverse/**', '.github/workflows/lost-cosmos-native.yml']
   workflow_dispatch:
 permissions:
@@ -51,6 +51,9 @@ jobs:
           bash tools/mgba_build.sh
           gcc -std=c99 -Wall -Wextra -Werror -Wno-misleading-indentation -O2 tests/test_save_journal.c -o /tmp/lc-journal-test
           /tmp/lc-journal-test
+      - name: Gate living-link mailbox import in real mGBA
+        timeout-minutes: 5
+        run: python3 tests/test_mgba_mailbox_import.py --out artifacts/mgba_mailbox
       - name: Real mGBA controller boot, movement, audio, video and two-boot save check
         run: python3 tests/test_mgba_controller.py --out artifacts/mgba_controller
       - name: Real mGBA V11.1 full menu visual pilgrimage
@@ -89,6 +92,7 @@ jobs:
           path: |
             gba/lost-cosmos-living-multiverse/artifacts/native/
             gba/lost-cosmos-living-multiverse/artifacts/release/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_mailbox/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_controller/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_menu_visual/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/

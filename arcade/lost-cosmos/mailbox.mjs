@@ -1,0 +1,265 @@
+/**
+ * LCX1 mailbox encoder. Byte-compatible with tools/lc_mailbox.py.
+ * Raw EEG samples are not an input. Only a BCP1 profile and three derived traits.
+ */
+export const MAILBOX_OFFSET = 24832;
+export const MAILBOX_BYTES = 644;
+export const MAIL_BODY = 640;
+export const SRAM_SIZE = 32768;
+export const FAMILIES = ['nebula', 'aurora', 'void', 'plasma', 'memory', 'signal', 'starlight'];
+export const FAMILY_LOOK = ['nebula', 'aurora', 'nebula', 'starlight', 'starlight', 'aurora', 'starlight'];
+export const LOOKS = { nebula: 0, aurora: 1, starlight: 2 };
+export const SPECIES = ['NEBULA', 'AURORA', 'VOID', 'PLASMA', 'MEMORY', 'SIGNAL', 'STARLIGHT'];
+export const FIXTURE = { world: 'EARTH', evolution: 0.25, biosphere: 0.5, lifeEvents: 1, focus: 40, calm: 70, spark: 15 };
+
+const CRC_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+
+export function crc32(bytes) {
+  let c = 0xffffffff;
+  for (const b of bytes) c = (CRC_TABLE[(c ^ b) & 255] ^ (c >>> 8)) >>> 0;
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+export function fnv1a(text) {
+  let h = 2166136261;
+  for (const byte of new TextEncoder().encode(text)) h = Math.imul(h ^ byte, 16777619) >>> 0;
+  return h >>> 0;
+}
+
+function floorDiv(a, b) {
+  return Math.floor(a / b);
+}
+
+function* generator(seed, domain) {
+  let state = fnv1a(`1|${domain}|${seed}`) || 0x6d2b79f5;
+  while (true) {
+    state = (state ^ (state << 13)) >>> 0;
+    state = (state ^ (state >>> 17)) >>> 0;
+    state = (state ^ (state << 5)) >>> 0;
+    yield state / 4294967296;
+  }
+}
+
+export function expectedGenesis(seed) {
+  const rng = generator(seed, 'stats');
+  const stats = Array(10).fill(50);
+  for (let n = 0; n < 270; n++) {
+    const source = Math.trunc(rng.next().value * 10);
+    const target = Math.trunc(rng.next().value * 10);
+    if (source !== target && stats[source] > 20 && stats[target] < 80) {
+      stats[source] -= 1;
+      stats[target] += 1;
+    }
+  }
+  const trng = generator(seed, 'temperament');
+  const temper = Array.from({ length: 5 }, () => Math.trunc(20 + trng.next().value * 61));
+  const naming = generator(seed, 'name');
+  const stems = ['Neb', 'Lum', 'Ori', 'Vexa', 'Astr', 'Phera', 'Glima', 'Zori', 'Mira', 'Cosmi'];
+  const ends = ['by', 'io', 'ix', 'a', 'on', 'ora', 'u', 'ra', 'yx', 'iri'];
+  const name = stems[Math.trunc(naming.next().value * stems.length)] + ends[Math.trunc(naming.next().value * ends.length)];
+  return { stats, temper, name };
+}
+
+export function livingSeed(world, evolution, biosphere, lifeEvents) {
+  const raw = String(world).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const w = raw || 'WORLD';
+  const evo = Math.trunc(Math.max(0, Number(evolution)) * 1000);
+  const bio = Math.trunc(Math.max(0, Math.min(1, Number(biosphere))) * 1000);
+  const life = Math.trunc(Math.max(0, Number(lifeEvents)));
+  return `lu1|${w}|${evo}|${bio}|${life}`;
+}
+
+export function applyTraits(temper, focus, calm, spark) {
+  const shifts = [
+    floorDiv(calm - 50, 5),
+    floorDiv(spark - 50, 5),
+    floorDiv(spark - 40, 6),
+    floorDiv(calm - 40, 5),
+    floorDiv(focus - 50, 5),
+  ];
+  return temper.map((v, i) => Math.max(20, Math.min(80, v + shifts[i])));
+}
+
+export function buildBcp1({ family, stats, temper, hue, publicId }) {
+  if (family < 0 || family > 6) throw new Error('family out of range');
+  if (stats.reduce((a, b) => a + b, 0) !== 500) throw new Error('BCP1 budget');
+  if ([...stats, ...temper].some((x) => x < 20 || x > 80)) throw new Error('BCP1 range');
+  if (!publicId) throw new Error('public id is zero');
+  const p = new Uint8Array(64);
+  p.set([0x42, 0x43, 0x50, 0x31, 1, family, LOOKS[FAMILY_LOOK[family]], 0]);
+  p.set(stats, 8);
+  p.set(temper, 18);
+  p[23] = hue & 0xff;
+  p[24] = publicId & 255;
+  p[25] = (publicId >>> 8) & 255;
+  p[26] = (publicId >>> 16) & 255;
+  p[27] = (publicId >>> 24) & 255;
+  const sum = crc32(p.subarray(0, 60));
+  p[60] = sum & 255;
+  p[61] = (sum >>> 8) & 255;
+  p[62] = (sum >>> 16) & 255;
+  p[63] = (sum >>> 24) & 255;
+  return p;
+}
+
+function traitCheck(focus, calm, spark) {
+  for (const [name, value] of [['focus', focus], ['calm', calm], ['spark', spark]]) {
+    if (!Number.isInteger(value) || value < 0 || value > 100) throw new Error(`${name} must be an integer 0..100`);
+  }
+}
+
+export function livingProfile({ world, evolution, biosphere, lifeEvents, focus, calm, spark }) {
+  traitCheck(focus, calm, spark);
+  const seed = livingSeed(world, evolution, biosphere, lifeEvents);
+  const family = fnv1a(seed) % 7;
+  const genesis = expectedGenesis(seed);
+  const temper = applyTraits(genesis.temper, focus, calm, spark);
+  const hue = Math.max(-32, Math.min(31, floorDiv(spark - calm, 2)));
+  const publicId = fnv1a(`identity|1|${seed}`) || 1;
+  const gameSeed = fnv1a(`lost-cosmos|${seed}`) || 1;
+  const callsign = (String(world).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)) || 'LIVING';
+  const bcp1 = buildBcp1({ family, stats: genesis.stats, temper, hue, publicId });
+  return { bcp1, gameSeed, callsign, family, species: 128 + family, speciesName: SPECIES[family], publicId, focus, calm, spark, seed, hue };
+}
+
+export function beastProfile({ seed, familyName, hue = 0, focus = 50, calm = 50, spark = 50 }) {
+  traitCheck(focus, calm, spark);
+  const family = FAMILIES.indexOf(familyName);
+  if (family < 0) throw new Error('unknown family');
+  const genesis = expectedGenesis(seed);
+  const publicId = fnv1a(`identity|1|${seed}`) || 1;
+  const gameSeed = fnv1a(`lost-cosmos|${seed}`) || 1;
+  const bcp1 = buildBcp1({ family, stats: genesis.stats, temper: genesis.temper, hue, publicId });
+  const callsign = genesis.name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) || 'BEAST';
+  return { bcp1, gameSeed, callsign, family, species: 128 + family, speciesName: SPECIES[family], publicId, focus, calm, spark, seed, hue, name: genesis.name };
+}
+
+export function profileFromBcp1(bytes, { focus = 50, calm = 50, spark = 50, callsign = 'BEAST', gameSeed = 0 } = {}) {
+  traitCheck(focus, calm, spark);
+  if (!(bytes instanceof Uint8Array) || bytes.length !== 64) throw new Error('BCP1 must be 64 bytes');
+  if (bytes[0] !== 0x42 || bytes[1] !== 0x43 || bytes[2] !== 0x50 || bytes[3] !== 0x31 || bytes[4] !== 1) throw new Error('BCP1 header');
+  const family = bytes[5];
+  if (family > 6 || bytes[6] > 2 || bytes[7] !== 0) throw new Error('BCP1 family');
+  for (let i = 28; i < 60; i++) if (bytes[i]) throw new Error('BCP1 reserved');
+  const stats = [...bytes.subarray(8, 18)];
+  const temper = [...bytes.subarray(18, 23)];
+  if (stats.reduce((a, b) => a + b, 0) !== 500 || [...stats, ...temper].some((x) => x < 20 || x > 80)) throw new Error('BCP1 budget');
+  const publicId = (bytes[24] | (bytes[25] << 8) | (bytes[26] << 16) | (bytes[27] << 24)) >>> 0;
+  if (!publicId) throw new Error('public id is zero');
+  const sum = crc32(bytes.subarray(0, 60));
+  const got = (bytes[60] | (bytes[61] << 8) | (bytes[62] << 16) | (bytes[63] << 24)) >>> 0;
+  if (sum !== got) throw new Error('BCP1 crc');
+  const hue = (bytes[23] << 24) >> 24;
+  const call = String(callsign).toUpperCase().replace(/[^A-Z0-9 ]/g, '').slice(0, 12) || 'BEAST';
+  return {
+    bcp1: bytes.slice(), gameSeed: (gameSeed >>> 0) || publicId, callsign: call, family,
+    species: 128 + family, speciesName: SPECIES[family], publicId, focus, calm, spark, seed: 'bcp1', hue,
+  };
+}
+
+export function profileFromBeastJson(details, traits = {}) {
+  if (!details || details.schema !== 'beast-cage-creature-v1' || details.version !== 1) throw new Error('Beast Box schema');
+  if (typeof details.seed !== 'string' || !details.seed) throw new Error('Beast Box seed');
+  const hue = Number(details.appearance?.hueShift || 0);
+  const profile = beastProfile({
+    seed: details.seed,
+    familyName: details.family,
+    hue,
+    focus: traits.focus ?? 50,
+    calm: traits.calm ?? 50,
+    spark: traits.spark ?? 50,
+  });
+  const genesis = expectedGenesis(details.seed);
+  if (details.game?.stats) {
+    const names = ['hp', 'energy', 'signal', 'memory', 'resonance', 'agility', 'chaos', 'stability', 'curiosity', 'evolution'];
+    for (let i = 0; i < names.length; i++) {
+      if (details.game.stats[names[i]] !== genesis.stats[i]) throw new Error('Beast Box stat mismatch');
+    }
+  }
+  if (details.temperament) {
+    const keys = ['curiosity', 'energy', 'playfulness', 'caution', 'independence'];
+    for (let i = 0; i < keys.length; i++) {
+      if (details.temperament[keys[i]] !== undefined && details.temperament[keys[i]] !== genesis.temper[i]) {
+        throw new Error('Beast Box temperament mismatch');
+      }
+    }
+  }
+  return profile;
+}
+
+export function buildMailbox(profile) {
+  const buf = new Uint8Array(MAILBOX_BYTES);
+  buf.set([0x4c, 0x43, 0x58, 0x31, 1, 1, profile.focus, profile.calm, profile.spark], 0);
+  const seed = profile.gameSeed >>> 0;
+  buf[10] = seed & 255;
+  buf[11] = (seed >>> 8) & 255;
+  buf[12] = (seed >>> 16) & 255;
+  buf[13] = (seed >>> 24) & 255;
+  const call = new TextEncoder().encode(profile.callsign).slice(0, 12);
+  buf.set(call, 14);
+  if (profile.bcp1.length !== 64) throw new Error('BCP1 must be 64 bytes');
+  buf.set(profile.bcp1, 32);
+  const sum = crc32(buf.subarray(0, MAIL_BODY));
+  buf[640] = sum & 255;
+  buf[641] = (sum >>> 8) & 255;
+  buf[642] = (sum >>> 16) & 255;
+  buf[643] = (sum >>> 24) & 255;
+  return buf;
+}
+
+export function buildSave(profile) {
+  const mail = buildMailbox(profile);
+  if (MAILBOX_OFFSET + mail.length > 25600) throw new Error('mailbox collides with the reserved LCM1 region');
+  const sav = new Uint8Array(SRAM_SIZE);
+  sav.fill(0xff);
+  sav.set(mail, MAILBOX_OFFSET);
+  return sav;
+}
+
+export function fixtureSave() {
+  const profile = livingProfile(FIXTURE);
+  return { sav: buildSave(profile), profile };
+}
+
+function hex(n) {
+  return (n >>> 0).toString(16).padStart(8, '0');
+}
+
+async function sha256(bytes) {
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function runningAsCli() {
+  if (typeof process === 'undefined' || !process.versions?.node || !process.argv?.[1]) return false;
+  try {
+    return import.meta.url === new URL(process.argv[1], 'file:').href;
+  } catch {
+    return false;
+  }
+}
+
+if (runningAsCli()) {
+  const { sav, profile } = fixtureSave();
+  const out = {
+    species: profile.species,
+    species_name: profile.speciesName,
+    public_id: hex(profile.publicId),
+    game_seed: hex(profile.gameSeed),
+    seed: profile.seed,
+    family: profile.family,
+    callsign: profile.callsign,
+    hue: profile.hue,
+    sha256: await sha256(sav),
+    mailbox_offset: MAILBOX_OFFSET,
+  };
+  console.log(JSON.stringify(out));
+}

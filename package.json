@@ -8,6 +8,7 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "verify": "node scripts/verify.mjs",
+    "test:link": "node --test arcade/lost-cosmos/mailbox.test.mjs",
     "prepare:web": "node scripts/prepare-web.mjs",
     "serve": "python tools/serve.py",
     "desktop": "npm run prepare:web && electron .",

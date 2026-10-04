@@ -201,6 +201,13 @@ static QuantumState qstate;
 #define LC_IMPORT_OBJ_PAL 15
 static LcRoster lc_party;
 static u8 lc_party_sel=0;
+/* LCX1 runtime import. Buffers stay in this translation unit; the mailbox
+   record itself lives in lc_mailbox.h and never aliases an older save page. */
+static u8 lc_mail_live=0;
+static u8 lc_mail_tiles[512];
+static u8 lc_mail_pal[32];
+static char lc_mail_name[13];
+static volatile u8 lc_mail_species=0,lc_mail_ready=0;
 static u8 lc_sanctuary_mask=0,eco_guide_sel=0,lc_release_armed=0;
 /* V10.4: game-only disjoint 32-byte PRG4 SRAM page, separate from legacy, roster, atlas. */
 #define P4_SRAM 3072
@@ -265,7 +272,26 @@ static void lc_upload_import_art(void){
  lc_import_palette();
 #endif
 }
+static void lc_draw_import_field(int oi,int x,int y,int hflip,int ui);
+static void lc_mail_blit(void){
+ int i;if(!lc_mail_live)return;
+ for(i=0;i<16;i++)OBJ_PALETTE[LC_IMPORT_OBJ_PAL*16+i]=
+  (u16)lc_mail_pal[i*2]|(u16)((u16)lc_mail_pal[i*2+1]<<8);
+ {volatile u16 *dst=(volatile u16*)OBJ_VRAM32;
+  for(i=0;i<256;i++)dst[LC_IMPORT_FIELD_OBJ_TILE*16+i]=
+   (u16)lc_mail_tiles[i*2]|(u16)((u16)lc_mail_tiles[i*2+1]<<8);}
+}
+static int lc_has_import_art(u8 species){
+ if(species<LC_SPECIES_IMPORTED||species>=LC_SPECIES_IMPORTED+7)return 0;
+ if(lc_mail_live)return 1;
+#if defined(LC_IMPORTED_COMPANION)
+ return 1;
+#else
+ return 0;
+#endif
+}
 static void lc_draw_import_portrait(int x,int y){
+ if(lc_mail_live){lc_draw_import_field(42,x,y+8,0,1);return;}
 #if defined(LC_IMPORTED_COMPANION)
  lc_import_palette();
  OAM16[42*4]=(u16)(y&255);
@@ -277,6 +303,14 @@ static void lc_draw_import_portrait(int x,int y){
 #endif
 }
 static void lc_draw_import_field(int oi,int x,int y,int hflip,int ui){
+ if(lc_mail_live){
+  if(x<-32||x>239||y<-32||y>159){OAM16[oi*4]=0x0200;return;}
+  lc_mail_blit();
+  OAM16[oi*4]=(u16)(y&255);
+  OAM16[oi*4+1]=(u16)((x&511)|(2u<<14)|(hflip?0x1000:0));
+  OAM16[oi*4+2]=(u16)(LC_IMPORT_FIELD_OBJ_TILE+((ui?0u:1u)<<10)+(LC_IMPORT_OBJ_PAL<<12));
+  return;
+ }
 #if defined(LC_IMPORTED_COMPANION)
  if(x<-32||x>239||y<-32||y>159){OAM16[oi*4]=0x0200;return;}
  lc_import_palette();
@@ -1499,10 +1533,8 @@ static void draw_battle(void){Enemy*e=&enemies[battle_index];
  if(lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];
   if(c->species>=1&&c->species<=8){oam_set(3,115,71,384+(c->species-1)*24+
     mini(2,c->stage)*8+((frame>>4)&1)*4,7,0);oam_ui_portrait(3);}
-#if defined(LC_IMPORTED_COMPANION)
-  else if(c->species>=LC_SPECIES_IMPORTED&&c->species<LC_SPECIES_IMPORTED+7)
+  else if(lc_has_import_art(c->species))
    lc_draw_import_field(3,108,59,0,1);
-#endif
  }
  if(current_world==0&&current_room==6&&e->elite)ui_text(3,3,"NIHILOS ECHO",13);
 
@@ -1755,9 +1787,7 @@ static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE
    ui_text(14,5,"BOND",13);ui_num(19,5,c->bond,15);
    ui_text(14,6,"HP",13);ui_num(19,6,c->hp,15);
    ui_text(14,7,"EVO",13);ui_num(19,7,c->stage,15);
-#if defined(LC_IMPORTED_COMPANION)
-   if(c->species>=LC_SPECIES_IMPORTED){ui_text(14,9,"Q-BEAST",14);lc_draw_import_portrait(168,40);}
-#endif
+   if(lc_has_import_art(c->species)){ui_text(14,9,lc_mail_live?"LIVING":"Q-BEAST",14);lc_draw_import_portrait(168,40);}
   }
   ui_text(4,16,"A ACTIONS",14);ui_text(16,16,"R BESTIARY",13);ui_text(4,17,"B BACK",13);
  }
@@ -1786,8 +1816,18 @@ static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE
    ui_text(3,17,"ID",13);if(c)ui_hex32(7,17,c->identity,15);
   }
 #else
-  ui_text(4,6,"BRIDGE READY",14);ui_text(4,8,"NO BEAST SNAPSHOT IMPORTED",15);
-  ui_text(4,10,"USE QBEAST BUILDER",13);
+  if(lc_mail_live&&lc_party.count){
+   LcCreature*c=&lc_party.slots[lc_party.active];
+   ui_text(3,4,"STATUS",13);ui_text(11,4,"LIVING",14);
+   ui_text(3,6,"LINK",13);ui_text(11,6,"CARTRIDGE",15);
+   ui_text(3,8,"SENSE",13);ui_text(11,8,"TRAITS ONLY",15);
+   ui_text(3,10,"BEAST",13);ui_text(11,10,lc_species_name(c->species),14);
+   if(lc_mail_name[0]){ui_text(3,12,"NAME",13);ui_text(11,12,lc_mail_name,15);}
+   lc_draw_import_field(42,168,64,0,1);
+  }else{
+   ui_text(4,6,"BRIDGE READY",14);ui_text(4,8,"NO BEAST SNAPSHOT IMPORTED",15);
+   ui_text(4,10,"USE QBEAST BUILDER",13);
+  }
 #endif
   ui_text(22,17,"B BACK",13);
  }
@@ -1904,7 +1944,8 @@ static u8 save_checksum_v5(void){int i;u8 s=0x6D;for(i=0;i<190;i++)if(i!=126&&i!
 #include "g7_persist.h"
 #include "story_completion_persist.h"
 #include "save_journal.h"
-static void save_game(void){int i,o=40;SRAM[0]='L';SRAM[1]='C';SRAM[2]='V';SRAM[3]='5';SRAM[4]=5;SRAM[5]=keys_found;SRAM[6]=visited_mask;SRAM[7]=secrets_mask;SRAM[8]=chapter;SRAM[9]=ending;SRAM[10]=postgame;SRAM[11]=current_world;SRAM[12]=current_room;SRAM[13]=current_layer;SRAM[14]=(game_mode==MODE_PAUSE?return_mode:(game_mode==MODE_BATTLE?MODE_SURFACE:game_mode));SRAM[15]=audio_on;sw16(16,player.x);sw16(18,player.y);sw16(20,ship_x);sw16(22,ship_y);SRAM[24]=ship_world;SRAM[25]=player.hp;SRAM[26]=cosmos.goal;SRAM[27]=cosmos.mood;SRAM[28]=cosmos.trust;SRAM[29]=cosmos.curiosity;SRAM[30]=cosmos.avoid;SRAM[31]=cosmos.energy;SRAM[32]=(u8)cosmos.memory_flags;SRAM[33]=(u8)(cosmos.memory_flags>>8);SRAM[34]=cosmos_preference;SRAM[35]=player_choice;SRAM[36]=beacon_count;sw32(120,qi);for(i=0;i<8;i++){SRAM[o++]=beacons[i].world;SRAM[o++]=beacons[i].room;SRAM[o++]=beacons[i].layer;sw16(o,beacons[i].x);o+=2;sw16(o,beacons[i].y);o+=2;}SRAM[128]=player_level;sw16(129,(s16)player_xp);SRAM[131]=max_hp;SRAM[132]=player_mp;SRAM[133]=max_mp;SRAM[134]=str_stat;SRAM[135]=def_stat;SRAM[136]=mag_stat;SRAM[137]=credits;for(i=0;i<ITEM_COUNT;i++)SRAM[138+i]=inv[i];SRAM[142]=gear_owned;SRAM[143]=weapon;SRAM[144]=armor;SRAM[145]=charm;SRAM[146]=current_spell;SRAM[147]=buddy_talk;SRAM[148]=buddy_quantum;SRAM[149]=boss_flags;sw16(150,(s16)kill_count);SRAM[152]=qstate.mean;SRAM[153]=qstate.spread;SRAM[154]=qstate.parity;SRAM[155]=qstate.phase;SRAM[156]=qstate.coherence;SRAM[157]=qstate.burst;SRAM[158]=quest_started;SRAM[159]=quest_completed;
+#include "lc_mailbox.h"
+static void save_game(void){lc_mailbox_refresh(1);int i,o=40;SRAM[0]='L';SRAM[1]='C';SRAM[2]='V';SRAM[3]='5';SRAM[4]=5;SRAM[5]=keys_found;SRAM[6]=visited_mask;SRAM[7]=secrets_mask;SRAM[8]=chapter;SRAM[9]=ending;SRAM[10]=postgame;SRAM[11]=current_world;SRAM[12]=current_room;SRAM[13]=current_layer;SRAM[14]=(game_mode==MODE_PAUSE?return_mode:(game_mode==MODE_BATTLE?MODE_SURFACE:game_mode));SRAM[15]=audio_on;sw16(16,player.x);sw16(18,player.y);sw16(20,ship_x);sw16(22,ship_y);SRAM[24]=ship_world;SRAM[25]=player.hp;SRAM[26]=cosmos.goal;SRAM[27]=cosmos.mood;SRAM[28]=cosmos.trust;SRAM[29]=cosmos.curiosity;SRAM[30]=cosmos.avoid;SRAM[31]=cosmos.energy;SRAM[32]=(u8)cosmos.memory_flags;SRAM[33]=(u8)(cosmos.memory_flags>>8);SRAM[34]=cosmos_preference;SRAM[35]=player_choice;SRAM[36]=beacon_count;sw32(120,qi);for(i=0;i<8;i++){SRAM[o++]=beacons[i].world;SRAM[o++]=beacons[i].room;SRAM[o++]=beacons[i].layer;sw16(o,beacons[i].x);o+=2;sw16(o,beacons[i].y);o+=2;}SRAM[128]=player_level;sw16(129,(s16)player_xp);SRAM[131]=max_hp;SRAM[132]=player_mp;SRAM[133]=max_mp;SRAM[134]=str_stat;SRAM[135]=def_stat;SRAM[136]=mag_stat;SRAM[137]=credits;for(i=0;i<ITEM_COUNT;i++)SRAM[138+i]=inv[i];SRAM[142]=gear_owned;SRAM[143]=weapon;SRAM[144]=armor;SRAM[145]=charm;SRAM[146]=current_spell;SRAM[147]=buddy_talk;SRAM[148]=buddy_quantum;SRAM[149]=boss_flags;sw16(150,(s16)kill_count);SRAM[152]=qstate.mean;SRAM[153]=qstate.spread;SRAM[154]=qstate.parity;SRAM[155]=qstate.phase;SRAM[156]=qstate.coherence;SRAM[157]=qstate.burst;SRAM[158]=quest_started;SRAM[159]=quest_completed;
  SRAM[160]=(u8)npc_seen;SRAM[161]=(u8)(npc_seen>>8);SRAM[162]=npc_recent;sw32(164,workload_qi);SRAM[168]=(u8)(0xC0|touch_mode);
  SRAM[190]=save_checksum_v5();
  SRAM[200]=(u8)story_flags;SRAM[201]=(u8)(story_flags>>8);SRAM[202]=rune_progress;SRAM[203]=element_mask;
@@ -1942,6 +1983,7 @@ static void lc_restore_roster(void){
   }
   lc_add_exported_profile();
  }
+ lc_mailbox_refresh(0);
  lc_party_sel=lc_party.count?lc_party.active:0;
 }
 static int save_valid_v2(void){return SRAM[0]=='L'&&SRAM[1]=='C'&&SRAM[2]=='V'&&SRAM[3]=='2'&&SRAM[4]==2&&SRAM[124]==save_checksum_v2();}
@@ -2579,14 +2621,10 @@ static void render_surface_sprites(void){int sx=player.x-cam_x-8,sy=player.y-cam
      tile=384+(species-1)*24+stage*8+(((frame>>4)&1)*4);
      pal=4+species;
     }
-#if defined(LC_IMPORTED_COMPANION)
-    else if(species>=LC_SPECIES_IMPORTED&&species<LC_SPECIES_IMPORTED+7)imported=1;
-#endif
+    else if(lc_has_import_art(species))imported=1;
    }
-#if defined(LC_IMPORTED_COMPANION)
    if(imported)lc_draw_import_field(42,cosmos.x-cam_x-8,cosmos.y-cam_y-13,cosmos.vx<0,0);
    else
-#endif
    oam_set(42,cosmos.x-cam_x+6+((tile>=384)?((int)((frame>>5)&3)-1):0),cosmos.y-cam_y+1+(int)((frame>>3)&1),tile,pal,0);
   }
  }
@@ -2934,7 +2972,7 @@ static void init_new_game(void){int i;arc_reset();p4_reset();g5_reset();g6_reset
  v9_jump=v9_jump_cd=v9_combo=v9_combo_time=v9_wave_delay=0;
  v9_equipped=v9_gear_sel=0;v9_rng=0xC0A571D5u;
  for(i=0;i<5;i++)v9_loot[i]=0;
- lc_roster_init(&lc_party);lc_party_sel=0;lc_add_exported_profile();
+ lc_roster_init(&lc_party);lc_party_sel=0;lc_mail_live=0;lc_add_exported_profile();
  current_world=0;current_room=0;current_layer=1;game_mode=MODE_SURFACE;ship_world=0;ship_x=PLANET_X[0];ship_y=PLANET_Y[0]+26;copystr(dialogue,"I REMEMBER A SKY MADE OF SQUARES.",90);}
 /* These are actual user-facing transitions, not fabricated quest-flag jumps. */
 static void v10_start_opening(void){
