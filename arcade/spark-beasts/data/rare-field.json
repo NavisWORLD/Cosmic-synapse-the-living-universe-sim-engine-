@@ -1,0 +1,218 @@
+{
+  "Ferrotitan": {
+    "name": "Ferrotitan",
+    "stage": 3,
+    "runIndex": 0,
+    "runKey": "ibm_marrakesh:d93d8pgoamcc73dc3afg",
+    "traits": {
+      "focus": 50,
+      "calm": 100,
+      "spark": 50
+    },
+    "island": "Rust Meridian",
+    "body": "pup",
+    "names": {
+      "1": "Pistonlet",
+      "2": "Boltpaw",
+      "3": "Ferrotitan"
+    }
+  },
+  "Nyxwyrm": {
+    "name": "Nyxwyrm",
+    "stage": 1,
+    "runIndex": 1,
+    "runKey": "ibm_kingston:d93jnlq47v0s73823aj0",
+    "traits": {
+      "focus": 0,
+      "calm": 10,
+      "spark": 0
+    },
+    "island": "Umbral Deep",
+    "body": "dragonling",
+    "names": {
+      "1": "Nyxwyrm",
+      "2": "Vesperclaw",
+      "3": "Umbrawyvern"
+    }
+  },
+  "Chartyrant": {
+    "name": "Chartyrant",
+    "stage": 3,
+    "runIndex": 1,
+    "runKey": "ibm_kingston:d93jnlq47v0s73823aj0",
+    "traits": {
+      "focus": 10,
+      "calm": 10,
+      "spark": 80
+    },
+    "island": "Cinder Drift",
+    "body": "dragonling",
+    "names": {
+      "1": "Ashwyrm",
+      "2": "Emberclaw",
+      "3": "Chartyrant"
+    }
+  },
+  "Calderwarden": {
+    "name": "Calderwarden",
+    "stage": 3,
+    "runIndex": 1,
+    "runKey": "ibm_kingston:d93jnlq47v0s73823aj0",
+    "traits": {
+      "focus": 100,
+      "calm": 80,
+      "spark": 20
+    },
+    "island": "Cinder Drift",
+    "body": "biped",
+    "names": {
+      "1": "Cinderkin",
+      "2": "Emberscout",
+      "3": "Calderwarden"
+    }
+  },
+  "Noctveil": {
+    "name": "Noctveil",
+    "stage": 3,
+    "runIndex": 2,
+    "runKey": "ibm_fez:d6lmi8u9td6c73am3l60",
+    "traits": {
+      "focus": 100,
+      "calm": 0,
+      "spark": 50
+    },
+    "island": "Umbral Deep",
+    "body": "moth",
+    "names": {
+      "1": "Nyxlet",
+      "2": "Umbrawisp",
+      "3": "Noctveil"
+    }
+  },
+  "Gearwarden": {
+    "name": "Gearwarden",
+    "stage": 3,
+    "runIndex": 3,
+    "runKey": "ibm_fez:d6lmid0bfi7c73a2lae0",
+    "traits": {
+      "focus": 100,
+      "calm": 0,
+      "spark": 50
+    },
+    "island": "Rust Meridian",
+    "body": "golem",
+    "names": {
+      "1": "Boltling",
+      "2": "Ferroframe",
+      "3": "Gearwarden"
+    }
+  },
+  "Calderwyvern": {
+    "name": "Calderwyvern",
+    "stage": 3,
+    "runIndex": 4,
+    "runKey": "ibm_fez:d6lmihgfh9oc73en4itg",
+    "traits": {
+      "focus": 20,
+      "calm": 0,
+      "spark": 0
+    },
+    "island": "Cinder Drift",
+    "body": "dragonling",
+    "names": {
+      "1": "Pyrelet",
+      "2": "Magmadrake",
+      "3": "Calderwyvern"
+    }
+  },
+  "Reefwing": {
+    "name": "Reefwing",
+    "stage": 3,
+    "runIndex": 4,
+    "runKey": "ibm_fez:d6lmihgfh9oc73en4itg",
+    "traits": {
+      "focus": 20,
+      "calm": 80,
+      "spark": 80
+    },
+    "island": "The Shattered Reef",
+    "body": "moth",
+    "names": {
+      "1": "Prismfluff",
+      "2": "Glimmerwisp",
+      "3": "Reefwing"
+    }
+  },
+  "Snowleviath": {
+    "name": "Snowleviath",
+    "stage": 3,
+    "runIndex": 7,
+    "runKey": "ibm_fez:d6lmiuk3pels739vglfg",
+    "traits": {
+      "focus": 20,
+      "calm": 80,
+      "spark": 50
+    },
+    "island": "The Pale Expanse",
+    "body": "fish",
+    "names": {
+      "1": "Shiverbub",
+      "2": "Rimefin",
+      "3": "Snowleviath"
+    }
+  },
+  "Nyxleviath": {
+    "name": "Nyxleviath",
+    "stage": 3,
+    "runIndex": 10,
+    "runKey": "ibm_fez:d6lmjbu9td6c73am3mhg",
+    "traits": {
+      "focus": 0,
+      "calm": 20,
+      "spark": 20
+    },
+    "island": "Umbral Deep",
+    "body": "fish",
+    "names": {
+      "1": "Mothfin",
+      "2": "Duskfin",
+      "3": "Nyxleviath"
+    }
+  },
+  "Frostphoenix": {
+    "name": "Frostphoenix",
+    "stage": 3,
+    "runIndex": 10,
+    "runKey": "ibm_fez:d6lmjbu9td6c73am3mhg",
+    "traits": {
+      "focus": 20,
+      "calm": 100,
+      "spark": 20
+    },
+    "island": "The Pale Expanse",
+    "body": "bird",
+    "names": {
+      "1": "Hailpip",
+      "2": "Floecrest",
+      "3": "Frostphoenix"
+    }
+  },
+  "Cogknight": {
+    "name": "Cogknight",
+    "stage": 3,
+    "runIndex": 20,
+    "runKey": "ibm_fez:d6nukl0fh9oc73epmbf0",
+    "traits": {
+      "focus": 80,
+      "calm": 20,
+      "spark": 20
+    },
+    "island": "Rust Meridian",
+    "body": "biped",
+    "names": {
+      "1": "Rustbit",
+      "2": "Pistonscout",
+      "3": "Cogknight"
+    }
+  }
+}

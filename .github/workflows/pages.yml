@@ -21,10 +21,12 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
       - name: Install the cartridge compiler
-        run: sudo apt-get update && sudo apt-get install -y clang lld llvm
+        run: sudo apt-get update && sudo apt-get install -y clang lld llvm gcc libmgba-dev
       - run: npm run verify
       - run: npm run test:link
       - run: npm run build:cartridge
+      - name: Boot past map building with a Spark cage save
+        run: python3 gba/lost-cosmos-living-multiverse/tests/test_mgba_cage_overworld.py --rom arcade/lost-cosmos/rom/lost-cosmos.gba --elf gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf --out /tmp/mgba-cage-overworld
       - name: Install headless Chromium
         run: npm install --no-save playwright@1.55.1 && npx playwright install --with-deps chromium
       - name: Boot the vendored GBA emulator

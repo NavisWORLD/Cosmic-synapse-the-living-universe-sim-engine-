@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import { verifyEmulatorJsAssets } from './verify-emulatorjs-assets.mjs';
 
 const file = 'standalone/SIM_EARTH_7_08_REALITY_BODY.html';
-const EXPECTED = '677c51f8a392737ea0de3cdb87a6a6fb5cf61914696013449fbd7bceff1144c4';
+const EXPECTED = '328985640ba70e9ee77e07ba79cf1893625203c4348cbf1c24c744671ccc473e';
 const fail = (m) => { console.error(`FAIL: ${m}`); process.exitCode = 1; };
 if (!fs.existsSync(file)) { fail(`missing ${file}`); process.exit(1); }
 const buf = fs.readFileSync(file);
@@ -38,6 +38,7 @@ for (const [label, token] of [
   ['world visual invalidation', 'invalidateWorldVisuals'],
   ['WebGL live daylight calculation', 'baseDay=a.renderer.skyInfo().day'],
   ['Lost Cosmos handheld pane', 'sim707-pane-cosmos'],
+  ['Play GBA tab', 'PLAY GBA'],
   ['Lost Cosmos handheld frame', 'lc-arcade-frame'],
   ['Learner Buddy pane', 'sim707-pane-buddy'],
   ['Learner Buddy frame', 'lb-buddy-frame'],

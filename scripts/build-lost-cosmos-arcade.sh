@@ -6,6 +6,7 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 src="$root/gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE"
 out="$root/arcade/lost-cosmos/rom"
 mkdir -p "$out"
+node "$root/scripts/bake-spark-gba.mjs"
 (
   cd "$src"
   QA=0 IMPORTED_BEAST=0 bash build_v5.sh
