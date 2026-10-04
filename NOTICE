@@ -15,3 +15,5 @@ unmodified and are not linked into the Apache-2.0 engine. The homebrew ROM
 header produced by build_rom_v5.py embeds the Nintendo logo bitmap that Game
 Boy Advance hardware checks at boot. No Nintendo BIOS and no commercial ROM
 are included.
+
+The repository root LICENSE now contains the full canonical Apache License 2.0 text. Existing attribution and separately licensed research documentation remain as stated above.
