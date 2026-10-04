@@ -30,7 +30,8 @@ int main(int argc,char **argv){
  assert(!strcmp(v11_creature_name(ix),"EARTH"));
  v11_portrait(ix+1,168,48,0);assert((OAM16[42*4+1]>>14)==3);
  v11_draw_import_battle(3,91,24,c->identity);assert(OAM16[12]&0x100);
- assert(((OAM16[13]>>9)&31)==4);assert(OAM16[4*16+3]==512);
+ /* Matrix 4 is 1:1 so the 64px battle canvas stays full size. */
+ assert(((OAM16[13]>>9)&31)==4);assert(OAM16[4*16+3]==256);
 #if defined(LC_IMPORT_HAS_BCP1)
  v11_portrait(1,168,48,0);
  assert(!memcmp((const void*)(HOST_VRAM+0x10000+LC_IMPORT_OBJ_TILE*32),lc_imported_companion_tiles,2048));
