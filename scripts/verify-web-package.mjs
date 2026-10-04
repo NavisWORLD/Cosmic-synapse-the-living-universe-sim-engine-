@@ -5,9 +5,14 @@ import assert from 'node:assert/strict';
 const read = (path) => readFileSync(`app/${path}`);
 const html = read('index.html').toString();
 assert(html.includes('src="arcade/lost-cosmos/index.html"'), 'Prepared handheld iframe is missing');
+assert(html.includes('src="arcade/lost-cosmos/synapse.html"'), 'Prepared Synapse OS iframe is missing');
+assert(html.includes('Cute Beast Pocket Reality Learners'), 'Pocket Reality brand is missing');
 for (const path of ['manifest.webmanifest', 'sw.js', 'offline.html', 'icon-192.png',
   'icon-512.png', 'apple-touch-icon.png', 'arcade/lost-cosmos/index.html',
   'arcade/lost-cosmos/player.mjs', 'arcade/lost-cosmos/mailbox.mjs',
+  'arcade/lost-cosmos/synapse.html', 'arcade/lost-cosmos/synapse.mjs',
+  'arcade/lost-cosmos/qbeast.mjs', 'arcade/lost-cosmos/synapse-os.mjs',
+  'arcade/lost-cosmos/qr.mjs', 'arcade/lost-cosmos/qrcodegen.mjs',
   'arcade/third_party/emulatorjs/data/loader.js',
   'arcade/third_party/emulatorjs/data/emulator.min.js',
   'arcade/third_party/emulatorjs/data/cores/mgba-wasm.data',

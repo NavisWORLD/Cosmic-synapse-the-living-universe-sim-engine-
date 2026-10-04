@@ -205,6 +205,7 @@ static int v11_draw_pause(void){int i,id,start;
  if(lc_mail_live)for(i=0;i<lc_party.count;i++)if(lc_mail_matches(lc_party.slots[i].identity)){status="BEAST IMPORTED";pick=i+1;break;}
  if(v11_export_ready&&v11_export_valid())status="EXPORT AVAILABLE";ui_text(2,4,status,13);
  v11_short(2,6,pick?v11_creature_name(pick-1):"NO LOCAL BEAST",17,14);ui_text(2,8,"ORIGIN",13);ui_text(2,9,pick&&lc_mail_matches(lc_party.slots[pick-1].identity)?"LOCAL MAILBOX":"LOCAL SNAPSHOT",15);ui_text(2,11,"LINEAGE REMAINS",13);ui_text(2,12,"WITH THE RECEIPT",15);
+ if(pick&&lc_mail_matches(lc_party.slots[pick-1].identity)&&(lc_mail_trade||lc_mail_grown||lc_mail_epoch)){ui_text(2,14,lc_mail_trade?"TRADE EPOCH":"CAGE EPOCH",13);ui_num(14,14,lc_mail_epoch>999999u?999999:(int)lc_mail_epoch,15);}
  if(pick)v11_portrait(pick,168,48,0);ui_text(2,15,"PRIVATE MEMORY STAYS OUTSIDE",14);ui_text(2,17,"A IMPORT BEAST   B BACK",13);
  }else if(pause_page==42||pause_page==48){v11_header(pause_page==42?"CAMPAIGN PACK":"CAMPAIGN GEAR");if(pause_page==42){for(i=0;i<4;i++){v11_row(5+i*2,i==v11_sel,item_name(i),15);ui_num(24,5+i*2,inv[i],13);}ui_text(2,15,"SELECT ORIGINAL WORKSHOP",14);}
  else{static const char*n[4]={"WEAPON","ARMOR","CHARM","SPELL"};for(i=0;i<4;i++){v11_row(5+i*2,i==v11_sel,n[i],13);v11_short(12,5+i*2,i==0?weapon_name():i==1?armor_name():i==2?charm_name():spell_name(current_spell),16,15);}}

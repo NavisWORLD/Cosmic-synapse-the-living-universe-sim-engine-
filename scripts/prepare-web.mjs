@@ -15,7 +15,7 @@ const head = `
 <meta name="theme-color" content="#020611">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SIM EARTH 7.08">
+<meta name="apple-mobile-web-app-title" content="Cute Beast Pocket Reality">
 `;
 const boot = `
 <script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.warn));}</script>

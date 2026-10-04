@@ -5,6 +5,8 @@
 export const MAILBOX_OFFSET = 24832;
 export const MAILBOX_BYTES = 644;
 export const MAIL_BODY = 640;
+export const GROWTH_OFFSET = 25476;
+export const GROWTH_BYTES = 64;
 export const SRAM_SIZE = 32768;
 export const FAMILIES = ['nebula', 'aurora', 'void', 'plasma', 'memory', 'signal', 'starlight'];
 export const FAMILY_LOOK = ['nebula', 'aurora', 'nebula', 'starlight', 'starlight', 'aurora', 'starlight'];
@@ -217,11 +219,49 @@ export function buildMailbox(profile) {
 
 export function buildSave(profile) {
   const mail = buildMailbox(profile);
-  if (MAILBOX_OFFSET + mail.length > 25600) throw new Error('mailbox collides with the reserved LCM1 region');
+  if (MAILBOX_OFFSET + mail.length > GROWTH_OFFSET) throw new Error('mailbox collides with the cage record');
   const sav = new Uint8Array(SRAM_SIZE);
   sav.fill(0xff);
   sav.set(mail, MAILBOX_OFFSET);
   return sav;
+}
+
+function write32(buf, offset, value) {
+  const n = value >>> 0;
+  buf[offset] = n & 255;
+  buf[offset + 1] = (n >>> 8) & 255;
+  buf[offset + 2] = (n >>> 16) & 255;
+  buf[offset + 3] = (n >>> 24) & 255;
+}
+
+/** LCG1 sits in the 124-byte gap before the first V11.1 manual slot. */
+export function buildGrowth({ publicId, epoch = 0, layer = 0, points = 0, memoryCrc = 0, chainCrc = 0, trade = false, grown = false }) {
+  if (!publicId) throw new Error('public id is zero');
+  const epochNum = typeof epoch === 'bigint' ? epoch : BigInt(epoch);
+  if (epochNum < 0n || epochNum > 0xffffffffn) throw new Error('epoch does not fit the cartridge field');
+  if (!Number.isInteger(layer) || layer < 0 || layer > 999) throw new Error('growth layer');
+  if (!Number.isInteger(points) || points < 0 || points > 999) throw new Error('growth points');
+  const buf = new Uint8Array(GROWTH_BYTES);
+  buf.set([0x4c, 0x43, 0x47, 0x31, 1, (trade ? 1 : 0) | (grown ? 2 : 0)], 0);
+  write32(buf, 8, Number(epochNum));
+  buf[12] = layer & 255;
+  buf[13] = (layer >>> 8) & 255;
+  buf[14] = points & 255;
+  buf[15] = (points >>> 8) & 255;
+  write32(buf, 16, memoryCrc);
+  write32(buf, 20, chainCrc);
+  write32(buf, 24, publicId);
+  write32(buf, 60, crc32(buf.subarray(0, 60)));
+  return buf;
+}
+
+export function attachGrowth(sav, growth) {
+  if (!(sav instanceof Uint8Array) || sav.length !== SRAM_SIZE) throw new Error('save size');
+  if (!(growth instanceof Uint8Array) || growth.length !== GROWTH_BYTES) throw new Error('growth size');
+  if (GROWTH_OFFSET + GROWTH_BYTES > 25600) throw new Error('growth collides with the reserved LCM1 region');
+  const out = sav.slice();
+  out.set(growth, GROWTH_OFFSET);
+  return out;
 }
 
 export function fixtureSave() {

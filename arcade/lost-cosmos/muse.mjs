@@ -122,7 +122,7 @@ export class MuseLink {
   }
 
   async connect({ aux = false } = {}) {
-    if (!navigator.bluetooth) throw new Error('Web Bluetooth is not available in this browser');
+    if (!navigator.bluetooth) throw new Error('Web Bluetooth is not available. Muse plug-and-play needs Chrome or Edge on an HTTPS page, after you click this button. The simulated headband still works.');
     this.device = await navigator.bluetooth.requestDevice({
       filters: [{ services: [MUSE_SERVICE] }],
       optionalServices: [MUSE_SERVICE],
