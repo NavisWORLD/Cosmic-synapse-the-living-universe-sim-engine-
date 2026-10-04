@@ -28,8 +28,20 @@
   .stages figure { margin: 0; text-align: center; }
   .stages canvas { width: 128px; height: 128px; image-rendering: pixelated; background: #101834; border-radius: 8px; }
   #status, #bubble { min-height: 1.4em; color: #e9fff8; }
+  #bubble { background: #0c1c2c; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
   #bubble b { display: block; color: white; }
   #bubble span { color: var(--dim); }
+  #chat-log { max-height: 168px; overflow: auto; background: #07111c; border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin: 8px 0; }
+  #chat-log p { margin: 4px 0; }
+  #chat-log .you b { color: var(--cyan); }
+  #chat-log .beast b { color: var(--gold); }
+  #care-stats, #preview-note { color: var(--gold); }
+  #rhythm-track { position: relative; height: 22px; background: #07111c; border: 1px solid var(--line); border-radius: 8px; margin: 8px 0; overflow: hidden; }
+  #rhythm-zone { position: absolute; left: 38%; width: 24%; top: 0; bottom: 0; background: rgba(126, 231, 255, .28); }
+  #rhythm-mark { position: absolute; top: 2px; width: 8px; height: 16px; background: var(--gold); border-radius: 2px; }
+  #game-panel { margin-top: 8px; }
+  button:disabled { opacity: .45; cursor: default; }
+  .earned { outline: 1px solid var(--gold); }
   .rare { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
   .rare video { width: 100%; border-radius: 8px; background: #000; }
   .note { font-size: 12px; }
@@ -55,7 +67,8 @@
   <section id="view-spark" class="view on">
     <div class="card">
       <label class="row"><input id="consent" type="checkbox"> I agree to derive focus, calm, and spark on this device. Raw samples are not stored.</label>
-      <label class="row">Player name <input id="player-name" maxlength="16" autocomplete="off" placeholder="optional"></label>
+      <label class="row">Keeper name <input id="player-name" maxlength="16" autocomplete="off" placeholder="part of the spark seed"></label>
+      <p class="note">The keeper name is mixed into the spark seed with your signal and the recorded run. After the first spark, that look stays locked. Naming the beast later does not change it.</p>
       <div class="row" style="display:flex;gap:12px;flex-wrap:wrap">
         <span>FOCUS <b id="focus-read">30</b></span>
         <span>CALM <b id="calm-read">30</b></span>
@@ -96,25 +109,65 @@
       </div>
     </div>
     <div class="card" id="portrait" hidden>
-      <h2>THREE STAGES</h2>
+      <h2>SEEDED FORMS</h2>
+      <p class="note">These three looks are fixed by the seed. Training on the Live tab earns the later forms. A preview there does not unlock them.</p>
       <div class="stages" id="stages"></div>
       <p id="provenance"></p>
+      <p id="seed-lock" class="note"></p>
     </div>
   </section>
 
   <section id="view-live" class="view">
     <div class="card">
       <canvas id="live-view" class="pixel" width="112" height="104"></canvas>
-      <p id="bubble"></p>
+      <p id="bubble"><b>Spark a beast and they will speak.</b></p>
       <p id="mood">Waiting for a sparked beast.</p>
+      <p id="beast-title"></p>
+      <label class="row">Beast name <input id="beast-name" maxlength="16" autocomplete="off" placeholder="what you call them"></label>
       <div class="move">
-        <button type="button" data-stage="1">Stage I</button>
-        <button type="button" data-stage="2">Stage II</button>
-        <button type="button" data-stage="3">Stage III</button>
+        <button type="button" id="rename">Save name</button>
         <button type="button" id="voice">Voice</button>
         <button type="button" id="drift">Auto-drift</button>
         <button type="button" id="translate" aria-pressed="true">Translate</button>
       </div>
+      <p class="note" id="name-lock">This name is saved on this device only. It does not change the sparked look.</p>
+      <p id="care-stats">Spark a beast to train.</p>
+      <p id="preview-note" hidden></p>
+      <div class="move">
+        <button type="button" id="act-focus">Focus rhythm</button>
+        <button type="button" id="act-memory">Memory sparks</button>
+        <button type="button" id="act-play">Play</button>
+        <button type="button" id="act-rest">Rest</button>
+        <button type="button" id="preview-next">Preview next form</button>
+      </div>
+      <div id="game-panel" hidden>
+        <p id="game-title"></p>
+        <div id="rhythm" hidden>
+          <div id="rhythm-track"><div id="rhythm-zone"></div><div id="rhythm-mark"></div></div>
+          <button type="button" id="rhythm-hit">Spark</button>
+        </div>
+        <div id="memory-pad" class="move" hidden></div>
+        <p id="game-status"></p>
+      </div>
+      <h2>TALK</h2>
+      <div id="chat-log" role="log" aria-live="polite"></div>
+      <form id="chat-form" class="move">
+        <input id="chat-input" maxlength="120" autocomplete="off" placeholder="Say hello">
+        <button type="submit">Talk</button>
+      </form>
+      <p class="note">Replies are made on this device from the beast's traits, mood, bond, and notes it remembers. The beast is a game companion, not a conscious being. A local model is used only if you fill in an endpoint, and the rule replies stay if that model is missing.</p>
+      <details>
+        <summary>Optional local model</summary>
+        <div class="move">
+          <select id="chat-protocol" aria-label="Model protocol">
+            <option value="ollama">Ollama</option>
+            <option value="openai">OpenAI-compatible</option>
+          </select>
+          <input id="chat-endpoint" type="url" placeholder="http://127.0.0.1:11434/api/chat" autocomplete="off">
+          <input id="chat-model" type="text" placeholder="llama3.2" autocomplete="off">
+          <input id="chat-key" type="password" placeholder="optional session key" autocomplete="off">
+        </div>
+      </details>
       <p class="note" id="live-meta"></p>
     </div>
   </section>

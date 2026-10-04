@@ -8,7 +8,7 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "verify": "node scripts/verify.mjs",
-    "test:link": "node --test arcade/lost-cosmos/mailbox.test.mjs arcade/lost-cosmos/qbeast.test.mjs arcade/learner-buddy/preferences.test.mjs arcade/learner-buddy/growth.test.mjs arcade/learner-buddy/store.test.mjs arcade/learner-buddy/cue.test.mjs arcade/spark-beasts/spark.test.mjs",
+    "test:link": "node --test arcade/lost-cosmos/mailbox.test.mjs arcade/lost-cosmos/qbeast.test.mjs arcade/learner-buddy/preferences.test.mjs arcade/learner-buddy/growth.test.mjs arcade/learner-buddy/store.test.mjs arcade/learner-buddy/cue.test.mjs arcade/spark-beasts/spark.test.mjs arcade/spark-beasts/care.test.mjs",
     "build:cartridge": "bash scripts/build-lost-cosmos-arcade.sh",
     "verify:web": "node scripts/verify-web-package.mjs",
     "prepare:web": "node scripts/prepare-web.mjs",
