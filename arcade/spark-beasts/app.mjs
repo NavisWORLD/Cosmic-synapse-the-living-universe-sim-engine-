@@ -223,8 +223,9 @@ function renderBestiary() {
     const canvas = document.createElement('canvas');
     paintSprite(canvas, renderSprite(genome, beast.stage || 1), 2);
     card.append(canvas);
+    const form = genome.names[String(beast.stage || 1)] || beast.name;
     const label = document.createElement('div');
-    label.textContent = `${publicLabel(beast, beast.name)} · ${beast.island} · stage ${beast.stage} · bond ${Math.round(beast.bond)} · energy ${Math.round(beast.energy ?? 100)} · ${beast.origin}`;
+    label.textContent = `${publicLabel(beast, form)} · ${beast.island} · stage ${beast.stage} · bond ${Math.round(beast.bond)} · energy ${Math.round(beast.energy ?? 100)} · ${beast.origin}`;
     card.append(label);
     card.addEventListener('click', () => {
       activate({ ...beast, genome });
