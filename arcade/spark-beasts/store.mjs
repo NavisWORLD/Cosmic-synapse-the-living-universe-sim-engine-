@@ -33,6 +33,8 @@ function hydrateBeast(beast) {
       detail: String(fact?.detail || '').slice(0, 40),
     })).filter((fact) => fact.topic && fact.detail),
   };
+  const cageId = String(beast.cageId || '').toLowerCase();
+  beast.cageId = /^[0-9a-f]{8}$/.test(cageId) ? cageId : '';
   return beast;
 }
 
@@ -77,6 +79,7 @@ export function rememberBeast(store, beast) {
     energy: beast.energy != null ? beast.energy : prev?.energy,
     effort: beast.effort || prev?.effort,
     memory: beast.memory || prev?.memory,
+    cageId: beast.cageId || prev?.cageId || '',
     xp,
     bond,
     stage: stageFromXp(xp),

@@ -12,6 +12,60 @@ const state = {
   started: false,
 };
 
+const bootId = crypto.randomUUID?.() || `lc-${Date.now()}`;
+window.__lcRuntime = {
+  bootId,
+  frames: 0,
+  keys: 0,
+  focused: false,
+  started: false,
+  muted: false,
+  savedVolume: null,
+  emulatorId: '',
+};
+
+function pumpFrames() {
+  if (window.__lcRuntime.started) window.__lcRuntime.frames += 1;
+  requestAnimationFrame(pumpFrames);
+}
+requestAnimationFrame(pumpFrames);
+
+function gameKeyTarget(event) {
+  const tag = event.target?.tagName || '';
+  return !/INPUT|TEXTAREA|SELECT|BUTTON|A|LABEL/.test(tag);
+}
+
+window.addEventListener('keydown', (event) => {
+  if (!window.__lcRuntime.focused) {
+    if (gameKeyTarget(event)) {
+      event.stopImmediatePropagation();
+      event.preventDefault();
+    }
+    return;
+  }
+  window.__lcRuntime.keys += 1;
+}, true);
+
+window.addEventListener('pointerdown', () => {
+  window.__lcRuntime.focused = true;
+});
+window.addEventListener('blur', () => {
+  window.__lcRuntime.focused = false;
+});
+
+function applyMute() {
+  const emu = window.EJS_emulator;
+  if (!emu || typeof emu.setVolume !== 'function') return;
+  if (window.__lcRuntime.muted) {
+    if (window.__lcRuntime.savedVolume == null) {
+      window.__lcRuntime.savedVolume = typeof emu.volume === 'number' ? emu.volume : 0.5;
+    }
+    emu.setVolume(0);
+    return;
+  }
+  if (window.__lcRuntime.savedVolume != null) emu.setVolume(window.__lcRuntime.savedVolume);
+}
+
 function consented() {
   return $('consent').checked;
 }
@@ -119,6 +173,10 @@ async function installEmulator(bytes) {
     });
   };
   window.EJS_onGameStart = () => {
+    window.__lcRuntime.started = true;
+    window.__lcRuntime.emulatorId = bootId;
+    if (window.EJS_emulator) window.EJS_emulator.__lcId = bootId;
+    applyMute();
     const gm = window.EJS_emulator?.gameManager;
     status(`Lost Cosmos V${receipt.version} is running. Choose NEW GAME or CONTINUE on the title screen.`);
     if (!gm || !bytes) return;
@@ -180,6 +238,14 @@ window.addEventListener('message', (event) => {
   if (!data || data.source !== 'living-universe') return;
   if (event.source !== window.parent) return;
   if (data.type === 'lu-state') onWorldMessage(data);
+  if (data.type === 'lc-blur') {
+    window.__lcRuntime.focused = false;
+    document.activeElement?.blur?.();
+  }
+  if (data.type === 'lc-mute') {
+    window.__lcRuntime.muted = Boolean(data.muted);
+    applyMute();
+  }
   if (data.type === 'lc-import-save') {
     try {
       const bytes = acceptCageSave(data.save instanceof Uint8Array ? data.save : new Uint8Array(data.save));

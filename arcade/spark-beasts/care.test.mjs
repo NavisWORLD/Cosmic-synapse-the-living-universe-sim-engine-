@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { holdBubble, resolveBubble } from './bubble.mjs';
+import { adoptCageRecord, bindCage, careLines, careTalk, careTrain, handheldStamp, listCareBeasts } from './care.mjs';
 import { emptyMemory, replyToBeast } from './chat.mjs';
 import { buildGenome } from './genome.mjs';
 import { indexTable } from './runs.mjs';
@@ -269,9 +270,16 @@ test('the speech bubble keeps a real line instead of going blank', () => {
   assert.match(live, /holdBubble/);
   assert.doesNotMatch(live, /onBubble\?\.\(\s*['"]['"]/);
   assert.match(page, /resolveBubble/);
-  assert.match(page, /renameBeast/);
-  assert.match(page, /replyToBeast/);
-  assert.match(page, /applyTraining/);
+  assert.match(page, /careRename/);
+  assert.match(page, /careTalk/);
+  assert.match(page, /careTrain/);
+  assert.match(read('./care.mjs'), /replyToBeast/);
+  assert.match(read('./care.mjs'), /applyTraining/);
+  assert.match(read('./care.mjs'), /renameBeast/);
+  assert.match(read('../lost-cosmos/synapse.mjs'), /from '\.\.\/spark-beasts\/care\.mjs'/);
+  assert.match(read('../lost-cosmos/synapse.html'), /id="care-beast"/);
+  assert.match(read('../lost-cosmos/synapse.html'), /id="care-chat"/);
+  assert.match(read('../lost-cosmos/synapse.html'), /id="care-focus"/);
   assert.doesNotMatch(page, /innerHTML = text \?/);
   assert.match(html, /Keeper name/);
   assert.match(html, /part of the spark seed/);
@@ -286,4 +294,59 @@ test('the speech bubble keeps a real line instead of going blank', () => {
   assert.match(html, /<p id="bubble"><b>[^<]+<\/b><\/p>/);
   assert.match(html, /not a conscious being/);
   assert.match(page, /const name = origin === 'wild' \? null : playerName\(\)/);
+});
+
+test('model bay care and Spark Beasts share one beast, then the handheld export carries it', async () => {
+  const storage = memory();
+  const store = loadStore(storage);
+  rememberBeast(store, {
+    seed: 'seed-care',
+    traits: { focus: 30, calm: 30, spark: 20 },
+    runIndex: 1,
+    runKey: 'run',
+    island: 'Cinder Drift',
+    name: 'Charlet',
+    xp: 0,
+    bond: 1,
+  });
+  bindCage(store, 'seed-care', 'ab12cd34');
+  saveStore(store, storage);
+  const bay = loadStore(storage);
+  const listed = listCareBeasts(bay);
+  assert.equal(listed.length, 1);
+  assert.equal(listed[0].seed, 'seed-care');
+  const spoken = await careTalk(bay, 'seed-care', 'my name is Cory', { temperament: 'Gentle', island: 'Cinder Drift' });
+  assert.match(spoken.text, /Cory/);
+  assert.equal(spoken.memory.playerName, 'Cory');
+  const trained = careTrain(bay, 'seed-care', 'focus', { quality: 1 });
+  assert.equal(trained.ok, true);
+  assert.equal(trained.beast.xp, 18);
+  assert.equal(trained.beast.stage, 1);
+  saveStore(bay, storage);
+  const again = loadStore(storage);
+  assert.equal(again.beasts['seed-care'].memory.playerName, 'Cory');
+  assert.equal(again.beasts['seed-care'].xp, 18);
+  assert.equal(again.beasts['seed-care'].cageId, 'ab12cd34');
+  const record = {
+    publicHex: 'ab12cd34',
+    callsign: 'CHARLET',
+    speciesName: 'PLASMA',
+    focus: 30,
+    calm: 30,
+    spark: 20,
+    growth: { epoch: '0', layer: 0, points: 0, trade: false, grown: false },
+    profile: { callsign: 'CHARLET' },
+  };
+  const same = adoptCageRecord(again, record);
+  assert.equal(same.seed, 'seed-care');
+  const stamp = handheldStamp(record, same);
+  assert.equal(stamp.growth.points, 18);
+  assert.equal(stamp.callsign, 'CHARLET');
+  const named = careTrain(again, 'seed-care', 'focus', { quality: 1 });
+  named.beast.displayName = 'Mochi';
+  const namedStamp = handheldStamp(record, named.beast);
+  assert.equal(namedStamp.callsign, 'MOCHI');
+  assert.ok(namedStamp.growth.points >= 36);
+  assert.match(careLines(named.beast, 'Mochi'), /Mochi/);
+  assert.match(careLines(named.beast, 'Mochi'), /xp/);
 });

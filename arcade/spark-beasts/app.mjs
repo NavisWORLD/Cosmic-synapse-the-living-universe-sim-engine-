@@ -7,10 +7,10 @@ import { loadTable, runChoices } from './runs.mjs';
 import { SensorHub } from './sensors.mjs';
 import { LiveShow } from './live.mjs';
 import { IslandExplore, sparkWilds } from './explore.mjs';
-import { eraseStore, grant, loadStore, rememberBeast, rememberChat, renameBeast, saveStore, shownName, stageFromXp } from './store.mjs';
+import { eraseStore, grant, loadStore, rememberBeast, saveStore, shownName, stageFromXp, STORE_KEY } from './store.mjs';
 import { resolveBubble } from './bubble.mjs';
-import { replyToBeast } from './chat.mjs';
-import { applyTraining, nextStageGoal, scoreFocus, scoreMemory, trainingBlurb } from './train.mjs';
+import { scoreFocus, scoreMemory } from './train.mjs';
+import { bindCage, careLines, careRename, careTalk, careTrain, nextStageGoal, stampRecord, trainingBlurb } from './care.mjs';
 import { sha256Hex } from './hash.mjs';
 import { sanitizeName } from './trade.mjs';
 import {
@@ -104,8 +104,9 @@ async function hold(genome, runIndex, xp) {
   if (beast && carried > beast.xp) {
     beast.xp = carried;
     beast.stage = stageFromXp(beast.xp);
-    saveStore(state.store, localStorage);
   }
+  bindCage(state.store, genome.seed, admitted.publicHex || id);
+  saveStore(state.store, localStorage);
   return admitted;
 }
 
@@ -170,10 +171,7 @@ function syncCompanion({ place = false, announce = true } = {}) {
     ? `Preview of stage ${showing}, ${species}. This form is not earned yet. Train to evolve.`
     : '';
   $('preview-next').textContent = state.preview ? 'Show earned form' : (earned < 3 ? 'Preview next form' : 'Final form earned');
-  const goal = nextStageGoal(beast.xp || 0);
-  const effort = beast.effort || { hp: 0, atk: 0, def: 0, spd: 0, spark: 0 };
-  const next = goal ? `${beast.xp}/${goal} xp to the next form` : 'final form earned';
-  $('care-stats').textContent = `${title} · stage ${earned} · energy ${Math.round(beast.energy ?? 100)} · bond ${Math.round(beast.bond || 0)} · ${next} · effort HP ${effort.hp} ATK ${effort.atk} DEF ${effort.def} SPD ${effort.spd} SPK ${effort.spark}`;
+  $('care-stats').textContent = careLines(beast, title);
   if (place) state.explore.setCompanion({ ...beast, genome: state.genome, label: title });
   else {
     state.explore.setLabel(title);
@@ -462,7 +460,7 @@ function bind() {
   });
   $('send').addEventListener('click', async () => {
     try {
-      const record = await currentRecord();
+      const record = stampRecord(await currentRecord(), activeBeast());
       const entry = activeEntry();
       let bytes = cageSave(record, buildSave, buildGrowth, attachGrowth);
       if (entry?.genome) {
@@ -518,6 +516,7 @@ function restoreActive() {
   if (!run) return;
   const genome = buildGenome(beast.traits, run, beast.userId);
   activate({ ...beast, genome });
+  hold(genome, beast.runIndex, beast.xp).catch((error) => status(error.message));
 }
 
 async function boot() {
@@ -595,12 +594,22 @@ async function boot() {
     $('world-name').textContent = state.world;
   });
   if (window.parent !== window) window.parent.postMessage({ type: 'sb-spark-ready' }, '*');
+  window.addEventListener('storage', (event) => {
+    if (event.key !== STORE_KEY) return;
+    state.store = loadStore(localStorage);
+    if (state.genome) {
+      syncCompanion();
+      paintStages(state.genome);
+      renderChat();
+    }
+    renderBestiary();
+  });
 }
 
 function saveBeastName() {
   const beast = activeBeast();
   if (!beast) { status('Spark a beast before naming it.'); return; }
-  const renamed = renameBeast(state.store, beast.seed, $('beast-name').value);
+  const renamed = careRename(state.store, beast.seed, $('beast-name').value);
   if (!renamed) { status('Use letters or numbers, up to 16 characters.'); return; }
   saveStore(state.store, localStorage);
   paintStages(state.genome);
@@ -645,26 +654,20 @@ async function sendChat() {
   if (!message) return;
   $('chat-input').value = '';
   pushChat('you', message);
-  const result = await replyToBeast(message, {
+  const result = await careTalk(state.store, beast.seed, message, {
     temperament: state.genome.temperament,
     island: state.genome.island,
     element: state.genome.element,
     body: state.genome.body,
     displayName: titleOf(),
     speciesName: speciesAt(beast.stage || 1),
-    stage: beast.stage || 1,
-    bond: beast.bond || 0,
-    mood: 'neutral',
-    energy: beast.energy,
     keeperName: state.store.playerName || '',
-    memory: beast.memory,
   }, {
     url: $('chat-endpoint').value,
     protocol: $('chat-protocol').value,
     model: $('chat-model').value,
     key: $('chat-key').value,
   });
-  rememberChat(state.store, beast.seed, result.memory);
   saveStore(state.store, localStorage);
   pushChat('beast', result.text, titleOf());
   state.live.present(result.text, result.text, 3.4);
@@ -684,7 +687,7 @@ function stopGame() {
 function finishTraining(activity, score) {
   const beast = activeBeast();
   if (!beast) { status('Spark a beast before training.'); return; }
-  const result = applyTraining(state.store, beast.seed, activity, score);
+  const result = careTrain(state.store, beast.seed, activity, score);
   if (!result.ok) {
     status(trainingBlurb(result, titleOf()));
     return;

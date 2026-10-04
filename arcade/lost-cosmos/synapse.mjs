@@ -3,12 +3,16 @@ import { MuseLink, mockTraits } from './muse.mjs';
 import { askModel, encodeTicket, importPayload, suggestionFromText, ticketLink } from './qbeast.mjs';
 import { drawQr } from './qr.mjs';
 import { admit, cageSave, loadLedger, releaseForTrade, saveLedger, tend } from './synapse-os.mjs';
+import { adoptCageRecord, careLines, careRename, careTalk, careTrain, listCareBeasts, loadStore, saveStore, shownName, stampRecord, STORE_KEY, trainingBlurb } from '../spark-beasts/care.mjs';
 
 const $ = (id) => document.getElementById(id);
 const status = (text) => { $('status').textContent = text; };
 const storage = window.localStorage;
 let ledger = loadLedger(storage);
+let careStore = loadStore(storage);
 let endpointKey = '';
+let careSeed = '';
+const careLinesLog = new Map();
 
 const state = {
   world: { world: 'EARTH', evolution: 0, biosphere: 0, lifeEvents: 0 },
@@ -61,6 +65,8 @@ async function hold(record, mode = 'receive') {
   state.record = await admit(ledger, record, mode);
   saveLedger(ledger, storage);
   paint();
+  refreshCare();
+  selectHeldCare();
   return state.record;
 }
 
@@ -89,12 +95,111 @@ async function importFragment(fragment) {
   }
 }
 
-function postSave(play) {
-  const bytes = cageSave(state.record, buildSave, buildGrowth, attachGrowth);
-  if (window.parent !== window) {
-    window.parent.postMessage({ type: 'lc-cage-save', save: bytes, callsign: state.record.callsign, species: state.record.speciesName, play }, '*');
+function selectedCareBeast() {
+  return careSeed ? careStore.beasts[careSeed] || null : null;
+}
+
+function rememberCareStore() {
+  saveStore(careStore, storage);
+}
+
+function refreshCare() {
+  careStore = loadStore(storage);
+  if (state.record?.publicHex) {
+    try { adoptCageRecord(careStore, state.record); rememberCareStore(); } catch { /* ledger row without a profile stays listed below */ }
   }
-  return bytes;
+  const select = $('care-beast');
+  const previous = careSeed || select.value;
+  const beasts = listCareBeasts(careStore);
+  select.replaceChildren();
+  if (!beasts.length) {
+    const empty = document.createElement('option');
+    empty.value = '';
+    empty.textContent = 'No caged beast yet';
+    select.append(empty);
+    careSeed = '';
+    $('care-stats').textContent = 'Shape or import a beast, or spark one on the SPARK tab.';
+    return;
+  }
+  for (const beast of beasts) {
+    const option = document.createElement('option');
+    option.value = beast.seed;
+    option.textContent = `${shownName(beast, beast.name)} · stage ${beast.stage || 1} · ${beast.xp || 0} xp`;
+    select.append(option);
+  }
+  const next = beasts.some((beast) => beast.seed === previous) ? previous : beasts[0].seed;
+  select.value = next;
+  showCare(next);
+}
+
+function showCare(seed) {
+  careSeed = seed || '';
+  const beast = selectedCareBeast();
+  if (!beast) {
+    $('care-stats').textContent = 'Choose a caged beast to talk and train.';
+    return;
+  }
+  if (document.activeElement !== $('care-name')) $('care-name').value = beast.displayName || '';
+  $('care-stats').textContent = careLines(beast);
+  renderCareLog();
+}
+
+function renderCareLog() {
+  const root = $('care-log');
+  root.replaceChildren();
+  const lines = careLinesLog.get(careSeed) || [];
+  if (!lines.length) {
+    const empty = document.createElement('p');
+    empty.textContent = 'Say hello. The beast remembers your name and short notes on this device.';
+    root.append(empty);
+    return;
+  }
+  for (const line of lines) {
+    const row = document.createElement('p');
+    row.className = line.who;
+    const who = document.createElement('b');
+    who.textContent = line.who === 'you' ? 'You' : (line.name || 'Beast');
+    row.append(who, document.createTextNode(` ${line.text}`));
+    root.append(row);
+  }
+  root.scrollTop = root.scrollHeight;
+}
+
+function pushCare(who, text, name) {
+  if (!careSeed) return;
+  const lines = careLinesLog.get(careSeed) || [];
+  lines.push({ who, text, name });
+  careLinesLog.set(careSeed, lines.slice(-24));
+  renderCareLog();
+}
+
+function selectHeldCare() {
+  if (!state.record?.publicHex) return;
+  const id = String(state.record.publicHex).toLowerCase();
+  const beast = Object.values(careStore.beasts || {}).find((row) => row.cageId === id);
+  if (!beast) return;
+  careSeed = beast.seed;
+  const select = $('care-beast');
+  if (select.value !== beast.seed) select.value = beast.seed;
+  showCare(beast.seed);
+}
+
+function postSave(play) {
+  if (!state.record) throw new Error('There is no beast to send.');
+  const beast = selectedCareBeast();
+  const matches = beast && beast.cageId === String(state.record.publicHex || '').toLowerCase();
+  const record = matches ? stampRecord(state.record, beast) : state.record;
+  const bytes = cageSave(record, buildSave, buildGrowth, attachGrowth);
+  if (window.parent !== window) {
+    window.parent.postMessage({
+      type: 'lc-cage-save',
+      save: bytes,
+      callsign: record.callsign,
+      species: state.record.speciesName,
+      play,
+    }, '*');
+  }
+  return record;
 }
 
 $('mock').addEventListener('click', () => {
@@ -261,12 +366,88 @@ $('showqr').addEventListener('click', async () => {
 $('send').addEventListener('click', () => {
   if (!state.record) { status('There is no beast to send.'); return; }
   try {
-    postSave(true);
-    status(`${state.record.callsign} is in the handheld mailbox, including cage epoch ${state.record.growth.epoch}. Start a new game on the cartridge.`);
+    const sent = postSave(true);
+    status(`${sent.callsign} is in the handheld mailbox with ${sent.growth.points} growth points and epoch ${sent.growth.epoch}. Start a new game on the cartridge.`);
   } catch (err) {
     status(err.message || 'The handheld save was rejected.');
   }
 });
+
+$('care-beast').addEventListener('change', () => showCare($('care-beast').value));
+
+$('care-rename').addEventListener('click', () => {
+  const beast = selectedCareBeast();
+  if (!beast) { status('Choose a caged beast before naming it.'); return; }
+  const named = careRename(careStore, beast.seed, $('care-name').value);
+  if (!named) { status('Use letters or numbers, up to 16 characters.'); return; }
+  rememberCareStore();
+  refreshCare();
+  selectHeldCare();
+  status(`${named.displayName} is saved on this device for Spark Beasts and this cage.`);
+});
+
+$('care-chat').addEventListener('submit', (event) => {
+  event.preventDefault();
+  sendCare().catch((err) => status(err.message || 'The beast could not answer.'));
+});
+
+$('care-play').addEventListener('click', () => runCareTrain('play'));
+$('care-focus').addEventListener('click', () => runCareTrain('focus'));
+$('care-rest').addEventListener('click', () => runCareTrain('rest'));
+
+async function sendCare() {
+  const beast = selectedCareBeast();
+  if (!beast) { status('Choose a caged beast before talking.'); return; }
+  const message = $('care-input').value.trim();
+  if (!message) return;
+  $('care-input').value = '';
+  const seed = beast.seed;
+  pushCare('you', message);
+  const result = await careTalk(careStore, seed, message, {
+    displayName: shownName(beast, beast.name),
+    speciesName: beast.name,
+    island: beast.island,
+  }, {
+    url: $('endpoint').value,
+    protocol: $('protocol').value,
+    model: $('model').value,
+    key: endpointKey,
+  });
+  rememberCareStore();
+  const named = shownName(careStore.beasts[seed], beast.name);
+  refreshCare();
+  if (careSeed !== seed) showCare(seed);
+  pushCare('beast', result.text, named);
+  status(result.source === 'model'
+    ? 'Reply from your local model. The beast is still a game companion, not a conscious being.'
+    : 'Reply from the on-device rules. Memory is saved with this beast.');
+}
+
+function runCareTrain(activity) {
+  const beast = selectedCareBeast();
+  if (!beast) { status('Choose a caged beast before training.'); return; }
+  const result = careTrain(careStore, beast.seed, activity, { quality: 1 });
+  const name = shownName(beast, beast.name);
+  if (!result.ok) {
+    status(trainingBlurb(result, name));
+    refreshCare();
+    return;
+  }
+  rememberCareStore();
+  refreshCare();
+  const line = trainingBlurb(result, shownName(result.beast, result.beast.name));
+  if (result.grew) status(`${shownName(result.beast, result.beast.name)} evolved to stage ${result.beast.stage}. This form was earned by training.`);
+  else status(`${line} ${result.beast.xp} xp.`);
+}
+
+window.addEventListener('storage', (event) => {
+  if (event.key !== STORE_KEY && event.key !== 'lc-synapse-os-v1') return;
+  if (event.key === 'lc-synapse-os-v1') ledger = loadLedger(storage);
+  refreshCare();
+  selectHeldCare();
+});
+
+refreshCare();
 
 window.addEventListener('message', (event) => {
   const data = event.data;

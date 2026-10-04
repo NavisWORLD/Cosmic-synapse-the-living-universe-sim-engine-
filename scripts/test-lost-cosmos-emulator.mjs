@@ -100,6 +100,13 @@ function listen(server) {
 }
 
 async function bootFromSite(page, port) {
+  const themeErrors = [];
+  const onPageError = (error) => themeErrors.push(String(error));
+  const onConsole = (msg) => {
+    if (msg.type() === 'error') themeErrors.push(msg.text());
+  };
+  page.on('pageerror', onPageError);
+  page.on('console', onConsole);
   await page.goto(`http://127.0.0.1:${port}/standalone/SIM_EARTH_7_08_REALITY_BODY.html`, { waitUntil: 'domcontentloaded' });
   const enter = page.getByRole('button', { name: /enter cute beast pocket reality/i });
   await enter.waitFor({ timeout: 30000 });
@@ -137,10 +144,84 @@ async function bootFromSite(page, port) {
     }, '*');
   });
   await handheld.waitForFunction(() => window.__lcImport && window.__lcImport.callsign === 'CHARLET', null, { timeout: 10000 });
+  const before = await handheld.evaluate(() => ({
+    bootId: window.__lcRuntime?.bootId || '',
+    frames: window.__lcRuntime?.frames || 0,
+    emulatorId: window.EJS_emulator?.__lcId || '',
+  }));
+  if (!before.bootId || before.emulatorId !== before.bootId) {
+    throw new Error(`emulator instance was not marked (${before.emulatorId} / ${before.bootId})`);
+  }
   const png = await hand.locator('#game canvas').first().screenshot({ type: 'png' });
   const { writeFile } = await import('node:fs/promises');
   await writeFile('/tmp/lost-cosmos-emulator/play-gba-title.png', png);
   console.log('PASS: PLAY GBA tab booted the cartridge and forwarded lc-cage-save. Screenshot /tmp/lost-cosmos-emulator/play-gba-title.png');
+
+  await page.getByRole('button', { name: 'MODELS' }).click();
+  await page.locator('#gba-player').waitFor();
+  const mode = await page.locator('#gba-player').getAttribute('data-mode');
+  if (mode !== 'dock' && mode !== 'mini') throw new Error(`Lost Cosmos left the mini player in mode ${mode}`);
+  const token = await page.locator('#lc-arcade-frame').getAttribute('data-persist-token');
+  if (token !== 'mounted') throw new Error('the handheld iframe was replaced');
+  await handheld.waitForFunction(() => window.__lcRuntime && window.__lcRuntime.focused === false, null, { timeout: 5000 });
+  const mid = await handheld.evaluate(() => ({
+    bootId: window.__lcRuntime?.bootId || '',
+    frames: window.__lcRuntime?.frames || 0,
+    emulatorId: window.EJS_emulator?.__lcId || '',
+  }));
+  if (mid.bootId !== before.bootId || mid.emulatorId !== before.emulatorId) {
+    throw new Error('the emulator reloaded when the tab changed');
+  }
+  await handheld.waitForFunction((start) => window.__lcRuntime.frames > start, mid.frames, { timeout: 8000 });
+  const after = await handheld.evaluate(() => ({
+    bootId: window.__lcRuntime.bootId,
+    frames: window.__lcRuntime.frames,
+    emulatorId: window.EJS_emulator?.__lcId || '',
+    focused: window.__lcRuntime.focused,
+  }));
+  if (after.bootId !== before.bootId || after.emulatorId !== before.emulatorId) {
+    throw new Error('the emulator reloaded when the tab changed');
+  }
+  if (after.frames <= before.frames) throw new Error('the cartridge clock stopped on tab change');
+  const keys = await handheld.evaluate(() => {
+    window.__lcRuntime.focused = false;
+    window.__lcRuntime.keys = 0;
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', code: 'ArrowRight', bubbles: true, cancelable: true }));
+    const blocked = window.__lcRuntime.keys;
+    window.__lcRuntime.focused = true;
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', code: 'ArrowRight', bubbles: true, cancelable: true }));
+    const taken = window.__lcRuntime.keys;
+    window.__lcRuntime.focused = false;
+    return { blocked, taken };
+  });
+  if (keys.blocked !== 0 || keys.taken < 1) throw new Error(`keyboard gate failed ${JSON.stringify(keys)}`);
+
+  const bay = page.frame({ url: /synapse\.html/ });
+  if (!bay) throw new Error('MODELS did not keep the Synapse OS frame');
+  await bay.locator('#consent').check();
+  await bay.locator('#shape').click();
+  await bay.waitForFunction(() => {
+    const select = document.getElementById('care-beast');
+    return select && select.value && !select.value.startsWith('No');
+  }, null, { timeout: 15000 });
+  await bay.locator('#care-input').fill('my name is Cory');
+  await bay.locator('#care-chat button').click();
+  await bay.locator('#care-log').getByText(/Cory/).waitFor({ timeout: 10000 });
+  await bay.locator('#care-focus').click();
+  await bay.waitForFunction(() => {
+    const saved = JSON.parse(localStorage.getItem('spark-beasts-v1') || '{"beasts":{}}');
+    return Object.values(saved.beasts).some((beast) => beast.memory?.playerName === 'Cory' && beast.xp >= 18 && beast.stage >= 1);
+  }, null, { timeout: 10000 });
+  const theme = await page.evaluate(() => ({
+    sky: !!document.getElementById('cosmic-sky'),
+    style: document.getElementById('cosmic-theme')?.textContent.includes('prefers-reduced-motion') || false,
+  }));
+  if (!theme.sky || !theme.style) throw new Error('cosmic theme did not load');
+  const relevant = themeErrors.filter((line) => /cosmic-theme|gba-player|care\.mjs|synapse\.mjs|player\.mjs|SyntaxError|is not defined/i.test(line));
+  if (relevant.length) throw new Error(`theme console errors:\n${relevant.join('\n')}`);
+  page.off('pageerror', onPageError);
+  page.off('console', onConsole);
+  console.log(`PASS: cartridge kept running across MODELS (${before.frames} -> ${after.frames} frames, same emulator ${after.emulatorId}) and model-bay care updated the shared beast.`);
 }
 
 async function main() {
