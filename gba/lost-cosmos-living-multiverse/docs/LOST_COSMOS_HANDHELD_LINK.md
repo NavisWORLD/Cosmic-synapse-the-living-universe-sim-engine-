@@ -4,9 +4,9 @@ The Living Universe HANDHELD pane runs one Lost Cosmos cartridge in an isolated 
 
 ## Which version this follows
 
-Committed Lost Cosmos **11.1.1** is the branch `feature/lost-cosmos-v11-enhanced-001` (pull request #20, "Lost COSMOS V11.1.1 — full visual QA and Delta-safe polish"). The native pause layout landed in commit `3f4f2c9`. There is no git tag and no GitHub release named 11.1.1. The only published releases are the older Eridoria v7 line.
+This link includes the current **V11.1 Content Bible** from `feature/lost-cosmos-v11-enhanced-001` (pull request #20): 100 items, 100 characters, 100 skills, eight worlds, the upgraded menus, and three CRC-protected save slots. The integration baseline is commit `345dd3c`.
 
-The uncommitted V11.1 Content Bible described in `docs/V11_1_CONTENT_QA_RESUME.md` is not on any branch, tag, release, or open pull request, and it was not present on disk. This link does not copy that work. It leaves the Bible's SRAM reservations empty so a later rebase can land:
+The mailbox coexists with the Content Bible without moving any historical SRAM offsets:
 
 | Region | SRAM bytes | Status |
 | --- | --- | --- |
@@ -16,16 +16,18 @@ The uncommitted V11.1 Content Bible described in `docs/V11_1_CONTENT_QA_RESUME.m
 | Gap after journal metadata | 24704–24831 | left empty |
 | Living-link mailbox `LCX1` | 24832–25475 | new, 644 bytes |
 | Gap before the first content-bible slot | 25476–25599 | left empty |
-| Content-bible `LCM1` slots | 25600, 27648, 29696 | not used |
-| Content-bible `LCEX` / `LC11` | 6208–6399 and 6400–7167 | not used |
+| Content-bible `LCM1` slots | 25600, 27648, 29696 | owned by V11.1 manual saves |
+| Content-bible `LCEX` / `LC11` | 6208–6399 and 6400–7167 | owned by V11.1 export and progress |
 
-The web pane lives in the same change as the cartridge because `main` has the same Living Universe page and no GBA source. Rebase onto a later 11.1.1 by keeping `lc_mailbox.h` and the three call sites in `lost_cosmos_v5.c`: `save_game` refreshes before it encodes, `lc_restore_roster` refreshes without consuming, and `init_new_game` clears the live art flag. Likely conflicts are those functions plus the party page and Beast Box page.
+`save_game` refreshes the mailbox before encoding the roster, `lc_restore_roster` restores local mailbox art, and `init_new_game` resets its runtime flags along with V11.1 progress. The current PARTY and BEAST BOX pages show the mailbox callsign and truthful `BEAST IMPORTED` / `LOCAL MAILBOX` status. The 32px field sprite supplies a 64px menu portrait and an affine battle canvas using reserved matrix 4. Artwork and public exports are selected by identity, so a mailbox creature can coexist with the compiled Miraby snapshot.
 
 ## What crosses over
 
 The browser writes a 32 KiB save that is `0xFF` except for the mailbox. It does not write the LCR1 roster. The cartridge parses BCP1, calls the existing `lc_add_import`, and the normal save path writes the roster. Focus, calm, and spark are integers from 0 to 100 derived from band power. Raw samples are not an input to the encoder and are not stored in the save.
 
 A fresh mailbox has flags `1` (pending). After the creature is in the party and the game saves, flags become `4` (consumed). The profile stays in the mailbox so the field sprite can load again on a later boot.
+
+CI tests both builds: the browser cartridge with runtime imports only and the native cartridge with the compiled snapshot. Real mGBA verifies the callsign, portrait, Beast Box status, roster checksum, a V11.1 manual slot, and a second cold boot without duplicate creatures. Native C tests also check battle art and preservation of the exported public identity.
 
 ## Run
 

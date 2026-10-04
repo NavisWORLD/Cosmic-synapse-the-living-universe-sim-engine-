@@ -12,7 +12,7 @@ permissions:
 jobs:
   native:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: gba/lost-cosmos-living-multiverse
@@ -20,21 +20,33 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install native compiler and official mGBA library
         run: sudo apt-get update && sudo apt-get install -y clang lld llvm libmgba-dev ffmpeg gcc python3-pil
+      - name: Build the browser cartridge from current V11.1 source
+        run: |
+          (cd ../.. && bash scripts/build-lost-cosmos-arcade.sh)
+          mkdir -p artifacts/arcade
+          cp LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf artifacts/arcade/lost_cosmos_v5.elf
       - name: Build the real ARM7TDMI ROM
-        run: cd LOST_COSMOS_V10_SOURCE && bash build_v5.sh
+        run: cd LOST_COSMOS_V10_SOURCE && IMPORTED_BEAST=1 bash build_v5.sh
       - name: Verify reproducible build
         run: |
           sha256sum LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba > /tmp/first-native.sha256
-          (cd LOST_COSMOS_V10_SOURCE && bash build_v5.sh)
+          (cd LOST_COSMOS_V10_SOURCE && IMPORTED_BEAST=1 bash build_v5.sh)
           sha256sum --check /tmp/first-native.sha256
-      - name: Package the public-safe editable V10.8 source and real candidate ROM
+      - name: Package the editable V11.1 source and matching native ROM
         run: |
           mkdir -p artifacts/release
-          cp LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba artifacts/release/LOST_COSMOS_V10_8_CANDIDATE.gba
-          python3 tools/package_current_source.py --out artifacts/release/LOST_COSMOS_V10_8_EDITABLE_SOURCE.zip
+          cp LOST_COSMOS_V10_SOURCE/LOST_COSMOS_V10_OPENING_QA.gba artifacts/release/LOST_COSMOS_V11_1_CONTENT.gba
+          python3 tools/package_current_source.py --out artifacts/release/LOST_COSMOS_V11_1_EDITABLE_SOURCE.zip
           (cd artifacts/release && sha256sum *.gba *.zip > SHA256SUMS.txt)
       - name: Gate all 24 physical story maps, 96 actual objective triggers and six older save pages
         run: python3 tests/test_completion_maps_v10_8.py
+      - name: Gate all 300 content records, art, native rules and public Beast Box round trip
+        run: |
+          python3 tests/test_content_v11.py
+          python3 tests/test_content_v11_native.py
+          python3 tests/test_mailbox_v11_native.py
+          python3 tests/test_beastbox_roundtrip_v11.py
+          python3 tests/test_bridge.py
       - name: Gate NPC reachability with the actual native 10px collision footprint
         run: python3 tests/test_act1_pixel_reachability.py
       - name: Gate Quantum Beast public import, field-art derivation and native save identity
@@ -53,12 +65,17 @@ jobs:
           /tmp/lc-journal-test
       - name: Gate living-link mailbox import in real mGBA
         timeout-minutes: 5
-        run: python3 tests/test_mgba_mailbox_import.py --out artifacts/mgba_mailbox
+        run: |
+          python3 tests/test_mgba_mailbox_import.py --out artifacts/mgba_mailbox/compiled
+          python3 tests/test_mgba_mailbox_import.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_mailbox/runtime
       - name: Real mGBA controller boot, movement, audio, video and two-boot save check
         run: python3 tests/test_mgba_controller.py --out artifacts/mgba_controller
       - name: Real mGBA V11.1 full menu visual pilgrimage
         timeout-minutes: 5
         run: python3 tests/test_mgba_menu_visual.py --out artifacts/mgba_menu_visual
+      - name: Earn eight beacons, ten bosses, crafting, evolution, three slots and a true cold boot
+        timeout-minutes: 7
+        run: python3 tests/test_mgba_content_v11.py --out artifacts/mgba_v11_content
       - name: Release gate - real controller-only Act I to Malakar and First Heart, plus real second cold boot
         timeout-minutes: 7
         run: |
@@ -95,6 +112,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/mgba_mailbox/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_controller/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_menu_visual/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_v11_content/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act2/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_eldoria/

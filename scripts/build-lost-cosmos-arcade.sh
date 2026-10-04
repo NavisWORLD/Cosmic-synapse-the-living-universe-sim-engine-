@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the committed Lost Cosmos V11.1.1 source into the handheld ROM.
+# Build the current Lost Cosmos V11.1 Content Bible source into the handheld ROM.
 # The ROM is original homebrew and is not committed.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/.." && pwd)

@@ -1,0 +1,49 @@
+{
+  "BCG1_guest_validated": true,
+  "BCP1_game_profile": {
+    "family": 0,
+    "game_stats": [
+      44,
+      49,
+      54,
+      57,
+      41,
+      52,
+      52,
+      47,
+      59,
+      45
+    ],
+    "hue": 3,
+    "look": 0,
+    "public_identity": "f5a4cb6d",
+    "temperament": [
+      62,
+      37,
+      79,
+      75,
+      58
+    ],
+    "version": 1
+  },
+  "export_zip_sha256": "c7089e7b5f612b53a1f865684f1875c72b79345404645e62d3a28aa25c42edd9",
+  "field_art": "compact <=20px silhouettes centered in four native 32x32 frames from verified 64x64 export",
+  "field_tiles_32_sha256": "151ae9d0fff76f08a073399bc461112204464ab20361a867a5fc41d1c714d239",
+  "frames": [
+    "idle",
+    "listening",
+    "thinking",
+    "celebrating"
+  ],
+  "generator_version": 1,
+  "not_included": [
+    "owner_memory",
+    "real_sensor_data",
+    "model_weights",
+    "cloud_credentials"
+  ],
+  "palette_sha256": "2602cc18471624c681c5d9ad7b148020310e7f6c7b2e8ecefd7b1bede241fe67",
+  "portable_seed_hash": 1838690571,
+  "schema": "lost-cosmos-beastbox-build-import-v1",
+  "tiles_sha256": "3b219d61cbd1a760241f451b2757788787ff5afa8790c55e80f6d5b1c6514e53"
+}

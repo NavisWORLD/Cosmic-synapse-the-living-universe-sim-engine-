@@ -11,12 +11,12 @@ import subprocess
 import zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
-PREFIX='LOST_COSMOS_V10_8_SOURCE'
-INCLUDE=('LOST_COSMOS_V10_SOURCE','baseline','lineage','docs','tests','tools')
-SUFFIXES={'.c','.h','.s','.py','.sh','.ld','.md','.txt','.diff','.sha256','.json','.yml','.yaml'}
+PREFIX='LOST_COSMOS_V11_1_SOURCE'
+INCLUDE=('LOST_COSMOS_V10_SOURCE','baseline','lineage','docs','tests','tools','content')
+SUFFIXES={'.c','.h','.s','.py','.sh','.ld','.md','.txt','.diff','.sha256','.json','.yml','.yaml','.webp','.png'}
 BANNED=('private','manuscript','credential','secret','.env','.sav','token','personal')
 TEMP={'host_qa_v5.c','living_book_v107_native_host_qa.c','guardian_v105_native_host_qa.c',
-      'act_threads_v106_native_host_qa.c','test_end_credits_v108_host.c'}
+      'act_threads_v106_native_host_qa.c','test_end_credits_v108_host.c','content_v11_test_host.c'}
 def sha(data:bytes)->str:
  return hashlib.sha256(data).hexdigest()
 def sources():
@@ -27,7 +27,7 @@ def sources():
   for p in sorted(directory.rglob('*')):
    if not p.is_file() or p.suffix.lower() not in SUFFIXES:continue
    relative=p.relative_to(ROOT).as_posix()
-   if '__pycache__' in p.parts or p.name in TEMP:continue
+   if '__pycache__' in p.parts or p.name in TEMP or p.name.endswith(('_native_host.c','_native_host_qa.c','_host_qa.c')):continue
    if any(term in p.name.lower() for term in BANNED):
     raise ValueError('Refusing suspicious private file in public source: '+relative)
    if p.is_symlink():raise ValueError('Refusing unreviewed symlink: '+relative)
@@ -36,8 +36,15 @@ def sources():
        'LOST_COSMOS_V10_SOURCE/qseed.h',
        'LOST_COSMOS_V10_SOURCE/build_v5.sh',
        'LOST_COSMOS_V10_SOURCE/start_v5.S',
-       'LOST_COSMOS_V10_SOURCE/credits_v10_8.h'}
+       'LOST_COSMOS_V10_SOURCE/credits_v10_8.h',
+       'LOST_COSMOS_V10_SOURCE/content_v11_state.h',
+       'LOST_COSMOS_V10_SOURCE/content_v11_art.h',
+       'LOST_COSMOS_V10_SOURCE/imported_companion.h',
+       'content/v11_1_catalog.json'}
  if not must.issubset(files):raise AssertionError('Missing current native engine, QSEED or build components')
+ if (ROOT/'README_V11_1.md').exists():files['README_V11_1.md']=(ROOT/'README_V11_1.md').read_bytes()
+ workflow=ROOT.parents[1]/'.github/workflows/lost-cosmos-native.yml'
+ if workflow.exists():files['ci/lost-cosmos-native.yml']=workflow.read_bytes()
  return files
 def package(dest:Path,rom:Path):
  files=sources();native=rom.read_bytes()
@@ -53,21 +60,22 @@ def package(dest:Path,rom:Path):
   raise AssertionError('Original 8192-byte QSEED provenance changed')
  receipt={'project':'LOST COSMOS — The Living Multiverse',
   'original_author':'Cory Davis / NavisWORLD',
-  'status':'V10.8 NATIVE DEVELOPMENT CANDIDATE — NOT FINAL MANUSCRIPT RELEASE',
-  'git_commit':commit,'rom_name':'LOST_COSMOS_V10_8_CANDIDATE.gba',
+  'status':'Native V11.1 Content Bible upgrade; acceptance in matching controller evidence',
+  'git_commit':commit,'rom_name':'LOST_COSMOS_V11_1_CONTENT.gba',
   'rom_sha256':sha(native),'rom_bytes':len(native),
   'native_engine_sha256':sha(source),'qseed_sha256':sha(bytes(nums)),
   'owner_private_manuscript_included':False,
   'real_mgba_acceptance':'see separate genuine controller CI report',
-  'full_campaign_and_owner_iphone_delta':'not accepted; still pending'}
+  'physical_iphone_delta':'not tested',
+  'full_original_five_act_acceptance':'not claimed'}
  files['BUILD_RECEIPT.json']=(json.dumps(receipt,sort_keys=True,indent=2)+'\n').encode()
- files['README_SOURCE_PACKAGE.txt']=('Lost COSMOS V10.8 public-safe native development sources\n'
-  'Owned by Cory Davis / NavisWORLD. This is NOT the completed novel.\n'
-  'To compile the real GBA: cd LOST_COSMOS_V10_SOURCE && bash build_v5.sh\n'
+ files['README_SOURCE_PACKAGE.txt']=('Lost COSMOS V11.1 editable native GBA sources\n'
+  'Owned by Cory Davis / NavisWORLD. Read README_V11_1.md for play controls and scope.\n'
+  'Install clang/lld/llvm and Python 3. To build: cd LOST_COSMOS_V10_SOURCE && IMPORTED_BEAST=1 bash build_v5.sh\n'
   'Check the rebuilt GBA SHA-256 against BUILD_RECEIPT.json.\n'
   'Original private manuscript, owner profiles, and real .sav are NOT included.\n'
   'Prior full ROM revisions remain recoverable in the earlier owner archive.\n'
-  'Current cartridge code ERL8 requires deliberate, backed-up old-save migration.\n'
+  'Cartridge code ERL8 and historical SRAM fields remain compatible; attach your backed-up battery save explicitly in an emulator.\n'
   'Host C checks are not recorded human-led gameplay or Delta device acceptance.\n').encode()
  manifest=''.join(f'{sha(data)}  {name}\n' for name,data in sorted(files.items())).encode()
  files['MANIFEST.SHA256.txt']=manifest

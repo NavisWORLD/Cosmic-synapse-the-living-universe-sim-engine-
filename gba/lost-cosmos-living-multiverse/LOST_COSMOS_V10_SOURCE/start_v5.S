@@ -33,3 +33,36 @@ _start:
 4:
     b 4b
     .size _start, .-_start
+
+    /* Freestanding ARM EABI unsigned quotient/remainder. ARM7TDMI has no
+       divide instruction; avoid an external runtime dependency in the ROM. */
+    .global __aeabi_uidiv
+    .global __aeabi_uidivmod
+    .type __aeabi_uidiv,%function
+    .type __aeabi_uidivmod,%function
+__aeabi_uidiv:
+__aeabi_uidivmod:
+    cmp r1, #0
+    moveq r1, r0
+    moveq r0, #0
+    bxeq lr
+    mov r2, #0
+    mov r3, #1
+5:
+    cmp r1, r0
+    bhs 6f
+    tst r1, #0x80000000
+    bne 6f
+    mov r1, r1, lsl #1
+    mov r3, r3, lsl #1
+    b 5b
+6:
+    cmp r0, r1
+    subcs r0, r0, r1
+    orrcs r2, r2, r3
+    mov r1, r1, lsr #1
+    movs r3, r3, lsr #1
+    bne 6b
+    mov r1, r0
+    mov r0, r2
+    bx lr

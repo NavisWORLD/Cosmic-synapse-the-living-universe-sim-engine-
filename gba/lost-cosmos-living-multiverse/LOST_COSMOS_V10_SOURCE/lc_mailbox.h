@@ -1,11 +1,10 @@
 /* LCX1 living-link mailbox. Additive SRAM only.
  *
- * Committed V11.1.1 map this must not touch:
+ * V11.1 map this must not touch:
  *   main page 0..8191, including roster at 1024 and the journal snapshot
  *   journal banks 8192 and 16384
  *   journal metadata 24576..24703
- * Uncommitted V11.1 content-bible regions recorded in
- * docs/V11_1_CONTENT_QA_RESUME.md, also left alone so a later rebase can land:
+ * Content Bible regions remain owned by V11.1:
  *   LCEX 6208..6399, LC11 6400..7167
  *   LCM1 slots at 25600, 27648 and 29696 (2048 bytes each)
  *
@@ -134,6 +133,7 @@ static void lc_mailbox_refresh(int commit){
   for(i=0;i<512;i++)lc_mail_tiles[i]=SRAM[o+128+i];
  }else lc_mail_paint((int)prof.family,(int)prof.hue);
  lc_mail_live=1;
+ lc_mail_identity=prof.public_id;
  lc_mail_species=(u8)(LC_SPECIES_IMPORTED+prof.family);
  lc_mail_ready=1;
  if(commit && (flags&1u)){
