@@ -44,6 +44,7 @@ jobs:
         run: |
           python3 tests/test_content_v11.py
           python3 tests/test_content_v11_native.py
+          python3 tests/test_story_act1_native.py
           python3 tests/test_mailbox_v11_native.py
           python3 tests/test_beastbox_roundtrip_v11.py
           python3 tests/test_bridge.py

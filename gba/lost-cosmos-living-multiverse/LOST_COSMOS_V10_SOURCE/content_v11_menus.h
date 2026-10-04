@@ -210,13 +210,14 @@ static int v11_draw_pause(void){int i,id,start;
  if(v11_list_count){id=v11_list[v11_sel];v11_short(2,10,V11_QUEST_GIVERS[id],26,13);v11_lines(2,11,V11_QUEST_VOICE[id],26,3,15);
  if(id<8){ui_text(2,14,"CORE",13);ui_text(7,14,v11_cores_found&(1u<<id)?"+":"-",14);ui_text(10,14,"ECHO",13);ui_text(15,14,v11_echo_found&(1u<<id)?"+":"-",14);ui_text(18,14,"FOES",13);ui_num(23,14,mini(3,v11_world_kills[id]),15);ui_text(24,14,"/3",15);v11_short(2,15,v11_signal_goal(id),26,14);}
  else ui_text(2,14,v11_quest_done&(1u<<id)?"QUEST COMPLETE":"A TO TRACK THIS QUEST",14);}
- else ui_text(4,6,"NO SIGNAL",13);ui_text(2,16,"SELECT CAMPAIGN JOURNAL",14);
+ else ui_text(4,6,"NO SIGNAL",13);
+ ui_text(2,16,v11_act_goal(),14);
  }else if(pause_page==1){v11_header(v11_map_legacy?"MAP // ORIGINAL CAMPAIGN":"MAP // EIGHT SIGNALS");
  for(i=0;i<8;i++){int known=v11_map_legacy?(visited_mask&(1u<<i)):(v11_visited&(1u<<i));ui_text(2,4+i,i==v11_sel?">":" ",13);ui_text(4,4+i,known?(v11_map_legacy?"*":(v11_beacons&(1u<<i))?"*":"."):"-",known?14:8);v11_short(6,4+i,known?(v11_map_legacy?WORLDS[i].name:V11_WORLDS[i]):"???",22,known?15:8);if(!v11_map_legacy&&V11_IS_ROOM&&i==v11_world()&&(frame>>4)&1)ui_text(4,4+i,">",13);}
  ui_text(2,14,"THE MAP FILLS AS YOU REMEMBER",14);ui_text(2,15,V11_IS_ROOM?"START LOCAL LANDMARK MAP":"* KNOWN WORLD",14);ui_text(2,16,"SELECT CAMPAIGN / SIGNALS",13);
  }else if(pause_page==47){v11_draw_local_map();
  }else if(pause_page==9){static const char*s[11]={"AUDIO","TEXT SPEED","BRIGHTNESS","SAVE GAME","LOAD GAME","BEAST BOX","TOUCH CONTROLS","COSMIC REPLAY","AUTO TALK","HERO","CAMPAIGN PACK"};v11_header("SYSTEM");start=v11_sel/6*6;for(i=start;i<mini(start+6,11);i++){v11_row(4+i-start,i==v11_sel,s[i],15);if(i==0)ui_text(22,4+i-start,audio_on?"ON":"OFF",14);if(i==1)ui_text(22,4+i-start,v11_text_speed==0?"SLOW":v11_text_speed==1?"NORM":"FAST",14);if(i==2)ui_num(24,4+i-start,v11_brightness,14);if(i==6)ui_text(22,4+i-start,touch_mode?"ON":"OFF",14);if(i==7)ui_text(22,4+i-start,buddy_quantum?"ON":"OFF",14);if(i==8)ui_text(22,4+i-start,buddy_talk?"ON":"OFF",14);}
- ui_text(2,15,"LOST COSMOS V11.2",13);ui_text(2,16,"THREE VERIFIED BATTERY SLOTS",14);
+ ui_text(2,15,"ACT I  SYNAPSE ROAD",13);ui_text(2,16,"V11.2 SAVES STILL LOAD",14);
  }else if(pause_page==44){v11_header(v11_sub?"LOAD // THREE SLOTS":"SAVE // THREE SLOTS");for(i=0;i<3;i++){int o=25600+i*2048;ui_text(2,5+i*3,i==v11_sel?">":" ",13);ui_text(4,5+i*3,"SLOT",15);ui_num(10,5+i*3,i+1,15);
  if(v11_slot_valid(i)){int w=SRAM[o+4],room=SRAM[o+5];v11_short(12,5+i*3,w==0&&room>=70&&room<=77?V11_WORLDS[room-70]:WORLDS[w%8].name,16,14);ui_text(4,6+i*3,"LV",13);ui_num(7,6+i*3,SRAM[o+6],15);ui_text(11,6+i*3,"TIME",13);ui_num(16,6+i*3,((int)sr32(o+8))/216000,15);ui_text(20,6+i*3,"%",13);ui_num(23,6+i*3,SRAM[o+7],15);}
  else ui_text(12,5+i*3,"NO SIGNAL",8);}

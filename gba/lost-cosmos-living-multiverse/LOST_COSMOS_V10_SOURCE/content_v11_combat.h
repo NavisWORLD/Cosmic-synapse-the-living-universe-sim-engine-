@@ -183,6 +183,8 @@ static void v11_battle_reward(int spared){int id=v11_enemy_id[battle_index],i,w=
  v11_trust(2);v11_bestiary_rewards();v11_unlock();
  for(i=0;i<3;i++)if(v11_equipment[i]!=255&&v11_durability[i])v11_durability[i]--;
  v11_message(spared?"WE LET THE CREATURE GO. THE ROAD HAS ROOM FOR BOTH OF US.":"VICTORY. XP AND CREDITS RECEIVED. COSMOS WAITS FOR YOU.");
+ if(id==99){v11_story_flags|=V11_SF_QUIET;v11_message("THE QUIET RESTS. FIND THE LISTENER AT THE CROWN. ACT I CAN END.");}
+ v11_story_sync();
  save_game();battle_phase=3;battle_timer=45;
 }
 static void v11_start_battle(int index){int id;if(index<0||index>9||!enemies[index].active)return;id=v11_enemy_id[index];

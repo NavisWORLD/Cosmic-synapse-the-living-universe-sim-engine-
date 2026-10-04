@@ -3130,6 +3130,7 @@ static void v10_title_input(u16 newk){
 #include "content_v11_core.h"
 #include "content_v11_world.h"
 #include "content_v11_combat.h"
+#include "content_v11_story.h"
 #include "content_v11_menus.h"
 void gba_main(void){u16 k,newk;
  journal_recover();

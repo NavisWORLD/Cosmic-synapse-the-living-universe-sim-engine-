@@ -24,6 +24,8 @@ gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/*.o.tmp
 gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/host_qa_v5.c
 gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_test_host.c
 gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_test_host
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_story_test_host.c
+gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_story_test_host
 gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/host_qa_v5
 __pycache__/
 *.pyc

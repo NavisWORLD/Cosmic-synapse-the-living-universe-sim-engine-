@@ -82,4 +82,32 @@ static void v11_title_beast(int upload);
 static void v11_resume_art(void);
 static void v11_dialogue_advance(void);
 static void v11_dialogue_draw(void);
+/* Act I story. Bytes 648-653 of the LC11 page were reserved. V11.2 saves
+   load as zeros and are migrated forward. LCX1, LCR1, and LCM1 stay put. */
+#define V11_SF_INTRO 1u
+#define V11_SF_BEFRIEND 2u
+#define V11_SF_RIVAL 4u
+#define V11_SF_EIGHT 8u
+#define V11_SF_QUIET 16u
+#define V11_SF_ENDING 32u
+#define TR_V11_LISTENER 120
+#define TR_V11_RIVAL 121
+static u8 v11_act,v11_story_flags,v11_spark_wins,v11_befriend_count,v11_rival_phase;
+static u8 v11_wild,v11_wild_rival,v11_wild_species,v11_wild_sel,v11_wild_aff,v11_wild_menu;
+static u16 v11_wild_hp,v11_wild_max;
+static u8 v11_lore,v11_lore_page;
+static void v11_story_sync(void);
+static void v11_story_place(void);
+static void v11_story_boot(void);
+static int v11_on_spark(void);
+static const char* v11_act_goal(void);
+static const char* v11_short_world(void);
+static void v11_hp_bar(int x,int y,int cur,int max,int n,int pal);
+static void v11_lore_open(int kind);
+static void v11_lore_update(u16 newk);
+static void v11_lore_draw(void);
+static void v11_wild_begin(int rival);
+static void v11_wild_update(u16 newk);
+static void v11_wild_draw(void);
+static int v11_story_befriend(void);
 #endif

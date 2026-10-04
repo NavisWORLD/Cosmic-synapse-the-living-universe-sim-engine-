@@ -49,6 +49,7 @@ static const char*v11_field_action(void){int t=trigger_near(),i;
  if(t==TR_V11_FORGE)return "A QUIET FORGE";
  if(t==TR_V11_TRIAL)return v11_world()==0||v11_world()==3?"A MEND ROOT":"A COSMOS";
  for(i=0;i<v11_npc_count;i++)if(iabs(v11_npc_x[i]-player.x)+iabs(v11_npc_y[i]-player.y)<28)return "A TALK";
+ if(v11_on_spark())return "A SPARK";
  return nearest_battle_enemy(48)>=0?"A DUEL":"A COSMOS";
 }
 static void v11_palette(void){int i;set_world_palette(V11_THEME[v11_world()]);
@@ -139,7 +140,7 @@ static void v11_generate(void){int x,y,i,w=v11_world(),ground=(w==1?T_DUST:w==2?
  map_put(32,32,T_PLANT,2,C_FREE,TR_V11_TRIAL);
  if(w==0||w==2||w==5||w==6)map_put(18,12,T_CRYSTAL,5,C_FREE,TR_V11_CORE);
  if(w==5){for(i=0;i<3;i++)map_put(28+i*4,14,(v11_forges&(1u<<i))?T_RUIN:T_FURNACE,3,C_FREE,TR_V11_FORGE);}
- v11_actor_art();REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));
+ v11_story_place();v11_actor_art();REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));
  REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;
  location_banner=240;v11_dialogue=v11_shop=0;v11_notice[0]=0;world_build_reveal();
 }
@@ -147,7 +148,7 @@ static void v11_enter(int world){if(world<0||world>7)return;current_world=0;curr
  game_mode=return_mode=MODE_SURFACE;player.x=32*8;player.y=54*8;cosmos.x=player.x+13;cosmos.y=player.y-12;
  if(!v11_visited){v11_hp=(u16)v11_max_hp();v11_mp=(u16)v11_max_mp();v11_buddy_hp=(u16)v11_max_hp();}
  v11_hp=(u16)mini(v11_max_hp(),v11_hp);v11_mp=(u16)mini(v11_max_mp(),v11_mp);
- make_obj_tiles();lc_upload_import_art();generate_surface();refresh_camera();save_game();
+ make_obj_tiles();lc_upload_import_art();generate_surface();refresh_camera();v11_story_boot();save_game();
 }
 static void v11_leave(void){current_world=0;current_room=2;current_layer=1;game_mode=return_mode=MODE_SURFACE;
  player.x=34*8;player.y=44*8;cosmos.x=player.x+13;cosmos.y=player.y-12;v11_resume_art();generate_surface();refresh_camera();save_game();}
@@ -165,7 +166,7 @@ static void v11_light_beacon(void){int w=v11_world();if(v11_beacons&(1u<<w)){v11
  if(v11_world_kills[w]<3||!(v11_echo_found&(1u<<w))||!(v11_cores_found&(1u<<w))){v11_message("BRING THIS RIFT'S CORE AND ECHO. FACE THREE FOES. THE BEACON NEEDS A MEMORY.");return;}
  v11_beacons|=(u8)(1u<<w);v11_last_beacon=(u8)w;v11_quest_finish(w);
  if(w==0){v11_quest_finish(9);}if(v11_beacons==255){v11_inventory_add(69,1);v11_inventory_add(98,1);}
- v11_message("A RETURNING NAME. THE BEACON IS LIT. COSMOS LEANS AGAINST YOU.");v11_unlock();save_game();
+ v11_message("A RETURNING NAME. THE BEACON IS LIT. COSMOS LEANS AGAINST YOU.");v11_unlock();v11_story_sync();save_game();
 }
 static void v11_npc_open(int n){int id=v11_npc_id[n];v11_speaker=(u8)id;v11_dialogue=1;v11_dialogue_page=0;v11_dialogue_scroll=v11_dialogue_reveal=0;v11_choice=0;
  v11_npc_seen|=1u<<id;v11_mark_seen(id);v11_bestiary_rewards();
@@ -182,8 +183,8 @@ static void v11_npc_open(int n){int id=v11_npc_id[n];v11_speaker=(u8)id;v11_dial
  v11_unlock();save_game();
 }
 static const char*V11_NPC_LINES[30]={
- "AN OATH IS A ROAD YOU KEEP WALKING. RETURN AFTER THREE PRIME VICTORIES. I WILL KNOW YOUR STEP.",
- "A FOUND CORE HAS A VOICE. BRING THIS RIFT'S CORE AND ECHO TO THE BEACON AFTER THREE VICTORIES.",
+ "THE SYNAPSE REMEMBERS YOUR STEP. AN OATH IS A ROAD YOU KEEP WALKING. RETURN AFTER THREE PRIME VICTORIES.",
+ "THE LATTICE IS AWAKE. A FOUND CORE HAS A VOICE. BRING THIS RIFT'S CORE AND ECHO TO THE BEACON AFTER THREE VICTORIES.",
  "I REMEMBER YOUR NAME, ARIN. THE GROVE ASKS FOR A MENDED ROOT, NEVER A LOUDER SWORD.",
  "EVERY SALE IS A STORY. I KEEP THE PRICES FAIR FOR PEOPLE WHO KEEP COMING BACK.",
  "ERIDORIA CAST US OUT. GO FIND THE FIRST OUTCAST IN THE DEEP. THEN THIS ROAD WILL BE OURS.",
@@ -206,7 +207,7 @@ static const char*V11_NPC_LINES[30]={
  "A MEMORY HAS WEIGHT. IF YOU WISH, I WILL LAY ONE CARRIED ECHO TO REST. THE CHOICE IS YOURS.",
  "THE MOTHS CHOOSE WHAT TO FOLLOW. I SELL LITTLE LIGHTS. YOUR FRIEND ALREADY HAS ONE.",
  "I WAS A KING. THE DEEP OFFERED ME A THRONE THAT FIT MY REGRET. DO NOT TAKE ITS BARGAIN.",
- "THE CROWN REQUIRES THE Z KEY. VESPER CARRIES ITS LAST SIGNAL. I AM SORRY TO STILL BE HERE.",
+ "THE CROWN IS THE SYNAPSE HOLDING ITS BREATH. IT STILL REQUIRES THE Z KEY. VESPER CARRIES THAT SIGNAL.",
  "ARIN. COSMOS. I KNOW YOUR NAMES BECAUSE SOMEONE REMEMBERED YOU BEFORE THE STARS WENT QUIET.",
  "THE SMALL ECHO HOLDS OUT ITS HAND. COSMOS SITS BESIDE IT. FOR A MOMENT, NO ONE NEEDS WORDS.",
  "THE PIECES ARE OLD. THE ASSEMBLY IS YOURS. KEEP WHAT YOU CAN MEND. LET SOME THINGS REST.",
@@ -243,6 +244,11 @@ static void v11_field_interact(u8 t){int w=v11_world();if(t==TR_V11_EXIT){v11_le
   if(v11_skill_known(20)&&v11_mp>=5){v11_mp-=5;v11_quest_finish(13);v11_message("I MENDED THE WOUNDED ROOT. THE GROVE ANSWERED GENTLY.");save_game();}
   else if(v11_qty[70]){v11_qty[70]--;v11_quest_finish(13);v11_message("A POTION FOR THE ROOT. ITS BRANCHES OPEN A QUIET ROAD.");save_game();}
   else v11_message("THE ROOT NEEDS MEND OR A POTION. A SWORD WILL NOT HELP.");return;}
+ if(t==TR_V11_LISTENER){v11_lore_open(1);return;}
+ if(t==TR_V11_RIVAL){
+  if(v11_rival_phase>=2){v11_message("LYS NODS. THE ROAD IS SHARED. KEEP YOUR SPARK CLOSE.");return;}
+  if(v11_rival_phase==1){v11_wild_begin(1);return;}
+  v11_lore_open(2);return;}
  v11_message("COSMOS NUDGES YOUR HAND. IT IS LISTENING.");
 }
 static void v11_start_battle(int i);
@@ -250,6 +256,8 @@ static int v11_shop_input(u16 newk);
 static void v11_draw_shop(void);
 static int v11_use_skill(int id);
 static void v11_update_field(u16 k,u16 newk){int dx=0,dy=0,i,t,speed=(k&KEY_B)?3:2;
+ if(v11_wild){v11_wild_update(newk);return;}
+ if(v11_lore){v11_lore_update(newk);return;}
  if(v11_gameover){if(newk&KEY_UP||newk&KEY_DOWN)v11_choice^=1;
   if(newk&KEY_A){if(v11_choice==0){load_game();v11_gameover=0;generate_surface();refresh_camera();}
    else{v11_gameover=0;intro=1;v10_has_save=(u8)save_valid();cinema_start(0,0);}}return;}
@@ -263,20 +271,24 @@ static void v11_update_field(u16 k,u16 newk){int dx=0,dy=0,i,t,speed=(k&KEY_B)?3
  if(newk&KEY_A){if(t){v11_field_interact((u8)t);return;}
   for(i=0;i<v11_npc_count;i++)if(iabs(v11_npc_x[i]-player.x)+iabs(v11_npc_y[i]-player.y)<28){v11_npc_open(i);return;}
   i=nearest_battle_enemy(48);if(i>=0){v11_start_battle(i);return;}
+  if(v11_on_spark()){v11_wild_begin(0);return;}
   v11_message("COSMOS NUDGES YOUR HAND. IT MISSED YOU.");}
  if(newk&KEY_R){game_mode=MODE_PAUSE;return_mode=MODE_SURFACE;pause_page=28;v11_menu_reset();v11_sub=0;}
  if(newk&KEY_L){if(v11_qty[70]){v11_qty[70]--;v11_heal(20);save_game();v11_message("POTION USED. HP RESTORED.");}else v11_message("NO POTIONS. THE CAMPFIRE WILL WAIT.");}
  if(newk&KEY_SELECT){v11_use_skill(v11_skill_known(92)?92:30+1);}
 }
 static void v11_draw_field(void){int i;ui_clear();oam_hide_all();
- if(location_banner){ui_fill_rows(0,0,63,15);ui_text(1,0,V11_WORLDS[v11_world()],13);location_banner--;}
- ui_fill_rows(1,1,63,15);ui_text(1,1,"HP",14);ui_num(4,1,v11_hp,15);ui_text(7,1,"/",15);ui_num(8,1,v11_max_hp(),15);
- ui_text(13,1,"LV",13);ui_num(16,1,player_level,15);ui_text(20,1,"MP",14);ui_num(23,1,v11_mp,15);
- ui_fill_rows(18,19,63,15);ui_text(2,18,v11_field_action(),14);ui_text(17,18,"START MENU",15);
+ if(v11_wild){v11_wild_draw();return;}
+ ui_fill_rows(0,0,63,15);ui_text(1,0,v11_short_world(),14);
+ ui_text(11,0,"LV",13);ui_num(14,0,player_level,15);
+ v11_hp_bar(18,0,v11_hp,v11_max_hp(),8,v11_hp*3<v11_max_hp()?13:15);
+ if(location_banner)location_banner--;
+ ui_fill_rows(18,19,63,15);
  if(v11_track>=8&&v11_track<15&&!(v11_quest_done&(1u<<v11_track))&&((v11_ticks/480)&1)){
   static const char*hint[7]={"RETURN TO ASTRID","REPAIR PRIME BEACON","FIND BRINDLE ELDER","FIND FIRST OUTCAST","VISIT THE CONFESSOR","MEND THE WOUNDED ROOT","CRAFT THE BUILDER SET"};
-  ui_text(2,19,"QUEST:",13);ui_text(9,19,hint[v11_track-8],15);
- }else{ui_text(2,19,"NEXT:",13);ui_text(8,19,v11_signal_goal(v11_world()),15);}
+  ui_text(1,18,hint[v11_track-8],13);
+ }else ui_text(1,18,v11_act_goal(),13);
+ ui_text(1,19,v11_field_action(),15);ui_text(22,19,"START",14);
  oam_set(0,player.x-cam_x-8,player.y-cam_y-12,576+(player.face*4+(player.anim&3))*4,0,0);
  oam_set(1,cosmos.x-cam_x-8,cosmos.y-cam_y-8,32+(cosmos.mood&3)*4,1,0);
  if(!v11_active_cosmos&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];
@@ -289,6 +301,7 @@ static void v11_draw_field(void){int i;ui_clear();oam_hide_all();
  if(v11_field_scout||v11_equipment[1]==49||v11_qty[97])for(i=0;i<4;i++)if(!(v11_caches&(1u<<(v11_world()*4+i)))){int x=(V11_CACHE_X[i]*8-cam_x)/8,y=(V11_CACHE_Y[i]*8-cam_y)/8;if(x>=0&&x<30&&y>=3&&y<18)ui_text(x,y,"*",13);}
  if(v11_gameover){ui_pause_canvas();ui_text(3,6,"THE SIGNAL FADES...",13);ui_text(5,11,v11_choice?"  RETRY":"> RETRY",15);
   ui_text(5,13,v11_choice?"> TITLE":"  TITLE",15);ui_text(4,17,"A CONFIRM",14);oam_set(1,164,72,32,1,0);oam_ui_portrait(1);return;}
+ if(v11_lore){v11_lore_draw();return;}
  if(v11_dialogue){int id=v11_speaker;ui_frame(12,19,15);ui_text(2,12,V11_CHARACTERS[id].name,13);
   if(v11_dialogue_page==2){ui_wrap_text(13,"LAY ONE ECHO TO REST?",15,2);ui_text(2,16,v11_choice?"  LET IT REST":"> LET IT REST",14);ui_text(2,17,v11_choice?"> KEEP CARRYING":"  KEEP CARRYING",15);}
   else v11_dialogue_draw();
