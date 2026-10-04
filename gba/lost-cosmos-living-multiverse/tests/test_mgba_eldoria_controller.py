@@ -67,9 +67,27 @@ def run(rom,elf,act2,out):
    nav.talk_npc(20,advances=3)
    mark("04_real_Thorne_dialogue")
    for index,tile in enumerate(((15,17),(26,17),(37,17))):
-    nav.interact(21,at=tile)
+    nav.goto_trigger(21,at=tile)
+    before_diag={
+     "near_trigger_x":emu.read_symbol("near_trigger_x"),
+     "near_trigger_y":emu.read_symbol("near_trigger_y"),
+     "last_element_trigger_x":emu.read_symbol("last_element_trigger_x"),
+     "last_element_index":emu.read_symbol("last_element_index"),
+     "last_element_interact_count":emu.read_symbol("last_element_interact_count"),
+     "player_x":emu.read_symbol("player"),
+    }
+    emu.tap("A",hold=12,release=12)
+    after_diag={
+     "near_trigger_x":emu.read_symbol("near_trigger_x"),
+     "near_trigger_y":emu.read_symbol("near_trigger_y"),
+     "last_element_trigger_x":emu.read_symbol("last_element_trigger_x"),
+     "last_element_index":emu.read_symbol("last_element_index"),
+     "last_element_interact_count":emu.read_symbol("last_element_interact_count"),
+     "element_mask":emu.read_symbol("element_mask"),
+    }
+    report.setdefault("shrine_diagnostics",[]).append({"index":index,"tile":tile,"before":before_diag,"after":after_diag})
     if not emu.read_symbol("element_mask")&(1<<index):
-     raise RuntimeError("Actual shrine "+str(index)+" not earned")
+     raise RuntimeError("Actual shrine "+str(index)+" not earned; diagnostic="+repr(after_diag))
     mark("0"+str(5+index)+"_real_element_"+str(index))
    nav.fight_enemy(7)  # Real native guarded last shrine; no forged kill_count.
    mark("08_actual_Storm_Guardian_defeated")
