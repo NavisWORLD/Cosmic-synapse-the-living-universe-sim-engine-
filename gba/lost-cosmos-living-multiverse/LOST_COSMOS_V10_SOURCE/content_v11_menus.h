@@ -203,6 +203,8 @@ static int v11_draw_pause(void){int i,id,start;
  id=v11_sel;if(v11_encounters[id]){vram_copy32(OBJ_VRAM32+400*8,V11_FIELD_ART+id*128,128);for(i=0;i<16;i++)OBJ_PALETTE[14*16+i]=V11_FIELD_PALETTE[i];oam_set32(44,8,93,400,14);oam_ui_portrait(44);
  v11_short(6,12,V11_CHARACTERS[id].world<8?V11_WORLDS[V11_CHARACTERS[id].world]:"ALL WORLDS",22,14);v11_lines(6,13,V11_CHARACTERS[id].description,22,2,15);ui_text(2,16,"ENCOUNTERS",13);ui_num(15,16,v11_encounters[id],15);
  }else ui_text(4,12,"THE MAP HAS NOT MET IT YET.",8);
+ if(lc_mail_live){int spark=0;for(i=0;i<lc_party.count;i++)if(lc_mail_matches(lc_party.slots[i].identity))spark=i+1;
+  if(spark){v11_portrait(spark,176,96,0);if(lc_mail_name[0])ui_text(22,11,lc_mail_name,14);}}
  }else if(pause_page==11){v11_header(v11_sub?"QUESTS // DONE":"QUESTS // ACTIVE");v11_list_count=0;for(i=0;i<15;i++)if(v11_quest_started&(1u<<i)){if(((v11_quest_done>>i)&1)==(v11_sub&1))v11_list[v11_list_count++]=(u8)i;}if(v11_sel>=v11_list_count)v11_sel=0;start=v11_sel/5*5;
  for(i=start;i<mini(start+5,v11_list_count);i++){id=v11_list[i];v11_row(4+i-start,i==v11_sel,V11_QUEST_NAMES[id],v11_track==id?14:15);}
  if(v11_list_count){id=v11_list[v11_sel];v11_short(2,10,V11_QUEST_GIVERS[id],26,13);v11_lines(2,11,V11_QUEST_VOICE[id],26,3,15);
@@ -214,7 +216,7 @@ static int v11_draw_pause(void){int i,id,start;
  ui_text(2,14,"THE MAP FILLS AS YOU REMEMBER",14);ui_text(2,15,V11_IS_ROOM?"START LOCAL LANDMARK MAP":"* KNOWN WORLD",14);ui_text(2,16,"SELECT CAMPAIGN / SIGNALS",13);
  }else if(pause_page==47){v11_draw_local_map();
  }else if(pause_page==9){static const char*s[11]={"AUDIO","TEXT SPEED","BRIGHTNESS","SAVE GAME","LOAD GAME","BEAST BOX","TOUCH CONTROLS","COSMIC REPLAY","AUTO TALK","HERO","CAMPAIGN PACK"};v11_header("SYSTEM");start=v11_sel/6*6;for(i=start;i<mini(start+6,11);i++){v11_row(4+i-start,i==v11_sel,s[i],15);if(i==0)ui_text(22,4+i-start,audio_on?"ON":"OFF",14);if(i==1)ui_text(22,4+i-start,v11_text_speed==0?"SLOW":v11_text_speed==1?"NORM":"FAST",14);if(i==2)ui_num(24,4+i-start,v11_brightness,14);if(i==6)ui_text(22,4+i-start,touch_mode?"ON":"OFF",14);if(i==7)ui_text(22,4+i-start,buddy_quantum?"ON":"OFF",14);if(i==8)ui_text(22,4+i-start,buddy_talk?"ON":"OFF",14);}
- ui_text(2,15,"LOST COSMOS V11.1",13);ui_text(2,16,"THREE VERIFIED BATTERY SLOTS",14);
+ ui_text(2,15,"LOST COSMOS V11.2",13);ui_text(2,16,"THREE VERIFIED BATTERY SLOTS",14);
  }else if(pause_page==44){v11_header(v11_sub?"LOAD // THREE SLOTS":"SAVE // THREE SLOTS");for(i=0;i<3;i++){int o=25600+i*2048;ui_text(2,5+i*3,i==v11_sel?">":" ",13);ui_text(4,5+i*3,"SLOT",15);ui_num(10,5+i*3,i+1,15);
  if(v11_slot_valid(i)){int w=SRAM[o+4],room=SRAM[o+5];v11_short(12,5+i*3,w==0&&room>=70&&room<=77?V11_WORLDS[room-70]:WORLDS[w%8].name,16,14);ui_text(4,6+i*3,"LV",13);ui_num(7,6+i*3,SRAM[o+6],15);ui_text(11,6+i*3,"TIME",13);ui_num(16,6+i*3,((int)sr32(o+8))/216000,15);ui_text(20,6+i*3,"%",13);ui_num(23,6+i*3,SRAM[o+7],15);}
  else ui_text(12,5+i*3,"NO SIGNAL",8);}

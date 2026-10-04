@@ -279,11 +279,10 @@ static void v11_draw_field(void){int i;ui_clear();oam_hide_all();
  }else{ui_text(2,19,"NEXT:",13);ui_text(8,19,v11_signal_goal(v11_world()),15);}
  oam_set(0,player.x-cam_x-8,player.y-cam_y-12,576+(player.face*4+(player.anim&3))*4,0,0);
  oam_set(1,cosmos.x-cam_x-8,cosmos.y-cam_y-8,32+(cosmos.mood&3)*4,1,0);
- if(!v11_active_cosmos&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];if(c->species>=1&&c->species<=8){vram_copy32(OBJ_VRAM32+416*8,V108_SPECIES[c->species-1][mini(2,c->stage)][(frame>>4)&1],32);oam_set(42,cosmos.x-cam_x+7,cosmos.y-cam_y-8,416,5+c->species-1,0);}}
-#if defined(LC_IMPORTED_COMPANION)
- if(!v11_active_cosmos&&lc_party.count&&lc_party.slots[lc_party.active].species>=LC_SPECIES_IMPORTED)
-  lc_draw_import_field(42,cosmos.x-cam_x-14,cosmos.y-cam_y-18,cosmos.vx<0,0,lc_party.slots[lc_party.active].identity);
-#endif
+ if(!v11_active_cosmos&&lc_party.count){LcCreature*c=&lc_party.slots[lc_party.active];
+  if(c->species>=1&&c->species<=8){vram_copy32(OBJ_VRAM32+416*8,V108_SPECIES[c->species-1][mini(2,c->stage)][(frame>>4)&1],32);oam_set(42,cosmos.x-cam_x+7,cosmos.y-cam_y-8,416,5+c->species-1,0);}
+  else if(lc_has_import_art(c)){spark_follow_place();lc_draw_import_field(42,spark_follow_x-cam_x-16,spark_follow_y-cam_y-24,player.face==2,0,c->identity);}}
+ spark_field_sprites();
  for(i=0;i<10;i++)if(enemies[i].active){oam_set32(2+i,enemies[i].x-cam_x-16,enemies[i].y-cam_y-24,224+i*16,14);
   if(enemies[i].x-cam_x<-32||enemies[i].x-cam_x>272||enemies[i].y-cam_y<-32||enemies[i].y-cam_y>192)OAM16[(2+i)*4]=0x0200;}
  for(i=0;i<v11_npc_count;i++){int xx=v11_npc_x[i]-cam_x-16,yy=v11_npc_y[i]-cam_y-24; if(xx>-32&&xx<240&&yy>-32&&yy<160)oam_set32(16+i,xx,yy-(int)((frame>>5)&1),128+i*16,14);}

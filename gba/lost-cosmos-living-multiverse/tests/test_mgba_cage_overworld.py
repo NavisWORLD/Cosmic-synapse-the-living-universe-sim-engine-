@@ -38,10 +38,21 @@ def ui_row(emu, row):
     return "".join(text)
 
 
-def oam_visible32(emu, index):
+def oam_size(emu, index):
     attr0 = emu.read16(0x07000000 + index * 8)
     attr1 = emu.read16(0x07000000 + index * 8 + 2)
-    return (attr0 & 0x0200) == 0 and ((attr1 >> 14) & 3) == 2
+    if attr0 & 0x0200:
+        return None
+    return (attr1 >> 14) & 3
+
+
+def oam_visible32(emu, index):
+    return oam_size(emu, index) == 2
+
+
+def portrait_painted(emu):
+    tiles = emu.read_range(0x06010000 + 640 * 32, 2048)
+    return any(tiles)
 
 
 def boot_overworld(emu, out, name):
@@ -83,15 +94,56 @@ def actor_xy(emu):
             emu.read_symbol("player.1", width=2, signed=True))
 
 
+def goto_index(emu, target):
+    for _ in range(16):
+        cur = emu.read_symbol("pause_sel")
+        if cur == target:
+            return
+        cur_col = 1 if cur >= 5 else 0
+        want_col = 1 if target >= 5 else 0
+        if cur_col != want_col:
+            key = "RIGHT" if want_col else "LEFT"
+        else:
+            row = cur % 5
+            want = target % 5
+            down = (want - row) % 5
+            up = (row - want) % 5
+            key = "DOWN" if down <= up else "UP"
+        emu.tap(key, hold=10, release=14)
+        emu.step((), 6)
+    raise RuntimeError(f"Menu navigation failed: {emu.read_symbol('pause_sel')} != {target}")
+
+
+def open_page(emu, index, page, label):
+    emu.tap("START", hold=12, release=12)
+    wait(emu, lambda: emu.read_symbol("game_mode") == 2 and emu.read_symbol("pause_page") == 0, f"{label} menu")
+    goto_index(emu, index)
+    emu.tap("A", hold=10, release=10)
+    emu.step((), 12)
+    if emu.read_symbol("pause_page") != page:
+        raise RuntimeError(f"{label} page did not open")
+
+
+def close_page(emu):
+    emu.tap("B", hold=10, release=10)
+    emu.step((), 8)
+    emu.tap("B", hold=10, release=10)
+    emu.step((), 8)
+    if emu.read_symbol("game_mode") != 0:
+        raise RuntimeError("B did not return to the overworld")
+
+
+def require_portrait(emu, label):
+    if oam_size(emu, 42) != 3:
+        raise RuntimeError(f"{label} portrait is not a 64x64 sprite")
+    if not portrait_painted(emu):
+        raise RuntimeError(f"{label} portrait tiles are blank")
+
+
 def walk(emu, out):
     x0, y0 = actor_xy(emu)
-    recording = None
-    if shutil.which("ffmpeg"):
-        recording = emu.start_recording(out / "walk.mp4")
     for key in ("RIGHT", "RIGHT", "DOWN", "LEFT", "UP", "RIGHT"):
         emu.step((key,), 36)
-    if recording:
-        emu.stop_recording()
     x1, y1 = actor_xy(emu)
     emu.screenshot(out / "cage-walk.png")
     if (x0, y0) == (x1, y1):
@@ -146,9 +198,34 @@ def run(rom: Path, elf: Path, out: Path) -> None:
             near = ui_row(emu, 2)
             if "RECORDED" not in near:
                 raise RuntimeError(f"Recorded-seed label missing: {near!r}")
+            recording = emu.start_recording(out / "spark-sprites.mp4") if shutil.which("ffmpeg") else None
+            open_page(emu, 2, 18, "party")
+            for _ in range(4):
+                if meta["callsign"] in ui_row(emu, 5) or oam_size(emu, 42) == 3:
+                    break
+                emu.tap("DOWN", hold=8, release=8)
+                emu.step((), 8)
+            require_portrait(emu, "party")
+            emu.screenshot(out / "party-portrait.png")
+            close_page(emu)
+            open_page(emu, 6, 20, "bestiary")
+            require_portrait(emu, "bestiary")
+            if meta["callsign"] not in ui_row(emu, 11):
+                raise RuntimeError(f"Bestiary did not name the companion: {ui_row(emu, 11)!r}")
+            emu.screenshot(out / "bestiary-portrait.png")
+            close_page(emu)
+            open_page(emu, 8, 26, "beast box")
+            require_portrait(emu, "beast box")
+            emu.screenshot(out / "beast-box-portrait.png")
+            close_page(emu)
+            if not oam_visible32(emu, 43):
+                raise RuntimeError("Wild Spark Beast disappeared after the menus")
             report["walk"] = walk(emu, out)
+            if recording:
+                emu.stop_recording()
             report["hud"] = hud.strip()
             report["near"] = near.strip()
+            report["portraits"] = "64x64"
         report["passed"] = True
     except Exception as exc:
         report["failure"] = repr(exc)

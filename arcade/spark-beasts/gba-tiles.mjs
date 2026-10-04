@@ -119,17 +119,49 @@ export function indexPixels(pixels, colors) {
   return indexed;
 }
 
-export function packTiles32(indexed) {
-  const out = new Uint8Array(512);
-  for (let y = 0; y < 32; y++) {
-    for (let x = 0; x < 32; x += 2) {
-      const lo = indexed[y * 32 + x] & 15;
-      const hi = indexed[y * 32 + x + 1] & 15;
-      const at = ((y >> 3) * 4 + (x >> 3)) * 32 + (y & 7) * 4 + ((x & 7) >> 1);
+/** GBA 4bpp OBJ tiles. `size` is 32 or 64. Index 0 stays transparent. */
+export function packTiles(indexed, size) {
+  const tilesPerRow = size >> 3;
+  const out = new Uint8Array(tilesPerRow * tilesPerRow * 32);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x += 2) {
+      const lo = indexed[y * size + x] & 15;
+      const hi = indexed[y * size + x + 1] & 15;
+      const at = ((y >> 3) * tilesPerRow + (x >> 3)) * 32 + (y & 7) * 4 + ((x & 7) >> 1);
       out[at] = lo | (hi << 4);
     }
   }
   return out;
+}
+
+export function packTiles32(indexed) {
+  return packTiles(indexed, 32);
+}
+
+/**
+ * A second walk frame from the same render: the body bobs down and the
+ * legs step apart. Field sprites alternate this with the standing frame.
+ */
+export function walkFrame(sprite) {
+  const size = sprite.width;
+  const out = new Uint8ClampedArray(sprite.rgba.length);
+  const bob = 2;
+  const split = Math.floor(size * 0.62);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      let sx = x;
+      const sy = y - bob;
+      if (y > split) sx += x < size / 2 ? 2 : -2;
+      if (sx < 0 || sy < 0 || sx >= size || sy >= size) continue;
+      const s = (sy * size + sx) * 4;
+      const d = (y * size + x) * 4;
+      out[d] = sprite.rgba[s];
+      out[d + 1] = sprite.rgba[s + 1];
+      out[d + 2] = sprite.rgba[s + 2];
+      out[d + 3] = sprite.rgba[s + 3];
+    }
+  }
+  return { width: size, height: size, rgba: out };
 }
 
 export function paletteWords(colors) {
@@ -139,15 +171,20 @@ export function paletteWords(colors) {
   return words.slice(0, 16);
 }
 
-/** One sprite, its own 15-colour palette. */
-export function spriteToGba(sprite) {
-  const rgba = downscaleNearest(sprite.rgba, sprite.width, 32);
-  const pixels = pixelsOf(rgba, 32);
+/** One sprite, its own 15-colour palette, at 32 or 64 pixels. */
+export function spriteToGbaSize(sprite, size) {
+  const rgba = sprite.width === size ? sprite.rgba : downscaleNearest(sprite.rgba, sprite.width, size);
+  const pixels = pixelsOf(rgba, size);
   const colors = quantizeColors(pixels.filter(Boolean), 15);
   return {
     palette: paletteWords(colors),
-    tiles: packTiles32(indexPixels(pixels, colors)),
+    tiles: packTiles(indexPixels(pixels, colors), size),
   };
+}
+
+/** One sprite, its own 15-colour palette. */
+export function spriteToGba(sprite) {
+  return spriteToGbaSize(sprite, 32);
 }
 
 /** Several sprites share one 15-colour palette so they can use one OBJ bank. */
