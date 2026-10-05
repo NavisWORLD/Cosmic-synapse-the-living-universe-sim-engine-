@@ -15,6 +15,7 @@ const state = {
   save: null,
   started: false,
   journey: false,
+  playerVisible: true,
 };
 
 function consented() {
@@ -113,6 +114,7 @@ async function installEmulator(bytes) {
   window.EJS_disableAutoLang = false;
   window.EJS_forceLegacyCores = !webgl2;
   window.EJS_color = '#14343d';
+  window.EJS_volume = state.playerVisible ? 0.28 : 0;
   window.EJS_ready = () => {
     window.EJS_emulator.on('saveDatabaseLoaded', (fs) => {
       if(bytes)try{state.battery=prepareBattery(fs,bytes,{journey:state.journey});}catch(err){state.batteryError=err.message;status(err.message);}
@@ -120,6 +122,7 @@ async function installEmulator(bytes) {
   };
   window.EJS_onGameStart = () => {
     const gm = window.EJS_emulator?.gameManager;
+    window.EJS_emulator?.setVolume?.(state.playerVisible ? 0.28 : 0);
     if(state.batteryError){gm?.toggleMainLoop?.(1);status(state.batteryError);return;}
     status(`Lost Cosmos V${receipt.version} is running. Choose NEW GAME or CONTINUE on the title screen.`);
     if (!gm || !bytes) return;
@@ -181,6 +184,10 @@ window.addEventListener('message', (event) => {
   const data = event.data;
   if (!data || data.source !== 'living-universe') return;
   if (event.source !== window.parent || event.origin !== location.origin) return;
+  if(data.type==='sol-player-visibility'){
+    state.playerVisible=data.active===true;
+    window.EJS_emulator?.setVolume?.(state.playerVisible ? 0.28 : 0);return;
+  }
   if (data.type === 'lu-state') onWorldMessage(data);
   if (data.type === 'lc-import-save' || data.type === 'sol-spark-journey') {
     try {

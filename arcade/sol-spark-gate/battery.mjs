@@ -3,6 +3,7 @@ import {verifySparkArt,SPARK_META} from './cartridge.mjs';
 import {MAILBOX_OFFSET,profileFromBcp1} from '../lost-cosmos/mailbox.mjs';
 import {readProgress} from '../sol-beast-lab/design.mjs';
 const word=(b,o)=>new DataView(b.buffer,b.byteOffset,b.byteLength).getUint32(o,true);
+const batteryPaths=name=>[`/data/saves/mGBA/${name}.srm`,`/data/saves/mGBA/${name}.gba.srm`,`/data/saves/${name}.srm`,`/data/saves/${name}.gba.srm`];
 export function batteryName(bytes){
  verifySparkArt(bytes);
  return `lost-cosmos-${word(bytes,SPARK_META+8).toString(16).padStart(8,'0')}-${word(bytes,SPARK_META+12).toString(16).padStart(8,'0')}`;
@@ -20,7 +21,7 @@ export function chooseBattery(incoming,cached,{journey=false}={}){
  return cached;
 }
 export function prepareBattery(fs,incoming,{journey=false}={}){
- const name=batteryName(incoming),paths=[`/data/saves/${name}.srm`,`/data/saves/${name}.gba.srm`];
+ const name=batteryName(incoming),paths=batteryPaths(name);
  const existing=paths.filter(path=>fs.analyzePath(path).exists);
  // Old adapters prepared both core filename conventions. Prefer earned data.
  const cached=existing.find(path=>String.fromCharCode(...fs.readFile(path).subarray(0,4))==='LCV5')||existing[0];
@@ -31,11 +32,12 @@ export function prepareBattery(fs,incoming,{journey=false}={}){
   try{selected=chooseBattery(incoming,fs.readFile(path));break;}catch{}
  }
  if(!fs.analyzePath('/data/saves').exists)fs.mkdir('/data/saves');
+ if(!fs.analyzePath('/data/saves/mGBA').exists)fs.mkdir('/data/saves/mGBA');
  for(const path of paths)fs.writeFile(path,selected);
  return {bytes:selected,resumed:String.fromCharCode(...selected.subarray(0,4))==='LCV5'};
 }
 export function keepCoreBattery(fs,incoming,corePath){
- const name=batteryName(incoming),paths=[`/data/saves/${name}.srm`,`/data/saves/${name}.gba.srm`];
+ const name=batteryName(incoming),paths=batteryPaths(name);
  if(!paths.includes(corePath))throw Error('The native core returned an unsupported battery path.');
  // Once the core reveals its filename, remove our redundant starter alias.
  // Leaving that alias would select stale progress on the next page opening.

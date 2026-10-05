@@ -28,12 +28,12 @@ test('namespace migration keeps unrelated and damaged batteries untouched',()=>{
  const fs={analyzePath:p=>({exists:p==='/data/saves'||files.has(p)}),mkdir(){},readFile:p=>files.get(p),writeFile:(p,b)=>files.set(p,b),unlink:p=>files.delete(p)};
  assert.equal(prepareBattery(fs,starter).resumed,true);assert.equal(files.get(old),earned);
  assert.deepEqual(files.get(`/data/saves/${batteryName(starter)}.srm`),earned);
- const corrupt=earned.slice();corrupt[1040]^=1;const path=`/data/saves/${batteryName(starter)}.srm`;files.set(path,corrupt);
+ const corrupt=earned.slice();corrupt[1040]^=1;const path=`/data/saves/mGBA/${batteryName(starter)}.srm`;files.set(path,corrupt);
  assert.throws(()=>prepareBattery(fs,starter));assert.equal(files.get(path),corrupt);
 });
 test('the core battery wins over a stale prepared starter alias on every reopen',()=>{
  const name=batteryName(starter),a=`/data/saves/${name}.srm`,b=`/data/saves/${name}.gba.srm`,earned=journey();
- const files=new Map([[a,starter],[b,earned]]),fs={analyzePath:p=>({exists:files.has(p)||p==='/data/saves'}),readFile:p=>files.get(p),writeFile:(p,v)=>files.set(p,v),unlink:p=>files.delete(p)};
+ const files=new Map([[a,starter],[b,earned]]),fs={analyzePath:p=>({exists:files.has(p)||p==='/data/saves'}),readFile:p=>files.get(p),writeFile:(p,v)=>files.set(p,v),mkdir(){},unlink:p=>files.delete(p)};
  assert.deepEqual(prepareBattery(fs,starter).bytes,earned);keepCoreBattery(fs,starter,b);assert.equal(files.has(a),false);assert.equal(files.get(b),earned);
  assert.equal(prepareBattery(fs,starter).resumed,true);keepCoreBattery(fs,starter,b);assert.equal(files.has(a),false);
  assert.equal(files.get(b),earned);

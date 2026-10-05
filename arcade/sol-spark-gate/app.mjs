@@ -12,7 +12,11 @@ if(embedded){document.body.classList.add('handheld-only');$('spark').removeAttri
 const cloudOrigins=new Set(['https://beastboxcosmos.xyz','https://www.beastboxcosmos.xyz','http://127.0.0.1:3000','http://localhost:3000']);
 let cloudOrigin=null;
 window.addEventListener('message',async event=>{
- if(!embedded||event.source!==window.parent||!cloudOrigins.has(event.origin)||event.data?.type!=='sol-spark-qbeast')return;
+ if(!embedded||event.source!==window.parent||!cloudOrigins.has(event.origin))return;
+ if(event.data?.type==='sol-spark-player-state'){
+  $('handheld').contentWindow.postMessage({source:'living-universe',type:'sol-player-visibility',active:event.data.active===true},location.origin);return;
+ }
+ if(event.data?.type!=='sol-spark-qbeast')return;
  try{
   if(!table)throw Error('Recorded seed table is still loading.');
   if(typeof event.data.text!=='string'||event.data.text.length>524288)throw Error('Spark handoff is outside its public limit.');
