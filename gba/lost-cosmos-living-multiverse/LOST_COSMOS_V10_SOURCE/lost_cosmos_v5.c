@@ -288,9 +288,12 @@ static void lc_upload_import_art(void){
 }
 static int lc_mail_matches(u32 identity){return lc_mail_live&&identity==lc_mail_identity;}
 static u8 spark_walk_phase;
+static int sol_spark_valid(void);
 static int lc_spark_form_for(u32 identity){
  int i,stage=0;
- if(!lc_mail_matches(identity)||!lc_mail_name[0])return -1;
+ /* A validated SPK1 receipt owns this exact creature. Baked catalogue art
+    remains available to all ordinary V11.2 imports. */
+ if(!lc_mail_matches(identity)||!lc_mail_name[0]||sol_spark_valid())return -1;
  for(i=0;i<lc_party.count;i++)if(lc_party.slots[i].identity==identity){stage=lc_party.slots[i].stage;break;}
  if(stage<0)stage=0;
  if(stage>2)stage=2;
@@ -326,10 +329,12 @@ static void lc_expand_import_field(const u8*src){
 }
 static void lc_draw_import_field(int oi,int x,int y,int hflip,int ui,u32 identity);
 #include "sol_beast_art.h"
+#include "sol_spark_art.h"
 /* Nursery-only evolution art. This updates RAM/VRAM, never a save or roster.
    All other LCX1 profiles keep their supplied art exactly as before. */
 static void sol_refresh_mail_art(void){
  unsigned meta;int i,stage=-1,x,y;
+ if(sol_spark_refresh())return;
  if(!lc_mail_live||lc_mail_pal[26]!=0x35||lc_mail_pal[27]!=0x2d||
     lc_mail_pal[28]!=0xc7||lc_mail_pal[29]!=0x16)return;
  meta=(unsigned)lc_mail_pal[30]|((unsigned)lc_mail_pal[31]<<8);
@@ -366,6 +371,7 @@ static void lc_draw_import_portrait(int x,int y,u32 identity){
  }
  if(lc_mail_matches(identity)){
   lc_mail_blit();lc_expand_import_field(lc_mail_tiles);
+  y+=sol_spark_offset(identity,0);
   OAM16[42*4]=(u16)(y&255);OAM16[42*4+1]=(u16)((x&511)|(3u<<14));
   OAM16[42*4+2]=(u16)(LC_IMPORT_OBJ_TILE+(LC_IMPORT_OBJ_PAL<<12));return;
  }
@@ -392,6 +398,7 @@ static void lc_draw_import_field(int oi,int x,int y,int hflip,int ui,u32 identit
   return;
  }
  src=lc_import_field_art(identity,cosmos.mood&3);if(!src)return;
+ x+=sol_spark_offset(identity,1);y+=sol_spark_offset(identity,0);
  if(x<-32||x>239||y<-32||y>159){OAM16[oi*4]=0x0200;return;}
  if(lc_mail_matches(identity))lc_mail_blit();else lc_import_palette();
  {volatile u16*dst=(volatile u16*)OBJ_VRAM32;
@@ -1440,6 +1447,19 @@ static void sound_init(void){
 }
 static void music_tone(u16 f){if(!audio_on)return;REG_SOUND1CNT_H=0xA880;REG_SOUND1CNT_X=(u16)(0x8000|(f&2047));}
 static void tone(u16 f){if(!audio_on)return;REG_SOUND2CNT_L=0xA660;REG_SOUND2CNT_H=(u16)(0x8000|(f&2047));}
+/* Seeded GBA chirps share the existing effect voice and honor SYSTEM audio. */
+static u8 sol_spark_voice_notes,sol_spark_voice_tick;
+static u32 sol_spark_voice_id;
+static void sol_spark_chirp(u32 identity){if(!audio_on)return;sol_spark_voice_id=identity;sol_spark_voice_notes=3;sol_spark_voice_tick=0;}
+static void sol_spark_sound_step(void){unsigned pitch,duty=2,vol=8;
+ if(!sol_spark_voice_notes)return;
+ if(!audio_on){sol_spark_voice_notes=0;REG_SOUND2CNT_L=0;return;}
+ if(sol_spark_voice_tick++%8)return;
+ pitch=1400+(sol_spark_voice_id%280);
+ if(sol_spark_voice_id==lc_mail_identity&&sol_spark_valid()){pitch=SRAM[SOL_SPK_META+60]|((unsigned)SRAM[SOL_SPK_META+61]<<8);duty=SRAM[SOL_SPK_META+62];vol=SRAM[SOL_SPK_META+63];}
+ pitch=mini(2047,pitch+(3-sol_spark_voice_notes)*24);
+ REG_SOUND2CNT_L=(u16)((vol<<12)|(2u<<8)|(duty<<6)|48u);REG_SOUND2CNT_H=(u16)(0xc000u|pitch);sol_spark_voice_notes--;
+}
 /* Single PSG music voice + separately mixed effect voice; five new original
    8-note dungeon/celebration motifs match the GBA's actual sound registers. */
 static const u16 SONGS[11][8]={
@@ -1786,7 +1806,16 @@ static const char* spell_name(u8 s){static const char*S[SPELL_COUNT]={"SYNAPSE P
 static const char* weapon_name(void){return weapon==2?"CROWN EDGE":(weapon==1?"EMBER SABER":"RUST BLADE");}
 static const char* armor_name(void){return armor?"TIDE MAIL":"TRAVEL CLOTH";}
 static const char* charm_name(void){return charm?"BLOOM CHARM":"NONE";}
-static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;if(v11_menu_handled(pause_page)&&!v11_ui_dirty)return;oam_hide_all();ui_pause_canvas();if(v11_draw_pause())return;
+static void v11_portrait(int pick,int x,int y,int pulse);
+static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;if(v11_menu_handled(pause_page)&&!v11_ui_dirty){
+ /* Animate only the imported portrait while keeping cached UI and OAM live.
+    Rebuilding the entire menu cleared old portraits between native frames. */
+ if(lc_mail_live&&sol_spark_valid()&&(frame&3)==0){
+  if(pause_page==18&&v11_sel)v11_portrait(v11_sel,168,40,0);
+  else if(pause_page==26){int pick;for(pick=0;pick<lc_party.count;pick++)if(lc_mail_matches(lc_party.slots[pick].identity)){v11_portrait(pick+1,168,48,0);break;}}
+ }
+ return;
+ }oam_hide_all();ui_pause_canvas();if(v11_draw_pause())return;
  if(pause_page==0){static const char*items[10]={"MAP","QUEST","PARTY","ITEMS","EQUIPMENT","ABILITIES","BESTIARY","MEMORIES","BEAST BOX","SYSTEM"};
   /* Delta-safe 2x5 cartridge menu. The emulator skin owns the top-center and
      outer lower corners, so all actionable text stays inside the native safe area. */
@@ -2048,7 +2077,7 @@ static u8 save_checksum_v5(void){int i;u8 s=0x6D;for(i=0;i<190;i++)if(i!=126&&i!
 #include "story_completion_persist.h"
 #include "save_journal.h"
 #include "lc_mailbox.h"
-static void save_game(void){lc_mailbox_refresh(1);int i,o=40;SRAM[0]='L';SRAM[1]='C';SRAM[2]='V';SRAM[3]='5';SRAM[4]=5;SRAM[5]=keys_found;SRAM[6]=visited_mask;SRAM[7]=secrets_mask;SRAM[8]=chapter;SRAM[9]=ending;SRAM[10]=postgame;SRAM[11]=current_world;SRAM[12]=current_room;SRAM[13]=current_layer;SRAM[14]=(game_mode==MODE_PAUSE?return_mode:(game_mode==MODE_BATTLE?MODE_SURFACE:game_mode));SRAM[15]=audio_on;sw16(16,player.x);sw16(18,player.y);sw16(20,ship_x);sw16(22,ship_y);SRAM[24]=ship_world;SRAM[25]=player.hp;SRAM[26]=cosmos.goal;SRAM[27]=cosmos.mood;SRAM[28]=cosmos.trust;SRAM[29]=cosmos.curiosity;SRAM[30]=cosmos.avoid;SRAM[31]=cosmos.energy;SRAM[32]=(u8)cosmos.memory_flags;SRAM[33]=(u8)(cosmos.memory_flags>>8);SRAM[34]=cosmos_preference;SRAM[35]=player_choice;SRAM[36]=beacon_count;sw32(120,qi);for(i=0;i<8;i++){SRAM[o++]=beacons[i].world;SRAM[o++]=beacons[i].room;SRAM[o++]=beacons[i].layer;sw16(o,beacons[i].x);o+=2;sw16(o,beacons[i].y);o+=2;}SRAM[128]=player_level;sw16(129,(s16)player_xp);SRAM[131]=max_hp;SRAM[132]=player_mp;SRAM[133]=max_mp;SRAM[134]=str_stat;SRAM[135]=def_stat;SRAM[136]=mag_stat;SRAM[137]=credits;for(i=0;i<ITEM_COUNT;i++)SRAM[138+i]=inv[i];SRAM[142]=gear_owned;SRAM[143]=weapon;SRAM[144]=armor;SRAM[145]=charm;SRAM[146]=current_spell;SRAM[147]=buddy_talk;SRAM[148]=buddy_quantum;SRAM[149]=boss_flags;sw16(150,(s16)kill_count);SRAM[152]=qstate.mean;SRAM[153]=qstate.spread;SRAM[154]=qstate.parity;SRAM[155]=qstate.phase;SRAM[156]=qstate.coherence;SRAM[157]=qstate.burst;SRAM[158]=quest_started;SRAM[159]=quest_completed;
+static void save_game(void){lc_mailbox_refresh(1);sol_spark_checked=0;sol_spark_stage=sol_spark_blink=255;int i,o=40;SRAM[0]='L';SRAM[1]='C';SRAM[2]='V';SRAM[3]='5';SRAM[4]=5;SRAM[5]=keys_found;SRAM[6]=visited_mask;SRAM[7]=secrets_mask;SRAM[8]=chapter;SRAM[9]=ending;SRAM[10]=postgame;SRAM[11]=current_world;SRAM[12]=current_room;SRAM[13]=current_layer;SRAM[14]=(game_mode==MODE_PAUSE?return_mode:(game_mode==MODE_BATTLE?MODE_SURFACE:game_mode));SRAM[15]=audio_on;sw16(16,player.x);sw16(18,player.y);sw16(20,ship_x);sw16(22,ship_y);SRAM[24]=ship_world;SRAM[25]=player.hp;SRAM[26]=cosmos.goal;SRAM[27]=cosmos.mood;SRAM[28]=cosmos.trust;SRAM[29]=cosmos.curiosity;SRAM[30]=cosmos.avoid;SRAM[31]=cosmos.energy;SRAM[32]=(u8)cosmos.memory_flags;SRAM[33]=(u8)(cosmos.memory_flags>>8);SRAM[34]=cosmos_preference;SRAM[35]=player_choice;SRAM[36]=beacon_count;sw32(120,qi);for(i=0;i<8;i++){SRAM[o++]=beacons[i].world;SRAM[o++]=beacons[i].room;SRAM[o++]=beacons[i].layer;sw16(o,beacons[i].x);o+=2;sw16(o,beacons[i].y);o+=2;}SRAM[128]=player_level;sw16(129,(s16)player_xp);SRAM[131]=max_hp;SRAM[132]=player_mp;SRAM[133]=max_mp;SRAM[134]=str_stat;SRAM[135]=def_stat;SRAM[136]=mag_stat;SRAM[137]=credits;for(i=0;i<ITEM_COUNT;i++)SRAM[138+i]=inv[i];SRAM[142]=gear_owned;SRAM[143]=weapon;SRAM[144]=armor;SRAM[145]=charm;SRAM[146]=current_spell;SRAM[147]=buddy_talk;SRAM[148]=buddy_quantum;SRAM[149]=boss_flags;sw16(150,(s16)kill_count);SRAM[152]=qstate.mean;SRAM[153]=qstate.spread;SRAM[154]=qstate.parity;SRAM[155]=qstate.phase;SRAM[156]=qstate.coherence;SRAM[157]=qstate.burst;SRAM[158]=quest_started;SRAM[159]=quest_completed;
  SRAM[160]=(u8)npc_seen;SRAM[161]=(u8)(npc_seen>>8);SRAM[162]=npc_recent;sw32(164,workload_qi);SRAM[168]=(u8)(0xC0|touch_mode);
  SRAM[190]=save_checksum_v5();
  SRAM[200]=(u8)story_flags;SRAM[201]=(u8)(story_flags>>8);SRAM[202]=rune_progress;SRAM[203]=element_mask;
@@ -2086,7 +2115,7 @@ static void lc_restore_roster(void){
   }
   lc_add_exported_profile();
  }
- lc_mailbox_refresh(0);
+ lc_mailbox_refresh(0);sol_spark_checked=0;sol_spark_stage=sol_spark_blink=255;
  lc_party_sel=lc_party.count?lc_party.active:0;
 }
 static int save_valid_v2(void){return SRAM[0]=='L'&&SRAM[1]=='C'&&SRAM[2]=='V'&&SRAM[3]=='2'&&SRAM[4]==2&&SRAM[124]==save_checksum_v2();}
@@ -3166,6 +3195,6 @@ void gba_main(void){u16 k,newk;
    if((frame&255)==0&&player_mp<max_mp)player_mp++;
    if(dialogue_timer)dialogue_timer--;
   }
-  v11_clock();music_step();v108_credits_tick();wait_vblank();frame++;render();
+  v11_clock();music_step();sol_spark_sound_step();v108_credits_tick();wait_vblank();frame++;sol_spark_clock=frame;render();
  }
 }
