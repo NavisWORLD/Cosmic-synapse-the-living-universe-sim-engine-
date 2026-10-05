@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071018">
+<title>Play in Lost Cosmos · Spark Beasts</title>
+<style>
+  :root { color-scheme: dark; --ink:#d7f4ff; --dim:#8fb4c4; --gold:#f0c14a; --cyan:#7ee7ff; --panel:#102033; --line:#2a6a86; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: #071018; color: var(--ink); font: 14px/1.45 ui-monospace, monospace; padding-bottom: env(safe-area-inset-bottom); }
+  header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; padding: 10px 12px; }
+  h1 { margin: 0; font-size: 16px; letter-spacing: .14em; text-shadow: 0 0 10px rgba(126, 231, 255, .45); }
+  h2 { margin: 0 0 6px; font-size: 12px; letter-spacing: .12em; color: var(--gold); }
+  main { padding: 0 12px 12px; max-width: 980px; margin: 0 auto; }
+  p { margin: 6px 0; color: var(--dim); }
+  a.back, button { background: #12323c; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font: inherit; cursor: pointer; text-decoration: none; }
+  a.back:hover, button:hover { border-color: var(--cyan); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin: 0 0 10px; box-shadow: 0 0 18px rgba(126, 231, 255, .08); }
+  #who { display: flex; gap: 12px; align-items: center; }
+  #who canvas { width: 96px; height: 96px; image-rendering: pixelated; image-rendering: crisp-edges; background: #101834; border-radius: 8px; flex: none; }
+  #who-name { color: white; font-size: 15px; }
+  #status { min-height: 1.4em; color: #e9fff8; }
+  .note { font-size: 12px; }
+  details summary { cursor: pointer; color: var(--cyan); }
+  #screen { border: 1px solid var(--cyan); border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 0 22px rgba(126, 231, 255, .22); }
+  #handheld { display: block; width: 100%; height: 640px; border: 0; background: #071018; }
+  #pad { margin-top: 10px; display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "shl . shr" "dpad mid face"; gap: 10px 8px; align-items: center; user-select: none; -webkit-user-select: none; touch-action: none; }
+  #pad button { min-width: 48px; min-height: 48px; padding: 0; touch-action: none; -webkit-tap-highlight-color: transparent; }
+  #pad button.down { border-color: var(--cyan); color: var(--cyan); background: #18465a; box-shadow: 0 0 12px rgba(126, 231, 255, .45); }
+  .shl { grid-area: shl; } .shr { grid-area: shr; justify-self: end; }
+  .shl button, .shr button { min-width: 72px; border-radius: 16px; }
+  .dpad { grid-area: dpad; display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); gap: 2px; }
+  .dpad button { width: 50px; height: 50px; }
+  .dpad .u { grid-column: 2; grid-row: 1; } .dpad .l { grid-column: 1; grid-row: 2; } .dpad .r { grid-column: 3; grid-row: 2; } .dpad .d { grid-column: 2; grid-row: 3; }
+  .mid { grid-area: mid; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .mid button { min-width: 74px; min-height: 36px; font-size: 11px; letter-spacing: .08em; border-radius: 18px; }
+  .face { grid-area: face; display: grid; grid-template-columns: 58px 58px; grid-template-rows: 58px 58px; gap: 4px; }
+  .face button { width: 58px; height: 58px; border-radius: 50%; font-size: 16px; color: var(--gold); }
+  .face .a { grid-column: 2; grid-row: 1; } .face .b { grid-column: 1; grid-row: 2; }
+  #pad-note { text-align: center; }
+  footer { border-top: 1px solid #1c3a4a; padding: 10px 12px; max-width: 980px; margin: 0 auto; }
+  @media (min-width: 900px) {
+    .stage { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 14px; align-items: start; }
+    #pad { margin-top: 0; position: sticky; top: 10px; grid-template-columns: 1fr 1fr; grid-template-areas: "shl shr" "dpad dpad" "mid mid" "face face"; justify-items: center; gap: 14px 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px; }
+    .shr { justify-self: center; }
+    .mid { flex-direction: row; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>PLAY IN LOST COSMOS</h1>
+  <a class="back" id="back" href="./">&larr; Back to Spark Beasts</a>
+</header>
+<main>
+  <section class="card" id="who">
+    <canvas id="who-art" width="64" height="64" aria-hidden="true"></canvas>
+    <div>
+      <div id="who-name">Looking for your beast…</div>
+      <p id="who-meta" class="note"></p>
+      <p id="cart" class="note"></p>
+    </div>
+  </section>
+  <p id="status" role="status" aria-live="polite">Building your beast's starter save on this device.</p>
+  <details class="card" id="how">
+    <summary>How your beast gets into the game</summary>
+    <p id="how-text">This page rebuilds your beast from its saved recipe: its three traits, its recorded IBM quantum run, and the keeper name. It then writes the same 32 KB starter battery that Spark Gate and the Beast Box dock use. That battery has the LCX1 mailbox with the beast's BCP1 profile, its LCG1 growth record, and SPK1 pixel art for all three forms. Lost Cosmos V11.2 reads it when you choose NEW GAME and adds the beast to your party as your companion. Open START, then PARTY, to see it.</p>
+    <p class="note">Limits: the cartridge unlocks native forms at its own level and bond gates, so web training does not skip in-game evolution. One companion enters per cartridge run, so reload this page to bring a different beast. If this device already holds a journey for this beast, the handheld resumes it and you choose CONTINUE. Journeys stay in this browser. Use "Save journey .sav" in the handheld to keep a copy.</p>
+  </details>
+  <div class="stage">
+  <div id="screen"><iframe id="handheld" title="Lost Cosmos V11.2 handheld" allow="autoplay; fullscreen; gamepad; screen-wake-lock" allowfullscreen></iframe></div>
+  <div id="pad" aria-label="On-screen controls">
+    <div class="shl"><button type="button" data-key="10" aria-label="L shoulder">L</button></div>
+    <div class="shr"><button type="button" data-key="11" aria-label="R shoulder">R</button></div>
+    <div class="dpad">
+      <button type="button" class="u" data-key="4" aria-label="Up">&#9650;</button>
+      <button type="button" class="l" data-key="6" aria-label="Left">&#9664;</button>
+      <button type="button" class="r" data-key="7" aria-label="Right">&#9654;</button>
+      <button type="button" class="d" data-key="5" aria-label="Down">&#9660;</button>
+    </div>
+    <div class="mid">
+      <button type="button" data-key="2" aria-label="Select">SELECT</button>
+      <button type="button" data-key="3" aria-label="Start">START</button>
+    </div>
+    <div class="face">
+      <button type="button" class="a" data-key="8" aria-label="A">A</button>
+      <button type="button" class="b" data-key="0" aria-label="B">B</button>
+    </div>
+  </div>
+  </div>
+  <p id="pad-note" class="note">These buttons sit outside the screen and work once the cartridge is running. Keyboard: arrows, Z = A, X = B, Enter = START, V = SELECT, Q / E = L / R.</p>
+</main>
+<footer>
+  <p class="note">Lost Cosmos is original homebrew in an isolated emulator. Quantum data is recorded historical IBM Quantum counts used as fixed seeds. There is no live quantum link. Beasts are game companions, not conscious beings. Nothing is uploaded.</p>
+</footer>
+<script type="module" src="./play.mjs"></script>
+</body>
+</html>
