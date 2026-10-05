@@ -1467,23 +1467,24 @@ static void draw_cinema_caption(void){
  if(!cinema_ui_dirty)return;cinema_ui_dirty=0;
  if(v10_opening){const OpeningCard*card=&V10_OPENING[v10_opening_step];
   /* Header and box keep a blank tile inside each edge, like the start menu:
-     header text on row 1, box title on row 10 under a blank row, body lines
-     on rows 12, 14 and 16 with a blank row between them, hint on row 18.
-     The art is raised 12 px so its middle stays in view. */
-  REG_BG2VOFS=12;
-  ui_clear();ui_fill_rows(0,2,63,15);ui_fill_rows(8,19,63,15);ui_frame(8,19,15);
-  ui_text(2,1,"LOST COSMOS / PROLOGUE",14);ui_text(2,10,card->head,13);
-  ui_wrap_text_step(12,card->text,15,3,2);
-  ui_text(2,18,"A NEXT   START SKIP",14);ui_num(26,18,v10_opening_step+1,13);
+     header text on row 1, box title on row 9 under a blank row, body lines
+     on rows 11, 13 and 15 with a blank row between them, hint on row 17 with
+     a blank row above the bottom border. The art is raised 20 px so its
+     middle stays in view above the box. */
+  REG_BG2VOFS=20;
+  ui_clear();ui_fill_rows(0,2,63,15);ui_fill_rows(7,19,63,15);ui_frame(7,19,15);
+  ui_text(2,1,"LOST COSMOS / PROLOGUE",14);ui_text(2,9,card->head,13);
+  ui_wrap_text_step(11,card->text,15,3,2);
+  ui_text(2,17,"A NEXT   START SKIP",14);ui_num(26,17,v10_opening_step+1,13);
   return;
  }
  if(v10_ending_card){
-  REG_BG2VOFS=12;
-  ui_clear();ui_fill_rows(0,2,63,15);ui_fill_rows(8,19,63,15);ui_frame(8,19,15);
+  REG_BG2VOFS=20;
+  ui_clear();ui_fill_rows(0,2,63,15);ui_fill_rows(7,19,63,15);ui_frame(7,19,15);
   ui_text(2,1,"LOST COSMOS / EPILOGUE",14);
-  if(ending==1){ui_text(2,10,"OPEN / THE REALMS RETURN",14);ui_wrap_text_step(12,"THE PATHS REJOIN. NO HEART CAN OWN THE UNKNOWN.",15,3,2);}
-  else if(ending==2){ui_text(2,10,"PRESERVE / STAND TOGETHER",14);ui_wrap_text_step(12,"YOU HOLD THE LATTICE. THE PEOPLE CHOOSE WHEN TO OPEN IT.",15,3,2);}
-  else{ui_text(2,10,"WANDER / THE NEXT SKY",14);ui_wrap_text_step(12,"YOU AND COSMOS DEPART. THE MAP IS NOT FINISHED.",15,3,2);}
+  if(ending==1){ui_text(2,9,"OPEN / THE REALMS RETURN",14);ui_wrap_text_step(11,"THE PATHS REJOIN. NO HEART CAN OWN THE UNKNOWN.",15,3,2);}
+  else if(ending==2){ui_text(2,9,"PRESERVE / STAND TOGETHER",14);ui_wrap_text_step(11,"YOU HOLD THE LATTICE. THE PEOPLE CHOOSE WHEN TO OPEN IT.",15,3,2);}
+  else{ui_text(2,9,"WANDER / THE NEXT SKY",14);ui_wrap_text_step(11,"YOU AND COSMOS DEPART. THE MAP IS NOT FINISHED.",15,3,2);}
   ui_text(2,18,"A CONTINUE",13);return;
  }
  /* Exhaustive names: NEVER index beyond this array when new original scenes
@@ -1676,7 +1677,7 @@ static void shop_trade(void){if(shop_sel==0){if(credits<5){say("NEED FIVE CREDIT
 static void draw_battle(void){if(V11_IS_ROOM){v11_draw_battle();return;}Enemy*e=&enemies[battle_index];
  static const char*ACT[6]={"FIGHT","MAGIC","ITEM","TALK","RUN","ALLY"};int i;
  ui_frame(0,19,15);
- ui_text(2,1,"ERIDORIA // DUEL",14);
+ ui_text(2,2,"ERIDORIA // DUEL",14); /* row 2: a blank row under the frame, like the start menu */
  ui_text(3,3,BATTLE_NAMES[e->type%EN_COUNT],13);
  ui_text(3,4,"ENEMY HP",15);ui_num(13,4,e->hp,15);ui_text(16,4,"/",15);ui_num(18,4,e->maxhp,15);
  ui_text(2,10,"ARIN",14);ui_text(8,10,"LV",15);ui_num(11,10,player_level,15);
@@ -2950,7 +2951,7 @@ static void gameplay_qa(void){
    {u32 q=workload_qi;
     player.x=80;player.y=408;clear_combat();spawn_enemy(9,8,51,EN_GLITCH,0);
     enemies[9].hp=1;intro=0;battle_enter(9);qa_require(game_mode==MODE_BATTLE,0x76);
-    render();qa_require((screenblock(UI_MAP_BASE)[1*32+2]&1023)==(64+font_index('E')),0x77);
+    render();qa_require((screenblock(UI_MAP_BASE)[2*32+2]&1023)==(64+font_index('E')),0x77);
     battle_cursor=0;battle_act();qa_require(!enemies[9].active&&battle_phase==3,0x78);
     battle_timer=0;update_battle(0);
     qa_require(game_mode==MODE_SURFACE&&workload_qi==q,0x79);clear_combat();

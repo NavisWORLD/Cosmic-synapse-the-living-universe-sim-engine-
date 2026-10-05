@@ -313,10 +313,11 @@ static void v11_update_battle(u16 newk){int i,id=v11_enemy_id[battle_index];
 }
 static void v11_draw_battle(void){int i,id=v11_enemy_id[battle_index];static const char*act[6]={"FIGHT","MAGIC","ITEM","TALK","RUN","ALLY"};
  static u8 add_key=255;
- ui_frame(0,19,15);oam_hide_all();ui_text(2,1,"ERIDORIA // DUEL",14);
- ui_text(2,3,V11_CHARACTERS[id].name,13);ui_text(2,4,"HP",15);ui_num(5,4,v11_enemy_hp[battle_index],15);
- ui_text(9,4,"/",15);ui_num(11,4,v11_enemy_max[battle_index],15);if(v11_add_count){ui_text(18,4,"ADDS",13);ui_num(24,4,v11_add_count,15);}
- oam_set32(0,28,40+v11_anim_bob(3),272,0);oam_ui_portrait(0); /* 32x32 sits between the row 4 HP and row 9 stats */
+ ui_frame(0,19,15);oam_hide_all();/* Foe name on row 2 and HP on row 3: a blank row under the frame, like the
+    start menu and the spark battle, and a blank row 4 above the sprites. */
+ ui_text(2,2,V11_CHARACTERS[id].name,13);ui_text(2,3,"HP",15);ui_num(5,3,v11_enemy_hp[battle_index],15);
+ ui_text(9,3,"/",15);ui_num(11,3,v11_enemy_max[battle_index],15);if(v11_add_count){ui_text(18,3,"ADDS",13);ui_num(24,3,v11_add_count,15);}
+ oam_set32(0,28,40+v11_anim_bob(3),272,0);oam_ui_portrait(0); /* 32x32 sits between the row 3 HP and row 9 stats */
  oam_set32(2,164-(v11_fx==1&&v11_fx_t?v11_fx_t:0)+(v11_fx==2&&v11_fx_t?((v11_fx_t&2)?3:-3):0),36+v11_anim_bob((u32)id*5u),V11_TILE_FACE,13);oam_ui_portrait(2);
  if(!v11_active_cosmos&&lc_party.count&&lc_party.slots[lc_party.active].species>=LC_SPECIES_IMPORTED)v11_draw_import_battle(3,104,8,lc_party.slots[lc_party.active].identity);
  else{oam_set(1,90,53,32+(cosmos.mood&3)*4,1,0);oam_ui_portrait(1);

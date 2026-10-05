@@ -239,12 +239,13 @@ static void v11_wild_draw(void){
  u32 seed=ally?ally->seed:((u32)v11_wild_species*0x9E3779B9u);
  int blink=v11_anim_blink((u32)v11_wild_species*13u);
  /* Sprites stay above row 8 so the ally name and HP bar are never covered. */
- int ax=44,ay=44,fx=148,fy=28;
+ int ax=44,ay=44,fx=148,fy=32;
  oam_hide_all();
  /* Opaque navy first. A transparent clear here let the map show through on torn frames. */
  ui_frame(0,19,15);
- ui_text(2,1,foe,13);ui_text(16,1,V11_TYPE_NAME[v11_wild_aff],14);
- v11_hp_bar(2,2,v11_wild_hp,v11_wild_max,10,15);
+ /* Name and HP bar on rows 2 and 3 leave a blank row under the frame, like the start menu. */
+ ui_text(2,2,foe,13);ui_text(16,2,V11_TYPE_NAME[v11_wild_aff],14);
+ v11_hp_bar(2,3,v11_wild_hp,v11_wild_max,10,15);
  if(v11_fx==1&&v11_fx_t){ax+=10;fx-=v11_fx_t;}
  if(v11_fx==2&&v11_fx_t)ax+=(v11_fx_t&2)?3:-3;
  fy+=v11_anim_bob((u32)v11_wild_species*17u)+(v11_fx==3&&v11_fx_t?-((v11_fx_t&4)?5:1):0);
@@ -252,7 +253,7 @@ static void v11_wild_draw(void){
  v11_fx_tick();
  oam_set32(2,fx,fy,blink?V11_TILE_FOE:(((frame>>4)&1)?V11_TILE_FOE_B:V11_TILE_FOE),5+v11_wild_species-1);
  oam_ui_portrait(2);
- oam_set32(0,8,28,272,0);oam_ui_portrait(0);
+ oam_set32(0,8,32,272,0);oam_ui_portrait(0);
  if(ally&&ally->species>=1&&ally->species<=8){
   int av=v11_anim_blink(ally->seed)?0:((frame>>4)&1);
   oam_set(1,ax,ay,384+(ally->species-1)*24+mini(2,ally->stage)*8+av*4,5+ally->species-1,0);
