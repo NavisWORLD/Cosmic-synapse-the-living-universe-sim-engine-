@@ -1,4 +1,4 @@
-const VERSION = 'cute-beast-pocket-reality-v11-spark';
+const VERSION = 'cute-beast-pocket-reality-v11-spark-beastboy39';
 const CORE = ['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./offline.html',
   './arcade/spark-beasts/index.html','./arcade/spark-beasts/app.mjs','./arcade/spark-beasts/draw.mjs',
   './arcade/spark-beasts/engine.mjs','./arcade/spark-beasts/explore.mjs','./arcade/spark-beasts/genome.mjs',
