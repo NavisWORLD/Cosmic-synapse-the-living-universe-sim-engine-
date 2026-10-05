@@ -51,6 +51,55 @@
   a.play-lc:hover, a.play-lc:focus-visible { background: #18465a; box-shadow: 0 0 16px rgba(126, 231, 255, .5); }
   .play-cell { display: flex; flex-direction: column; gap: 6px; }
   .play-cell > a.play-lc { text-align: center; }
+  /* Pair Muse panel (additive) */
+  #muse-pair [hidden], #muse-live-note[hidden] { display: none !important; }
+  #muse-pair { margin-top: 10px; box-shadow: 0 0 18px rgba(126, 231, 255, .12); }
+  #muse-pair[data-state="paired"] { border-color: var(--cyan); box-shadow: 0 0 22px rgba(126, 231, 255, .28); }
+  #muse-pair[data-source="demo"] { border-color: var(--gold); box-shadow: 0 0 20px rgba(240, 193, 74, .22); }
+  .muse-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .muse-dot { width: 10px; height: 10px; border-radius: 50%; background: #3b5566; box-shadow: none; flex: none; }
+  #muse-pair[data-state="connecting"] .muse-dot { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  #muse-pair[data-state="paired"] .muse-dot { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+  #muse-pair[data-source="demo"] .muse-dot { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+  .muse-status { flex-wrap: nowrap; }
+  #muse-conn { min-width: 0; }
+  #muse-battery { white-space: nowrap; color: var(--dim); font-size: 12px; }
+  .muse-warn { background: #241a0c; border: 1px solid #7a5a1c; color: #ffd98a; border-radius: 8px; padding: 8px 10px; }
+  .muse-tag { display: inline-block; background: #3a2a08; color: var(--gold); border: 1px solid var(--gold); border-radius: 6px; padding: 1px 6px; font-size: 11px; letter-spacing: .1em; }
+  .muse-sensors { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 8px 0; }
+  .muse-chip { display: flex; flex-direction: column; align-items: center; gap: 2px; background: #0c1c2c; border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; font-size: 12px; }
+  .muse-chip i { width: 12px; height: 12px; border-radius: 50%; background: #3b5566; }
+  .muse-chip em { font-style: normal; color: var(--dim); font-size: 11px; }
+  .muse-chip[data-level="good"] i { background: #6dffb0; box-shadow: 0 0 8px #6dffb0; }
+  .muse-chip[data-level="fair"] i { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .muse-chip[data-level="poor"] i, .muse-chip[data-level="off"] i { background: #ff7a7a; box-shadow: 0 0 6px #ff7a7a; }
+  .muse-bars { display: grid; gap: 6px; margin: 8px 0; }
+  .muse-bar { display: grid; grid-template-columns: 92px 1fr 44px; align-items: center; gap: 8px; }
+  .muse-band { text-transform: uppercase; letter-spacing: .08em; font-size: 12px; display: flex; flex-direction: column; line-height: 1.1; }
+  .muse-band small { color: var(--dim); font-size: 10px; letter-spacing: 0; text-transform: none; }
+  .muse-track { height: 14px; background: #07111c; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+  .muse-fill { display: block; height: 100%; width: 0%; border-radius: 7px; transition: width .25s ease-out; background: var(--cyan); box-shadow: 0 0 10px rgba(126, 231, 255, .55); }
+  .muse-bar[data-band="alpha"] .muse-fill { background: #7ee7ff; }
+  .muse-bar[data-band="beta"] .muse-fill { background: #f0c14a; box-shadow: 0 0 10px rgba(240, 193, 74, .55); }
+  .muse-bar[data-band="theta"] .muse-fill { background: #b494ff; box-shadow: 0 0 10px rgba(180, 148, 255, .5); }
+  .muse-bar[data-band="delta"] .muse-fill { background: #5a8cff; box-shadow: 0 0 10px rgba(90, 140, 255, .5); }
+  .muse-bar[data-band="gamma"] .muse-fill { background: #ff8ad8; box-shadow: 0 0 10px rgba(255, 138, 216, .5); }
+  .muse-pct { text-align: right; font-variant-numeric: tabular-nums; }
+  #muse-mood { color: #e9fff8; }
+  #muse-pair[data-mood="serene"] #muse-mood { color: var(--cyan); }
+  #muse-pair[data-mood="energetic"] #muse-mood { color: var(--gold); }
+  #muse-progress { height: 10px; background: #07111c; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; margin: 8px 0 2px; }
+  #muse-progress-bar { height: 100%; width: 0%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); transition: width .25s linear; }
+  #muse-result { margin-top: 10px; background: #0c1c2c; border: 1px solid var(--cyan); border-radius: 10px; padding: 10px; box-shadow: 0 0 16px rgba(126, 231, 255, .22); }
+  .muse-result-row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+  #muse-result-art { width: 128px; height: 128px; image-rendering: pixelated; background: #101834; border-radius: 8px; flex: none; }
+  .muse-result-text { flex: 1 1 200px; min-width: 0; overflow-wrap: anywhere; }
+  #muse-live-note { color: var(--cyan); }
+  @media (max-width: 420px) {
+    .muse-bar { grid-template-columns: 74px 1fr 38px; gap: 6px; }
+    #muse-pair .move { flex-wrap: wrap; }
+    #muse-pair .move > button, #muse-pair .move > a.play-lc { flex: 1 1 140px; text-align: center; }
+  }
 </style>
 </head>
 <body>
@@ -112,6 +161,50 @@
         <button type="button" id="wild-btn">Spark a wild beast</button>
       </div>
     </div>
+    <div class="card" id="muse-pair" data-state="idle">
+      <div class="muse-head"><h2 style="margin:0">PAIR MUSE</h2><span id="muse-demo-tag" class="muse-tag" hidden>DEMO SIGNAL</span></div>
+      <p class="note">Pair a Muse 2 or Muse S headband over Web Bluetooth. The page reads its four EEG sensors, splits each second into delta, theta, alpha, beta, and gamma with a small FFT, and shows the shares live. This is soft consumer EEG for a game. It is not medical and it does not read thoughts. Samples stay in this page and are never uploaded. A brainwave spark keeps only five averaged band shares.</p>
+      <p id="muse-support" class="muse-warn" role="alert" hidden></p>
+      <p id="muse-frame-note" class="note" hidden>Inside the Living Universe frame the browser may block Bluetooth. If pairing is refused, <a id="muse-open-tab" href="./" target="_blank" rel="noopener" style="color:var(--cyan)">open Spark Beasts in its own tab</a>.</p>
+      <div class="muse-head muse-status"><span class="muse-dot" aria-hidden="true"></span><b id="muse-conn" role="status">Not paired</b><span id="muse-battery"></span></div>
+      <div class="move">
+        <button type="button" id="muse-pair-btn">Pair Muse</button>
+        <button type="button" id="muse-demo-btn">Demo signal (no headband)</button>
+        <button type="button" id="muse-disconnect" disabled>Disconnect</button>
+      </div>
+      <label class="row" id="muse-demo-row" hidden>DEMO mix: serene <input id="muse-demo-mix" type="range" min="0" max="100" value="25" aria-label="Demo signal mix from serene to energetic"> energetic</label>
+      <h2 style="margin-top:10px">SENSOR CONTACT</h2>
+      <div class="muse-sensors" id="muse-sensors" aria-label="Signal quality per sensor"></div>
+      <p class="note">Contact is a rough guess from how much each sensor's signal spreads over one second. Wet the pads or move hair if one reads noisy or no contact.</p>
+      <h2>LIVE BANDS</h2>
+      <div class="muse-bars" id="muse-bars" aria-label="Live band shares"></div>
+      <p id="muse-mood" aria-live="polite">Live mirror: waiting for a signal.</p>
+      <label class="row"><input id="muse-mirror" type="checkbox" checked> Live beast mirrors my signal (calm alpha makes it serene, high beta makes it energetic). This never changes a seed.</label>
+      <div class="move">
+        <button type="button" id="muse-spark" disabled>Spark from my brainwaves</button>
+        <button type="button" id="muse-watch">Watch the live beast</button>
+      </div>
+      <div id="muse-progress" hidden><div id="muse-progress-bar"></div></div>
+      <p class="note" id="muse-progress-text"></p>
+      <p class="note">A brainwave spark averages about 10 s of band shares, turns them into the usual three traits (focus from beta, calm from alpha, spark from gamma), and seeds the beast with those traits, your keeper name, and the recorded IBM Quantum run picked above. The same snapshot always rebuilds the same beast.</p>
+      <div id="muse-result" hidden>
+        <h2>BRAINWAVE SPARK</h2>
+        <div class="muse-result-row">
+          <canvas id="muse-result-art" width="128" height="128"></canvas>
+          <div class="muse-result-text">
+            <p id="muse-result-title"></p>
+            <p class="note" id="muse-result-bands"></p>
+            <p class="note" id="muse-result-traits"></p>
+          </div>
+        </div>
+        <div class="move">
+          <a id="muse-play" class="play-lc" href="play.html">&#9654; Play in Lost Cosmos</a>
+          <button type="button" id="muse-verify">Rebuild from snapshot</button>
+          <button type="button" id="muse-download">Download snapshot</button>
+        </div>
+        <p class="note" id="muse-verify-out"></p>
+      </div>
+    </div>
     <div class="card" id="portrait" hidden>
       <h2>SEEDED FORMS</h2>
       <p class="note">These three looks are fixed by the seed. Training on the Live tab earns the later forms. A preview there does not unlock them.</p>
@@ -128,6 +221,7 @@
       <canvas id="live-view" class="pixel" width="112" height="104"></canvas>
       <p id="bubble"><b>Spark a beast and they will speak.</b></p>
       <p id="mood">Waiting for a sparked beast.</p>
+      <p id="muse-live-note" class="note" hidden></p>
       <p id="beast-title"></p>
       <label class="row">Beast name <input id="beast-name" maxlength="16" autocomplete="off" placeholder="what you call them"></label>
       <div class="move">

@@ -20,6 +20,7 @@ import {
 import { drawQr } from '../lost-cosmos/qr.mjs';
 import { simulateStable } from './signal.mjs';
 import { presentClips } from './showcase.mjs';
+import { mountMusePanel } from './muse-panel.mjs';
 
 const $ = (id) => document.getElementById(id);
 const status = (text) => { $('status').textContent = text; };
@@ -573,6 +574,22 @@ async function boot() {
     },
   });
   bind();
+  const museReady = [];
+  // Pair Muse panel: brainwave sparks go through the same sparkFrom path and save format.
+  mountMusePanel({
+    status,
+    consented,
+    live: () => state.live,
+    table: () => state.table,
+    spark(traits, origin) {
+      showTraits(traits);
+      return sparkFrom(state.traits, selectedRunIndex(), origin);
+    },
+    restoreLive: () => state.live?.setTarget(state.traits),
+    showView,
+    playLink,
+    onReady: (fn) => museReady.push(fn),
+  });
   if (state.store.playerName) $('player-name').value = state.store.playerName;
   try {
     state.table = await loadTable();
@@ -590,6 +607,7 @@ async function boot() {
       select.append(option);
     });
     restoreActive();
+    for (const fn of museReady) fn(state.store.active);
     status(`Recorded table ready: ${state.table.runs.length} historical runs. ${state.table.claim}`);
   } catch (error) {
     status(error.message);
