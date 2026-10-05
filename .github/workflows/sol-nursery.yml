@@ -2,10 +2,10 @@ name: Sol nursery browser verification
 on:
   push:
     branches: [main]
-    paths: ['arcade/sol-beast-lab/**', '.github/workflows/sol-nursery.yml']
+    paths: ['arcade/sol-beast-lab/**', 'arcade/sol-spark-gate/**', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/sol_*.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_menus.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.c', 'gba/lost-cosmos-living-multiverse/tests/test*sol*spark*.py', '.github/workflows/sol-nursery.yml']
   pull_request:
     branches: [main]
-    paths: ['arcade/sol-beast-lab/**', '.github/workflows/sol-nursery.yml']
+    paths: ['arcade/sol-beast-lab/**', 'arcade/sol-spark-gate/**', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/sol_*.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_menus.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.c', 'gba/lost-cosmos-living-multiverse/tests/test*sol*spark*.py', '.github/workflows/sol-nursery.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -28,10 +28,12 @@ jobs:
         run: |
           python3 tests/test_sol_beast_art.py
           python3 tests/test_sol_nursery_native.py
+          python3 tests/test_sol_spark_native.py
           python3 tests/test_sol_navigation_native.py
           bash tools/mgba_build.sh
           python3 tests/test_mgba_sol_nursery.py --out artifacts/sol-ci/compiled
           python3 tests/test_mgba_sol_nursery.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/sol-ci/runtime/lost_cosmos_v5.elf --out artifacts/sol-ci/runtime-import
+          python3 tests/test_mgba_sol_spark.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/sol-ci/runtime/lost_cosmos_v5.elf --out artifacts/sol-ci/spark
       - name: Earn both full eight-island journeys and verify old campaign routes
         working-directory: gba/lost-cosmos-living-multiverse
         run: |
@@ -50,25 +52,34 @@ jobs:
           retention-days: 30
   browser:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
       - name: Check deterministic genome and save preservation
-        run: node --test arcade/sol-beast-lab/design.test.mjs
+        run: node --test arcade/sol-beast-lab/design.test.mjs arcade/sol-spark-gate/*.test.mjs
       - name: Install isolated browser test runtime
         run: |
           npm install --prefix /tmp/sol-browser --no-save --ignore-scripts playwright@1.62.1
           /tmp/sol-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Build the current native cartridge for the real browser
+        run: |
+          sudo apt-get update && sudo apt-get install -y clang lld llvm
+          bash scripts/build-lost-cosmos-arcade.sh
       - name: Verify nursery in a real browser
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/sol-http.log 2>&1 &
           NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-beast-lab/browser-check.cjs http://127.0.0.1:8765 artifacts/sol-browser
+          NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-spark-gate/browser-check.cjs http://127.0.0.1:8765 artifacts/sol-spark-browser
+          NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-spark-gate/core-browser.cjs http://127.0.0.1:8765 artifacts/sol-spark-core
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: sol-nursery-browser-${{ github.sha }}
-          path: artifacts/sol-browser/
+          path: |
+            artifacts/sol-browser/
+            artifacts/sol-spark-browser/
+            artifacts/sol-spark-core/
           retention-days: 30

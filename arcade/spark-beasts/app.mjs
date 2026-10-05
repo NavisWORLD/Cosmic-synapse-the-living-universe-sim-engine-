@@ -131,6 +131,21 @@ function publicLabel(beast, species) {
   return `${nick} (${species})`;
 }
 
+/** "Play in Lost Cosmos" opens the in-browser handheld with this beast's starter save. */
+function playLink(seed, link = document.createElement('a')) {
+  link.className = 'play-lc';
+  link.href = new URL(`./play.html?beast=${encodeURIComponent(String(seed || ''))}`, import.meta.url).href;
+  link.textContent = '\u25B6 Play in Lost Cosmos';
+  // Inside the Living Universe frame, open the full player in its own tab.
+  if (window.parent !== window) {
+    link.target = '_blank';
+    link.rel = 'noopener';
+  } else {
+    link.removeAttribute('target');
+  }
+  return link;
+}
+
 function paintStages(genome) {
   const root = $('stages');
   root.replaceChildren();
@@ -151,6 +166,7 @@ function paintStages(genome) {
   const keeper = genome.inputs.user_id || 'no keeper name';
   $('provenance').textContent = `${nick} the ${genome.temperament} ${genome.body} of ${genome.island}. Sparked form ${genome.names['1']}. Voice ${genome.voice.style} at ${genome.voice.base_pitch_hz} Hz. Quantum seed ${q.backend} job ${q.job_id} pub ${q.pub_index}, ${q.num_bits}-bit recorded counts ${q.counts_sha256.slice(0, 12)}. These counts are historical. They are not a live link.`;
   $('seed-lock').textContent = `Look locked. Seed keeper name: ${keeper}. Traits ${genome.inputs.traits.focus}/${genome.inputs.traits.calm}/${genome.inputs.traits.spark}. Run ${genome.inputs.quantum_run}. Renaming ${nick} does not change this seed.`;
+  playLink(genome.seed, $('play-lc'));
   $('portrait').hidden = false;
   $('live-meta').textContent = `${genome.island} · ${genome.temperament} · reacts to ${genome.behavior.reacts_most_to} · tic ${genome.behavior.tic}`;
 }
@@ -231,7 +247,10 @@ function renderBestiary() {
       activate({ ...beast, genome });
       showView('live');
     });
-    root.append(card);
+    const cell = document.createElement('div');
+    cell.className = 'play-cell';
+    cell.append(card, playLink(beast.seed));
+    root.append(cell);
   }
 }
 

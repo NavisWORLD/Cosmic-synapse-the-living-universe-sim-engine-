@@ -47,6 +47,10 @@
   .note { font-size: 12px; }
   footer { border-top: 1px solid #1c3a4a; }
   .move { display: flex; gap: 6px; margin-top: 8px; }
+  a.play-lc { display: inline-block; background: #12323c; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 8px; padding: 7px 10px; font: inherit; text-decoration: none; box-shadow: 0 0 12px rgba(126, 231, 255, .28); }
+  a.play-lc:hover, a.play-lc:focus-visible { background: #18465a; box-shadow: 0 0 16px rgba(126, 231, 255, .5); }
+  .play-cell { display: flex; flex-direction: column; gap: 6px; }
+  .play-cell > a.play-lc { text-align: center; }
 </style>
 </head>
 <body>
@@ -114,6 +118,8 @@
       <div class="stages" id="stages"></div>
       <p id="provenance"></p>
       <p id="seed-lock" class="note"></p>
+      <div class="move"><a id="play-lc" class="play-lc" href="play.html">&#9654; Play in Lost Cosmos</a></div>
+      <p class="note">Opens the Lost Cosmos V11.2 handheld on this site with this beast in the cartridge mailbox as your companion. Choose NEW GAME to receive it.</p>
     </div>
   </section>
 

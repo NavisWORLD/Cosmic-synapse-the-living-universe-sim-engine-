@@ -124,7 +124,7 @@ static int v11_snapshot_valid(void){
 #endif
 }
 static int v11_import_snapshot(void){
- lc_mailbox_refresh(0);
+ lc_mailbox_refresh(0);sol_spark_checked=0;sol_spark_stage=sol_spark_blink=255;
  if(lc_mail_live){int ix;for(ix=0;ix<lc_party.count;ix++)if(lc_mail_matches(lc_party.slots[ix].identity)){
   lc_party.active=(u8)ix;v11_active_cosmos=0;v11_battle_pose=255;save_game();
   v11_message("BEAST IMPORTED FROM THE VERIFIED LOCAL MAILBOX.");return 1;}}
@@ -163,9 +163,10 @@ static void v11_draw_local_map(void){int x,y,i,w=v11_world();
  ui_text(2,14,"A YOU  C CORE  M ECHO",13);ui_text(2,15,"F CAMP  B BEACON  > GATE",13);
  ui_text(2,16,v11_field_track?"R RETURN  E FOE  * WALL":"R RETURN  TRACK SHOWS FOES",14);ui_text(2,17,"B BACK TO WORLD MAP",13);
 }
+#include "sol_beast_chat.h"
 static int v11_draw_pause(void){int i,id,start;
  if(pause_page==0)return 0;
- if(pause_page!=40&&pause_page!=4&&pause_page!=5&&pause_page!=28&&pause_page!=18&&pause_page!=20&&pause_page!=11&&pause_page!=1&&pause_page!=9&&pause_page!=26&&pause_page!=27&&pause_page!=41&&pause_page!=42&&pause_page!=44&&pause_page!=45&&pause_page!=46&&pause_page!=47&&pause_page!=48)return 0;
+ if(pause_page!=40&&pause_page!=4&&pause_page!=5&&pause_page!=28&&pause_page!=18&&pause_page!=20&&pause_page!=11&&pause_page!=1&&pause_page!=9&&pause_page!=26&&pause_page!=27&&pause_page!=41&&pause_page!=42&&pause_page!=44&&pause_page!=45&&pause_page!=46&&pause_page!=47&&pause_page!=48&&pause_page!=49)return 0;
  if(pause_page==45&&v11_evolution){if(V11_IS_ROOM)v11_palette();else set_world_palette(current_world);}
  v11_menu_palette();
  if(pause_page==40){v11_header("ARIN // STATUS");ui_text(23,2,"LV",13);ui_num(26,2,player_level,15);
@@ -205,7 +206,7 @@ static int v11_draw_pause(void){int i,id,start;
  ui_text(2,12,"ATK",13);ui_num(6,12,c?c->attack:v11_str(),15);ui_text(12,12,"STAGE",13);ui_num(19,12,c?c->stage:v11_cosmos_stage,15);
  ui_text(2,14,(v11_sel==0&&v11_active_cosmos)||(v11_sel==lc_party.active+1&&!v11_active_cosmos)?"ACTIVE COMPANION":"BONDED COMPANION",14);
  ui_text(2,16,"SELECT BOX  A ACTIONS",13);
- }else if(pause_page==27){static const char*a[7]={"SET ACTIVE","TRAIN","EVOLVE","DETAILS","RENAME","EXPORT TO BEAST BOX","RELEASE"};v11_header("COMPANION ACTIONS");for(i=0;i<7;i++)v11_row(4+i,v11_sel==i,a[i],15);v11_short(4,12,v11_assign?v11_creature_name(v11_assign-1):v11_cosmos_label(),24,14);
+ }else if(pause_page==27){static const char*a[8]={"SET ACTIVE","TRAIN","EVOLVE","DETAILS","RENAME","EXPORT TO BEAST BOX","RELEASE","CHAT"};v11_header("COMPANION ACTIONS");for(i=0;i<8;i++)v11_row(4+i,v11_sel==i,a[i],15);v11_short(4,12,v11_assign?v11_creature_name(v11_assign-1):v11_cosmos_label(),24,14);
  if(v11_release_confirm)ui_text(2,15,"A AGAIN TO RELEASE. B KEEP.",13);else ui_text(2,15,"BOND AND NAME CARRY FORWARD",13);
  }else if(pause_page==20){v11_header("BEASTS // SEEN");ui_num(20,2,v11_seen_count(),15);ui_text(23,2,"/100",13);start=v11_sel/6*6;
  for(i=start;i<mini(start+6,100);i++)v11_row(4+i-start,i==v11_sel,v11_encounters[i]?V11_CHARACTERS[i].name:"???",v11_encounters[i]?15:8);
@@ -246,7 +247,8 @@ static int v11_draw_pause(void){int i,id,start;
  if(v11_sel==10)ui_text(2,14,"COST 200 CREDITS",13);else{int cost[3];v11_recipe_cost(v11_sel,cost);ui_text(2,14,"COST S",13);ui_num(8,14,cost[0],v11_scrap>=cost[0]?9:7);ui_text(11,14,"H",13);ui_num(13,14,cost[1],v11_herbs>=cost[1]?9:7);ui_text(17,14,"C",13);ui_num(19,14,cost[2],v11_qty[93]>=cost[2]?9:7);}
  ui_text(2,15,"A BUILD  SELECT REPAIR 10C",14);
  }else if(pause_page==45){v11_header("EVOLUTION // A HELD SIGNAL");v11_short(2,4,v11_assign?v11_creature_name(v11_assign-1):v11_cosmos_label(),26,13);v11_portrait(v11_assign,88,48,v11_evolution?v11_evo_timer:0);ui_text(2,14,v11_evolution?"THE BOND CARRIES FORWARD":"IS CHANGING. LET IT?",14);ui_text(2,17,v11_evolution?"B BACK":"A YES   B NOT YET",13);
- if(v11_evolution){ui_text(2,5,"STAGE",13);ui_num(8,5,v11_evo_old,15);ui_text(11,5,"->",13);ui_num(15,5,v11_evo_old+1,15);}
+ if(v11_evolution){ui_text(2,5,"STAGE",13);ui_num(8,5,v11_evo_old,15);ui_text(11,5,"->",13);ui_num(15,5,v11_evo_old+1,15);if(v11_evo_timer<12){for(i=0;i<256;i++)BG_PALETTE[i]=brighter5(BG_PALETTE[i],20-v11_evo_timer);}}
+ }else if(pause_page==49){sol_chat_draw();
  }else if(pause_page==46){v11_header("RENAME // DISPLAY NAME");ui_text(2,5,v11_name_edit,14);ui_text(2,7,"A ADD LETTER. SELECT DONE.",15);static const char*letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ ";for(i=0;i<27;i++){char b[2]={letters[i],0};ui_text(3+(i%9)*3,10+(i/9)*2,b,i==v11_rename_letter?13:15);if(i==v11_rename_letter)ui_text(2+(i%9)*3,10+(i/9)*2,">",13);}ui_text(2,16,"L ERASE  B CANCEL",14);
  }
  v11_menu_notice();v11_ui_dirty=0;return 1;
@@ -259,13 +261,13 @@ static void v11_craft(void){static const u8 item[10]={22,49,67,12,37,47,63,81,79
  if(!v11_inventory_add(item[n],1))return;v11_scrap-=s;v11_herbs-=h;v11_qty[93]-=c;v11_crafted++;
  if(v11_qty[22]&&v11_qty[49]&&v11_qty[67])v11_quest_finish(14);v11_unlock();v11_message("OLD PIECES. MY ASSEMBLY. ITEM CRAFTED.");save_game();
 }
-static int v11_menu_handled(int p){return p==40||p==4||p==5||p==28||p==18||p==20||p==11||p==1||p==9||p==26||p==27||p==41||p==42||p==44||p==45||p==46||p==47||p==48;}
+static int v11_menu_handled(int p){return p==40||p==4||p==5||p==28||p==18||p==20||p==11||p==1||p==9||p==26||p==27||p==41||p==42||p==44||p==45||p==46||p==47||p==48||p==49;}
 static void v11_menu_changed(void){if(v11_page_previous==pause_page)return;v11_ui_dirty=1;v11_list_kind=255;v11_page_previous=pause_page;v11_sel=v11_detail=v11_menu_mode=0;
  if(pause_page==18)v11_sel=v11_active_cosmos?0:lc_party.count?lc_party.active+1:0;if(pause_page==1)v11_sel=(u8)v11_world();}
 static void v11_back(void){v11_sel=v11_detail=v11_menu_mode=0;v11_release_confirm=0;
  if(pause_page==45){if(V11_IS_ROOM)v11_palette();else set_world_palette(current_world);}
  if(pause_page==47){pause_page=1;v11_page_previous=255;return;}
- if(pause_page==27||pause_page==45||pause_page==46)pause_page=18;
+ if(pause_page==27||pause_page==45||pause_page==46||pause_page==49)pause_page=18;
  else if(pause_page==44||pause_page==42||pause_page==48)pause_page=9;
  else if(pause_page==26)pause_page=v11_parent==18?18:0;else pause_page=0;v11_page_previous=255;}
 static int v11_update_pause(u16 k){int i,id,n;
@@ -275,7 +277,7 @@ static int v11_update_pause(u16 k){int i,id,n;
  if(pause_page==45&&v11_evolution){if(v11_evo_timer<60)v11_evo_timer++;v11_ui_dirty=1;if(v11_evo_timer>=60||k&KEY_B){v11_evolution=0;v11_back();}return 1;}
  if(!k)return 1;
  if(k&KEY_B){if(v11_menu_mode||v11_detail){v11_menu_mode=v11_detail=0;v11_sel=0;}else v11_back();return 1;}
- if(pause_page!=27&&pause_page!=41&&pause_page!=42&&pause_page!=44&&pause_page!=45&&pause_page!=46&&pause_page!=48&&pause_page!=26&&!v11_menu_mode&&!v11_detail&&(k&(KEY_L|KEY_R))){for(i=0;i<9;i++)if(V11_TABS[i]==pause_page){pause_page=V11_TABS[wrapi(i+((k&KEY_R)?1:-1),9)];v11_sub=0;v11_menu_reset();return 1;}}
+ if(pause_page!=27&&pause_page!=41&&pause_page!=42&&pause_page!=44&&pause_page!=45&&pause_page!=46&&pause_page!=48&&pause_page!=49&&pause_page!=26&&!v11_menu_mode&&!v11_detail&&(k&(KEY_L|KEY_R))){for(i=0;i<9;i++)if(V11_TABS[i]==pause_page){pause_page=V11_TABS[wrapi(i+((k&KEY_R)?1:-1),9)];v11_sub=0;v11_menu_reset();return 1;}}
  if(pause_page==40){if(k&KEY_SELECT){pause_page=3;v11_sel=0;}return 1;}
  if(pause_page==4){v11_items_list();n=v11_list_count;
  if(!v11_detail){if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,maxi(1,n));if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,maxi(1,n));if(k&KEY_LEFT){v11_cat=(v11_cat+3)%4;v11_sel=0;}if(k&KEY_RIGHT){v11_cat=(v11_cat+1)%4;v11_sel=0;}if(k&KEY_SELECT){v11_sort=(v11_sort+1)%3;v11_sel=0;}if(k&KEY_A&&n){v11_detail=1;v11_assign=0;}}
@@ -291,13 +293,15 @@ static int v11_update_pause(u16 k){int i,id,n;
  else if(v11_sub==1||v11_sub==4){if(!V11_IS_ROOM)v11_message("USE THESE ABILITIES ON THE EIGHT SIGNALS ROAD. CAMPAIGN SPELLS REMAIN IN CAMPAIGN GEAR.");else{int old=game_mode;game_mode=MODE_SURFACE;v11_use_skill(id);if(game_mode==MODE_SURFACE)game_mode=(u8)old;}v11_detail=2;}
  else if(v11_sub==2){int found=-1,free=-1;for(i=0;i<4;i++){if(v11_passives[i]==id)found=i;if(v11_passives[i]==255&&free<0)free=i;}if(found>=0){if(id==69&&v11_slots_used()>40){v11_message("USE OR DROP ITEMS UNTIL THE BAG FITS 40 SLOTS.");v11_detail=2;}else v11_passives[found]=255;}else if(free>=0)v11_passives[free]=(u8)id;else{v11_message("FOUR PASSIVES MAX. UNEQUIP ONE FIRST.");v11_detail=2;}save_game();}else{v11_ultimate=(u8)id;save_game();}}
  }else if(pause_page==18){n=lc_party.count+1;if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,n);if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,n);if(k&KEY_SELECT){v11_parent=18;pause_page=26;v11_page_previous=255;return 1;}if(k&KEY_A){v11_assign=v11_sel;if(v11_sel)lc_party_sel=v11_sel-1;pause_page=27;v11_sel=0;v11_page_previous=27;}}
- else if(pause_page==27){if(k&KEY_UP){v11_sel=(v11_sel+6)%7;v11_release_confirm=0;}if(k&KEY_DOWN){v11_sel=(v11_sel+1)%7;v11_release_confirm=0;}
+ else if(pause_page==27){if(k&KEY_UP){v11_sel=(v11_sel+7)%8;v11_release_confirm=0;}if(k&KEY_DOWN){v11_sel=(v11_sel+1)%8;v11_release_confirm=0;}
  if(k&KEY_A){LcCreature*c=v11_assign?&lc_party.slots[v11_assign-1]:0;
  if(v11_sel==0){v11_active_cosmos=(u8)(!v11_assign);if(c){lc_party.active=v11_assign-1;v9_bonded=c->bond>=55;v9_bond_type=c->species%EN_COUNT;}save_game();v11_back();}
  if(v11_sel==1){if(v11_scrap<3&&inv[ITEM_SHARD]<2){v11_message("TRAIN WITH THREE SCRAP OR TWO CAMPAIGN SHARDS.");v11_detail=2;}else{if(v11_scrap>=3)v11_scrap-=3;else inv[ITEM_SHARD]-=2;if(c)lc_bond(&lc_party,v11_assign-1,(c->species>=128?c->species-128:c->species)%3,85);else v11_trust(8);v11_unlock();save_game();v11_message("WE TRAINED TOGETHER. THE BOND GREW.");v11_detail=2;}}
  if(v11_sel==2){pause_page=45;v11_page_previous=45;v11_evolution=0;v11_evo_old=c?c->stage:v11_cosmos_stage;}if(v11_sel==3)v11_back();if(v11_sel==4){pause_page=46;v11_page_previous=46;v11_name_edit[0]=0;v11_rename_pos=v11_rename_letter=0;}
+ if(v11_sel==7){pause_page=49;v11_page_previous=49;sol_chat_open();sol_spark_chirp(c?c->identity:0x43534d53u);}
  if(v11_sel==5){v11_prepare_export(v11_assign);v11_detail=2;}if(v11_sel==6){if(!c||c->species>=LC_SPECIES_IMPORTED){v11_message("COSMOS AND IMPORTED PUBLIC IDENTITIES STAY WITH YOU.");v11_detail=2;}else if(!v11_release_confirm)v11_release_confirm=1;else{int ix=v11_assign-1;if(lc_release_wild(&lc_party,ix)==LC_OK){for(i=ix;i<11;i++)copystr(v11_names[i],v11_names[i+1],12);v11_names[11][0]=0;save_game();v11_back();}}}}}
  else if(pause_page==45){if(k&KEY_A){LcCreature*c=v11_assign?&lc_party.slots[v11_assign-1]:0;int ok;if(c)ok=lc_evolve(&lc_party,v11_assign-1,(u8)(v11_qty[96]?1:0))==LC_OK;else{ok=v11_cosmos_stage<2&&v11_bond()>=(v11_cosmos_stage==0?5:10);if(ok)v11_cosmos_stage++;}if(ok){v11_evolution=1;v11_evo_timer=0;save_game();}else{v11_message("NOT YET. FIRST: LV12/BOND55. NEXT: LV28/BOND80. IMPORTS ALSO NEED HEARTWOOD SIGIL.");v11_detail=2;}}}
+ else if(pause_page==49){sol_chat_input_step(k);}
  else if(pause_page==46){if(k&KEY_LEFT)v11_rename_letter=(u8)wrapi(v11_rename_letter-1,27);if(k&KEY_RIGHT)v11_rename_letter=(u8)wrapi(v11_rename_letter+1,27);if(k&KEY_UP)v11_rename_letter=(u8)wrapi(v11_rename_letter-9,27);if(k&KEY_DOWN)v11_rename_letter=(u8)wrapi(v11_rename_letter+9,27);if(k&KEY_A&&v11_rename_pos<11){v11_name_edit[v11_rename_pos++]=v11_rename_letter==26?' ':'A'+v11_rename_letter;v11_name_edit[v11_rename_pos]=0;}if(k&KEY_L&&v11_rename_pos)v11_name_edit[--v11_rename_pos]=0;if(k&KEY_SELECT){if(v11_name_edit[0])copystr(v11_assign?v11_names[v11_assign-1]:v11_cosmos_name,v11_name_edit,12);save_game();v11_back();}}
  else if(pause_page==20){if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,100);if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,100);}
  else if(pause_page==11){if(k&(KEY_LEFT|KEY_RIGHT)){v11_sub^=1;v11_sel=0;}if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,maxi(1,v11_list_count));if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,maxi(1,v11_list_count));if(k&KEY_A&&v11_list_count){id=v11_list[v11_sel];v11_track=v11_track==id?255:id;save_game();}if(k&KEY_SELECT){pause_page=13;v11_page_previous=255;}}
