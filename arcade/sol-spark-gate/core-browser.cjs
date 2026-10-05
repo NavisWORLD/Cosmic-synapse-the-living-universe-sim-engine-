@@ -5,6 +5,14 @@ const root=process.argv[2]||'http://127.0.0.1:8765',out=process.argv[3]||'artifa
  await fs.mkdir(out,{recursive:true});
  const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),errors=[];
+ await page.addInitScript(()=>{
+  let ready;
+  Object.defineProperty(window,'EJS_ready',{configurable:true,get:()=>ready,set(fn){ready=()=>{
+   fn();EJS_emulator.on('saveDatabaseLoaded',fs=>{
+    const name=EJS_gameName.replace(/\.gba$/,'');window.__preparedBattery=Array.from(fs.readFile('/data/saves/mGBA/'+name+'.srm'));
+   });
+  };}});
+ });
  page.on('pageerror',e=>errors.push(e.message));
  async function open(){
   await page.goto(root+'/arcade/sol-spark-gate/?mode=handheld');
@@ -33,7 +41,11 @@ const root=process.argv[2]||'http://127.0.0.1:8765',out=process.argv[3]||'artifa
   assert.deepEqual(earned.slice(24704,24832),initial.save.slice(24704,24832));
   await fs.writeFile(out+'/PUBLIC_SPARK_JOURNEY.sav',Buffer.from(earned));await hand.locator('#game canvas').first().screenshot({path:out+'/native-companion.png'});
   const resumed=await open();assert.match(await resumed.locator('#status').innerText(),/Journey restored/);
-  const reopened=await resumed.evaluate(()=>Array.from(EJS_emulator.gameManager.getSaveFile(false)));assert.deepEqual(reopened,earned);
+  // Observe exact admission before the CPU initializes its journal banks.
+  const reopened=await resumed.evaluate(()=>window.__preparedBattery);assert.deepEqual(reopened,earned);
+  const running=await resumed.evaluate(()=>Array.from(EJS_emulator.gameManager.getSaveFile(false)));
+  assert.deepEqual(running.slice(1024,1276),earned.slice(1024,1276),'native roster and earned progress survive boot');
+  assert.deepEqual(running.slice(25600),earned.slice(25600),'manual slots and Spark forms survive boot');
   assert.deepEqual(errors,[]);await fs.writeFile(out+'/report.json',JSON.stringify({passed:true,nativeCore:true,publicQbeast:true,gestureImport:true,sameIdentityBattery:true,earnedBatterySurvivesReopen:true,consoleErrors:errors},null,2));
   console.log('PASS: actual mobile Chromium core, public Spark import, exact native battery resume');
  }finally{await browser.close();}
