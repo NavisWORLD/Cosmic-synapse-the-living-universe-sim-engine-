@@ -21,6 +21,7 @@ import { drawQr } from '../lost-cosmos/qr.mjs';
 import { simulateStable } from './signal.mjs';
 import { presentClips } from './showcase.mjs';
 import { mountMusePanel } from './muse-panel.mjs';
+import { mountMetaMusePanel } from './meta-muse-panel.mjs';
 
 const $ = (id) => document.getElementById(id);
 const status = (text) => { $('status').textContent = text; };
@@ -590,6 +591,34 @@ async function boot() {
     playLink,
     onReady: (fn) => museReady.push(fn),
   });
+  const metaReady = [];
+  // Pair with Meta Muse: links a beast to the Beast Box connector over the internet (not Bluetooth,
+  // not the EEG headband above). Muse care goes through the same Spark care rules and save.
+  mountMetaMusePanel({
+    status,
+    store: () => state.store,
+    save: () => saveStore(state.store, localStorage),
+    activeSeed: () => state.genome?.seed || null,
+    genomeOf: genomeFor,
+    refresh(seed) {
+      if (state.genome?.seed === seed) {
+        syncCompanion();
+        paintStages(state.genome);
+      }
+      renderBestiary();
+    },
+    chat(seed, you, reply, name) {
+      const lines = state.chats.get(seed) || [];
+      if (you) lines.push({ who: 'you', text: `(via Meta Muse) ${you}` });
+      if (reply) lines.push({ who: 'beast', text: reply, name });
+      state.chats.set(seed, lines.slice(-24));
+      if (state.genome?.seed === seed) {
+        renderChat();
+        if (reply) state.live.present(reply, reply, 3.4);
+      }
+    },
+    onReady: (fn) => metaReady.push(fn),
+  });
   if (state.store.playerName) $('player-name').value = state.store.playerName;
   try {
     state.table = await loadTable();
@@ -612,6 +641,7 @@ async function boot() {
   } catch (error) {
     status(error.message);
   }
+  for (const fn of metaReady) fn();
   try { await loadRare(); } catch (error) { status(error.message); }
   setInterval(() => {
     if (!state.genome) return;
@@ -641,6 +671,21 @@ async function boot() {
     }
     renderBestiary();
   });
+}
+
+/** Genome for a saved beast (the shown one, or rebuilt from its saved signal and run). */
+const genomeCache = new Map();
+function genomeFor(seed) {
+  if (!seed) return null;
+  if (state.genome?.seed === seed) return state.genome;
+  if (genomeCache.has(seed)) return genomeCache.get(seed);
+  const beast = state.store.beasts[seed];
+  const run = beast && state.table?.runs?.[beast.runIndex];
+  if (!run) return null;
+  const genome = buildGenome(beast.traits, run, beast.userId);
+  const hit = genome.seed === seed ? genome : null;
+  genomeCache.set(seed, hit);
+  return hit;
 }
 
 function saveBeastName() {
