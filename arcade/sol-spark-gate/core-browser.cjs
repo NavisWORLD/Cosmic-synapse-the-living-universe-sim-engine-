@@ -36,10 +36,15 @@ const root=process.argv[2]||'http://127.0.0.1:8765',out=process.argv[3]||'artifa
   async function press(button){await hand.evaluate(b=>EJS_emulator.gameManager.simulateInput(0,b,1),button);await page.waitForTimeout(150);await hand.evaluate(b=>EJS_emulator.gameManager.simulateInput(0,b,0),button);await page.waitForTimeout(650);}
   await page.waitForTimeout(1800);await press(8);await page.waitForTimeout(900);await press(3);
   await hand.waitForFunction(()=>{const gm=EJS_emulator.gameManager;gm.saveSaveFiles();const s=gm.getSaveFile(false);return s&&String.fromCharCode(...s.subarray(1024,1028))==='LCR1'},null,{timeout:90000});
-  const earned=await hand.evaluate(async()=>{const gm=EJS_emulator.gameManager;gm.saveSaveFiles();await new Promise((resolve,reject)=>gm.FS.syncfs(false,e=>e?reject(e):resolve()));return Array.from(gm.getSaveFile(false))});
+  // Pause the CPU before taking the battery snapshot: journal initialization
+  // otherwise legitimately continues between export and pagehide checkpoint.
+  await hand.evaluate(()=>EJS_emulator.pause());
+  const downloadPromise=page.waitForEvent('download');await hand.locator('#save-journey').click();
+  const download=await downloadPromise;await download.saveAs(out+'/PUBLIC_SPARK_JOURNEY.sav');
+  const earned=Array.from(await fs.readFile(out+'/PUBLIC_SPARK_JOURNEY.sav'));
   assert.equal(Buffer.from(earned).toString('ascii',0,4),'LCV5');
   assert.deepEqual(earned.slice(24704,24832),initial.save.slice(24704,24832));
-  await fs.writeFile(out+'/PUBLIC_SPARK_JOURNEY.sav',Buffer.from(earned));await hand.locator('#game canvas').first().screenshot({path:out+'/native-companion.png'});
+  await hand.locator('#game canvas').first().screenshot({path:out+'/native-companion.png'});
   const resumed=await open();assert.match(await resumed.locator('#status').innerText(),/Journey restored/);
   // Observe exact admission before the CPU initializes its journal banks.
   const reopened=await resumed.evaluate(()=>window.__preparedBattery);assert.deepEqual(reopened,earned);

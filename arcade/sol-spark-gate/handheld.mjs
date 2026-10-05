@@ -1,6 +1,7 @@
 import { verifySparkArt } from './cartridge.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
 import {batteryName,prepareBattery,keepCoreBattery,cacheNativeBattery,loadNativeBattery} from './battery.mjs';
+import {handleOptionalWakeLock} from './wake-lock.mjs';
 /* Sol Spark handheld adapter. Original living-link player stays unchanged. */
 import { FIXTURE, GROWTH_BYTES, GROWTH_OFFSET, MAILBOX_BYTES, MAILBOX_OFFSET, SRAM_SIZE, buildSave, livingProfile, profileFromBcp1, profileFromBeastJson } from '../lost-cosmos/mailbox.mjs';
 import { MuseLink, mockTraits } from '../lost-cosmos/muse.mjs';
@@ -116,6 +117,7 @@ async function installEmulator(bytes) {
   window.EJS_forceLegacyCores = !webgl2;
   window.EJS_color = '#14343d';
   window.EJS_volume = state.playerVisible ? 0.28 : 0;
+  handleOptionalWakeLock(navigator.wakeLock);
   window.EJS_ready = () => {
     window.EJS_emulator.on('saveDatabaseLoaded', (fs) => {
       if(bytes)try{state.battery=prepareBattery(fs,bytes,{journey:state.journey||state.resumeFromCheckpoint});}catch(err){state.batteryError=err.message;status(err.message);}
