@@ -2149,7 +2149,14 @@ static void save_game(void){lc_mailbox_refresh(1);sol_spark_checked=0;sol_spark_
 static void lc_save_roster(void){
  u8 bytes[LC_ROSTER_BYTES];unsigned i;
  if(lc_roster_encode(&lc_party,bytes,sizeof bytes)!=LC_OK)return;
- for(i=0;i<LC_ROSTER_BYTES;i++)SRAM[LC_ROSTER_SRAM+i]=bytes[i];
+ /* The LCR1 magic goes last. A frame boundary (or power loss) can fall in
+    the middle of this loop, and readers such as the browser handheld treat
+    LCR1 as "roster written", so the magic must only appear once the body
+    and CRC are complete. */
+ SRAM[LC_ROSTER_SRAM]=0;
+ for(i=4;i<LC_ROSTER_BYTES;i++)SRAM[LC_ROSTER_SRAM+i]=bytes[i];
+ for(i=1;i<4;i++)SRAM[LC_ROSTER_SRAM+i]=bytes[i];
+ SRAM[LC_ROSTER_SRAM]=bytes[0];
 }
 static void lc_restore_roster(void){
  u8 bytes[LC_ROSTER_BYTES];unsigned i;
