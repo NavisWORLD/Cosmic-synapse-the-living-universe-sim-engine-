@@ -198,3 +198,6 @@ test('the rare gallery lists twelve beasts plus the montage and skips missing fi
   assert.doesNotMatch(read('./index.html'), /autoplay/);
   void root;
 });
+
+// Pair Muse decoding, band mapping, snapshot reproducibility, and the unsupported-browser path.
+import './muse-pair.test.mjs';
