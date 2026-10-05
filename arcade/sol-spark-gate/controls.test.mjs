@@ -18,11 +18,11 @@ test('every Beast Boy control maps to the existing EmulatorJS GBA index',()=>{
 });
 
 
-test('live Pages controller assets are cache-busted for Android/tablet clients',()=>{
+test('live Pages controller assets are cache-busted for mobile clients',()=>{
  const gate=readFileSync(new URL('./index.html',import.meta.url),'utf8');
  const handheld=readFileSync(new URL('./handheld.html',import.meta.url),'utf8');
  assert.match(gate,/handheld\.html\?controller=iphoneaudio40/);
- assert.match(gate,/app\.mjs\?controller=iphoneaudio40/);
+ assert.match(gate,/app\.mjs\?controller=previeworigin41/);
  assert.match(handheld,/handheld\.mjs\?controller=iphoneaudio40/);
 });
 
