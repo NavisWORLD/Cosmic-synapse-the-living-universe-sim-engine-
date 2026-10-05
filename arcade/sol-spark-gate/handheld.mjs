@@ -2,6 +2,7 @@ import { verifySparkArt } from './cartridge.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
 import {batteryName,prepareBattery,keepCoreBattery,cacheNativeBattery,loadNativeBattery} from './battery.mjs';
 import {handleOptionalWakeLock} from './wake-lock.mjs';
+import {applyHandheldInput,normalizeHandheldInput} from './controls.mjs';
 /* Sol Spark handheld adapter. Original living-link player stays unchanged. */
 import { FIXTURE, GROWTH_BYTES, GROWTH_OFFSET, MAILBOX_BYTES, MAILBOX_OFFSET, SRAM_SIZE, buildSave, livingProfile, profileFromBcp1, profileFromBeastJson } from '../lost-cosmos/mailbox.mjs';
 import { MuseLink, mockTraits } from '../lost-cosmos/muse.mjs';
@@ -193,6 +194,12 @@ window.addEventListener('message', (event) => {
   if(data.type==='sol-player-visibility'){
     state.playerVisible=data.active===true;
     window.EJS_emulator?.setVolume?.(state.playerVisible ? 0.28 : 0);return;
+  }
+  if(data.type==='sol-spark-input'){
+    const input=normalizeHandheldInput(data.button,data.down);
+    const applied=!!input&&applyHandheldInput(window.EJS_emulator?.gameManager,input.button,input.down);
+    window.parent.postMessage({source:'living-universe',type:'sol-spark-input-ack',button:input?.button||'',down:input?.down===true,applied},location.origin);
+    return;
   }
   if (data.type === 'lu-state') onWorldMessage(data);
   if (data.type === 'lc-import-save' || data.type === 'sol-spark-journey') {
