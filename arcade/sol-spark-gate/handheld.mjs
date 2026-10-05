@@ -18,7 +18,64 @@ const state = {
   started: false,
   journey: false,
   playerVisible: true,
+  audioWanted: false,
 };
+
+function gameVolume() {
+  return state.audioWanted && state.playerVisible ? 0.35 : 0;
+}
+
+function emulatorAudioContexts() {
+  const contexts = new Set();
+  const sources = window.EJS_emulator?.Module?.AL?.currentCtx?.sources;
+  if (sources && typeof sources.forEach === 'function') {
+    sources.forEach((source) => {
+      const context = source?.gain?.context;
+      if (context && typeof context.resume === 'function') contexts.add(context);
+    });
+  }
+  return [...contexts];
+}
+
+function syncAudioUi(note = '') {
+  const button = $('audio');
+  const audioStatus = $('audio-status');
+  const contexts = emulatorAudioContexts();
+  const running = contexts.some((context) => context.state === 'running');
+  button.setAttribute('aria-pressed', state.audioWanted ? 'true' : 'false');
+  button.textContent = state.audioWanted
+    ? (running ? '🔊 Game sound on' : '🔊 Tap to resume sound')
+    : '🔊 Enable game sound';
+  if (audioStatus) {
+    audioStatus.textContent = note || (
+      state.audioWanted
+        ? (running
+          ? 'Game audio is unlocked in this handheld frame.'
+          : 'Sound is enabled, but Safari has not resumed the emulator audio context yet. Tap this sound button again after the cartridge is running.')
+        : 'Game audio stays off until you tap Enable game sound. On iPhone/iPad this tap unlocks Safari audio inside the emulator frame.'
+    );
+  }
+}
+
+async function unlockGameAudio() {
+  state.audioWanted = true;
+  // Important for iOS Safari: call resume() synchronously from this button's
+  // trusted gesture in the same document that owns EmulatorJS.
+  const contexts = emulatorAudioContexts();
+  const resumes = [];
+  for (const context of contexts) {
+    if (context.state === 'suspended') {
+      try { resumes.push(context.resume()); } catch { /* retry on the next tap */ }
+    }
+  }
+  window.EJS_emulator?.setVolume?.(gameVolume());
+  if (resumes.length) await Promise.allSettled(resumes);
+  syncAudioUi(contexts.length
+    ? ''
+    : (state.started
+      ? 'Sound is armed. If iPhone still shows Tap to resume sound, tap this button once more after the game picture starts moving.'
+      : 'Sound is armed. Start the cartridge, then tap this button once more if iPhone asks to resume audio.'));
+}
 
 function consented() {
   return $('consent').checked;
@@ -117,7 +174,7 @@ async function installEmulator(bytes) {
   window.EJS_disableAutoLang = false;
   window.EJS_forceLegacyCores = !webgl2;
   window.EJS_color = '#14343d';
-  window.EJS_volume = state.playerVisible ? 0.28 : 0;
+  window.EJS_volume = gameVolume();
   handleOptionalWakeLock(navigator.wakeLock);
   window.EJS_ready = () => {
     window.EJS_emulator.on('saveDatabaseLoaded', (fs) => {
@@ -127,7 +184,8 @@ async function installEmulator(bytes) {
   };
   window.EJS_onGameStart = () => {
     const gm = window.EJS_emulator?.gameManager;
-    window.EJS_emulator?.setVolume?.(state.playerVisible ? 0.28 : 0);
+    window.EJS_emulator?.setVolume?.(gameVolume());
+    syncAudioUi();
     if(state.batteryError){gm?.toggleMainLoop?.(1);status(state.batteryError);return;}
     status(`Lost Cosmos V${receipt.version} is running. Choose NEW GAME or CONTINUE on the title screen.`);
     if (!gm || !bytes) return;
@@ -193,7 +251,7 @@ window.addEventListener('message', (event) => {
   if (event.source !== window.parent || event.origin !== location.origin) return;
   if(data.type==='sol-player-visibility'){
     state.playerVisible=data.active===true;
-    window.EJS_emulator?.setVolume?.(state.playerVisible ? 0.28 : 0);return;
+    window.EJS_emulator?.setVolume?.(gameVolume());syncAudioUi();return;
   }
   if(data.type==='sol-spark-input'){
     const input=normalizeHandheldInput(data.button,data.down);
@@ -290,6 +348,8 @@ $('bin').addEventListener('change', async () => {
 });
 
 $('bring').addEventListener('click', bringIn);
+$('audio').addEventListener('click', () => { void unlockGameAudio(); });
+syncAudioUi();
 $('play').addEventListener('click', () => {
   if (state.started) {
     status('The cartridge is already running. Reload this pane to start again.');
