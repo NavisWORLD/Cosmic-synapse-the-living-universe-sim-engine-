@@ -51,6 +51,24 @@
   a.play-lc:hover, a.play-lc:focus-visible { background: #18465a; box-shadow: 0 0 16px rgba(126, 231, 255, .5); }
   .play-cell { display: flex; flex-direction: column; gap: 6px; }
   .play-cell > a.play-lc { text-align: center; }
+  /* Pair with Meta Muse panel (additive; internet connector, not the EEG headband) */
+  #meta-muse [hidden] { display: none !important; }
+  #meta-muse { margin-top: 10px; box-shadow: 0 0 18px rgba(180, 140, 255, .12); }
+  #meta-muse[data-state="paired"] { border-color: #b48cff; box-shadow: 0 0 22px rgba(180, 140, 255, .3); }
+  .mm-tag { display: inline-block; background: #1d1438; color: #cdb4ff; border: 1px solid #8a6ad8; border-radius: 6px; padding: 1px 6px; font-size: 11px; letter-spacing: .1em; }
+  .mm-dot { width: 10px; height: 10px; border-radius: 50%; background: #3b5566; flex: none; }
+  #meta-muse[data-state="paired"] .mm-dot { background: #b48cff; box-shadow: 0 0 10px #b48cff; }
+  .mm-box { background: #0c1c2c; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin: 8px 0; }
+  .mm-label { display: block; font-size: 11px; letter-spacing: .12em; color: var(--gold); margin-bottom: 4px; }
+  .mm-url { display: block; word-break: break-all; color: var(--cyan); margin-bottom: 6px; }
+  #mm-device { flex: 1; min-width: 0; }
+  .mm-code { font-size: 28px; letter-spacing: .18em; color: white; margin: 4px 0; }
+  .mm-qr-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+  .mm-qr-row > div { flex: 1; min-width: 180px; }
+  #mm-qr { width: 196px; height: 196px; image-rendering: pixelated; border-radius: 10px; background: #f4fffd; }
+  #meta-muse details { margin-top: 8px; }
+  #meta-muse summary { cursor: pointer; color: var(--dim); }
+  #meta-muse ol { margin: 6px 0; padding-left: 20px; color: var(--dim); }
   /* Pair Muse panel (additive) */
   #muse-pair [hidden], #muse-live-note[hidden] { display: none !important; }
   #muse-pair { margin-top: 10px; box-shadow: 0 0 18px rgba(126, 231, 255, .12); }
@@ -213,6 +231,60 @@
       <p id="seed-lock" class="note"></p>
       <div class="move"><a id="play-lc" class="play-lc" href="play.html">&#9654; Play in Lost Cosmos</a></div>
       <p class="note">Opens the Lost Cosmos V11.2 handheld on this site with this beast in the cartridge mailbox as your companion. Choose NEW GAME to receive it.</p>
+    </div>
+    <div class="card" id="meta-muse" data-state="idle">
+      <div class="muse-head"><h2 style="margin:0">PAIR WITH META MUSE</h2><span class="mm-tag">INTERNET CONNECTOR · NOT BLUETOOTH</span></div>
+      <p class="note">Let Meta Muse, Meta's personal AI agent, see your sparked beast and care for it. Muse connects over the internet through its third-party connectors (MCP) to the Beast Box connector. This is not Bluetooth, not a Meta device, and not the Muse EEG headband panel above. Muse care uses the same rules as the Live tab: feed is Rest, play is Play, and talk adds to the chat.</p>
+      <div class="mm-box">
+        <span class="mm-label">CONNECTOR URL</span>
+        <code class="mm-url" id="mm-connector">https://www.beastboxcosmos.xyz/api/mcp</code>
+        <button type="button" id="mm-copy-url">Copy URL</button>
+        <p class="note" id="mm-local" hidden></p>
+      </div>
+      <div class="mm-box">
+        <label class="mm-label" for="mm-device">DEVICE NAME</label>
+        <div class="move" style="margin-top:0"><input id="mm-device" maxlength="60" autocomplete="off" aria-label="Device name shown to Meta Muse"><button type="button" id="mm-save-name" hidden>Save name</button></div>
+        <p class="note">Meta Muse shows this as the connector's title after it connects.</p>
+      </div>
+      <div class="muse-head muse-status"><span class="mm-dot" aria-hidden="true"></span><b id="mm-status" role="status">Not paired. Nothing leaves this page.</b></div>
+      <p class="note" id="mm-sync">Last sync: never</p>
+      <p id="mm-alert" class="muse-warn" role="alert" hidden></p>
+      <div id="mm-unpaired">
+        <label class="row" style="align-items:flex-start"><input type="checkbox" id="mm-consent"> <span id="mm-consent-text">Share a minimal snapshot of the sparked beast with the Beast Box connector while paired.</span></label>
+        <div class="move"><button type="button" id="mm-pair" disabled>Pair this beast</button></div>
+        <p class="note" id="mm-pair-hint"></p>
+      </div>
+      <div id="mm-paired" hidden>
+        <div class="move">
+          <button type="button" id="mm-code-btn">Show pairing code</button>
+          <button type="button" id="mm-sync-now">Sync now</button>
+          <button type="button" id="mm-unpair">Unpair</button>
+        </div>
+        <div id="mm-code-box" class="mm-box" hidden>
+          <span class="mm-label">PAIRING CODE</span>
+          <p class="mm-code" id="mm-code" aria-label="Pairing code"></p>
+          <p class="note" id="mm-code-note"></p>
+          <div class="mm-qr-row">
+            <canvas id="mm-qr" width="196" height="196" role="img" aria-label="QR code with the connector URL and pairing code"></canvas>
+            <div>
+              <p class="note">Scan on the phone where Meta Muse runs, or open the one-tap link. It opens the Beast Box pairing page with the connector URL, the device and this code. The code sits after the # so it is never sent to a server.</p>
+              <div class="move"><a id="mm-onetap" class="play-lc" href="#" target="_blank" rel="noopener">Open one-tap link</a><button type="button" id="mm-copy-link">Copy link</button></div>
+            </div>
+          </div>
+        </div>
+        <p class="note" id="mm-activity"></p>
+      </div>
+      <p class="note" id="mm-message" aria-live="polite"></p>
+      <details>
+        <summary>How pairing works</summary>
+        <ol>
+          <li>Spark a beast, tick consent and press Pair this beast. This page keeps a device key in this browser only.</li>
+          <li>Press Show pairing code. In Meta Muse, add the connector URL above (Muse Code or any MCP client works too). When Muse opens the Beast Box consent page, type the code and pick Read only or Read + care actions.</li>
+          <li>While this page is open it syncs a small snapshot about every 20 s and applies care Muse asked for.</li>
+          <li>Unpair revokes every Muse token for this beast and deletes the Beast Box copy.</li>
+        </ol>
+        <p class="note">The Muse app lists third-party connectors only after Meta reviews them; Beast Box has not been submitted, so use Muse Code or another MCP client until then. Talk replies come from the Beast Box game companion model, a game character, not a conscious mind. <a href="https://github.com/NavisWORLD/The-beast-box-/blob/main/docs/meta-muse-connector.md" target="_blank" rel="noopener" style="color:var(--cyan)">Connector docs</a>.</p>
+      </details>
     </div>
   </section>
 
