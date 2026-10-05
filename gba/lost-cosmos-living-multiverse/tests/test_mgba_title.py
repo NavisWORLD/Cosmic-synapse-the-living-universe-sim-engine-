@@ -53,8 +53,9 @@ def run(rom, elf, out):
                 emu.step((), 90)
                 assert emu.read_symbol('v10_opening') == 1
                 assert emu.read_symbol('v10_opening_step') == card
-                readable(emu, [14], 70)
-                readable(emu, [15, 16, 17], 150)
+                # Padded card: title on row 10, body lines on rows 12, 14 and 16.
+                readable(emu, [10], 70)
+                readable(emu, [12, 14, 16], 150)
                 emu.screenshot(out / f'prologue_{card + 1:02d}.png')
                 emu.tap('A', hold=12, release=12)
             emu.step((), 600)
