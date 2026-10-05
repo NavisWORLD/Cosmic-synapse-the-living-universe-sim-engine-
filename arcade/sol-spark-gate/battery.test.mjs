@@ -5,7 +5,7 @@ import {buildGenome} from '../spark-beasts/genome.mjs';
 import {sparkRecord} from '../spark-beasts/trade.mjs';
 import {sparkSave} from './cartridge.mjs';
 import {crc32} from '../lost-cosmos/mailbox.mjs';
-import {batteryName,chooseBattery,prepareBattery,keepCoreBattery} from './battery.mjs';
+import {batteryName,chooseBattery,prepareBattery,keepCoreBattery,cacheNativeBattery,loadNativeBattery} from './battery.mjs';
 const table=JSON.parse(readFileSync(new URL('../spark-beasts/data/quantum-runs.json',import.meta.url)));
 const genome=buildGenome({focus:65,calm:72,spark:48},table.runs[0],'CORY');
 const starter=sparkSave(genome,0,table),profile=sparkRecord(genome,0).profile;
@@ -22,6 +22,12 @@ test('returning with a starter retains every earned native battery byte',()=>{
  const other=sparkSave(buildGenome({focus:1,calm:2,spark:3},table.runs[1],'OTHER'),1,table);
  assert.notEqual(batteryName(starter),batteryName(other));assert.throws(()=>chooseBattery(starter,other),/another/);
  const corrupt=earned.slice();corrupt[1040]^=1;assert.throws(()=>chooseBattery(starter,corrupt),/checksum/);
+});
+test('actual native checkpoints survive emulator database loss and reject corruption atomically',()=>{
+ const records=new Map(),storage={getItem:k=>records.get(k)||null,setItem:(k,v)=>records.set(k,v)},earned=journey();
+ assert.equal(cacheNativeBattery(storage,starter,earned),true);assert.deepEqual(loadNativeBattery(storage,starter),earned);
+ assert.equal(cacheNativeBattery(storage,starter,starter),false);assert.deepEqual(loadNativeBattery(storage,starter),earned);
+ const bad=earned.slice();bad[1040]^=1;assert.throws(()=>cacheNativeBattery(storage,starter,bad));assert.deepEqual(loadNativeBattery(storage,starter),earned);
 });
 test('namespace migration keeps unrelated and damaged batteries untouched',()=>{
  const earned=journey(),old='/data/saves/lost-cosmos.srm',files=new Map([[old,earned]]);

@@ -1,6 +1,6 @@
 import { verifySparkArt } from './cartridge.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
-import {batteryName,prepareBattery,keepCoreBattery} from './battery.mjs';
+import {batteryName,prepareBattery,keepCoreBattery,cacheNativeBattery,loadNativeBattery} from './battery.mjs';
 /* Sol Spark handheld adapter. Original living-link player stays unchanged. */
 import { FIXTURE, GROWTH_BYTES, GROWTH_OFFSET, MAILBOX_BYTES, MAILBOX_OFFSET, SRAM_SIZE, buildSave, livingProfile, profileFromBcp1, profileFromBeastJson } from '../lost-cosmos/mailbox.mjs';
 import { MuseLink, mockTraits } from '../lost-cosmos/muse.mjs';
@@ -71,6 +71,7 @@ async function installEmulator(bytes) {
   if(!bytes){status('Send your Spark companion into this handheld first.');return;}
   try{verifySparkArt(bytes);}catch(err){status(err.message);return;}
   if(bytes&&!consented()){status('Allow the verified companion import before starting the cartridge.');return;}
+  try{const cached=!state.journey&&loadNativeBattery(localStorage,bytes);if(cached){bytes=cached;state.resumeFromCheckpoint=true;}}catch(err){status(err.message);return;}
   state.started = true;
   $('play').disabled = true;
   let receipt;
@@ -117,8 +118,9 @@ async function installEmulator(bytes) {
   window.EJS_volume = state.playerVisible ? 0.28 : 0;
   window.EJS_ready = () => {
     window.EJS_emulator.on('saveDatabaseLoaded', (fs) => {
-      if(bytes)try{state.battery=prepareBattery(fs,bytes,{journey:state.journey});}catch(err){state.batteryError=err.message;status(err.message);}
+      if(bytes)try{state.battery=prepareBattery(fs,bytes,{journey:state.journey||state.resumeFromCheckpoint});}catch(err){state.batteryError=err.message;status(err.message);}
     });
+    window.EJS_emulator.on('saveSaveFiles',saved=>{try{cacheNativeBattery(localStorage,bytes,saved);}catch{/* Download remains available if browser storage is full. */}});
   };
   window.EJS_onGameStart = () => {
     const gm = window.EJS_emulator?.gameManager;
@@ -139,6 +141,8 @@ async function installEmulator(bytes) {
       console.warn(err);
     }
     status(state.battery?.resumed?'Journey restored. Choose CONTINUE to keep your Spark companion and earned progress.':'Cartridge running. Choose NEW GAME to receive your verified Spark companion.');
+    $('save-journey').disabled=false;
+    state.checkpoint=setInterval(checkpointNow,5000);
     if (new URLSearchParams(location.search).get('demo') === '1') demoPress(gm);
   };
   const script = document.createElement('script');
@@ -204,6 +208,20 @@ window.addEventListener('message', (event) => {
       status(err.message || 'The cage save was rejected.');
     }
   }
+});
+
+function checkpointNow(){
+ const gm=window.EJS_emulator?.gameManager;if(!gm||!state.save)return null;
+ gm.saveSaveFiles();const bytes=gm.getSaveFile(false);
+ try{cacheNativeBattery(localStorage,state.save,bytes);}catch{/* The user can still download the exact battery. */}
+ return bytes;
+}
+window.addEventListener('pagehide',checkpointNow);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)checkpointNow();});
+$('save-journey').addEventListener('click',()=>{
+ const bytes=checkpointNow();if(!bytes){status('Start the cartridge before saving a journey.');return;}
+ const url=URL.createObjectURL(new Blob([bytes],{type:'application/octet-stream'})),a=document.createElement('a');a.href=url;a.download=batteryName(state.save)+'.sav';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ status('Downloaded the actual native battery. Keep it with your Spark .qbeast as a journey backup.');
 });
 
 $('mock').addEventListener('click', () => {

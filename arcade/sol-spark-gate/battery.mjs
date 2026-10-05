@@ -43,3 +43,17 @@ export function keepCoreBattery(fs,incoming,corePath){
  // Leaving that alias would select stale progress on the next page opening.
  for(const path of paths)if(path!==corePath&&fs.analyzePath(path).exists)fs.unlink(path);
 }
+const checkpointKey=bytes=>'sol-spark-native-battery-v1-'+batteryName(bytes);
+export function cacheNativeBattery(storage,incoming,bytes){
+ if(!bytes||String.fromCharCode(...bytes.subarray(0,4))!=='LCV5')return false;
+ const verified=chooseBattery(incoming,bytes);
+ let text='';for(let i=0;i<verified.length;i+=4096)text+=String.fromCharCode(...verified.subarray(i,i+4096));
+ storage.setItem(checkpointKey(incoming),btoa(text));return true;
+}
+export function loadNativeBattery(storage,incoming){
+ const text=storage.getItem(checkpointKey(incoming));if(!text)return null;
+ if(text.length!==43692)throw Error('Local native battery checkpoint has an invalid size.');
+ const raw=atob(text),bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));
+ if(String.fromCharCode(...bytes.subarray(0,4))!=='LCV5')throw Error('Local native battery checkpoint has no journey.');
+ return chooseBattery(incoming,bytes);
+}
