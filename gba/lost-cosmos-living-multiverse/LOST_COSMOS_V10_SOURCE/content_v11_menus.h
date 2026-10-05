@@ -83,6 +83,11 @@ static void v11_portrait(int pick,int x,int y,int pulse){int xx,yy,i;u32 tile[51
  int scale=256-(pulse%20)*3;OAM16[3*16+3]=scale;OAM16[3*16+7]=0;OAM16[3*16+11]=0;OAM16[3*16+15]=scale;
  OAM16[43*4]|=0x0100;OAM16[43*4+1]|=(3u<<9);}
 }
+/* Cached pages keep their text map and only move sprites each frame. */
+static void v11_menu_anim(void){
+ if(pause_page==18&&v11_sel<=lc_party.count&&!(v11_sel&&lc_party.slots[v11_sel-1].species>=LC_SPECIES_IMPORTED))v11_portrait(v11_sel,168,40,0);
+ else if(pause_page==20&&v11_sel<100&&v11_encounters[v11_sel]){oam_set32(44,8,88+v11_anim_bob((u32)v11_sel*9u),V11_TILE_FACE,14);oam_ui_portrait(44);}
+}
 static void v11_title_beast(int upload){/* Rebuild art only when the title changes. */
  if(upload){
  int i,x,y;u32 out[128];volatile u16*src=(volatile u16*)OBJ_VRAM32;for(i=0;i<128;i++)out[i]=0;
@@ -139,7 +144,7 @@ static int v11_import_snapshot(void){
  v11_message("OFFLINE MODE. THIS BUILD HAS NO VERIFIED BEAST SNAPSHOT.");return 0;
 #endif
 }
-static void v11_header(const char*name){int t;for(t=0;t<9;t++)if(V11_TABS[t]==pause_page){v11_short(1,0,V11_TAB_NAMES[wrapi(t-1,9)],8,8);ui_text(10,0,V11_TAB_NAMES[t],13);v11_short(20,0,V11_TAB_NAMES[(t+1)%9],8,8);}ui_text(2,2,name,14);ui_text(2,17,"A CHOOSE  B BACK  L/R TABS",13);}
+static void v11_header(const char*name){int t;{volatile u16*m=screenblock(UI_MAP_BASE);for(t=0;t<30;t++)m[31*32+t]=map_attr(61,15);}lc_ui_tabbed=1;REG_BG1VOFS=252;for(t=0;t<9;t++)if(V11_TABS[t]==pause_page){v11_short(1,0,V11_TAB_NAMES[wrapi(t-1,9)],8,8);ui_text(10,0,V11_TAB_NAMES[t],13);v11_short(20,0,V11_TAB_NAMES[(t+1)%9],8,8);}ui_text(2,2,name,14);ui_text(2,17,"A CHOOSE  B BACK  L/R TABS",13);}
 static void v11_row(int row,int selected,const char*name,int pal){ui_text(2,row,selected?">":" ",13);v11_short(4,row,name,22,pal);}
 static void v11_menu_notice(void){if(v11_notice_timer&&v11_notice[0]&&v11_detail==2){ui_frame(10,19,15);v11_lines(2,12,v11_notice,26,4,14);ui_text(2,17,"A/B CLOSE",13);}}
 static void v11_recipe_cost(int n,int*out){
@@ -212,7 +217,7 @@ static int v11_draw_pause(void){int i,id,start;
  for(i=start;i<mini(start+6,100);i++)v11_row(4+i-start,i==v11_sel,v11_encounters[i]?V11_CHARACTERS[i].name:"???",v11_encounters[i]?15:8);
  id=v11_sel;if(v11_encounters[id]){vram_copy32(OBJ_VRAM32+V11_TILE_FACE*8,V11_FIELD_ART+id*128,128);for(i=0;i<16;i++)OBJ_PALETTE[14*16+i]=V11_FIELD_PALETTE[i];oam_set32(44,8,88+v11_anim_bob((u32)id*9u),V11_TILE_FACE,14);oam_ui_portrait(44);
  v11_short(6,12,V11_CHARACTERS[id].world<8?V11_WORLDS[V11_CHARACTERS[id].world]:"ALL WORLDS",22,14);v11_lines(6,13,V11_CHARACTERS[id].description,22,2,15);ui_text(2,16,"ENCOUNTERS",13);ui_num(15,16,v11_encounters[id],15);
- }else ui_text(4,12,"THE MAP HAS NOT MET IT YET.",8);
+ }else ui_text(4,12,"NOT MET ON THE MAP YET.",8);
  if(lc_mail_live){int spark=0;for(i=0;i<lc_party.count;i++)if(lc_mail_matches(lc_party.slots[i].identity))spark=i+1;
   if(spark){v11_portrait(spark,176,96,0);if(lc_mail_name[0])ui_text(22,11,lc_mail_name,14);}}
  }else if(pause_page==11){v11_header(v11_sub?"QUESTS // DONE":"QUESTS // ACTIVE");v11_list_count=0;for(i=0;i<15;i++)if(v11_quest_started&(1u<<i)){if(((v11_quest_done>>i)&1)==(v11_sub&1))v11_list[v11_list_count++]=(u8)i;}if(v11_sel>=v11_list_count)v11_sel=0;start=v11_sel/5*5;
@@ -224,9 +229,9 @@ static int v11_draw_pause(void){int i,id,start;
  ui_text(2,16,v11_act_goal(),14);
  }else if(pause_page==1){v11_header(v11_map_legacy?"MAP // ORIGINAL CAMPAIGN":"MAP // EIGHT SIGNALS");
  for(i=0;i<8;i++){int known=v11_map_legacy?(visited_mask&(1u<<i)):(v11_visited&(1u<<i));ui_text(2,4+i,i==v11_sel?">":" ",13);ui_text(4,4+i,known?(v11_map_legacy?"*":(v11_beacons&(1u<<i))?"*":"."):"-",known?14:8);v11_short(6,4+i,known?(v11_map_legacy?WORLDS[i].name:V11_WORLDS[i]):"???",22,known?15:8);if(!v11_map_legacy&&V11_IS_ROOM&&i==v11_world()&&(frame>>4)&1)ui_text(4,4+i,">",13);}
- ui_text(2,14,"THE MAP FILLS AS YOU REMEMBER",14);ui_text(2,15,V11_IS_ROOM?"START LOCAL LANDMARK MAP":"* KNOWN WORLD",14);ui_text(2,16,"SELECT CAMPAIGN / SIGNALS",13);
+ ui_text(2,14,"THE MAP FILLS AS YOU RECALL",14);ui_text(2,15,V11_IS_ROOM?"START LOCAL LANDMARK MAP":"* KNOWN WORLD",14);ui_text(2,16,"SELECT CAMPAIGN / SIGNALS",13);
  }else if(pause_page==47){v11_draw_local_map();
- }else if(pause_page==9){static const char*s[11]={"AUDIO","TEXT SPEED","BRIGHTNESS","SAVE GAME","LOAD GAME","BEAST BOX","TOUCH CONTROLS","COSMIC REPLAY","AUTO TALK","HERO","CAMPAIGN PACK"};v11_header("SYSTEM");start=v11_sel/6*6;for(i=start;i<mini(start+6,11);i++){v11_row(4+i-start,i==v11_sel,s[i],15);if(i==0)ui_text(22,4+i-start,audio_on?"ON":"OFF",14);if(i==1)ui_text(22,4+i-start,v11_text_speed==0?"SLOW":v11_text_speed==1?"NORM":"FAST",14);if(i==2)ui_num(24,4+i-start,v11_brightness,14);if(i==6)ui_text(22,4+i-start,touch_mode?"ON":"OFF",14);if(i==7)ui_text(22,4+i-start,buddy_quantum?"ON":"OFF",14);if(i==8)ui_text(22,4+i-start,buddy_talk?"ON":"OFF",14);}
+ }else if(pause_page==9){static const char*s[13]={"AUDIO","TEXT SPEED","BRIGHTNESS","SAVE GAME","LOAD GAME","BEAST BOX","TOUCH CONTROLS","COSMIC REPLAY","AUTO TALK","HERO","CAMPAIGN PACK","MUSIC","SFX"};v11_header("SYSTEM");start=v11_sel/6*6;for(i=start;i<mini(start+6,13);i++){if(i>=11)ui_text(22,4+i-start,lc_level_name(i==11?snd_music:snd_sfx),14);v11_row(4+i-start,i==v11_sel,s[i],15);if(i==0)ui_text(22,4+i-start,audio_on?"ON":"OFF",14);if(i==1)ui_text(22,4+i-start,v11_text_speed==0?"SLOW":v11_text_speed==1?"NORM":"FAST",14);if(i==2)ui_num(24,4+i-start,v11_brightness,14);if(i==6)ui_text(22,4+i-start,touch_mode?"ON":"OFF",14);if(i==7)ui_text(22,4+i-start,buddy_quantum?"ON":"OFF",14);if(i==8)ui_text(22,4+i-start,buddy_talk?"ON":"OFF",14);}
  ui_text(2,15,"ACT I  SYNAPSE ROAD",13);ui_text(2,16,"V11.2 SAVES STILL LOAD",14);
  }else if(pause_page==44){v11_header(v11_sub?"LOAD // THREE SLOTS":"SAVE // THREE SLOTS");for(i=0;i<3;i++){int o=25600+i*2048;ui_text(2,5+i*3,i==v11_sel?">":" ",13);ui_text(4,5+i*3,"SLOT",15);ui_num(10,5+i*3,i+1,15);
  if(v11_slot_valid(i)){int w=SRAM[o+4],room=SRAM[o+5];v11_short(12,5+i*3,w==0&&room>=70&&room<=77?V11_WORLDS[room-70]:WORLDS[w%8].name,16,14);ui_text(4,6+i*3,"LV",13);ui_num(7,6+i*3,SRAM[o+6],15);ui_text(11,6+i*3,"TIME",13);ui_num(16,6+i*3,((int)sr32(o+8))/216000,15);ui_text(20,6+i*3,"%",13);ui_num(23,6+i*3,SRAM[o+7],15);}
@@ -272,7 +277,7 @@ static void v11_back(void){v11_sel=v11_detail=v11_menu_mode=0;v11_release_confir
  else if(pause_page==26)pause_page=v11_parent==18?18:0;else pause_page=0;v11_page_previous=255;}
 static int v11_update_pause(u16 k){int i,id,n;
  if(pause_page==0){if(k&KEY_A&&pause_sel==8)v11_parent=0;if(k&KEY_SELECT){pause_page=40;v11_menu_reset();return 1;}if(k&KEY_B)v11_resume_art();return 0;}
- if(!v11_menu_handled(pause_page))return 0;if(k||pause_page==45||pause_page==18||pause_page==20||pause_page==26||pause_page==27||(pause_page==1&&(frame&31)==0))v11_ui_dirty=1;v11_menu_changed();
+ if(!v11_menu_handled(pause_page))return 0;if(k||pause_page==45||(pause_page==1&&(frame&31)==0))v11_ui_dirty=1;v11_menu_changed();
  if(v11_detail==2){if(k&(KEY_A|KEY_B)){v11_detail=0;v11_notice_timer=0;}return 1;}
  if(pause_page==45&&v11_evolution){if(v11_evo_timer<60)v11_evo_timer++;v11_ui_dirty=1;if(v11_evo_timer>=60||k&KEY_B){v11_evolution=0;v11_back();}return 1;}
  if(!k)return 1;
@@ -306,7 +311,7 @@ static int v11_update_pause(u16 k){int i,id,n;
  else if(pause_page==20){if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,100);if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,100);}
  else if(pause_page==11){if(k&(KEY_LEFT|KEY_RIGHT)){v11_sub^=1;v11_sel=0;}if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,maxi(1,v11_list_count));if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,maxi(1,v11_list_count));if(k&KEY_A&&v11_list_count){id=v11_list[v11_sel];v11_track=v11_track==id?255:id;save_game();}if(k&KEY_SELECT){pause_page=13;v11_page_previous=255;}}
  else if(pause_page==1){if(k&KEY_UP)v11_sel=(v11_sel+7)%8;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%8;if(k&KEY_SELECT)v11_map_legacy^=1;if(k&KEY_START&&V11_IS_ROOM){pause_page=47;v11_page_previous=255;return 1;}if(k&KEY_A){if(v11_map_legacy)v11_message("THE ORIGINAL WORLDS ARE REACHED WITH LUNA-ARC.");else if(v11_beacons&(1u<<v11_sel))v11_enter(v11_sel);else v11_message("THIS BEACON IS NOT LIT. WALK THERE AND RETURN ITS SIGNAL.");v11_detail=2;}}
- else if(pause_page==9){if(k&KEY_UP)v11_sel=(v11_sel+10)%11;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%11;if(k&KEY_A){if(v11_sel==0)audio_on^=1;if(v11_sel==1)v11_text_speed=(v11_text_speed+1)%3;if(v11_sel==2)v11_brightness=v11_brightness%5+1;
+ else if(pause_page==9){if(k&KEY_UP)v11_sel=(v11_sel+12)%13;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%13;if(v11_sel>=11&&(k&(KEY_A|KEY_LEFT|KEY_RIGHT))){lc_audio_option(v11_sel-10,(k&KEY_LEFT)?-1:(k&KEY_RIGHT)?1:0);return 1;}if(k&KEY_A){if(v11_sel==0)audio_on^=1;if(v11_sel==1)v11_text_speed=(v11_text_speed+1)%3;if(v11_sel==2)v11_brightness=v11_brightness%5+1;
  if(v11_sel==3||v11_sel==4){v11_sub=v11_sel==4;pause_page=44;v11_sel=0;v11_page_previous=44;}else if(v11_sel==5){pause_page=26;v11_parent=9;v11_page_previous=255;}else if(v11_sel==6){touch_mode^=1;save_game();}else if(v11_sel==7){buddy_quantum^=1;save_game();}else if(v11_sel==8){buddy_talk^=1;save_game();}else if(v11_sel==9){pause_page=15;role_preview=actor_style;}else if(v11_sel==10){pause_page=42;v11_menu_reset();}else save_game();}}
  else if(pause_page==44){if(!v11_menu_mode){if(k&KEY_UP)v11_sel=(v11_sel+2)%3;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%3;}if(k&KEY_A){if(!v11_menu_mode&&v11_slot_valid(v11_sel))v11_menu_mode=1;else{if(v11_sub)v11_slot_load(v11_sel);else v11_slot_save(v11_sel);v11_menu_mode=0;if(game_mode==MODE_PAUSE)v11_detail=2;}}}
  else if(pause_page==26){if(k&KEY_A){v11_import_snapshot();v11_detail=2;}}

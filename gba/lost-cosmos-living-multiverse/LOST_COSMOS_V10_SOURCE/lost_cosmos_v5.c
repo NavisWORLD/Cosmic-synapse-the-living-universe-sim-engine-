@@ -99,6 +99,56 @@ static int wrapi(int v,int m){ while(v<0)v+=m; while(v>=m)v-=m; return v; }
 static void copystr(char*d,const char*s,int n){ int i=0; while(i<n-1 && s[i]){d[i]=s[i];i++;}d[i]=0; }
 static void appendstr(char*d,const char*s,int n){ int i=0,j=0; while(i<n-1 && d[i])i++; while(i<n-1 && s[j])d[i++]=s[j++]; d[i]=0; }
 static void wait_vblank(void){ while(REG_VCOUNT>=160){} while(REG_VCOUNT<160){} }
+#ifndef HOST_QA
+/* Whole-frame present. Rendering writes IWRAM shadows of the UI screenblock,
+   OAM, both palettes and the display/background registers. The vblank wait
+   copies all of them in a few thousand cycles, so the panel never
+   shows a half-cleared menu, a hidden sprite or a scroll from the next frame. */
+static volatile u16 lc_ui_shadow[1024] __attribute__((aligned(4)));
+static volatile u16 lc_oam_shadow[512] __attribute__((aligned(4)));
+static volatile u16 lc_pal_shadow[512] __attribute__((aligned(4)));
+static volatile u16 lc_io_shadow[14];
+#undef OAM16
+#undef BG_PALETTE
+#undef OBJ_PALETTE
+#undef REG_DISPCNT
+#undef REG_BG0CNT
+#undef REG_BG1CNT
+#undef REG_BG2CNT
+#undef REG_BG0HOFS
+#undef REG_BG0VOFS
+#undef REG_BG1HOFS
+#undef REG_BG1VOFS
+#undef REG_BG2HOFS
+#undef REG_BG2VOFS
+#define OAM16 lc_oam_shadow
+#define BG_PALETTE lc_pal_shadow
+#define OBJ_PALETTE (lc_pal_shadow+256)
+#define REG_DISPCNT lc_io_shadow[0]
+#define REG_BG0CNT lc_io_shadow[4]
+#define REG_BG1CNT lc_io_shadow[5]
+#define REG_BG2CNT lc_io_shadow[6]
+#define REG_BG0HOFS lc_io_shadow[8]
+#define REG_BG0VOFS lc_io_shadow[9]
+#define REG_BG1HOFS lc_io_shadow[10]
+#define REG_BG1VOFS lc_io_shadow[11]
+#define REG_BG2HOFS lc_io_shadow[12]
+#define REG_BG2VOFS lc_io_shadow[13]
+/* 32-byte LDM/STM bursts: about 4k cycles for all four shadows, well inside vblank. */
+static void lc_blit32(const volatile void*src,u32 dst,u32 blocks){
+ __asm__ volatile("1:\n\tldmia %1!,{r3-r10}\n\tstmia %0!,{r3-r10}\n\tsubs %2,%2,#1\n\tbne 1b"
+  :"+r"(dst),"+r"(src),"+r"(blocks)::"r3","r4","r5","r6","r7","r8","r9","r10","memory","cc");}
+static void lc_present(void){int i;volatile u16*io=(volatile u16*)0x04000000;
+ for(i=8;i<14;i++)io[i]=lc_io_shadow[i];
+ io[4]=lc_io_shadow[4];io[5]=lc_io_shadow[5];io[6]=lc_io_shadow[6];
+ io[0]=lc_io_shadow[0];
+ lc_blit32(lc_oam_shadow,0x07000000u,32);
+ lc_blit32(lc_pal_shadow,0x05000000u,32);
+ lc_blit32(lc_ui_shadow,0x06000000u+UI_MAP_BASE*2048u,64);
+}
+static void lc_vsync(void){(wait_vblank)();lc_present();}
+#define wait_vblank() lc_vsync()
+#endif
 static void vram_copy32(volatile u32* dst,const u32*src,int words){ int i; for(i=0;i<words;i++) dst[i]=src[i]; }
 
 /* ---------- 5x7 font, A-Z 0-9 and punctuation ---------- */
@@ -714,12 +764,19 @@ static int v8_mat_for_tile(int t){
 }
 
 /* ---------- VRAM map helpers ---------- */
+#ifndef HOST_QA
+static volatile u16* screenblock(int sb){ return sb==UI_MAP_BASE?lc_ui_shadow:VRAM16 + sb*1024; }
+#else
 static volatile u16* screenblock(int sb){ return VRAM16 + sb*1024; }
+#endif
 static void set_map_entry(int x,int y,u16 value){
  int block=(x>=32)+((y>=32)<<1); int idx=(y&31)*32+(x&31); screenblock(BG_MAP_BASE+block)[idx]=value;
 }
 static u16 map_attr(int tile,int pal){ return (u16)(tile | (pal<<12)); }
-static void ui_clear(void){ int i; volatile u16*m=screenblock(UI_MAP_BASE); for(i=0;i<1024;i++)m[i]=0; }
+/* Tabbed V11 pages lower the UI layer 4 px so the tab strip on row 0 has a
+   border margin above it (map row 31 is the border shown at the top). */
+static u8 lc_ui_tabbed;
+static void ui_clear(void){ int i; volatile u16*m=screenblock(UI_MAP_BASE); for(i=0;i<1024;i++)m[i]=0; if(lc_ui_tabbed){lc_ui_tabbed=0;REG_BG1VOFS=0;} }
 static void ui_fill_rows(int y0,int y1,int tile,int pal){ int x,y; volatile u16*m=screenblock(UI_MAP_BASE); for(y=y0;y<=y1;y++)for(x=0;x<30;x++)m[y*32+x]=map_attr(tile,pal); }
 /* All dialogue panels are opaque and framed; their border never shares a row with text. */
 static void ui_frame(int top,int bottom,int pal){int x,y;volatile u16*m=screenblock(UI_MAP_BASE);
@@ -1402,24 +1459,31 @@ static void cinema_start(u8 id,u16 ticks){int i;u16 off,count;
  REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|BG2_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;
 }
 static void ui_wrap_text(int row,const char*s,int pal,int maxrows);
+static void ui_wrap_text_step(int row,const char*s,int pal,int maxrows,int step);
 static void draw_cinema_caption(void){
  /* Clearing a full tile map every frame outruns VBlank on the real ARM7 and
     erases the lower caption while the LCD is scanning it. Keep static text
     resident until the actual cinematic changes. */
  if(!cinema_ui_dirty)return;cinema_ui_dirty=0;
  if(v10_opening){const OpeningCard*card=&V10_OPENING[v10_opening_step];
-  ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(13,19,63,15);ui_frame(13,19,15);
-  ui_text(2,0,"LOST COSMOS / PROLOGUE",14);ui_text(2,14,card->head,13);
-  ui_wrap_text(15,card->text,15,2);
-  ui_text(2,18,"A NEXT   START SKIP",14);ui_num(24,18,v10_opening_step+1,13);
+  /* Header and box keep a blank tile inside each edge, like the start menu:
+     header text on row 1, box title on row 10 under a blank row, body lines
+     on rows 12, 14 and 16 with a blank row between them, hint on row 18.
+     The art is raised 12 px so its middle stays in view. */
+  REG_BG2VOFS=12;
+  ui_clear();ui_fill_rows(0,2,63,15);ui_fill_rows(8,19,63,15);ui_frame(8,19,15);
+  ui_text(2,1,"LOST COSMOS / PROLOGUE",14);ui_text(2,10,card->head,13);
+  ui_wrap_text_step(12,card->text,15,3,2);
+  ui_text(2,18,"A NEXT   START SKIP",14);ui_num(26,18,v10_opening_step+1,13);
   return;
  }
  if(v10_ending_card){
-  ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(14,19,63,15);ui_frame(14,19,15);
-  ui_text(2,0,"LOST COSMOS / EPILOGUE",14);
-  if(ending==1){ui_text(2,15,"OPEN / THE REALMS RETURN",14);ui_wrap_text(16,"THE PATHS REJOIN. NO HEART CAN OWN THE UNKNOWN.",15,2);}
-  else if(ending==2){ui_text(2,15,"PRESERVE / STAND TOGETHER",14);ui_wrap_text(16,"YOU HOLD THE LATTICE. THE PEOPLE CHOOSE WHEN TO OPEN IT.",15,2);}
-  else{ui_text(2,15,"WANDER / THE NEXT SKY",14);ui_wrap_text(16,"YOU AND COSMOS DEPART. THE MAP IS NOT FINISHED.",15,2);}
+  REG_BG2VOFS=12;
+  ui_clear();ui_fill_rows(0,2,63,15);ui_fill_rows(8,19,63,15);ui_frame(8,19,15);
+  ui_text(2,1,"LOST COSMOS / EPILOGUE",14);
+  if(ending==1){ui_text(2,10,"OPEN / THE REALMS RETURN",14);ui_wrap_text_step(12,"THE PATHS REJOIN. NO HEART CAN OWN THE UNKNOWN.",15,3,2);}
+  else if(ending==2){ui_text(2,10,"PRESERVE / STAND TOGETHER",14);ui_wrap_text_step(12,"YOU HOLD THE LATTICE. THE PEOPLE CHOOSE WHEN TO OPEN IT.",15,3,2);}
+  else{ui_text(2,10,"WANDER / THE NEXT SKY",14);ui_wrap_text_step(12,"YOU AND COSMOS DEPART. THE MAP IS NOT FINISHED.",15,3,2);}
   ui_text(2,18,"A CONTINUE",13);return;
  }
  /* Exhaustive names: NEVER index beyond this array when new original scenes
@@ -1431,26 +1495,19 @@ static void draw_cinema_caption(void){
   "ARIN // BRINDLEMARK FORGE","BRINDLEMARK // SIEGE","HEARTWOOD // BALANCE",
   "GLACIAL GROTTO // CLARITY","EMBER CAVERNS // PASSION",
   "HOLLOW GROVE // EARTH","CELESTIAL PEAKS // HARMONY","DREAM FESTIVAL // NYSSA","OPEN // PATHS RETURN","PRESERVE // KEEP THE HEART","WANDER // THE NEXT SKY"};
- ui_clear();ui_fill_rows(0,1,63,15);ui_fill_rows(18,19,63,15);
- ui_text(2,0,HEAD[cinema_scene],14);
- ui_text(2,18,cinema_scene==20?"EACH REALM KEEPS ITS OWN SKY.":cinema_scene==21?"THE HEART GIVES EACH PLACE TIME.":cinema_scene==22?"THE UNKNOWN WILL NOT OWN YOU.":
+ REG_BG2VOFS=0;ui_clear();ui_fill_rows(0,2,63,15);ui_fill_rows(15,19,63,15);
+ ui_text(2,1,HEAD[cinema_scene],14);
+ ui_text(2,16,cinema_scene==20?"EACH REALM KEEPS ITS OWN SKY.":cinema_scene==21?"THE HEART GIVES EACH PLACE TIME.":cinema_scene==22?"THE UNKNOWN WILL NOT OWN YOU.":
  cinema_scene==19?"MANY VOICES. ONE NEW SONG.":cinema_scene==18?"THE CONSTELLATIONS REJOIN.":
  cinema_scene==17?"ELDORIA REMEMBERS LIFE.":cinema_scene==16?"PASSION LIGHTS THE ANVILS.":
  cinema_scene==15?"THE WOLF'S CLARITY IS YOURS.":cinema_scene==14?"BALANCE RETURNS TO THE WOOD.":
  cinema_scene==11?"A WOUND BETWEEN THE REALMS":(cinema_scene==0?"THE HEART IS FRACTURED":
  (cinema_scene==1?"FOLLOW THE SIX SIGNALS":"ANOTHER WORLD REMEMBERS")),15);
- ui_text(2,19,cinema_scene==0?"START TO AWAKEN":"A SKIP",13);
+ ui_text(2,18,cinema_scene==0?"START TO AWAKEN":"A SKIP",13);
 }
 
 /* ---------- sound ---------- */
-static void sound_init(void){
- REG_SOUNDCNT_X=0x0080;
- REG_SOUNDCNT_L=0x2277; /* PSG channel1 music and channel2 effects, both stereo */
- REG_SOUNDCNT_H=0x0002;REG_SOUND1CNT_L=0;
- REG_SOUND1CNT_H=0xA880;REG_SOUND2CNT_L=0xA660;
-}
-static void music_tone(u16 f){if(!audio_on)return;REG_SOUND1CNT_H=0xA880;REG_SOUND1CNT_X=(u16)(0x8000|(f&2047));}
-static void tone(u16 f){if(!audio_on)return;REG_SOUND2CNT_L=0xA660;REG_SOUND2CNT_H=(u16)(0x8000|(f&2047));}
+#include "lc_audio.h"
 /* Seeded GBA chirps share the existing effect voice and honor SYSTEM audio. */
 static u8 sol_spark_voice_notes,sol_spark_voice_tick;
 static u32 sol_spark_voice_id;
@@ -1464,31 +1521,6 @@ static void sol_spark_sound_step(void){unsigned pitch,duty=2,vol=8;
  pitch=mini(2047,pitch+(3-sol_spark_voice_notes)*24);
  REG_SOUND2CNT_L=(u16)((vol<<12)|(2u<<8)|(duty<<6)|48u);REG_SOUND2CNT_H=(u16)(0xc000u|pitch);sol_spark_voice_notes--;
 }
-/* Single PSG music voice + separately mixed effect voice; five new original
-   8-note dungeon/celebration motifs match the GBA's actual sound registers. */
-static const u16 SONGS[11][8]={
- {1350,1420,1510,1420,1600,1510,1420,0},{1210,1290,1210,1380,1210,1460,1290,0},
- {1510,1580,1660,1580,1740,1660,1580,0},{1390,1510,1630,1760,1630,1510,1810,0},
- {1100,1160,1090,1240,1130,1300,1040,0},{1350,1510,1660,1810,1660,1510,1900,0},
- {1380,1530,1610,1460,1700,1530,1370,0}, /* Glacial Clarity: rising mirrored phrase */
- {1510,1770,1530,1870,1660,1900,1510,0}, /* Ember Phoenix: accented high pulse */
- {1270,1360,1480,1360,1190,1480,1310,0}, /* Hollow Earth: ascending root tones */
- {1540,1660,1780,1820,1710,1850,1660,0}, /* Celestial Harmony: sweeping high arc */
- {1430,1560,1760,1640,1830,1760,1560,0}  /* Nyssa Dream Festival: answer and refrain */
-};
-static void music_step(void){int song;
- if(!audio_on)return;
- song=game_mode==MODE_SPACE?5:
-  (current_world==0&&current_room==8)?6:
-  (current_world==0&&current_room==9)?7:
-  (current_world==7&&current_room==10)?8:
-  (current_world==0&&current_room==12)?9:
-  (current_world==6&&current_room==11)?10:WORLDS[current_world].music;
- music_tick++;
- if(music_tick>=36){u8 n=(u8)((frame/36)&7);music_tick=0;
-  if(SONGS[song][n])music_tone((u16)(SONGS[song][n]+(frame&7)));}
-}
-
 /* ---------- dialogue & UI ---------- */
 static void say(const char*s){copystr(dialogue,s,90);dialogue_timer=210;tone((u16)(1500+((((u8)dialogue[0])+(u8)frame)&31)*5));}
 static void lc_save_roster(void);
@@ -1588,7 +1620,10 @@ static const char* location_name(void){
  if(current_world==6&&current_room==11)return "DREAM FESTIVAL";if(current_world==0&&current_room>=2){static const char*n[]={"","","BRINDLEMARK","OAKWOOD","CRAGSTONE","HIDDEN CITY"};return n[current_room<=5?current_room:2];}return (current_world==5&&game_mode==MODE_SURFACE&&!current_room)?crown_zone():WORLDS[current_world].name;}
 /* Text never touches a framed panel's left/right border. Keep a 2-tile
    inset across BOTH the first and all wrapped lines of dialogue/story. */
-static void ui_wrap_text(int row,const char*s,int pal,int maxrows){
+static void ui_wrap_text_step(int row,const char*s,int pal,int maxrows,int step);
+static void ui_wrap_text(int row,const char*s,int pal,int maxrows){ui_wrap_text_step(row,s,pal,maxrows,1);}
+/* step 2 leaves a blank row between lines for roomy caption boxes. */
+static void ui_wrap_text_step(int row,const char*s,int pal,int maxrows,int step){
  int col=2,r=0;char word[28];int wi=0;
  while(*s&&r<maxrows){
   while(*s==' ')s++;
@@ -1596,11 +1631,15 @@ static void ui_wrap_text(int row,const char*s,int pal,int maxrows){
   while(*s&&*s!=' ')s++;
   word[wi]=0;if(!wi)break;
   if(col>2&&col+wi+1>28){r++;col=2;if(r>=maxrows)break;}
-  if(col>2){ui_text(col,row+r," ",pal);col++;}
+  if(col>2){ui_text(col,row+r*step," ",pal);col++;}
   if(col+wi>28){wi=28-col;word[wi]=0;}
-  ui_text(col,row+r,word,pal);col+=wi;
+  ui_text(col,row+r*step,word,pal);col+=wi;
  }
 }
+static int ui_wrap_lines(const char*s){int col=2,r=1,wi;if(!s||!*s)return 0;
+ while(*s){while(*s==' ')s++;wi=0;while(*s&&*s!=' '){wi++;s++;}if(!wi)break;if(wi>26)wi=26;
+  if(col>2&&col+wi+1>28){r++;col=2;}if(col>2)col++;col+=wi;}
+ return r;}
 static const char*campaign_objective(void);
 static void draw_hud(void){ui_clear();ui_fill_rows(0,0,63,15);
  ui_text(1,0,"HP",14);ui_num(4,0,player.hp,15);ui_text(6,0,"/",15);ui_num(7,0,max_hp,15);
@@ -1648,7 +1687,7 @@ static void draw_battle(void){if(V11_IS_ROOM){v11_draw_battle();return;}Enemy*e=
   ui_text(x+2,y,ACT[i],battle_phase==0?15:14);
  }
  if(battle_phase==1)ui_text(18,12,"B GUARD",13);
- ui_wrap_text(16,battle_notice,14,2);
+ ui_wrap_text(16,battle_notice,14,3);
  ui_text(16,10,"ALLY",14);ui_num(23,10,p4_charges,15);
  oam_hide_all();oam_set32(0,43,59,272,0);oam_ui_portrait(0);
  oam_set(1,77,70,32+(cosmos.mood&3)*4,1+(cosmos.mood&3),0);oam_ui_portrait(1);
@@ -1678,9 +1717,11 @@ static void draw_intro(void){
   ui_text(2,16,"YOUR EXISTING FILE WILL BE",13);
   ui_text(2,17,"REPLACED BY NEW GAME.",13);
  }else if(v10_title_sub==2){
-  ui_text(2,12,"AUDIO",14);ui_text(12,12,audio_on?"ON":"OFF",15);
-  ui_text(2,14,"A TOGGLE / B BACK",13);
-  ui_text(2,16,"MORE OPTIONS: START MENU",14);
+  static const char*row[3]={"SOUND","MUSIC","SFX"};
+  for(i=0;i<3;i++){ui_text(2,12+i,lc_opt_row==i?">":" ",14);ui_text(4,12+i,row[i],15);
+   ui_text(14,12+i,i==0?(audio_on?"ON":"OFF"):lc_level_name(i==1?snd_music:snd_sfx),i==0||audio_on?14:13);}
+  ui_text(2,16,"UP/DOWN PICK  A CHANGE",13);
+  ui_text(2,17,"LEFT/RIGHT LEVEL  B BACK",13);
  }else if(v10_title_sub==3){
   ui_text(2,12,"CREATED BY CORY DAVIS",14);
   ui_text(2,14,"COSMIC SYNAPSE",15);
@@ -1691,8 +1732,8 @@ static void draw_intro(void){
    ui_text(2,12+i,(v10_title_sel==i)?">":" ",14);
    ui_text(4,12+i,options[i],(!v10_has_save&&i==1)?13:15);
   }
-  ui_text(v10_has_save?8:4,18,v10_has_save?"SAVE DETECTED":"START A NEW ADVENTURE",13);
-  ui_text(2,19,"UP/DOWN SELECT   A CONFIRM",14);
+  ui_text(v10_has_save?8:4,17,v10_has_save?"SAVE DETECTED":"START A NEW ADVENTURE",13);
+  ui_text(2,18,"UP/DOWN SELECT   A CONFIRM",14);
  }
 }
 /* Thirty original, unlockable narrative passages grounded in the five existing
@@ -1813,9 +1854,11 @@ static const char* weapon_name(void){return weapon==2?"CROWN EDGE":(weapon==1?"E
 static const char* armor_name(void){return armor?"TIDE MAIL":"TRAVEL CLOTH";}
 static const char* charm_name(void){return charm?"BLOOM CHARM":"NONE";}
 static void v11_portrait(int pick,int x,int y,int pulse);
-static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=0;REG_DISPCNT|=BG1_ENABLE;if(v11_menu_handled(pause_page)&&!v11_ui_dirty){
+static void v11_menu_anim(void);
+static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));REG_BG1HOFS=0;REG_BG1VOFS=lc_ui_tabbed?252:0;REG_DISPCNT|=BG1_ENABLE;if(v11_menu_handled(pause_page)&&!v11_ui_dirty){
  /* Animate only the imported portrait while keeping cached UI and OAM live.
     Rebuilding the entire menu cleared old portraits between native frames. */
+ v11_menu_anim();
  if(lc_mail_live&&sol_spark_valid()&&(frame&3)==0){
   if(pause_page==18&&v11_sel)v11_portrait(v11_sel,168,40,0);
   else if(pause_page==26){int pick;for(pick=0;pick<lc_party.count;pick++)if(lc_mail_matches(lc_party.slots[pick].identity)){v11_portrait(pick+1,168,48,0);break;}}
@@ -2083,7 +2126,7 @@ static u8 save_checksum_v5(void){int i;u8 s=0x6D;for(i=0;i<190;i++)if(i!=126&&i!
 #include "story_completion_persist.h"
 #include "save_journal.h"
 #include "lc_mailbox.h"
-static void save_game(void){lc_mailbox_refresh(1);sol_spark_checked=0;sol_spark_stage=sol_spark_blink=255;int i,o=40;SRAM[0]='L';SRAM[1]='C';SRAM[2]='V';SRAM[3]='5';SRAM[4]=5;SRAM[5]=keys_found;SRAM[6]=visited_mask;SRAM[7]=secrets_mask;SRAM[8]=chapter;SRAM[9]=ending;SRAM[10]=postgame;SRAM[11]=current_world;SRAM[12]=current_room;SRAM[13]=current_layer;SRAM[14]=(game_mode==MODE_PAUSE?return_mode:(game_mode==MODE_BATTLE?MODE_SURFACE:game_mode));SRAM[15]=audio_on;sw16(16,player.x);sw16(18,player.y);sw16(20,ship_x);sw16(22,ship_y);SRAM[24]=ship_world;SRAM[25]=player.hp;SRAM[26]=cosmos.goal;SRAM[27]=cosmos.mood;SRAM[28]=cosmos.trust;SRAM[29]=cosmos.curiosity;SRAM[30]=cosmos.avoid;SRAM[31]=cosmos.energy;SRAM[32]=(u8)cosmos.memory_flags;SRAM[33]=(u8)(cosmos.memory_flags>>8);SRAM[34]=cosmos_preference;SRAM[35]=player_choice;SRAM[36]=beacon_count;sw32(120,qi);for(i=0;i<8;i++){SRAM[o++]=beacons[i].world;SRAM[o++]=beacons[i].room;SRAM[o++]=beacons[i].layer;sw16(o,beacons[i].x);o+=2;sw16(o,beacons[i].y);o+=2;}SRAM[128]=player_level;sw16(129,(s16)player_xp);SRAM[131]=max_hp;SRAM[132]=player_mp;SRAM[133]=max_mp;SRAM[134]=str_stat;SRAM[135]=def_stat;SRAM[136]=mag_stat;SRAM[137]=credits;for(i=0;i<ITEM_COUNT;i++)SRAM[138+i]=inv[i];SRAM[142]=gear_owned;SRAM[143]=weapon;SRAM[144]=armor;SRAM[145]=charm;SRAM[146]=current_spell;SRAM[147]=buddy_talk;SRAM[148]=buddy_quantum;SRAM[149]=boss_flags;sw16(150,(s16)kill_count);SRAM[152]=qstate.mean;SRAM[153]=qstate.spread;SRAM[154]=qstate.parity;SRAM[155]=qstate.phase;SRAM[156]=qstate.coherence;SRAM[157]=qstate.burst;SRAM[158]=quest_started;SRAM[159]=quest_completed;
+static void save_game(void){lc_mailbox_refresh(1);sol_spark_checked=0;sol_spark_stage=sol_spark_blink=255;int i,o=40;SRAM[0]='L';SRAM[1]='C';SRAM[2]='V';SRAM[3]='5';SRAM[4]=5;SRAM[5]=keys_found;SRAM[6]=visited_mask;SRAM[7]=secrets_mask;SRAM[8]=chapter;SRAM[9]=ending;SRAM[10]=postgame;SRAM[11]=current_world;SRAM[12]=current_room;SRAM[13]=current_layer;SRAM[14]=(game_mode==MODE_PAUSE?return_mode:(game_mode==MODE_BATTLE?MODE_SURFACE:game_mode));SRAM[15]=lc_audio_pack();sw16(16,player.x);sw16(18,player.y);sw16(20,ship_x);sw16(22,ship_y);SRAM[24]=ship_world;SRAM[25]=player.hp;SRAM[26]=cosmos.goal;SRAM[27]=cosmos.mood;SRAM[28]=cosmos.trust;SRAM[29]=cosmos.curiosity;SRAM[30]=cosmos.avoid;SRAM[31]=cosmos.energy;SRAM[32]=(u8)cosmos.memory_flags;SRAM[33]=(u8)(cosmos.memory_flags>>8);SRAM[34]=cosmos_preference;SRAM[35]=player_choice;SRAM[36]=beacon_count;sw32(120,qi);for(i=0;i<8;i++){SRAM[o++]=beacons[i].world;SRAM[o++]=beacons[i].room;SRAM[o++]=beacons[i].layer;sw16(o,beacons[i].x);o+=2;sw16(o,beacons[i].y);o+=2;}SRAM[128]=player_level;sw16(129,(s16)player_xp);SRAM[131]=max_hp;SRAM[132]=player_mp;SRAM[133]=max_mp;SRAM[134]=str_stat;SRAM[135]=def_stat;SRAM[136]=mag_stat;SRAM[137]=credits;for(i=0;i<ITEM_COUNT;i++)SRAM[138+i]=inv[i];SRAM[142]=gear_owned;SRAM[143]=weapon;SRAM[144]=armor;SRAM[145]=charm;SRAM[146]=current_spell;SRAM[147]=buddy_talk;SRAM[148]=buddy_quantum;SRAM[149]=boss_flags;sw16(150,(s16)kill_count);SRAM[152]=qstate.mean;SRAM[153]=qstate.spread;SRAM[154]=qstate.parity;SRAM[155]=qstate.phase;SRAM[156]=qstate.coherence;SRAM[157]=qstate.burst;SRAM[158]=quest_started;SRAM[159]=quest_completed;
  SRAM[160]=(u8)npc_seen;SRAM[161]=(u8)(npc_seen>>8);SRAM[162]=npc_recent;sw32(164,workload_qi);SRAM[168]=(u8)(0xC0|touch_mode);
  SRAM[190]=save_checksum_v5();
  SRAM[200]=(u8)story_flags;SRAM[201]=(u8)(story_flags>>8);SRAM[202]=rune_progress;SRAM[203]=element_mask;
@@ -2128,7 +2171,7 @@ static int save_valid_v2(void){return SRAM[0]=='L'&&SRAM[1]=='C'&&SRAM[2]=='V'&&
 static int save_valid_v3(void){return SRAM[0]=='L'&&SRAM[1]=='C'&&SRAM[2]=='V'&&SRAM[3]=='3'&&SRAM[4]==3&&SRAM[190]==save_checksum_v3();}
 static int save_valid_v4(void){return SRAM[0]=='L'&&SRAM[1]=='C'&&SRAM[2]=='V'&&SRAM[3]=='4'&&SRAM[4]==4&&SRAM[190]==save_checksum_v4();}
 static int save_valid(void){return SRAM[0]=='L'&&SRAM[1]=='C'&&SRAM[2]=='V'&&SRAM[3]=='5'&&SRAM[4]==5&&SRAM[190]==save_checksum_v5();}
-static void load_common(void){int i,o=40;keys_found=SRAM[5]&7;visited_mask=SRAM[6];secrets_mask=SRAM[7];chapter=SRAM[8];ending=SRAM[9];postgame=SRAM[10];current_world=SRAM[11]%8;current_room=SRAM[12];current_layer=SRAM[13]%3;game_mode=SRAM[14]%2;audio_on=SRAM[15];player.x=sr16(16);player.y=sr16(18);ship_x=sr16(20);ship_y=sr16(22);ship_world=SRAM[24]%8;player.hp=SRAM[25];cosmos.goal=SRAM[26]%GOAL_COUNT;cosmos.mood=SRAM[27]&3;cosmos.trust=SRAM[28];cosmos.curiosity=SRAM[29];cosmos.avoid=SRAM[30];cosmos.energy=SRAM[31];cosmos.memory_flags=(u16)SRAM[32]|((u16)SRAM[33]<<8);cosmos_preference=SRAM[34];player_choice=SRAM[35];beacon_count=SRAM[36];if(beacon_count>8)beacon_count=0;for(i=0;i<8;i++){beacons[i].world=SRAM[o++];beacons[i].room=SRAM[o++];beacons[i].layer=SRAM[o++];beacons[i].x=sr16(o);o+=2;beacons[i].y=sr16(o);o+=2;}qi=sr32(120);if(qi>=QSEED_LEN)qi=0;}
+static void load_common(void){int i,o=40;keys_found=SRAM[5]&7;visited_mask=SRAM[6];secrets_mask=SRAM[7];chapter=SRAM[8];ending=SRAM[9];postgame=SRAM[10];current_world=SRAM[11]%8;current_room=SRAM[12];current_layer=SRAM[13]%3;game_mode=SRAM[14]%2;lc_audio_unpack(SRAM[15]);player.x=sr16(16);player.y=sr16(18);ship_x=sr16(20);ship_y=sr16(22);ship_world=SRAM[24]%8;player.hp=SRAM[25];cosmos.goal=SRAM[26]%GOAL_COUNT;cosmos.mood=SRAM[27]&3;cosmos.trust=SRAM[28];cosmos.curiosity=SRAM[29];cosmos.avoid=SRAM[30];cosmos.energy=SRAM[31];cosmos.memory_flags=(u16)SRAM[32]|((u16)SRAM[33]<<8);cosmos_preference=SRAM[34];player_choice=SRAM[35];beacon_count=SRAM[36];if(beacon_count>8)beacon_count=0;for(i=0;i<8;i++){beacons[i].world=SRAM[o++];beacons[i].room=SRAM[o++];beacons[i].layer=SRAM[o++];beacons[i].x=sr16(o);o+=2;beacons[i].y=sr16(o);o+=2;}qi=sr32(120);if(qi>=QSEED_LEN)qi=0;}
 static void load_game(void){int i;if(save_valid()||save_valid_v4()||save_valid_v3()){int old_v3=save_valid_v3(),old_v4=save_valid_v4();load_common();player_level=SRAM[128]?SRAM[128]:1;player_xp=(u16)sr16(129);max_hp=SRAM[131]?SRAM[131]:6;player_mp=SRAM[132];max_mp=SRAM[133]?SRAM[133]:6;str_stat=SRAM[134]?SRAM[134]:2;def_stat=SRAM[135]?SRAM[135]:1;mag_stat=SRAM[136]?SRAM[136]:2;credits=SRAM[137];for(i=0;i<ITEM_COUNT;i++)inv[i]=SRAM[138+i];gear_owned=SRAM[142]|1;weapon=SRAM[143];armor=SRAM[144];charm=SRAM[145];current_spell=SRAM[146]%SPELL_COUNT;buddy_talk=SRAM[147];buddy_quantum=SRAM[148];boss_flags=SRAM[149];kill_count=(u16)sr16(150);qstate.mean=SRAM[152];qstate.spread=SRAM[153];qstate.parity=SRAM[154];qstate.phase=SRAM[155];qstate.coherence=SRAM[156];qstate.burst=SRAM[157];if(player.hp>max_hp)player.hp=max_hp;
  if(old_v3){quest_started=quest_completed=0;npc_seen=0;npc_recent=0;}
  else{quest_started=SRAM[158];quest_completed=SRAM[159];npc_seen=(u16)SRAM[160]|((u16)SRAM[161]<<8);npc_recent=SRAM[162];}workload_qi=(old_v3||old_v4)?qi:sr32(164);if(workload_qi>=QSEED_LEN)workload_qi=0;
@@ -2184,7 +2227,7 @@ static void hurt_player(int dx,int dy);
 static int weapon_bonus(void){return (weapon==2?5:(weapon==1?2:0))+(actor_style==0)+(v9_equipped*2)+arc_guardian_attack();}
 static int armor_bonus(void){return (armor?2:0)+(actor_style==3);}static int charm_bonus(void){return charm?2:0;}
 static u16 xp_need(void){return (u16)(12+player_level*player_level*8);}
-static void level_check(void){while(player_xp>=xp_need()&&player_level<30){player_xp-=xp_need();player_level++;max_hp++;max_mp++;if((player_level&1)==0)str_stat++;if(player_level%3==0)def_stat++;if(player_level%3==1)mag_stat++;player.hp=max_hp;player_mp=max_mp;say("LEVEL UP. YOUR BODY IS HOLDING MORE OF THE MULTIVERSE.");tone(1900);}}
+static void level_check(void){while(player_xp>=xp_need()&&player_level<30){player_xp-=xp_need();player_level++;lc_sfx(SFX_LEVELUP);max_hp++;max_mp++;if((player_level&1)==0)str_stat++;if(player_level%3==0)def_stat++;if(player_level%3==1)mag_stat++;player.hp=max_hp;player_mp=max_mp;say("LEVEL UP. YOUR BODY IS HOLDING MORE OF THE MULTIVERSE.");tone(1900);}}
 static void add_xp(u16 n){
  player_xp=(u16)clampi(player_xp+n,0,60000);
  if(lc_party.count)(void)lc_reward_xp(&lc_party,lc_party.active,(u16)(1+n/2));
@@ -2422,7 +2465,7 @@ static void player_dodge(u16 k){int dx=0,dy=0,i;
  tone(1080);
 }
 static void cast_magic(void){int i,cost=3,dmg=mag_stat+charm_bonus();if(current_spell==SPELL_EMBER)cost=4;else if(current_spell==SPELL_TIDE)cost=5;else if(current_spell==SPELL_BLOOM)cost=6;if(actor_style==2&&cost>1)cost--;if(player_mp<cost){say("NOT ENOUGH MP. THE SPELL FALLS BACK INTO STATE.");return;}player_mp-=cost;magic_timer=16;if(current_spell==SPELL_TIDE){player.hp=(u8)clampi(player.hp+2+charm_bonus(),0,max_hp);say("TIDE WARD RESTORES YOUR STABLE STATE.");}else{int radius=current_spell==SPELL_PULSE?38:(current_spell==SPELL_BLOOM?64:48);for(i=0;i<10;i++)if(enemies[i].active&&iabs(enemies[i].x-player.x)+iabs(enemies[i].y-player.y)<radius)damage_enemy(&enemies[i],dmg+(current_spell==SPELL_EMBER?2:(current_spell==SPELL_BLOOM?3:0)));}tone((u16)(1450+current_spell*170));}
-static void use_item(u8 t){if(t>=ITEM_COUNT)return;if(!inv[t]){say("THAT ITEM SLOT IS EMPTY.");return;}if(t==ITEM_POTION){if(player.hp>=max_hp){say("HP IS ALREADY STABLE.");return;}inv[t]--;player.hp=(u8)clampi(player.hp+4,0,max_hp);say("POTION USED. YOUR LOCAL STATE STABILIZES.");}else if(t==ITEM_ETHER){if(player_mp>=max_mp){say("MP IS ALREADY FULL.");return;}inv[t]--;player_mp=(u8)clampi(player_mp+5,0,max_mp);say("ETHER USED. MAGIC STATE RESTORED.");}else if(t==ITEM_SHARD){if(inv[t]<3){say("THREE STAR SHARDS ARE NEEDED TO REFINE A STAT.");return;}inv[t]-=3;str_stat++;mag_stat++;say("STAR SHARDS REFINED. STR AND MAG INCREASED.");}else{inv[t]--;max_mp++;player_mp=max_mp;cosmos.energy=255;cosmos.trust=(u8)clampi(cosmos.trust+8,0,255);say("QUANTUM CORE INTEGRATED. MAX MP AND COSMOS ENERGY INCREASED.");}tone(1650);save_game();}
+static void use_item(u8 t){if(t>=ITEM_COUNT)return;if(!inv[t]){say("THAT ITEM SLOT IS EMPTY.");return;}if(t==ITEM_POTION){if(player.hp>=max_hp){say("HP IS ALREADY STABLE.");return;}inv[t]--;lc_sfx(SFX_POTION);player.hp=(u8)clampi(player.hp+4,0,max_hp);say("POTION USED. YOUR LOCAL STATE STABILIZES.");}else if(t==ITEM_ETHER){if(player_mp>=max_mp){say("MP IS ALREADY FULL.");return;}inv[t]--;player_mp=(u8)clampi(player_mp+5,0,max_mp);say("ETHER USED. MAGIC STATE RESTORED.");}else if(t==ITEM_SHARD){if(inv[t]<3){say("THREE STAR SHARDS ARE NEEDED TO REFINE A STAT.");return;}inv[t]-=3;str_stat++;mag_stat++;say("STAR SHARDS REFINED. STR AND MAG INCREASED.");}else{inv[t]--;max_mp++;player_mp=max_mp;cosmos.energy=255;cosmos.trust=(u8)clampi(cosmos.trust+8,0,255);say("QUANTUM CORE INTEGRATED. MAX MP AND COSMOS ENERGY INCREASED.");}tone(1650);save_game();}
 static void use_potion(void){use_item(ITEM_POTION);}
 static void collect_drops(void){int i;for(i=0;i<8;i++)if(drops[i].active&&iabs(drops[i].x-player.x)<12&&iabs(drops[i].y-player.y)<12){
  u8 t=drops[i].type;
@@ -3142,14 +3185,16 @@ static void v10_continue_game(void){
  refresh_camera();say("WELCOME BACK. COSMOS KEPT YOUR MEMORY.");
 }
 static void v10_title_input(u16 newk){
- if(newk&(KEY_UP|KEY_DOWN|KEY_A|KEY_B|KEY_START))title_ui_dirty=1;
+ if(newk&(KEY_UP|KEY_DOWN|KEY_LEFT|KEY_RIGHT|KEY_A|KEY_B|KEY_START))title_ui_dirty=1;
  if(v10_title_sub==1){
   if(newk&KEY_B){v10_title_sub=0;return;}
   if(newk&KEY_A)v10_start_opening();return;
  }
  if(v10_title_sub==2){
-  if(newk&KEY_B)v10_title_sub=0;
-  else if(newk&KEY_A)audio_on=(u8)!audio_on;
+  if(newk&KEY_B){v10_title_sub=0;lc_opt_row=0;}
+  else if(newk&KEY_UP)lc_opt_row=(u8)((lc_opt_row+2)%3);
+  else if(newk&KEY_DOWN)lc_opt_row=(u8)((lc_opt_row+1)%3);
+  else if(newk&(KEY_A|KEY_LEFT|KEY_RIGHT))lc_audio_option(lc_opt_row,(newk&KEY_LEFT)?-1:(newk&KEY_RIGHT)?1:0);
   return;
  }
  if(v10_title_sub==3){if(newk&(KEY_A|KEY_B|KEY_START))v10_title_sub=0;return;}
@@ -3167,6 +3212,28 @@ static void v10_title_input(u16 newk){
 #include "content_v11_combat.h"
 #include "content_v11_story.h"
 #include "content_v11_menus.h"
+/* Music follows the scene. Menus keep the scene's track playing. */
+static u8 lc_music_context(void){static u8 last=LC_SONG_TITLE;
+ if(intro||v10_opening)return last=LC_SONG_TITLE;
+ if(v108_credits_active)return last=LC_SONG_QUIET;
+ if(cinema_active||game_mode==MODE_PAUSE)return last;
+ if(V11_IS_ROOM){
+  if(v11_wild)return last=v11_wild_rival?LC_SONG_RIVAL:LC_SONG_BATTLE;
+  if(game_mode==MODE_BATTLE)return last=v11_enemy_id[battle_index]==99?LC_SONG_QUIET:LC_SONG_BATTLE;
+  if(v11_world()==7||v11_lore_is_ending())return last=LC_SONG_QUIET;
+  return last=LC_SONG_OVERWORLD;
+ }
+ return last=game_mode==MODE_BATTLE?LC_SONG_BATTLE:LC_SONG_OVERWORLD;
+}
+/* Menu blips: move, confirm and cancel wherever a menu or box owns the pad. */
+static void lc_ui_sfx(u16 newk){
+ if(!newk||v10_opening||cinema_active&&!intro)return;
+ if(!(intro||game_mode==MODE_PAUSE||game_mode==MODE_BATTLE||(V11_IS_ROOM&&(v11_wild||v11_shop||v11_lore||v11_dialogue||v11_gameover)))){
+  if(game_mode==MODE_SURFACE&&(newk&KEY_START))lc_sfx(SFX_CONFIRM);return;}
+ if(newk&(KEY_UP|KEY_DOWN|KEY_LEFT|KEY_RIGHT))lc_sfx(SFX_MOVE);
+ else if(newk&(KEY_A|KEY_START))lc_sfx(SFX_CONFIRM);
+ else if(newk&KEY_B)lc_sfx(SFX_CANCEL);
+}
 void gba_main(void){u16 k,newk;
  journal_recover();
  v10_has_save=(u8)(save_valid()||save_valid_v4()||save_valid_v3()||save_valid_v2());
@@ -3183,6 +3250,7 @@ void gba_main(void){u16 k,newk;
 #endif
  for(;;){
   k=(u16)(~REG_KEYINPUT)&0x03FF;newk=(u16)(k&~prev_keys);prev_keys=k;
+  lc_ui_sfx(newk);
   if(intro)v10_title_input(newk);
   else if(v10_opening){
    if(newk&KEY_START)v10_complete_opening();
@@ -3202,6 +3270,6 @@ void gba_main(void){u16 k,newk;
    if((frame&255)==0&&player_mp<max_mp)player_mp++;
    if(dialogue_timer)dialogue_timer--;
   }
-  v11_clock();music_step();sol_spark_sound_step();v108_credits_tick();wait_vblank();frame++;sol_spark_clock=frame;render();
+  v11_clock();music_step();sol_spark_sound_step();v108_credits_tick();frame++;sol_spark_clock=frame;render();wait_vblank();
  }
 }

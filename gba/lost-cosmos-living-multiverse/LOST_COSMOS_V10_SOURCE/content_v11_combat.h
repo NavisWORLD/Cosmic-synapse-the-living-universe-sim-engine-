@@ -9,7 +9,7 @@ static void v11_player_status(int status,int turns){
  if((status&VS_CHARM)&&v11_passive(74))status&=~VS_CHARM;
  v11_status|=(u8)status;if(status)v11_status_turn=(u8)maxi(v11_status_turn,turns);
 }
-static void v11_take_hit(int damage){if(damage<1||v11_invincible||v11_decoy)return;
+static void v11_take_hit(int damage){if(damage<1||v11_invincible||v11_decoy)return;lc_sfx(SFX_HIT);
  if(v11_guard){v11_guard--;v11_buddy_hp=(u16)maxi(0,v11_buddy_hp-damage);return;}
  if(v11_equipment[1]==27&&v11_world()==1||v11_equipment[1]==28&&v11_world()==2||v11_equipment[1]==30&&v11_world()==4)damage=damage*3/4;
  if(v11_hp<=damage&&v11_stand){v11_hp=1;return;}
@@ -61,6 +61,7 @@ static int v11_damage_target(int damage,int element,int physical,int all){int id
   if(id==34&&element==1&&!v11_enemy_hp[battle_index]&&!v11_phase){v11_add(34,2);v11_phase=1;}
   if(id==84&&!physical)v11_take_hit(maxi(1,d/5));
  }
+ if(total>0)lc_sfx(total*4>=v11_enemy_max[battle_index]?SFX_CRIT:SFX_HIT);
  v11_ult_charge=(u8)mini(100,v11_ult_charge+maxi(1,total/6));
  enemies[battle_index].hp=(u8)mini(255,v11_enemy_hp[battle_index]);return total;
 }
@@ -182,6 +183,7 @@ static void v11_battle_reward(int spared){int id=v11_enemy_id[battle_index],i,w=
  if(player_level>v11_buddy_hp)v11_buddy_hp=player_level;
  v11_trust(2);v11_bestiary_rewards();v11_unlock();
  for(i=0;i<3;i++)if(v11_equipment[i]!=255&&v11_durability[i])v11_durability[i]--;
+ lc_victory();
  v11_message(spared?"WE LET THE CREATURE GO. THE ROAD HAS ROOM FOR BOTH OF US.":"VICTORY. XP AND CREDITS RECEIVED. COSMOS WAITS FOR YOU.");
  if(id==99){v11_story_flags|=V11_SF_QUIET;v11_message("THE QUIET RESTS. FIND THE LISTENER AT THE CROWN. ACT I CAN END.");}
  v11_story_sync();
@@ -195,7 +197,7 @@ static void v11_start_battle(int index){int id;if(index<0||index>9||!enemies[ind
  v11_guard=v11_ward=v11_haste=v11_focus=v11_free_cast=v11_decoy=v11_regen=0;
  v11_revived=v11_second_wind=v11_invincible=v11_stand=v11_echo_turns=v11_enemy_buff=v11_phase=0;
  v11_last_spell=255;v11_last_action=255;v11_judgment_used=v11_add_count=v11_command_used=v11_flare=v11_tide_phase=0;
- v11_mark_seen(id);v11_bestiary_rewards();
+ v11_mark_seen(id);v11_bestiary_rewards();lc_sfx_cry((u32)id*0x9E3779B9u+0x1234u);
  vram_copy32(OBJ_VRAM32+V11_TILE_FACE*8,V11_BATTLE_ART+id*128,128);for(int i=0;i<16;i++)OBJ_PALETTE[13*16+i]=V11_BATTLE_PALETTES[id*16+i];
  if(id==92)v11_tide_anchors();else if(id==70)v11_add(52,2);else if(id==80||id==96)v11_add(61,2);
  v11_message(V11_CHARACTERS[id].description);tone(1150);
@@ -263,7 +265,7 @@ static void v11_turn_end(void){if(v11_status_turn&&!--v11_status_turn)v11_status
 }
 static void v11_commit_action(void){if(!v11_enemy_hp[battle_index]&&!v11_add_count){v11_battle_reward(0);return;}
  battle_phase=1;battle_timer=24;battle_evade=0;v11_battle_sub=0;}
-static void v11_fight(void){int damage=v11_str();v11_fx_set(1,12);if(v11_status&VS_ROOT)damage=damage*3/4;
+static void v11_fight(void){int damage=v11_str();v11_fx_set(1,12);lc_sfx_attack(lc_party.count?lc_party.slots[lc_party.active].seed:0x41524E31u);if(v11_status&VS_ROOT)damage=damage*3/4;
  v11_damage_target(damage,0,1,0);if(v11_equipment[0]==10&&v11_turn%2==0)v11_damage_target(damage,0,1,0);
  v11_message("ARIN STRUCK. COSMOS WATCHES THE OPENING.");v11_commit_action();}
 static void v11_talk(void){int id=v11_enemy_id[battle_index];
@@ -273,7 +275,7 @@ static void v11_talk(void){int id=v11_enemy_id[battle_index];
  if(id==52||id==69){v11_battle_reward(1);return;}
  if(id<70&&v11_enemy_hp[battle_index]*2<=v11_enemy_max[battle_index]){
   u8 species=eco_species_for_enemy(enemies[battle_index].type);LcResult r=lc_add_wild(&lc_party,species,v9_next());
-  if(r==LC_OK){lc_party.slots[lc_party.count-1].bond=55;v11_trust(5);v11_battle_reward(1);return;}
+  if(r==LC_OK){lc_party.slots[lc_party.count-1].bond=55;v11_trust(5);lc_sfx(SFX_BEFRIEND);v11_battle_reward(1);return;}
   v11_message(r==LC_FULL?"THE PARTY IS FULL. THE CREATURE CAN STILL BE SPARED.":"THE CREATURE KEPT ITS DISTANCE.");
   v11_battle_reward(1);return;
  }
@@ -290,7 +292,7 @@ static void v11_update_battle(u16 newk){int i,id=v11_enemy_id[battle_index];
   if(newk&KEY_DOWN)v11_battle_sel=(u8)wrapi(v11_battle_sel+1,maxi(1,n));
   if(newk&KEY_A){if(v11_battle_sub==4){v11_target=v11_battle_sel;v11_fight();return;}
    if(v11_battle_sub==1){i=v11_shortcuts[v11_battle_sel];if(v11_use_skill(i)==1)v11_commit_action();}
-   if(v11_battle_sub==2){i=n?v11_list[v11_battle_sel]:255;int r=v11_consume(i);if(r==1)v11_commit_action();}
+   if(v11_battle_sub==2){i=n?v11_list[v11_battle_sel]:255;int r=v11_consume(i);if(r==1){lc_sfx(SFX_POTION);v11_commit_action();}}
    if(v11_battle_sub==3){i=n?v11_list[v11_battle_sel]:255;int r=v11_use_skill(i);if(r==1){v11_command_used=1;v11_commit_action();}}
   }return;
  }
@@ -306,7 +308,7 @@ static void v11_update_battle(u16 newk){int i,id=v11_enemy_id[battle_index];
  else if(battle_cursor==2){v11_battle_sub=2;v11_battle_sel=0;v11_list_count=0;for(i=70;i<90;i++)if(v11_qty[i])v11_list[v11_list_count++]=(u8)i;}
  else if(battle_cursor==3)v11_talk();
  else if(battle_cursor==4){if(id>=70)v11_message("THIS FOE HOLDS THE ROAD. A SMOKE PELLET STILL WORKS.");
-  else if((v9_next()%100)<75||v11_haste){v11_end_battle();v11_message("WE ESCAPED TOGETHER.");}else{v11_message("THE ESCAPE FAILED.");v11_commit_action();}}
+  else if((v9_next()%100)<75||v11_haste){lc_sfx(SFX_RUN);v11_end_battle();v11_message("WE ESCAPED TOGETHER.");}else{v11_message("THE ESCAPE FAILED.");v11_commit_action();}}
  else{v11_battle_sub=3;v11_battle_sel=0;v11_target=0;v11_list_count=0;for(i=30;i<50;i++)if(v11_skill_known(i))v11_list[v11_list_count++]=(u8)i;}
 }
 static void v11_draw_battle(void){int i,id=v11_enemy_id[battle_index];static const char*act[6]={"FIGHT","MAGIC","ITEM","TALK","RUN","ALLY"};
@@ -314,7 +316,7 @@ static void v11_draw_battle(void){int i,id=v11_enemy_id[battle_index];static con
  ui_frame(0,19,15);oam_hide_all();ui_text(2,1,"ERIDORIA // DUEL",14);
  ui_text(2,3,V11_CHARACTERS[id].name,13);ui_text(2,4,"HP",15);ui_num(5,4,v11_enemy_hp[battle_index],15);
  ui_text(9,4,"/",15);ui_num(11,4,v11_enemy_max[battle_index],15);if(v11_add_count){ui_text(18,4,"ADDS",13);ui_num(24,4,v11_add_count,15);}
- oam_set32(0,28,44+v11_anim_bob(3),272,0);oam_ui_portrait(0);
+ oam_set32(0,28,40+v11_anim_bob(3),272,0);oam_ui_portrait(0); /* 32x32 sits between the row 4 HP and row 9 stats */
  oam_set32(2,164-(v11_fx==1&&v11_fx_t?v11_fx_t:0)+(v11_fx==2&&v11_fx_t?((v11_fx_t&2)?3:-3):0),36+v11_anim_bob((u32)id*5u),V11_TILE_FACE,13);oam_ui_portrait(2);
  if(!v11_active_cosmos&&lc_party.count&&lc_party.slots[lc_party.active].species>=LC_SPECIES_IMPORTED)v11_draw_import_battle(3,104,8,lc_party.slots[lc_party.active].identity);
  else{oam_set(1,90,53,32+(cosmos.mood&3)*4,1,0);oam_ui_portrait(1);
@@ -341,6 +343,6 @@ static void v11_draw_battle(void){int i,id=v11_enemy_id[battle_index];static con
   }
   if(!n)ui_text(4,13,"NO SIGNAL",13);
  }else for(i=0;i<6;i++){int x=i%2?16:2,y=12+i/2;ui_text(x,y,battle_phase==0&&i==battle_cursor?">":" ",13);ui_text(x+2,y,act[i],15);}
- ui_wrap_text(16,v11_notice,14,2);ui_text(2,18,v11_battle_sub?"A CHOOSE   B BACK":v11_ult_charge==100?"SELECT ULT   B GUARD":"A ACT  B GUARD  ULT",13);
+ {int tall=!v11_battle_sub&&ui_wrap_lines(v11_notice)>2;ui_wrap_text(tall?15:16,v11_notice,14,tall?3:2);}ui_text(2,18,v11_battle_sub?"A CHOOSE   B BACK":v11_ult_charge==100?"SELECT ULT   B GUARD":"A ACT  B GUARD  ULT",13);
  if(!v11_battle_sub&&v11_ult_charge<100)ui_num(24,18,v11_ult_charge,14);
 }

@@ -274,7 +274,7 @@ static void v11_update_field(u16 k,u16 newk){int dx=0,dy=0,i,t,speed=(k&KEY_B)?3
   if(v11_on_spark()){v11_wild_begin(0);return;}
   v11_message("COSMOS NUDGES YOUR HAND. IT MISSED YOU.");}
  if(newk&KEY_R){game_mode=MODE_PAUSE;return_mode=MODE_SURFACE;pause_page=28;v11_menu_reset();v11_sub=0;}
- if(newk&KEY_L){if(v11_qty[70]){v11_qty[70]--;v11_heal(20);save_game();v11_message("POTION USED. HP RESTORED.");}else v11_message("NO POTIONS. THE CAMPFIRE WILL WAIT.");}
+ if(newk&KEY_L){if(v11_qty[70]){v11_qty[70]--;v11_heal(20);lc_sfx(SFX_POTION);save_game();v11_message("POTION USED. HP RESTORED.");}else v11_message("NO POTIONS. THE CAMPFIRE WILL WAIT.");}
  if(newk&KEY_SELECT){v11_use_skill(v11_skill_known(92)?92:30+1);}
 }
 static void v11_draw_field(void){int i,box;

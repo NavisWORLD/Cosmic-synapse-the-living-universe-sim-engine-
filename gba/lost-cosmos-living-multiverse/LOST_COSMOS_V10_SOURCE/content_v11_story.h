@@ -20,7 +20,8 @@ static const char* v11_short_world(void){
 static const char* v11_act_goal(void){
  if(v11_story_flags&V11_SF_ENDING)return "ACT I RESTS. COSMOS STAYS.";
  if(v11_story_flags&V11_SF_QUIET)return "LISTENER WAITS AT CROWN.";
- if(v11_beacons==255)return "FACE THE QUIET. 3 ECHOES.";
+ /* The Crown guardian falls first, then the Quiet waits with three echoes. */
+ if(v11_beacons==255&&(v11_boss_done&256)&&!(v11_boss_done&512))return "FACE THE QUIET. 3 ECHOES.";
  if(v11_world()==0&&!(v11_story_flags&V11_SF_BEFRIEND))return "ASK A SPARK IN THE FLOWERS.";
  if(v11_world()==0&&v11_rival_phase<2)return "LYS WAITS ON THE WEST SHELF.";
  return v11_signal_goal(v11_world());
@@ -112,7 +113,7 @@ static int v11_story_befriend(void){
  lc_party_sel=lc_party.active;
  born=&lc_party.slots[lc_party.active];
  born->bond=55;
- v11_fx_set(3,36);
+ v11_fx_set(3,36);lc_sfx(SFX_BEFRIEND);
  v11_story_flags|=V11_SF_BEFRIEND;
  v11_befriend_count=(u8)mini(255,v11_befriend_count+1);
  add_xp((u16)(28+species*4));
@@ -122,7 +123,7 @@ static int v11_story_befriend(void){
 }
 static int v11_wild_retaliate(void){
  LcCreature* ally=lc_party.count?&lc_party.slots[lc_party.active]:0;
- int attack=12+v11_wild_species*2+(v11_wild_rival?8:0);
+ int attack=12+v11_wild_species*2+(v11_wild_rival?4:0);
  int defense=ally?ally->defense:6;
  int affinity=ally?(ally->affinity%5):0;
  int damage=lc_damage((u8)mini(255,attack),(u8)mini(255,defense),v11_wild_aff,(u8)affinity);
@@ -145,11 +146,13 @@ static void v11_wild_strike(int move){
  int defense=10+v11_wild_species*2+(v11_wild_rival?8:0);
  int damage=lc_damage((u8)mini(255,attack),(u8)mini(255,defense),(u8)element,v11_wild_aff);
  int super=v11_type_super(element,v11_wild_aff);
+ lc_sfx_attack(ally?ally->seed:0x41524E31u);lc_sfx(super?SFX_CRIT:SFX_HIT);
  damage=maxi(1,(int)(((u32)damage*(u32)power)/12u));
  if(v11_wild_hp<=damage){
   v11_wild_hp=0;
   v11_spark_wins=(u8)mini(255,v11_spark_wins+1);
   if(ally&&ally->bond<100)ally->bond=(u8)mini(100,ally->bond+2);
+  lc_victory();
   add_xp((u16)(v11_wild_rival?90:22+v11_wild_species*5));
   if(v11_wild_rival){
    v11_story_flags|=V11_SF_RIVAL;v11_rival_phase=2;v11_trust(6);
@@ -171,7 +174,8 @@ static void v11_wild_begin(int rival){
  static const u8 table[8]={1,2,7,3,6,5,4,8};
  int species;
  v11_wild=1;v11_wild_menu=0;v11_wild_sel=0;v11_wild_rival=(u8)(rival?1:0);
- if(rival){species=5;v11_wild_max=(u16)(48+player_level*3);}
+ /* Tuned so a level-2 hero who rests and picks a strong move can win with one potion to spare. */
+ if(rival){species=5;v11_wild_max=(u16)(30+player_level*4);}
  else{
   species=table[v11_world()&7];
   if(v11_spark_wins&1)species=(species%8)+1;
@@ -182,19 +186,20 @@ static void v11_wild_begin(int rival){
  v11_wild_hp=v11_wild_max;
  v11_wild=3;
  /* Both walk frames upload once, outside the battle draw, so a blink cannot stall vblank. */
+ lc_sfx_cry(((u32)species*0x9E3779B9u)^(rival?0x4C595321u:0u));
  expand_obj32(V11_TILE_FOE,V108_SPECIES[species-1][0][0],0);
  expand_obj32(V11_TILE_FOE_B,V108_SPECIES[species-1][0][1],0);
  v11_message(rival?"LYS SENDS HER SKYSPARK.":"A SPARK RISES FROM THE FLOWERS.");
 }
 static void v11_wild_use_item(void){
  if(!v11_qty[70]){v11_wild=3;v11_message("NO POTION. THE CAMPFIRE WILL WAIT.");return;}
- v11_qty[70]--;v11_heal(20);
+ v11_qty[70]--;v11_heal(20);lc_sfx(SFX_POTION);
  if(v11_wild_retaliate())return;
  v11_wild=3;v11_message("POTION. THE SPARK STILL WATCHES.");
 }
 static void v11_wild_run(void){
  if(v11_wild_rival){v11_message("LYS BLOCKS THE PATH.");if(!v11_wild_retaliate())v11_wild=3;return;}
- v11_wild_finish("YOU STEPPED OUT OF THE FLOWERS.");
+ lc_sfx(SFX_RUN);v11_wild_finish("YOU STEPPED OUT OF THE FLOWERS.");
 }
 static void v11_wild_update(u16 newk){
  if(v11_wild==3){if(newk&(KEY_A|KEY_B)){v11_wild=1;v11_wild_menu=0;}return;}
@@ -224,7 +229,8 @@ static void v11_wild_draw(void){
  LcCreature* ally=lc_party.count?&lc_party.slots[lc_party.active]:0;
  u32 seed=ally?ally->seed:((u32)v11_wild_species*0x9E3779B9u);
  int blink=v11_anim_blink((u32)v11_wild_species*13u);
- int ax=20,ay=56,fx=148,fy=28;
+ /* Sprites stay above row 8 so the ally name and HP bar are never covered. */
+ int ax=44,ay=44,fx=148,fy=28;
  oam_hide_all();
  /* Opaque navy first. A transparent clear here let the map show through on torn frames. */
  ui_frame(0,19,15);
@@ -237,7 +243,7 @@ static void v11_wild_draw(void){
  v11_fx_tick();
  oam_set32(2,fx,fy,blink?V11_TILE_FOE:(((frame>>4)&1)?V11_TILE_FOE_B:V11_TILE_FOE),5+v11_wild_species-1);
  oam_ui_portrait(2);
- oam_set32(0,16,36,272,0);oam_ui_portrait(0);
+ oam_set32(0,8,28,272,0);oam_ui_portrait(0);
  if(ally&&ally->species>=1&&ally->species<=8){
   int av=v11_anim_blink(ally->seed)?0:((frame>>4)&1);
   oam_set(1,ax,ay,384+(ally->species-1)*24+mini(2,ally->stage)*8+av*4,5+ally->species-1,0);

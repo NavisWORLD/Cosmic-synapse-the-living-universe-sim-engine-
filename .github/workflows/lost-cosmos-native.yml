@@ -101,6 +101,9 @@ jobs:
       - name: Earn the same full route with a nursery creature in the runtime cartridge
         timeout-minutes: 7
         run: python3 tests/test_mgba_content_v11.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --starter artifacts/mgba_sol/runtime/sol_starter.sav --out artifacts/mgba_sol/journey
+      - name: Act I story - Listener, flower spark Fight/Befriend/Potion/Run, Lys, the Quiet, crown listener, CONTINUE
+        timeout-minutes: 7
+        run: python3 tests/test_mgba_story_act1.py --out artifacts/mgba_story_act1
       - name: Release gate - real controller-only Act I to Malakar and First Heart, plus real second cold boot
         timeout-minutes: 7
         run: |
@@ -141,6 +144,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/mgba_title/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_v11_content/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_story_act1/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act2/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_eldoria/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_grove/
