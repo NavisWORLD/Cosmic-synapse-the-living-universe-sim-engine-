@@ -10,7 +10,8 @@
 static s16 spark_fx[SPARK_FIELD_COUNT];
 static s16 spark_fy[SPARK_FIELD_COUNT];
 static s16 spark_follow_x,spark_follow_y;
-static u8 spark_field_ready,spark_follow_init;
+static u8 spark_field_ready,spark_follow_init,spark_uploaded_phase=255;
+static s8 spark_uploaded_id[3]={-1,-1,-1};
 
 static void spark_field_ensure(void){
  int i;
@@ -85,17 +86,24 @@ static void spark_field_sprites(void){
   rank[slot]=d;shown[slot]=i;
  }
  if(shown[0]>=0){int c;for(c=0;c<16;c++)OBJ_PALETTE[SPARK_OBJ_PAL*16+c]=SPARK_WORLD_PAL[current_world&7][c];}
- for(i=0;i<3;i++){
-  int oi=43+i,id,sx,sy,b,tile;
-  volatile u16*dst;const u8*src;
-  if(shown[i]<0){OAM16[oi*4]=0x0200;continue;}
-  id=shown[i];
-  sx=spark_fx[id]-cam_x-16;sy=spark_fy[id]-cam_y-24;
-  if(sx<-32||sx>239||sy<-32||sy>159){OAM16[oi*4]=0x0200;continue;}
-  tile=SPARK_OBJ_TILE+i*16;
-  dst=(volatile u16*)OBJ_VRAM32;src=SPARK_FIELD_TILES[id][(frame>>4)&1];
-  for(b=0;b<256;b++)dst[tile*16+b]=(u16)src[b*2]|((u16)src[b*2+1]<<8);
-  oam_set32(oi,sx,sy,tile,SPARK_OBJ_PAL);
+ {int phase=(frame>>4)&1;
+  for(i=0;i<3;i++){
+   int oi=43+i,id,sx,sy,b,tile,trait;
+   volatile u16*dst;const u8*src;
+   if(shown[i]<0){OAM16[oi*4]=0x0200;spark_uploaded_id[i]=-1;continue;}
+   id=shown[i];
+   trait=SPARK_FIELD[id].rare+(SPARK_FIELD[id].stage<<2);
+   sx=spark_fx[id]-cam_x-16;sy=spark_fy[id]-cam_y-24+(((frame>>3)+trait)&2?-1:1);
+   if(sx<-32||sx>239||sy<-32||sy>159){OAM16[oi*4]=0x0200;continue;}
+   tile=SPARK_OBJ_TILE+i*16;
+   if(spark_uploaded_phase!=(u8)phase||spark_uploaded_id[i]!=(s8)id){
+    dst=(volatile u16*)OBJ_VRAM32;src=SPARK_FIELD_TILES[id][phase];
+    for(b=0;b<256;b++)dst[tile*16+b]=(u16)src[b*2]|((u16)src[b*2+1]<<8);
+    spark_uploaded_id[i]=(s8)id;
+   }
+   oam_set32(oi,sx,sy,tile,SPARK_OBJ_PAL);
+  }
+  spark_uploaded_phase=(u8)phase;
  }
 }
 static void spark_field_draw(void){

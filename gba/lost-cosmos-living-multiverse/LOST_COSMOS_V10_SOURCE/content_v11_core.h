@@ -81,6 +81,8 @@ static void v11_reset(void){int i,j;for(i=0;i<100;i++)v11_qty[i]=v11_encounters[
  for(i=0;i<3;i++)v11_durability[i]=100;
  v11_dialogue=v11_shop=v11_evolution=v11_gameover=v11_rename=0;
  v11_field_light=v11_field_track=v11_field_scout=0;v11_forage_day=255;
+ v11_act=v11_story_flags=v11_spark_wins=v11_befriend_count=v11_rival_phase=0;
+ v11_wild=v11_lore=v11_lore_page=v11_wild_menu=0;v11_wild_hp=v11_wild_max=1;
  v11_active_cosmos=v11_export_ready=v11_cosmos_stage=0;v11_battle_pose=255;v11_cosmos_name[0]=0;
  v11_menu_reset();v11_unlock();
 }
@@ -113,6 +115,7 @@ static void v11_save(void){u8 b[V11_BYTES];int i,j,o=16;u32 crc;
  V11_PUT16(520,v11_days);V11_PUT16(522,v11_day_ticks);V11_PUT16(524,v11_scrap);b[526]=v11_herbs;
  b[527]=v11_active_cosmos;b[528]=v11_export_ready;b[529]=v11_cosmos_stage;
  for(i=0;i<12;i++)b[530+i]=(u8)v11_cosmos_name[i];b[542]=v11_forage_day;for(i=0;i<100;i++)b[548+i]=v11_pending[i];
+ b[648]=v11_act;b[649]=v11_story_flags;b[650]=v11_spark_wins;b[651]=v11_befriend_count;b[652]=v11_rival_phase;
  #undef V11_PUT16
  crc=lc_crc32(b,764);for(i=0;i<4;i++)b[764+i]=(u8)(crc>>(i*8));
  for(i=0;i<V11_BYTES;i++)SRAM[V11_SRAM+i]=b[i];
@@ -150,6 +153,8 @@ static void v11_restore(void){u8 b[V11_BYTES];int i,j,o=16;u32 crc,got;
  for(i=0;i<12;i++){for(j=0;j<11;j++){u8 c=b[376+i*12+j];v11_names[i][j]=(char)((c>='A'&&c<='Z')||c==' '||c==0?c:0);}v11_names[i][11]=0;}
  v11_days=V11_GET16(520);v11_day_ticks=V11_GET16(522)%36000;v11_scrap=V11_GET16(524);v11_herbs=b[526];
  v11_active_cosmos=b[527]&1;v11_export_ready=b[528]&1;v11_cosmos_stage=(u8)mini(2,b[529]);v11_forage_day=b[542];for(i=0;i<100;i++)v11_pending[i]=(u8)mini(99,b[548+i]);
+ v11_act=(u8)mini(5,b[648]);v11_story_flags=b[649];v11_spark_wins=b[650];v11_befriend_count=b[651];v11_rival_phase=(u8)mini(2,b[652]);
+ v11_story_sync();
  for(i=0;i<11;i++){u8 c=b[530+i];v11_cosmos_name[i]=(char)((c>='A'&&c<='Z')||c==' '||c==0?c:0);}v11_cosmos_name[11]=0;
  #undef V11_GET16
  #undef V11_GET32

@@ -20,6 +20,8 @@ body = r'''
 static void fresh(void) {
  init_new_game(); intro=0; v10_opening=0; cinema_active=0;
  init_graphics(); v11_enter(0); v11_notice[0]=0;
+ /* Act I story goals lead the HUD until the first spark and Lys are done. */
+ v11_story_flags|=V11_SF_BEFRIEND; v11_rival_phase=2;
 }
 static void text_at(int x,int y,const char *s) {
  volatile u16 *map=screenblock(UI_MAP_BASE);
@@ -34,7 +36,8 @@ static void text_at(int x,int y,const char *s) {
  }
 }
 static void field_goal(const char *s) {
- v11_notice[0]=0; v11_draw_field(); text_at(2,19,s);
+ /* Act I HUD: the earned goal sits on row 18, the context action on row 19. */
+ v11_notice[0]=0; v11_draw_field(); text_at(2,18,s);
 }
 int main(void) {
  fresh(); enter_pause(); pause_page=1; v11_field_track=0;
@@ -45,20 +48,20 @@ int main(void) {
  update_pause(KEY_B); assert(pause_page==1);
  update_pause(KEY_B); assert(pause_page==0);
  update_pause(KEY_B); assert(game_mode==MODE_SURFACE);
- field_goal("NEXT: FIND SIGNAL CORE");
- v11_cores_found=1; field_goal("NEXT: CARRY MEMORY ECHO");
- v11_echo_found=1; field_goal("NEXT: FACE THREE FOES");
- v11_world_kills[0]=3; field_goal("NEXT: LIGHT THE BEACON");
- v11_beacons=1; field_goal("NEXT: FOLLOW THE EAST GATE");
+ field_goal("FIND SIGNAL CORE");
+ v11_cores_found=1; field_goal("CARRY MEMORY ECHO");
+ v11_echo_found=1; field_goal("FACE THREE FOES");
+ v11_world_kills[0]=3; field_goal("LIGHT THE BEACON");
+ v11_beacons=1; field_goal("FOLLOW THE EAST GATE");
  v11_enter(6); v11_beacons|=64; v11_qty[92]=0; keys_found=0;
- field_goal("NEXT: FACE VESPER FOR Z");
- v11_qty[92]=1; field_goal("NEXT: FOLLOW THE EAST GATE");
- v11_enter(7); v11_beacons=255; field_goal("NEXT: FACE THE CROWN");
- v11_boss_done|=256; field_goal("NEXT: FIND THE QUIET");
- v11_boss_done|=512; field_goal("NEXT: FACE REMAINING BOSSES");
- v11_boss_done=1023; field_goal("NEXT: EVERY SIGNAL RESTORED");
+ field_goal("FACE VESPER FOR Z");
+ v11_qty[92]=1; field_goal("FOLLOW THE EAST GATE");
+ v11_enter(7); v11_beacons=255; field_goal("FACE THE CROWN");
+ v11_boss_done|=256; field_goal("FACE THE QUIET. 3 ECHOES.");
+ v11_boss_done|=512; field_goal("FACE REMAINING BOSSES");
+ v11_boss_done=1023; field_goal("EVERY SIGNAL RESTORED");
  fresh(); player.x=30*8; player.y=53*8; v11_draw_field();
- text_at(2,18,"A REST");
+ text_at(2,19,"A REST");
  fresh(); enter_pause(); pause_page=41; v11_sel=0;
  v11_draw_pause(); text_at(2,14,"COST S"); text_at(8,14,"8");
  text_at(11,14,"H"); text_at(13,14,"2"); text_at(17,14,"C"); text_at(19,14,"0");
