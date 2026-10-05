@@ -4,7 +4,7 @@
  * by the cage. Anti-dupe stays in the Synapse OS ledger.
  */
 import { beastProfile, buildGrowth, buildSave, attachGrowth } from '../lost-cosmos/mailbox.mjs';
-import { encodeTicket, importPayload, openShare, sealShare, ticketLink } from '../lost-cosmos/qbeast.mjs';
+import { encodeTicket, importPayload, openShare, sealShare, ticketLink } from '../lost-cosmos/qbeast.mjs?sites=digest43';
 import { admit, cageSave, emptyLedger, loadLedger, releaseForTrade, saveLedger } from '../lost-cosmos/synapse-os.mjs';
 import { buildGenome } from './genome.mjs';
 import { stageFromXp } from './store.mjs';

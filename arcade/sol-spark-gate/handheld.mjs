@@ -1,3 +1,4 @@
+import {sha256Hex} from './digest.mjs';
 import { verifySparkArt } from './cartridge.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
 import {batteryName,prepareBattery,keepCoreBattery,cacheNativeBattery,loadNativeBattery} from './battery.mjs';
@@ -145,8 +146,7 @@ async function installEmulator(bytes) {
     cartridge=data;
     if (data.byteLength !== receipt.bytes || data.byteLength < 0xc0 || new Uint8Array(data)[0xb2] !== 0x96)
       throw new Error('The cartridge download is incomplete. Reload and try again.');
-    const digest = await crypto.subtle.digest('SHA-256', data);
-    const hash = Array.from(new Uint8Array(digest), (v) => v.toString(16).padStart(2, '0')).join('');
+    const hash = await sha256Hex(data);
     if (hash !== receipt.sha256) throw new Error('The cartridge download does not match this release. Reload and try again.');
   } catch (err) {
     state.started = false;
