@@ -5,6 +5,7 @@ import { sparkRecord, loadCage, saveCage, admit } from '../spark-beasts/trade.mj
 import { attachSparkArt } from './cartridge.mjs';
 import { readSparkFile, checkedSparkSave } from './spark-file.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
+import {normalizeHandheldInput} from './controls.mjs';
 const $=id=>document.getElementById(id),status=s=>$('status').textContent=s;
 let table,current=null,save=null,journey=false;
 const embedded=new URLSearchParams(location.search).get('mode')==='handheld';
@@ -15,6 +16,10 @@ window.addEventListener('message',async event=>{
  if(!embedded||event.source!==window.parent||!cloudOrigins.has(event.origin))return;
  if(event.data?.type==='sol-spark-player-state'){
   $('handheld').contentWindow.postMessage({source:'living-universe',type:'sol-player-visibility',active:event.data.active===true},location.origin);return;
+ }
+ if(event.data?.type==='sol-spark-input'){
+  const input=normalizeHandheldInput(event.data.button,event.data.down);if(!input)return;
+  $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-input',button:input.button,down:input.down},location.origin);return;
  }
  if(event.data?.type!=='sol-spark-qbeast')return;
  try{
@@ -39,6 +44,10 @@ function storedMatch(bytes){
  throw new Error('The mailed creature is missing from the local Spark ledger. Keep its .qbeast or receipt and import it here.');
 }
 window.addEventListener('message',event=>{
+ if(event.origin===location.origin&&event.source===$('handheld').contentWindow&&event.data?.source==='living-universe'&&event.data?.type==='sol-spark-input-ack'){
+  if(cloudOrigin)window.parent.postMessage({type:'sol-spark-input-ack',button:event.data.button,down:event.data.down,applied:event.data.applied===true},cloudOrigin);
+  return;
+ }
  if(event.origin!==location.origin||event.source!==$('spark').contentWindow||event.data?.type!=='lc-cage-save')return;
  try{if(!table)throw new Error('The recorded table is still loading.');const raw=event.data.save instanceof Uint8Array?event.data.save:new Uint8Array(event.data.save);if(raw.length!==32768)throw new Error('Invalid battery save size.');const beast=storedMatch(raw);ready(beast,attachSparkArt(raw,beast.genome,beast.runIndex,table));}catch(err){status(err.message);}
 });
