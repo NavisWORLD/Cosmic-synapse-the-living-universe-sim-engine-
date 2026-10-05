@@ -5,7 +5,7 @@ import { sparkRecord, loadCage, saveCage, admit } from '../spark-beasts/trade.mj
 import { attachSparkArt } from './cartridge.mjs';
 import { readSparkFile, checkedSparkSave } from './spark-file.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
-import {normalizeHandheldInput} from './controls.mjs';
+import {normalizeHandheldInput} from './controls.mjs?controller=beastboy39';
 const $=id=>document.getElementById(id),status=s=>$('status').textContent=s;
 let table,current=null,save=null,journey=false;
 const embedded=new URLSearchParams(location.search).get('mode')==='handheld';
