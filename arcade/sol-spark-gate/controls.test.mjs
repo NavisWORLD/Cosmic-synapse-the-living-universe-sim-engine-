@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {HANDHELD_INPUTS,normalizeHandheldInput,applyHandheldInput} from './controls.mjs';
 
 test('every Beast Boy control maps to the existing EmulatorJS GBA index',()=>{
@@ -14,4 +15,13 @@ test('every Beast Boy control maps to the existing EmulatorJS GBA index',()=>{
  assert.equal(normalizeHandheldInput('nope',true),null);
  assert.equal(normalizeHandheldInput('a','true'),null);
  assert.equal(applyHandheldInput(gm,'nope',true),false);
+});
+
+
+test('live Pages controller assets are cache-busted for Android/tablet clients',()=>{
+ const gate=readFileSync(new URL('./index.html',import.meta.url),'utf8');
+ const handheld=readFileSync(new URL('./handheld.html',import.meta.url),'utf8');
+ assert.match(gate,/handheld\.html\?controller=beastboy39/);
+ assert.match(gate,/app\.mjs\?controller=beastboy39/);
+ assert.match(handheld,/handheld\.mjs\?controller=beastboy39/);
 });
