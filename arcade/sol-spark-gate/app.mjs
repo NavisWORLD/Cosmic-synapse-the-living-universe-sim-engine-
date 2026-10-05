@@ -6,14 +6,14 @@ import { attachSparkArt } from './cartridge.mjs';
 import { readSparkFile, checkedSparkSave } from './spark-file.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
 import {normalizeHandheldInput} from './controls.mjs?controller=beastboy39';
+import {isTrustedCloudOrigin} from './cloud-origin.mjs?controller=previeworigin41';
 const $=id=>document.getElementById(id),status=s=>$('status').textContent=s;
 let table,current=null,save=null,journey=false;
 const embedded=new URLSearchParams(location.search).get('mode')==='handheld';
 if(embedded){document.body.classList.add('handheld-only');$('spark').removeAttribute('src');}
-const cloudOrigins=new Set(['https://beastboxcosmos.xyz','https://www.beastboxcosmos.xyz','http://127.0.0.1:3000','http://localhost:3000']);
 let cloudOrigin=null;
 window.addEventListener('message',async event=>{
- if(!embedded||event.source!==window.parent||!cloudOrigins.has(event.origin))return;
+ if(!embedded||event.source!==window.parent||!isTrustedCloudOrigin(event.origin))return;
  if(event.data?.type==='sol-spark-player-state'){
   $('handheld').contentWindow.postMessage({source:'living-universe',type:'sol-player-visibility',active:event.data.active===true},location.origin);return;
  }
@@ -67,5 +67,5 @@ $('handheld').addEventListener('load',()=>{if(save)ready(current,save,journey);}
 try{table=await loadTable();
  const approved=await fetch('./public-seeds.json').then(r=>{if(!r.ok)throw Error('Public recorded seeds unavailable.');return r.json()});
  for(const row of approved.runs){if(table.runs.some(r=>r.key===row.k))continue;table.runs.push({key:row.k,backend:row.b,job_id:row.j,pub_index:row.p,num_bits:row.n,shots:row.s,counts_sha256:row.h,counts:Object.fromEntries(row.c.split(',').map(p=>{const[k,v]=p.split(':');return[k,Number(v)]}))});}
- if(embedded)for(const origin of cloudOrigins)window.parent.postMessage({type:'sol-spark-ready'},origin);
+ if(embedded)window.parent.postMessage({type:'sol-spark-ready'},'*');
  status('Spark or capture a companion on the left, then send it to the handheld. You can also import a Spark .qbeast from Vercel.');}catch(err){status(err.message);}
