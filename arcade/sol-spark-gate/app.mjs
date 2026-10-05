@@ -1,9 +1,9 @@
 import { loadTable } from '../spark-beasts/runs.mjs';
 import { buildGenome } from '../spark-beasts/genome.mjs';
 import { loadStore } from '../spark-beasts/store.mjs';
-import { sparkRecord, loadCage, saveCage, admit } from '../spark-beasts/trade.mjs';
+import { sparkRecord, loadCage, saveCage, admit } from '../spark-beasts/trade.mjs?sites=digest43';
 import { attachSparkArt } from './cartridge.mjs';
-import { readSparkFile, checkedSparkSave } from './spark-file.mjs';
+import { readSparkFile, checkedSparkSave } from './spark-file.mjs?sites=digest43';
 import { readProgress } from '../sol-beast-lab/design.mjs';
 import {normalizeHandheldInput} from './controls.mjs?controller=beastboy39';
 import {isTrustedCloudOrigin} from './cloud-origin.mjs?controller=previeworigin41&sites=livingcosmos42';

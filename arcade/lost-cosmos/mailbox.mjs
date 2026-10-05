@@ -1,3 +1,4 @@
+import {sha256Hex as checkedDigest} from '../sol-spark-gate/digest.mjs';
 /**
  * LCX1 mailbox encoder. Byte-compatible with tools/lc_mailbox.py.
  * Raw EEG samples are not an input. Only a BCP1 profile and three derived traits.
@@ -302,10 +303,7 @@ function hex(n) {
   return (n >>> 0).toString(16).padStart(8, '0');
 }
 
-async function sha256(bytes) {
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
-}
+async function sha256(bytes) { return checkedDigest(bytes); }
 
 function runningAsCli() {
   if (typeof process === 'undefined' || !process.versions?.node || !process.argv?.[1]) return false;

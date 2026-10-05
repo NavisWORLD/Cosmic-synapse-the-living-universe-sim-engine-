@@ -1,5 +1,5 @@
 import { buildGenome } from '../spark-beasts/genome.mjs';
-import { importPayload, cageSave, buildSave, buildGrowth, attachGrowth } from '../spark-beasts/trade.mjs';
+import { importPayload, cageSave, buildSave, buildGrowth, attachGrowth } from '../spark-beasts/trade.mjs?sites=digest43';
 import { attachSparkArt } from './cartridge.mjs';
 
 /** Accept the public Spark card exported by the current Vercel generator.

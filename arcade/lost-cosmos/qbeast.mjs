@@ -1,3 +1,4 @@
+import {sha256Hex as checkedDigest} from '../sol-spark-gate/digest.mjs';
 /**
  * Untrusted beast intake for Lost Cosmos V11.1.
  * A model, a file, or a share can suggest a label. Stats and the public id
@@ -34,10 +35,7 @@ export function canonical(value) {
   return `{${Object.keys(value).filter((key) => value[key] !== undefined).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`;
 }
 
-export async function sha256Hex(bytes) {
-  const digest = await crypto.subtle.digest('SHA-256', bytes instanceof Uint8Array ? bytes : new TextEncoder().encode(bytes));
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
-}
+export async function sha256Hex(bytes) { return checkedDigest(bytes); }
 
 export function bytesToHex(bytes) {
   return [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
