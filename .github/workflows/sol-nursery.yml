@@ -63,7 +63,7 @@ jobs:
       - name: Install isolated browser test runtime
         run: |
           npm install --prefix /tmp/sol-browser --no-save --ignore-scripts playwright@1.62.1
-          /tmp/sol-browser/node_modules/.bin/playwright install --with-deps chromium
+          /tmp/sol-browser/node_modules/.bin/playwright install --with-deps chromium webkit
       - name: Build the current native cartridge for the real browser
         run: |
           sudo apt-get update && sudo apt-get install -y clang lld llvm
@@ -74,6 +74,7 @@ jobs:
           NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-beast-lab/browser-check.cjs http://127.0.0.1:8765 artifacts/sol-browser
           NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-spark-gate/browser-check.cjs http://127.0.0.1:8765 artifacts/sol-spark-browser
           NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-spark-gate/core-browser.cjs http://127.0.0.1:8765 artifacts/sol-spark-core
+          NODE_PATH=/tmp/sol-browser/node_modules node arcade/sol-spark-gate/iphone-audio-browser.cjs http://127.0.0.1:8765
       - uses: actions/upload-artifact@v4
         if: always()
         with:

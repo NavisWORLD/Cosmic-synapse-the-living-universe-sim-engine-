@@ -21,7 +21,19 @@ test('every Beast Boy control maps to the existing EmulatorJS GBA index',()=>{
 test('live Pages controller assets are cache-busted for Android/tablet clients',()=>{
  const gate=readFileSync(new URL('./index.html',import.meta.url),'utf8');
  const handheld=readFileSync(new URL('./handheld.html',import.meta.url),'utf8');
- assert.match(gate,/handheld\.html\?controller=beastboy39/);
- assert.match(gate,/app\.mjs\?controller=beastboy39/);
- assert.match(handheld,/handheld\.mjs\?controller=beastboy39/);
+ assert.match(gate,/handheld\.html\?controller=iphoneaudio40/);
+ assert.match(gate,/app\.mjs\?controller=iphoneaudio40/);
+ assert.match(handheld,/handheld\.mjs\?controller=iphoneaudio40/);
+});
+
+
+test('handheld exposes an explicit iPhone Safari audio unlock contract',()=>{
+ const handheld=readFileSync(new URL('./handheld.html',import.meta.url),'utf8');
+ const runtime=readFileSync(new URL('./handheld.mjs',import.meta.url),'utf8');
+ assert.match(handheld,/id="audio"[^>]*aria-pressed="false"[^>]*>🔊 Enable game sound/);
+ assert.match(handheld,/iPhone\/iPad/);
+ assert.match(runtime,/function emulatorAudioContexts/);
+ assert.match(runtime,/context\.resume\(\)/);
+ assert.match(runtime,/audioWanted/);
+ assert.match(runtime,/gameVolume\(\)/);
 });
