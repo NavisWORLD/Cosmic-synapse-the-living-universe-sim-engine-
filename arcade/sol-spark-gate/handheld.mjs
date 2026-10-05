@@ -2,7 +2,7 @@ import { verifySparkArt } from './cartridge.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
 import {batteryName,prepareBattery,keepCoreBattery,cacheNativeBattery,loadNativeBattery} from './battery.mjs';
 import {handleOptionalWakeLock} from './wake-lock.mjs';
-import {applyHandheldInput,normalizeHandheldInput} from './controls.mjs';
+import {applyHandheldInput,normalizeHandheldInput} from './controls.mjs?controller=beastboy39';
 /* Sol Spark handheld adapter. Original living-link player stays unchanged. */
 import { FIXTURE, GROWTH_BYTES, GROWTH_OFFSET, MAILBOX_BYTES, MAILBOX_OFFSET, SRAM_SIZE, buildSave, livingProfile, profileFromBcp1, profileFromBeastJson } from '../lost-cosmos/mailbox.mjs';
 import { MuseLink, mockTraits } from '../lost-cosmos/muse.mjs';
