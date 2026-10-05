@@ -1,6 +1,8 @@
 const STATIC_CLOUD_ORIGINS=new Set([
  'https://beastboxcosmos.xyz',
  'https://www.beastboxcosmos.xyz',
+ 'https://beast-box-control-deck-cory.pheras-king.chatgpt.site',
+ 'http://terminal.local:4173',
  'http://127.0.0.1:3000',
  'http://localhost:3000',
 ]);
