@@ -148,6 +148,15 @@ static void v11_wild_strike(int move){
  int super=v11_type_super(element,v11_wild_aff);
  lc_sfx_attack(ally?ally->seed:0x41524E31u);lc_sfx(super?SFX_CRIT:SFX_HIT);
  damage=maxi(1,(int)(((u32)damage*(u32)power)/12u));
+ /* A strong companion must not erase a flower spark in one blow: from above
+    the befriend line it holds on at 40%, so weaken-then-befriend still works. */
+ if(!v11_wild_rival&&v11_wild_hp*5>v11_wild_max*2&&v11_wild_hp<=damage){
+  v11_wild_hp=(u16)maxi(1,v11_wild_max*2/5);
+  if(v11_wild_retaliate())return;
+  v11_fx_set(1,14);v11_wild=3;
+  v11_message("IT HOLDS ON. NOW BEFRIEND IT.");
+  return;
+ }
  if(v11_wild_hp<=damage){
   v11_wild_hp=0;
   v11_spark_wins=(u8)mini(255,v11_spark_wins+1);
