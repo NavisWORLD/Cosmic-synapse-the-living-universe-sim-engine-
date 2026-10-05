@@ -32,6 +32,12 @@ const root=process.argv[2]||'http://127.0.0.1:8765',out=process.argv[3]||'artifa
   assert.equal(initial.save.length,32768);assert.equal(Buffer.from(initial.save).toString('ascii',24704,24708),'SPK1');
   assert.ok(initial.path.includes(initial.name.replace('.gba','')),'native battery uses the selected identity namespace');
   console.log('Native core battery path:',initial.path);
+  await hand.evaluate(()=>{const gm=EJS_emulator.gameManager,original=gm.simulateInput.bind(gm);window.__bridgedInputs=[];gm.simulateInput=(player,index,value)=>{window.__bridgedInputs.push([player,index,value]);return original(player,index,value);};});
+  const bridgeInput=async(button,down)=>page.evaluate(({button,down})=>document.getElementById('handheld').contentWindow.postMessage({source:'living-universe',type:'sol-spark-input',button,down},location.origin),{button,down});
+  await bridgeInput('a',true);await bridgeInput('a',false);await page.waitForTimeout(80);
+  assert.deepEqual(await hand.evaluate(()=>window.__bridgedInputs.slice(-2)),[[0,8,1],[0,8,0]],'forwarded A reaches the actual mounted EmulatorJS core');
+  const beforeInvalid=await hand.evaluate(()=>window.__bridgedInputs.length);await bridgeInput('not-a-control',true);await page.waitForTimeout(40);
+  assert.equal(await hand.evaluate(()=>window.__bridgedInputs.length),beforeInvalid,'invalid forwarded controls are rejected');
   await hand.locator('#game canvas').first().screenshot({path:out+'/native-title.png'});
   async function press(button){await hand.evaluate(b=>EJS_emulator.gameManager.simulateInput(0,b,1),button);await page.waitForTimeout(150);await hand.evaluate(b=>EJS_emulator.gameManager.simulateInput(0,b,0),button);await page.waitForTimeout(650);}
   await page.waitForTimeout(1800);await press(8);await page.waitForTimeout(900);await press(3);
@@ -51,7 +57,7 @@ const root=process.argv[2]||'http://127.0.0.1:8765',out=process.argv[3]||'artifa
   const running=await resumed.evaluate(()=>Array.from(EJS_emulator.gameManager.getSaveFile(false)));
   assert.deepEqual(running.slice(1024,1276),earned.slice(1024,1276),'native roster and earned progress survive boot');
   assert.deepEqual(running.slice(25600),earned.slice(25600),'manual slots and Spark forms survive boot');
-  assert.deepEqual(errors,[]);await fs.writeFile(out+'/report.json',JSON.stringify({passed:true,nativeCore:true,publicQbeast:true,gestureImport:true,sameIdentityBattery:true,earnedBatterySurvivesReopen:true,consoleErrors:errors},null,2));
-  console.log('PASS: actual mobile Chromium core, public Spark import, exact native battery resume');
+  assert.deepEqual(errors,[]);await fs.writeFile(out+'/report.json',JSON.stringify({passed:true,nativeCore:true,publicQbeast:true,gestureImport:true,sameIdentityBattery:true,earnedBatterySurvivesReopen:true,forwardedControllerHitsNativeCore:true,consoleErrors:errors},null,2));
+  console.log('PASS: actual mobile Chromium core, forwarded Beast Boy controls, public Spark import, exact native battery resume');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
