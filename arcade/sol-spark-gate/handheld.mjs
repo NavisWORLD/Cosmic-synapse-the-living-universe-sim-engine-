@@ -260,6 +260,12 @@ window.addEventListener('message', (event) => {
     return;
   }
   if (data.type === 'lu-state') onWorldMessage(data);
+  if (data.type === 'sol-spark-start') {
+    if (!state.save) { status('Send your Spark companion into this handheld first.'); return; }
+    $('consent').checked = true;
+    installEmulator(state.save);
+    return;
+  }
   if (data.type === 'lc-import-save' || data.type === 'sol-spark-journey') {
     try {
       const bytes = acceptCageSave(data.save instanceof Uint8Array ? data.save : new Uint8Array(data.save), data.type === 'sol-spark-journey');

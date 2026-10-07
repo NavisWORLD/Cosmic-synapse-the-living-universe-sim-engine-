@@ -17,6 +17,12 @@ window.addEventListener('message',async event=>{
  if(event.data?.type==='sol-spark-player-state'){
   $('handheld').contentWindow.postMessage({source:'living-universe',type:'sol-player-visibility',active:event.data.active===true},location.origin);return;
  }
+ if(event.data?.type==='sol-spark-start'){
+  if(!current){status('Send the Beast before starting the cartridge.');return;}
+  $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-start'},location.origin);
+  status('Starting the cartridge with the verified Beast.');
+  return;
+ }
  if(event.data?.type==='sol-spark-input'){
   const input=normalizeHandheldInput(event.data.button,event.data.down);if(!input)return;
   $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-input',button:input.button,down:input.down},location.origin);return;
@@ -32,7 +38,7 @@ window.addEventListener('message',async event=>{
  }catch(err){status(err.message);window.parent.postMessage({type:'sol-spark-rejected',message:err.message},event.origin);}
 });
 const download=(name,bytes,type='application/octet-stream')=>{const u=URL.createObjectURL(new Blob([bytes],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);};
-function ready(beast,bytes,earned=false){current=beast;save=bytes;journey=earned;$('companion').textContent=`${beast.genome.names['1']} · ${beast.genome.island}`;$('download').disabled=$('receipt').disabled=false;$('download').textContent=earned?'↓ Journey .sav':'↓ Starter .sav';$('handheld').contentWindow.postMessage({source:'living-universe',type:earned?'sol-spark-journey':'lc-import-save',save:bytes,callsign:beast.record.callsign,species:beast.genome.names['1']},location.origin);status(earned?'Your earned journey and companion art are ready. Reload the handheld before importing another save.':'Your creature’s art is ready in the cartridge mailbox. Enable local import in the handheld, then start the game.');}
+function ready(beast,bytes,earned=false){current=beast;save=bytes;journey=earned;$('companion').textContent=`${beast.genome.names['1']} · ${beast.genome.island}`;$('download').disabled=$('receipt').disabled=false;$('download').textContent=earned?'↓ Journey .sav':'↓ Starter .sav';$('handheld').contentWindow.postMessage({source:'living-universe',type:earned?'sol-spark-journey':'lc-import-save',save:bytes,callsign:beast.record.callsign,species:beast.genome.names['1']},location.origin);status(earned?'Your earned journey and companion art are ready. Reload the handheld before importing another save.':'The verified Beast is in the cartridge. Press Start Lost COSMOS.');}
 function storedMatch(bytes){
  const store=loadStore(localStorage);
  for(const b of Object.values(store.beasts)){
