@@ -49,8 +49,10 @@ const root=process.argv[2]||'http://127.0.0.1:3000',out=process.argv[3]||'artifa
   const beforeInvalid=await hand.evaluate(()=>window.__bridgedInputs.length);await bridgeInput('not-a-control',true);await page.waitForTimeout(40);
   assert.equal(await hand.evaluate(()=>window.__bridgedInputs.length),beforeInvalid,'invalid forwarded controls are rejected');
   await hand.locator('#game canvas').first().screenshot({path:out+'/native-title.png'});
-  async function press(button){await hand.evaluate(b=>EJS_emulator.gameManager.simulateInput(0,b,1),button);await page.waitForTimeout(150);await hand.evaluate(b=>EJS_emulator.gameManager.simulateInput(0,b,0),button);await page.waitForTimeout(650);}
-  await page.waitForTimeout(1800);await press(8);await page.waitForTimeout(900);await press(3);
+  async function pressParent(button){await bridgeInput(button,true);await page.waitForTimeout(150);await bridgeInput(button,false);await page.waitForTimeout(650);}
+  // Advance the real native title flow through the exact parent bridge under test.
+  // The LCR1 roster appearing in SRAM below is the native-game effect receipt.
+  await page.waitForTimeout(1800);await pressParent('a');await page.waitForTimeout(900);await pressParent('start');
   await hand.waitForFunction(()=>{const gm=EJS_emulator.gameManager;gm.saveSaveFiles();const s=gm.getSaveFile(false);return s&&String.fromCharCode(...s.subarray(1024,1028))==='LCR1'},null,{timeout:90000});
   await page.evaluate(()=>window.postMessage({type:'sol-spark-return-request'},location.origin));
   await page.waitForFunction(()=>window.__cloudEvents.some(event=>event.type==='sol-spark-return'),null,{timeout:15000});
@@ -76,7 +78,7 @@ const root=process.argv[2]||'http://127.0.0.1:3000',out=process.argv[3]||'artifa
   const running=await resumed.evaluate(()=>Array.from(EJS_emulator.gameManager.getSaveFile(false)));
   assert.deepEqual(running.slice(1024,1276),earned.slice(1024,1276),'native roster and earned progress survive boot');
   assert.deepEqual(running.slice(25600),earned.slice(25600),'manual slots and Spark forms survive boot');
-  assert.deepEqual(errors,[]);await fs.writeFile(out+'/report.json',JSON.stringify({passed:true,nativeCore:true,publicQbeast:true,parentStartBootsCore:true,sameIdentityBattery:true,earnedBatterySurvivesReopen:true,allEightParentControlsHitNativeCore:true,nativeSaveReturnPayload:true,consoleErrors:errors},null,2));
+  assert.deepEqual(errors,[]);await fs.writeFile(out+'/report.json',JSON.stringify({passed:true,nativeCore:true,publicQbeast:true,parentStartBootsCore:true,sameIdentityBattery:true,earnedBatterySurvivesReopen:true,allEightParentControlsHitNativeCore:true,parentControlsAdvanceNativeGame:true,nativeSaveReturnPayload:true,consoleErrors:errors},null,2));
   console.log('PASS: parent Start Lost COSMOS booted the native core, all eight controls reached it, and the actual native battery returned as lost-cosmos-return-v1');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
