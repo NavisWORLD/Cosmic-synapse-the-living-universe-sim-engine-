@@ -126,7 +126,7 @@ function acceptCageSave(bytes, journey = false) {
   return bytes;
 }
 
-async function installEmulator(bytes) {
+async function installEmulator(bytes,{autoStart=false}={}) {
   if (state.started) return;
   if(!bytes){status('Send your Spark companion into this handheld first.');return;}
   try{verifySparkArt(bytes);}catch(err){status(err.message);return;}
@@ -168,7 +168,7 @@ async function installEmulator(bytes) {
   // The verified bytes use the creature's stable filename, including its battery.
   window.EJS_gameUrl = URL.createObjectURL(new Blob([cartridge],{type:'application/octet-stream'}));
   window.EJS_pathtodata = '../third_party/emulatorjs/data/';
-  window.EJS_startOnLoaded = false;
+  window.EJS_startOnLoaded = autoStart;
   window.EJS_threads = false;
   // This pinned loader disables automatic locale fetches only with false.
   window.EJS_disableAutoLang = false;
@@ -203,6 +203,7 @@ async function installEmulator(bytes) {
     }
     status(state.battery?.resumed?'Journey restored. Choose CONTINUE to keep your Spark companion and earned progress.':'Cartridge running. Choose NEW GAME to receive your verified Spark companion.');
     $('save-journey').disabled=false;
+    window.parent.postMessage({source:'living-universe',type:'sol-spark-running'},location.origin);
     state.checkpoint=setInterval(checkpointNow,5000);
     if (new URLSearchParams(location.search).get('demo') === '1') demoPress(gm);
   };
@@ -259,11 +260,18 @@ window.addEventListener('message', (event) => {
     window.parent.postMessage({source:'living-universe',type:'sol-spark-input-ack',button:input?.button||'',down:input?.down===true,applied},location.origin);
     return;
   }
+  if(data.type==='sol-spark-return-request'){
+    const bytes=checkpointNow();
+    if(!bytes){window.parent.postMessage({source:'living-universe',type:'sol-spark-return-error',message:'Start the cartridge before returning a journey.'},location.origin);return;}
+    window.parent.postMessage({source:'living-universe',type:'sol-spark-native-save',save:bytes},location.origin);
+    status('Returning the actual native battery to Beast Box.');
+    return;
+  }
   if (data.type === 'lu-state') onWorldMessage(data);
   if (data.type === 'sol-spark-start') {
     if (!state.save) { status('Send your Spark companion into this handheld first.'); return; }
     $('consent').checked = true;
-    installEmulator(state.save);
+    installEmulator(state.save,{autoStart:true});
     return;
   }
   if (data.type === 'lc-import-save' || data.type === 'sol-spark-journey') {
