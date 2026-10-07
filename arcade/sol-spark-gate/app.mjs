@@ -5,6 +5,7 @@ import { sparkRecord, loadCage, saveCage, admit } from '../spark-beasts/trade.mj
 import { attachSparkArt } from './cartridge.mjs';
 import { readSparkFile, checkedSparkSave } from './spark-file.mjs?sites=digest43';
 import { readProgress } from '../sol-beast-lab/design.mjs';
+import {sha256Hex} from './digest.mjs';
 import {normalizeHandheldInput} from './controls.mjs?controller=beastboy39';
 import {isTrustedCloudOrigin} from './cloud-origin.mjs?controller=previeworigin41&sites=livingcosmos42';
 const $=id=>document.getElementById(id),status=s=>$('status').textContent=s;
@@ -27,6 +28,10 @@ window.addEventListener('message',async event=>{
   const input=normalizeHandheldInput(event.data.button,event.data.down);if(!input)return;
   $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-input',button:input.button,down:input.down},location.origin);return;
  }
+ if(event.data?.type==='sol-spark-return-request'){
+  if(!current){status('Send the Beast before returning a journey.');return;}
+  $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-return-request'},location.origin);return;
+ }
  if(event.data?.type!=='sol-spark-qbeast')return;
  try{
   if(!table)throw Error('Recorded seed table is still loading.');
@@ -38,6 +43,7 @@ window.addEventListener('message',async event=>{
  }catch(err){status(err.message);window.parent.postMessage({type:'sol-spark-rejected',message:err.message},event.origin);}
 });
 const download=(name,bytes,type='application/octet-stream')=>{const u=URL.createObjectURL(new Blob([bytes],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);};
+const base64Bytes=bytes=>{let out='';for(let i=0;i<bytes.length;i+=8192)out+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(out);};
 function ready(beast,bytes,earned=false){current=beast;save=bytes;journey=earned;$('companion').textContent=`${beast.genome.names['1']} · ${beast.genome.island}`;$('download').disabled=$('receipt').disabled=false;$('download').textContent=earned?'↓ Journey .sav':'↓ Starter .sav';$('handheld').contentWindow.postMessage({source:'living-universe',type:earned?'sol-spark-journey':'lc-import-save',save:bytes,callsign:beast.record.callsign,species:beast.genome.names['1']},location.origin);status(earned?'Your earned journey and companion art are ready. Reload the handheld before importing another save.':'The verified Beast is in the cartridge. Press Start Lost COSMOS.');}
 function storedMatch(bytes){
  const store=loadStore(localStorage);
@@ -49,10 +55,32 @@ function storedMatch(bytes){
  }
  throw new Error('The mailed creature is missing from the local Spark ledger. Keep its .qbeast or receipt and import it here.');
 }
-window.addEventListener('message',event=>{
- if(event.origin===location.origin&&event.source===$('handheld').contentWindow&&event.data?.source==='living-universe'&&event.data?.type==='sol-spark-input-ack'){
-  if(cloudOrigin)window.parent.postMessage({type:'sol-spark-input-ack',button:event.data.button,down:event.data.down,applied:event.data.applied===true},cloudOrigin);
-  return;
+window.addEventListener('message',async event=>{
+ if(event.origin===location.origin&&event.source===$('handheld').contentWindow&&event.data?.source==='living-universe'){
+  if(event.data?.type==='sol-spark-input-ack'){
+   if(cloudOrigin)window.parent.postMessage({type:'sol-spark-input-ack',button:event.data.button,down:event.data.down,applied:event.data.applied===true},cloudOrigin);
+   return;
+  }
+  if(event.data?.type==='sol-spark-running'){
+   if(cloudOrigin)window.parent.postMessage({type:'sol-spark-running'},cloudOrigin);
+   return;
+  }
+  if(event.data?.type==='sol-spark-return-error'){
+   const message=String(event.data.message||'The native journey could not be read.').slice(0,180);
+   status(message);if(cloudOrigin)window.parent.postMessage({type:'sol-spark-return-error',message},cloudOrigin);return;
+  }
+  if(event.data?.type==='sol-spark-native-save'){
+   try{
+    if(!cloudOrigin||!current?.qbeast?.profile?.id)throw new Error('A verified QBEAST is required before returning a journey.');
+    const raw=event.data.save instanceof Uint8Array?event.data.save:new Uint8Array(event.data.save);
+    if(raw.length!==32768)throw new Error('The native return must be a 32 KB battery save.');
+    const progress=readProgress(current.record.profile,raw),hash=await sha256Hex(raw);
+    const payload={schema:'lost-cosmos-return-v1',qbeast_id:current.qbeast.profile.id,event_id:`native-${hash.slice(0,64)}`,game_xp:progress.xp,game_level:progress.level,game_stage:progress.stage,native_save:base64Bytes(raw)};
+    window.parent.postMessage({type:'sol-spark-return',payload},cloudOrigin);
+    status(`Journey returned: LV ${progress.level}, bond ${progress.bond}, native form ${progress.stage+1}.`);
+   }catch(err){const message=String(err?.message||'The native journey could not be returned.').slice(0,180);status(message);if(cloudOrigin)window.parent.postMessage({type:'sol-spark-return-error',message},cloudOrigin);}
+   return;
+  }
  }
  if(event.origin!==location.origin||event.source!==$('spark').contentWindow||event.data?.type!=='lc-cage-save')return;
  try{if(!table)throw new Error('The recorded table is still loading.');const raw=event.data.save instanceof Uint8Array?event.data.save:new Uint8Array(event.data.save);if(raw.length!==32768)throw new Error('Invalid battery save size.');const beast=storedMatch(raw);ready(beast,attachSparkArt(raw,beast.genome,beast.runIndex,table));}catch(err){status(err.message);}
