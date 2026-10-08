@@ -12,6 +12,10 @@ const $=id=>document.getElementById(id),status=s=>$('status').textContent=s;
 let table,current=null,save=null,journey=false;
 const embedded=new URLSearchParams(location.search).get('mode')==='handheld';
 if(embedded){document.body.classList.add('handheld-only');$('spark').removeAttribute('src');}
+if(embedded&&new URLSearchParams(location.search).get('player')==='shell45'){
+ document.body.classList.add('player-shell');
+ $('handheld').src='./handheld.html?controller=iphoneaudio40&sites=digest43&player=shell45';
+}
 let cloudOrigin=null;
 window.addEventListener('message',async event=>{
  if(!embedded||event.source!==window.parent||!isTrustedCloudOrigin(event.origin))return;
@@ -57,6 +61,9 @@ function storedMatch(bytes){
 }
 window.addEventListener('message',async event=>{
  if(event.origin===location.origin&&event.source===$('handheld').contentWindow&&event.data?.source==='living-universe'){
+  if(event.data?.type==='sol-spark-audio-state'){
+   if(cloudOrigin)window.parent.postMessage({type:'sol-spark-audio-state',wanted:event.data.wanted===true,running:event.data.running===true},cloudOrigin);return;
+  }
   if(event.data?.type==='sol-spark-input-ack'){
    if(cloudOrigin)window.parent.postMessage({type:'sol-spark-input-ack',button:event.data.button,down:event.data.down,applied:event.data.applied===true},cloudOrigin);
    return;

@@ -9,6 +9,7 @@ import { FIXTURE, GROWTH_BYTES, GROWTH_OFFSET, MAILBOX_BYTES, MAILBOX_OFFSET, SR
 import { MuseLink, mockTraits } from '../lost-cosmos/muse.mjs';
 
 const $ = (id) => document.getElementById(id);
+if(new URLSearchParams(location.search).get('player')==='shell45')document.body.classList.add('player-frame');
 const status = (text) => { $('status').textContent = text; };
 
 const state = {
@@ -43,6 +44,7 @@ function syncAudioUi(note = '') {
   const audioStatus = $('audio-status');
   const contexts = emulatorAudioContexts();
   const running = contexts.some((context) => context.state === 'running');
+  window.parent.postMessage({source:'living-universe',type:'sol-spark-audio-state',wanted:state.audioWanted,running},location.origin);
   button.setAttribute('aria-pressed', state.audioWanted ? 'true' : 'false');
   button.textContent = state.audioWanted
     ? (running ? '🔊 Game sound on' : '🔊 Tap to resume sound')
