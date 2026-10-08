@@ -23,6 +23,7 @@ export function observeGameFrame(canvas, doc = globalThis.document) {
       min = Math.min(min, l); max = Math.max(max, l);
       if (previous) delta += Math.abs(l - previous[i]);
     }
+    if (max === 0) return { status: 'unavailable', reason: 'The display returned a blank frame; Safari may block framebuffer readback.' };
     previous = luminance;
     const count = luminance.length;
     const dominant = reds > greens * 1.15 && reds > blues * 1.15 ? 'red'
