@@ -4,6 +4,7 @@ import { readProgress } from '../sol-beast-lab/design.mjs';
 import {batteryName,prepareBattery,keepCoreBattery,cacheNativeBattery,loadNativeBattery} from './battery.mjs';
 import {handleOptionalWakeLock} from './wake-lock.mjs';
 import {applyHandheldInput,normalizeHandheldInput} from './controls.mjs?controller=beastboy39';
+import {observeGameFrame} from './frame-observation.mjs';
 /* Sol Spark handheld adapter. Original living-link player stays unchanged. */
 import { FIXTURE, GROWTH_BYTES, GROWTH_OFFSET, MAILBOX_BYTES, MAILBOX_OFFSET, SRAM_SIZE, buildSave, livingProfile, profileFromBcp1, profileFromBeastJson } from '../lost-cosmos/mailbox.mjs';
 import { MuseLink, mockTraits } from '../lost-cosmos/muse.mjs';
@@ -276,6 +277,17 @@ window.addEventListener('message', (event) => {
   if(data.type==='sol-player-visibility'){
     state.playerVisible=data.active===true;
     window.EJS_emulator?.setVolume?.(gameVolume());syncAudioUi();return;
+  }
+  if(data.type==='sol-spark-observe-request'){
+    // The outer cloud host must already have admitted this QBEAST. Never
+    // stream frames; sample only on an explicit request from the player UI.
+    const requestId=typeof data.requestId==='string'?data.requestId.slice(0,70):'';
+    if (!state.started || !requestId) return;
+    const canvases=[...document.querySelectorAll('#game canvas')];
+    const frame=canvases.sort((a,b)=>(b.width*b.height)-(a.width*a.height))[0];
+    const observation=observeGameFrame(frame);
+    window.parent.postMessage({source:'living-universe',type:'sol-spark-observation',requestId,observation},location.origin);
+    return;
   }
   if(data.type==='sol-spark-input'){
     const input=normalizeHandheldInput(data.button,data.down);
