@@ -22,6 +22,8 @@ test('unavailable framebuffer does not generate a fictional visual observation',
  assert.equal(observeGameFrame(null).status,'unavailable');
  const blocked={createElement:()=>({getContext:()=>{throw Error('tainted');}})};
  assert.equal(observeGameFrame({width:240,height:160},blocked).status,'unavailable');
+ const blank={createElement:()=>({getContext:()=>({drawImage(){},getImageData(){return {data:new Uint8ClampedArray(32*24*4)};}})})};
+ assert.equal(observeGameFrame({width:240,height:160},blank).status,'unavailable');
 });
 test('same-origin bridge only responds to explicit request and verified cloud QBEAST',()=>{
  const gate=readFileSync(new URL('./app.mjs',import.meta.url),'utf8');
