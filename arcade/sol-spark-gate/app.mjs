@@ -35,6 +35,14 @@ window.addEventListener('message',async event=>{
   const input=normalizeHandheldInput(event.data.button,event.data.down);if(!input)return;
   $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-input',button:input.button,down:input.down},location.origin);return;
  }
+ if(event.data?.type==='sol-spark-observe-request'){
+  // Never let an unrelated page or QBEAST request native pixels.
+  const requestId=String(event.data.requestId||''),id=String(event.data.qbeast_id||'');
+  if(!current||!cloudOrigin||event.origin!==cloudOrigin||id!==current.qbeast?.profile?.id||
+     !/^[-a-zA-Z0-9]{8,80}$/.test(requestId))return;
+  $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-observe-request',requestId,qbeast_id:id},location.origin);
+  return;
+ }
  if(event.data?.type==='sol-spark-return-request'){
   if(!current){status('Send the Beast before returning a journey.');return;}
   $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-return-request'},location.origin);return;
@@ -64,6 +72,21 @@ function storedMatch(bytes){
 }
 window.addEventListener('message',async event=>{
  if(event.origin===location.origin&&event.source===$('handheld').contentWindow&&event.data?.source==='living-universe'){
+  if(event.data?.type==='sol-spark-observation'){
+   if(cloudOrigin&&current?.qbeast?.profile?.id===event.data.qbeast_id&&
+      /^[-a-zA-Z0-9]{8,80}$/.test(String(event.data.requestId||''))){
+     // Only six bounded optical statistics cross the frame boundary; never pixels.
+     const data=event.data.observation;
+     const observation=data?.status==='observed'&&
+       ['red','green','blue','mixed'].includes(data.dominant)&&
+       [data.brightness,data.contrast,data.frameChange].every(n=>Number.isInteger(n)&&n>=0&&n<=100)
+       ?{status:'observed',source:'native-emulator-display',brightness:data.brightness,
+         contrast:data.contrast,dominant:data.dominant,frameChange:data.frameChange}
+       :{status:'unavailable'};
+     window.parent.postMessage({type:'sol-spark-observation',requestId:event.data.requestId,qbeast_id:event.data.qbeast_id,observation},cloudOrigin);
+   }
+   return;
+  }
   if(event.data?.type==='sol-spark-audio-state'){
    if(cloudOrigin)window.parent.postMessage({type:'sol-spark-audio-state',wanted:event.data.wanted===true,running:event.data.running===true},cloudOrigin);return;
   }
