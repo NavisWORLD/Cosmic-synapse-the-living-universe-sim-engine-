@@ -75,6 +75,14 @@ const root=process.argv[2]||'http://127.0.0.1:3000',out=process.argv[3]||'artifa
   // The LCR1 roster appearing in SRAM below is the native-game effect receipt.
   await page.waitForTimeout(1800);await pressParent('a');await page.waitForTimeout(900);await pressParent('start');
   await hand.waitForFunction(()=>{const gm=EJS_emulator.gameManager;gm.saveSaveFiles();const s=gm.getSaveFile(false);return s&&String.fromCharCode(...s.subarray(1024,1028))==='LCR1'},null,{timeout:90000});
+  // A boot/title screen may be black or cleared; sample again after native gameplay begins.
+  await page.evaluate(({id})=>window.postMessage({type:'sol-spark-observe-request',requestId:'native-vision-play-002',qbeast_id:id},location.origin),{id:selected});
+  await page.waitForFunction(()=>window.__cloudEvents.some(x=>x.type==='sol-spark-observation'&&x.requestId==='native-vision-play-002'),null,{timeout:8000});
+  const gameplayView=await page.evaluate(()=>window.__cloudEvents.find(x=>x.type==='sol-spark-observation'&&x.requestId==='native-vision-play-002'));
+  assert.equal(gameplayView.qbeast_id,selected);
+  assert.ok(['observed','unavailable'].includes(gameplayView.observation?.status));
+  console.log('Native gameplay optical status:',gameplayView.observation.status);
+
   await page.evaluate(()=>window.postMessage({type:'sol-spark-return-request'},location.origin));
   await page.waitForFunction(()=>window.__cloudEvents.some(event=>event.type==='sol-spark-return'),null,{timeout:15000});
   const returned=await page.evaluate(()=>window.__cloudEvents.filter(event=>event.type==='sol-spark-return').slice(-1)[0]?.payload);
@@ -99,7 +107,7 @@ const root=process.argv[2]||'http://127.0.0.1:3000',out=process.argv[3]||'artifa
   const running=await resumed.evaluate(()=>Array.from(EJS_emulator.gameManager.getSaveFile(false)));
   assert.deepEqual(running.slice(1024,1276),earned.slice(1024,1276),'native roster and earned progress survive boot');
   assert.deepEqual(running.slice(25600),earned.slice(25600),'manual slots and Spark forms survive boot');
-  assert.deepEqual(errors,[]);await fs.writeFile(out+'/report.json',JSON.stringify({passed:true,nativeCore:true,publicQbeast:true,parentStartBootsCore:true,sameIdentityBattery:true,earnedBatterySurvivesReopen:true,allEightParentControlsHitNativeCore:true,parentControlsAdvanceNativeGame:true,nativeSaveReturnPayload:true,opticalReplyStatus:seen.observation.status,forgedObservationRejected:true,speakerProbeTriggered:true,consoleErrors:errors},null,2));
+  assert.deepEqual(errors,[]);await fs.writeFile(out+'/report.json',JSON.stringify({passed:true,nativeCore:true,publicQbeast:true,parentStartBootsCore:true,sameIdentityBattery:true,earnedBatterySurvivesReopen:true,allEightParentControlsHitNativeCore:true,parentControlsAdvanceNativeGame:true,nativeSaveReturnPayload:true,opticalReplyStatus:seen.observation.status,gameplayOpticalStatus:gameplayView.observation.status,forgedObservationRejected:true,speakerProbeTriggered:true,consoleErrors:errors},null,2));
   console.log('PASS: parent Start Lost COSMOS booted the native core, all eight controls reached it, and the actual native battery returned as lost-cosmos-return-v1');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
