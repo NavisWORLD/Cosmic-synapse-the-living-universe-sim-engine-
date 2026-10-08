@@ -18,6 +18,14 @@
   #status { min-height: 2.8em; color: #d7fff4; }
   .legacy-inputs,#traits {display:none}*{box-sizing:border-box}button{min-height:44px}#game{height:clamp(200px,60vw,400px)}
   label.consent { display: flex; gap: 8px; align-items: flex-start; }
+  .player-frame{height:100vh;height:100dvh;overflow:hidden;background:#000}
+  .player-frame header,.player-frame .consent,.player-frame #status,.player-frame #audio-status,.player-frame #play,.player-frame #save-journey{display:none}
+  .player-frame main{height:100%;padding:0;display:flex;flex-direction:column}
+  .player-frame .row:not(.legacy-inputs){order:2;margin:0;justify-content:flex-end;height:44px;flex:0 0 44px;background:#10192a}
+  .player-frame #audio{border:0;border-radius:0;font-size:11px;padding:8px 12px}
+  .player-frame #game{order:1;flex:1;min-height:0;width:100%;height:auto;border-radius:0}
+  .player-frame .ejs_virtualGamepad_parent,.player-frame .ejs_menu_bar,.player-frame .ejs_menu_button,.player-frame .ejs_context_menu,.player-frame .ejs_settings_parent{display:none!important}
+  @media(max-height:120px){.player-frame .row:not(.legacy-inputs){display:none}}
 </style>
 </head>
 <body>
@@ -44,6 +52,6 @@
   <p id="audio-status">Game audio stays off until you tap Enable game sound. On iPhone/iPad this tap unlocks Safari audio inside the emulator frame.</p>
   <div id="game"></div>
 </main>
-<script type="module" src="./handheld.mjs?controller=iphoneaudio40&sites=digest43"></script>
+<script type="module" src="./handheld.mjs?controller=iphoneaudio40&sites=digest43&player=shell45"></script>
 </body>
 </html>
