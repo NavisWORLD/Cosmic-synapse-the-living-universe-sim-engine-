@@ -33,10 +33,52 @@ export function grabFrame(doc=globalThis.document){
   return context.getImageData(0,0,SIZE,HEIGHT).data;
  }catch{return null;} // Browser may deny or clear a WebGL framebuffer readback.
 }
+function videoRead(doc,video) {
+ if(!video?.videoWidth||!video?.videoHeight)return null;
+ const scratch=doc.createElement('canvas');scratch.width=SIZE;scratch.height=HEIGHT;
+ const ctx=scratch.getContext('2d',{willReadFrequently:true});if(!ctx)return null;
+ try{ctx.drawImage(video,0,0,SIZE,HEIGHT);return ctx.getImageData(0,0,SIZE,HEIGHT).data;}
+ catch{return null;}
+}
+/** Only while the player explicitly asks to look: create a local muted canvas
+ * stream, sample two composited frames, then immediately stop every track.
+ * Safari/WebKit or GPU restrictions can make this unavailable; never fake pixels.
+ */
+async function streamFrames(doc,delay){
+ const source=[...(doc?.getElementById('game')?.querySelectorAll('canvas')||[])]
+  .filter(x=>x.width&&x.height&&typeof x.captureStream==='function')
+  .sort((a,b)=>b.width*b.height-a.width*a.height)[0];
+ if(!source)return null;
+ let stream,video;
+ try{
+  stream=source.captureStream(12);
+  if(!stream?.getTracks?.().length)return null;
+  video=doc.createElement('video');
+  video.muted=true;video.autoplay=true;video.playsInline=true;
+  video.srcObject=stream;
+  if(typeof video.play==='function')await Promise.race([
+   Promise.resolve(video.play()).catch(()=>undefined),delay(650)
+  ]);
+  await delay(170);
+  let first=videoRead(doc,video);
+  if(!first){await delay(200);first=videoRead(doc,video);}
+  if(!first)return null;
+  await delay(145);
+  return summarizePixels(first,videoRead(doc,video));
+ }catch{return null}
+ finally{
+  if(video){try{video.pause?.();}catch{}video.srcObject=null;}
+  for(const track of stream?.getTracks?.()||[])try{track.stop();}catch{}
+ }
+}
 export async function observeNativePixels(doc=globalThis.document,delay=ms=>new Promise(ok=>setTimeout(ok,ms))){
  const first=grabFrame(doc);
- if(!first)return null;
- await delay(145);
- const second=grabFrame(doc);
- return summarizePixels(first,second);
+ if(first){
+  await delay(145);
+  const result=summarizePixels(first,grabFrame(doc));
+  if(result)return result;
+ }
+ // The EmulatorJS/WebGL backbuffer may be cleared after presentation. The
+ // compositor stream can still expose actual presented frames without cheating.
+ return streamFrames(doc,delay);
 }
