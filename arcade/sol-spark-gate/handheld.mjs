@@ -272,7 +272,7 @@ window.addEventListener('message', (event) => {
   }
   if (data.type === 'lu-state') onWorldMessage(data);
   if (data.type === 'sol-spark-start') {
-    if (!state.save) { status('Send your Spark companion into this handheld first.'); return; }
+    if (!state.save) { startError('Send your Spark companion first.'); return; }
     $('consent').checked = true;
     installEmulator(state.save,{autoStart:true});
     return;
