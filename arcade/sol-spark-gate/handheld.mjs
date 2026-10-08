@@ -11,6 +11,7 @@ import { MuseLink, mockTraits } from '../lost-cosmos/muse.mjs';
 const $ = (id) => document.getElementById(id);
 if(new URLSearchParams(location.search).get('player')==='shell45')document.body.classList.add('player-frame');
 const status = (text) => { $('status').textContent = text; };
+function startError(message){status(message);window.parent.postMessage({source:'living-universe',type:'sol-spark-start-error',message:String(message).slice(0,180)},location.origin);}
 
 const state = {
   world: { world: 'EARTH', evolution: 0, biosphere: 0, lifeEvents: 0 },
@@ -130,10 +131,10 @@ function acceptCageSave(bytes, journey = false) {
 
 async function installEmulator(bytes,{autoStart=false}={}) {
   if (state.started) return;
-  if(!bytes){status('Send your Spark companion into this handheld first.');return;}
-  try{verifySparkArt(bytes);}catch(err){status(err.message);return;}
+  if(!bytes){startError('Send your Spark companion first.');return;}
+  try{verifySparkArt(bytes);}catch(err){startError(err.message);return;}
   if(bytes&&!consented()){status('Allow the verified companion import before starting the cartridge.');return;}
-  try{const cached=!state.journey&&loadNativeBattery(localStorage,bytes);if(cached){bytes=cached;state.resumeFromCheckpoint=true;}}catch(err){status(err.message);return;}
+  try{const cached=!state.journey&&loadNativeBattery(localStorage,bytes);if(cached){bytes=cached;state.resumeFromCheckpoint=true;}}catch(err){startError(err.message);return;}
   state.started = true;
   $('play').disabled = true;
   let receipt;
@@ -153,7 +154,7 @@ async function installEmulator(bytes,{autoStart=false}={}) {
   } catch (err) {
     state.started = false;
     $('play').disabled = false;
-    status(err?.message || 'The cartridge could not start. Please try again.');
+    startError(err?.message || 'The cartridge could not start. Please try again.');
     return;
   }
   const div = $('game');
@@ -188,7 +189,7 @@ async function installEmulator(bytes,{autoStart=false}={}) {
     const gm = window.EJS_emulator?.gameManager;
     window.EJS_emulator?.setVolume?.(gameVolume());
     syncAudioUi();
-    if(state.batteryError){gm?.toggleMainLoop?.(1);status(state.batteryError);return;}
+    if(state.batteryError){gm?.toggleMainLoop?.(1);startError(state.batteryError);return;}
     status(`Lost Cosmos V${receipt.version} is running. Choose NEW GAME or CONTINUE on the title screen.`);
     if (!gm || !bytes) return;
     try {
@@ -205,7 +206,7 @@ async function installEmulator(bytes,{autoStart=false}={}) {
     }
     status(state.battery?.resumed?'Journey restored. Choose CONTINUE to keep your Spark companion and earned progress.':'Cartridge running. Choose NEW GAME to receive your verified Spark companion.');
     $('save-journey').disabled=false;
-    window.parent.postMessage({source:'living-universe',type:'sol-spark-running'},location.origin);
+    window.parent.postMessage({source:'living-universe',type:'sol-spark-running',resumed:state.battery?.resumed===true},location.origin);
     state.checkpoint=setInterval(checkpointNow,5000);
     if (new URLSearchParams(location.search).get('demo') === '1') demoPress(gm);
   };
@@ -214,7 +215,7 @@ async function installEmulator(bytes,{autoStart=false}={}) {
   script.onerror = () => {
     state.started = false;
     $('play').disabled = false;
-    status('The emulator could not load. Reload the handheld and try again.');
+    startError('The game could not load. Please try START LOST COSMOS again.');
   };
   document.body.appendChild(script);
   state.started = true;

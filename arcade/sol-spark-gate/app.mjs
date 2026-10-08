@@ -68,8 +68,11 @@ window.addEventListener('message',async event=>{
    if(cloudOrigin)window.parent.postMessage({type:'sol-spark-input-ack',button:event.data.button,down:event.data.down,applied:event.data.applied===true},cloudOrigin);
    return;
   }
+  if(event.data?.type==='sol-spark-start-error'){
+   if(cloudOrigin)window.parent.postMessage({type:'sol-spark-start-error',message:String(event.data.message||'The game could not start.').slice(0,180)},cloudOrigin);return;
+  }
   if(event.data?.type==='sol-spark-running'){
-   if(cloudOrigin)window.parent.postMessage({type:'sol-spark-running'},cloudOrigin);
+   if(cloudOrigin)window.parent.postMessage({type:'sol-spark-running',resumed:event.data.resumed===true},cloudOrigin);
    return;
   }
   if(event.data?.type==='sol-spark-return-error'){
