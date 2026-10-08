@@ -28,16 +28,36 @@ function gameVolume() {
   return state.audioWanted && state.playerVisible ? 0.35 : 0;
 }
 
-function emulatorAudioContexts() {
-  const contexts = new Set();
-  const sources = window.EJS_emulator?.Module?.AL?.currentCtx?.sources;
-  if (sources && typeof sources.forEach === 'function') {
-    sources.forEach((source) => {
-      const context = source?.gain?.context;
-      if (context && typeof context.resume === 'function') contexts.add(context);
+// Capture contexts CREATED by the pinned emulator, not only sources currently
+// playing: on iOS the OpenAL source list can be empty when audio is suspended.
+const createdGameAudioContexts = new Set();
+for (const api of ['AudioContext', 'webkitAudioContext']) {
+  const Native = window[api];
+  if (typeof Native !== 'function') continue;
+  try {
+    window[api] = new Proxy(Native, {
+      construct(target, args) {
+        const ctx = Reflect.construct(target, args);
+        createdGameAudioContexts.add(ctx);
+        return ctx;
+      }
     });
+  } catch { /* Leave native constructor untouched if this engine forbids patching. */ }
+}
+function emulatorAudioContexts() {
+  const emulator = window.EJS_emulator, gm = emulator?.gameManager;
+  const contexts = new Set(createdGameAudioContexts);
+  const al = emulator?.Module?.AL?.currentCtx || gm?.Module?.AL?.currentCtx;
+  const candidates = [
+    al?.audioCtx, al?.ctx, gm?.Module?.SDL2?.audioContext,
+    emulator?.Module?.SDL2?.audioContext, emulator?.audioContext
+  ];
+  for (const ctx of candidates) if (ctx && typeof ctx.resume === 'function') contexts.add(ctx);
+  for (const source of al?.sources || []) {
+    const ctx = source?.gain?.context;
+    if (ctx && typeof ctx.resume === 'function') contexts.add(ctx);
   }
-  return [...contexts];
+  return [...contexts].filter(ctx => ctx.state !== 'closed');
 }
 
 function syncAudioUi(note = '') {
@@ -54,8 +74,8 @@ function syncAudioUi(note = '') {
     audioStatus.textContent = note || (
       state.audioWanted
         ? (running
-          ? 'Game audio is unlocked in this handheld frame.'
-          : 'Sound is enabled, but Safari has not resumed the emulator audio context yet. Tap this sound button again after the cartridge is running.')
+          ? 'Emulator audio context is running. If silent, check the native cartridge SYSTEM → AUDIO setting and device volume.'
+          : 'Safari has not resumed the native emulator context. Tap the sound button in this game frame after the cartridge starts.')
         : 'Game audio stays off until you tap Enable game sound. On iPhone/iPad this tap unlocks Safari audio inside the emulator frame.'
     );
   }
@@ -68,7 +88,7 @@ async function unlockGameAudio() {
   const contexts = emulatorAudioContexts();
   const resumes = [];
   for (const context of contexts) {
-    if (context.state === 'suspended') {
+    if (context.state === 'suspended' || context.state === 'interrupted') {
       try { resumes.push(context.resume()); } catch { /* retry on the next tap */ }
     }
   }
@@ -77,8 +97,8 @@ async function unlockGameAudio() {
   syncAudioUi(contexts.length
     ? ''
     : (state.started
-      ? 'Sound is armed. If iPhone still shows Tap to resume sound, tap this button once more after the game picture starts moving.'
-      : 'Sound is armed. Start the cartridge, then tap this button once more if iPhone asks to resume audio.'));
+      ? 'The native sound context is not visible yet. Tap again after gameplay begins; also check the cartridge SYSTEM → AUDIO switch.'
+      : 'Start the cartridge, then tap this game-frame sound button to unlock iPhone audio.'));
 }
 
 function consented() {
