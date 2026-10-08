@@ -31,7 +31,7 @@ const root=process.argv[2]||'http://127.0.0.1:8765';
   assert.equal(result.resumeCalls,1);
   assert.ok(result.volumes.some(v=>v>0));
   assert.equal(result.pressed,'true');
-  assert.match(result.note,/unlocked/i);
+  assert.match(result.note,/context is running/i);
   console.log('PASS: iPhone WebKit trusted sound tap resumes the handheld audio context',result);
  }finally{await browser.close();}
 })().catch(err=>{console.error(err);process.exitCode=1});
