@@ -33,6 +33,30 @@ export function grabFrame(doc=globalThis.document){
   return context.getImageData(0,0,SIZE,HEIGHT).data;
  }catch{return null;} // Browser may deny or clear a WebGL framebuffer readback.
 }
+/** Native RetroArch core screenshot avoids an already-cleared WebGL backbuffer.
+ * EmulatorJS GameManager.screenshot() returns PNG bytes; they are decoded only
+ * in this sandbox, summarized, and never sent to the parent or model.
+ */
+async function coreFrame(doc){
+ const view=doc?.defaultView||globalThis;
+ const gm=view.EJS_emulator?.gameManager;
+ if(typeof gm?.screenshot!=='function'||typeof view.createImageBitmap!=='function')return null;
+ let bitmap;
+ try{
+  const raw=await gm.screenshot();
+  const bytes=raw instanceof ArrayBuffer?new Uint8Array(raw):
+   ArrayBuffer.isView(raw)?new Uint8Array(raw.buffer,raw.byteOffset,raw.byteLength):null;
+  if(!bytes||bytes.length<16||bytes.length>2_000_000||
+     bytes[0]!==137||bytes[1]!==80||bytes[2]!==78||bytes[3]!==71)return null;
+  bitmap=await view.createImageBitmap(new Blob([bytes],{type:'image/png'}));
+  const scratch=doc.createElement('canvas');scratch.width=SIZE;scratch.height=HEIGHT;
+  const ctx=scratch.getContext('2d',{willReadFrequently:true});if(!ctx)return null;
+  ctx.drawImage(bitmap,0,0,SIZE,HEIGHT);
+  return ctx.getImageData(0,0,SIZE,HEIGHT).data;
+ }catch{return null}
+ finally{try{bitmap?.close?.();}catch{}}
+}
+
 function videoRead(doc,video) {
  if(!video?.videoWidth||!video?.videoHeight)return null;
  const scratch=doc.createElement('canvas');scratch.width=SIZE;scratch.height=HEIGHT;
@@ -78,7 +102,15 @@ export async function observeNativePixels(doc=globalThis.document,delay=ms=>new 
   const result=summarizePixels(first,grabFrame(doc));
   if(result)return result;
  }
- // The EmulatorJS/WebGL backbuffer may be cleared after presentation. The
- // compositor stream can still expose actual presented frames without cheating.
+ // Prefer the actual native-core screenshot: this reads the current visible
+ // game framebuffer, not undiscovered memory, future rewards or map metadata.
+ const coreA=await coreFrame(doc);
+ if(coreA){
+  await delay(145);
+  const coreResult=summarizePixels(coreA,await coreFrame(doc));
+  if(coreResult)return coreResult;
+ }
+ // Finally try the actual presented compositor stream on implementations
+ // without a native screenshot API. Both fallbacks remain explicit and bounded.
  return streamFrames(doc,delay);
 }
