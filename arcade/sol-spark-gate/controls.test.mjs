@@ -37,3 +37,24 @@ test('handheld exposes an explicit iPhone Safari audio unlock contract',()=>{
  assert.match(runtime,/audioWanted/);
  assert.match(runtime,/gameVolume\(\)/);
 });
+
+test('game observation is a validated opt-in relay of native framebuffer numbers only',()=>{
+ const gate=readFileSync(new URL('./app.mjs',import.meta.url),'utf8');
+ const inner=readFileSync(new URL('./handheld.mjs',import.meta.url),'utf8');
+ assert.match(gate,/sol-spark-observe-request/);
+ assert.match(gate,/sol-spark-observation/);
+ assert.match(gate,/event.origin!==cloudOrigin/);
+ assert.match(gate,/current\.qbeast\?\.profile\?\.id/);
+ assert.match(inner,/observeNativePixels\(document\)/);
+ assert.match(inner,/status:'unavailable'/);
+ assert.doesNotMatch(inner,/autonomous.*model.*controller/);
+});
+test('game speaker probe belongs to the iframe user gesture, not a synthetic parent click',()=>{
+ const inner=readFileSync(new URL('./handheld.mjs',import.meta.url),'utf8');
+ const doc=readFileSync(new URL('./handheld.html',import.meta.url),'utf8');
+ assert.match(doc,/id="test-audio"/);
+ assert.match(inner,/speakerContext\.createOscillator\(\)/);
+ assert.match(inner,/context\.state === 'interrupted'/);
+ assert.match(inner,/source\?\.gain\?\.context/);
+ assert.match(inner,/\$\('test-audio'\)\.addEventListener\('click'/);
+});
