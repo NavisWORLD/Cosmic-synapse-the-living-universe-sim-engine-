@@ -20,7 +20,7 @@ const root=process.argv[2]||'http://127.0.0.1:3000',out=process.argv[3]||'artifa
   await page.waitForFunction(()=>!document.querySelector('#status').textContent.includes('Loading'));
   await page.evaluate(text=>{
    window.__cloudEvents=[];
-   window.addEventListener('message',event=>{if(event.source===window&&['sol-spark-admitted','sol-spark-running','sol-spark-input-ack','sol-spark-return','sol-spark-return-error'].includes(event.data?.type))window.__cloudEvents.push(event.data);});
+   window.addEventListener('message',event=>{if(event.source===window&&['sol-spark-admitted','sol-spark-running','sol-spark-input-ack','sol-spark-return','sol-spark-return-error','sol-spark-observation'].includes(event.data?.type))window.__cloudEvents.push(event.data);});
    window.postMessage({type:'sol-spark-qbeast',text},location.origin);
   },fixtureText);
   await page.waitForFunction(()=>window.__cloudEvents.some(event=>event.type==='sol-spark-admitted'),null,{timeout:30000});
@@ -37,6 +37,27 @@ const root=process.argv[2]||'http://127.0.0.1:3000',out=process.argv[3]||'artifa
   assert.equal(initial.save.length,32768);assert.equal(Buffer.from(initial.save).toString('ascii',24704,24708),'SPK1');
   assert.ok(initial.path.includes(initial.name.replace('.gba','')),'native battery uses the selected identity namespace');
   console.log('Native core battery path:',initial.path);
+  // Actual frame observations cross both trust-checked iframe boundaries.
+  const selected=await page.evaluate(()=>window.__cloudEvents.find(x=>x.type==='sol-spark-admitted').id);
+  await page.evaluate(({id})=>window.postMessage({type:'sol-spark-observe-request',requestId:'native-vision-001',qbeast_id:id},location.origin),{id:selected});
+  await page.waitForFunction(()=>window.__cloudEvents.some(x=>x.type==='sol-spark-observation'&&x.requestId==='native-vision-001'),null,{timeout:8000});
+  const seen=await page.evaluate(()=>window.__cloudEvents.find(x=>x.type==='sol-spark-observation'&&x.requestId==='native-vision-001'));
+  assert.equal(seen.qbeast_id,selected);
+  assert.ok(['observed','unavailable'].includes(seen.observation?.status));
+  if(seen.observation.status==='observed'){
+   assert.equal(seen.observation.source,'native-emulator-display');
+   for(const k of ['brightness','contrast','frameChange'])assert.ok(Number.isInteger(seen.observation[k])&&seen.observation[k]>=0&&seen.observation[k]<=100);
+   assert.ok(['red','green','blue','mixed'].includes(seen.observation.dominant));
+  }
+  // A mismatched Beast must not get even a bounded pixel response.
+  await page.evaluate(()=>window.postMessage({type:'sol-spark-observe-request',requestId:'native-vision-forged',qbeast_id:'bb-not-this-beast'},location.origin));
+  await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(()=>window.__cloudEvents.some(x=>x.requestId==='native-vision-forged')),false);
+  console.log('Native optical relay:',seen.observation.status,'same verified Beast; no forged response');
+  // A speaker diagnostic is distinct from emulator-generated native game sound.
+  await hand.locator('#test-audio').click();
+  assert.match(await hand.locator('#audio-status').innerText(),/Speaker test sent|Speaker test could not start|Speaker resume was blocked/);
+
   await hand.evaluate(()=>{const gm=EJS_emulator.gameManager,original=gm.simulateInput.bind(gm);window.__bridgedInputs=[];gm.simulateInput=(player,index,value)=>{window.__bridgedInputs.push([player,index,value]);return original(player,index,value);};});
   const bridgeInput=async(button,down)=>page.evaluate(({button,down})=>window.postMessage({type:'sol-spark-input',button,down},location.origin),{button,down});
   const expected={up:4,down:5,left:6,right:7,a:8,b:0,start:3,select:2};
@@ -78,7 +99,7 @@ const root=process.argv[2]||'http://127.0.0.1:3000',out=process.argv[3]||'artifa
   const running=await resumed.evaluate(()=>Array.from(EJS_emulator.gameManager.getSaveFile(false)));
   assert.deepEqual(running.slice(1024,1276),earned.slice(1024,1276),'native roster and earned progress survive boot');
   assert.deepEqual(running.slice(25600),earned.slice(25600),'manual slots and Spark forms survive boot');
-  assert.deepEqual(errors,[]);await fs.writeFile(out+'/report.json',JSON.stringify({passed:true,nativeCore:true,publicQbeast:true,parentStartBootsCore:true,sameIdentityBattery:true,earnedBatterySurvivesReopen:true,allEightParentControlsHitNativeCore:true,parentControlsAdvanceNativeGame:true,nativeSaveReturnPayload:true,consoleErrors:errors},null,2));
+  assert.deepEqual(errors,[]);await fs.writeFile(out+'/report.json',JSON.stringify({passed:true,nativeCore:true,publicQbeast:true,parentStartBootsCore:true,sameIdentityBattery:true,earnedBatterySurvivesReopen:true,allEightParentControlsHitNativeCore:true,parentControlsAdvanceNativeGame:true,nativeSaveReturnPayload:true,opticalReplyStatus:seen.observation.status,forgedObservationRejected:true,speakerProbeTriggered:true,consoleErrors:errors},null,2));
   console.log('PASS: parent Start Lost COSMOS booted the native core, all eight controls reached it, and the actual native battery returned as lost-cosmos-return-v1');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
