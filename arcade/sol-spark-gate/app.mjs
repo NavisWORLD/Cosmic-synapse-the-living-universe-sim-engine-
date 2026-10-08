@@ -14,7 +14,7 @@ const embedded=new URLSearchParams(location.search).get('mode')==='handheld';
 if(embedded){document.body.classList.add('handheld-only');$('spark').removeAttribute('src');}
 if(embedded&&new URLSearchParams(location.search).get('player')==='shell45'){
  document.body.classList.add('player-shell');
- $('handheld').src='./handheld.html?controller=iphoneaudio40&sites=digest43&player=shell45';
+ $('handheld').src='./handheld.html?controller=iphoneaudio40&sites=digest43&player=shell45&audiofix=41';
 }
 let cloudOrigin=null,handheldReady=false,pendingStart=false;
 function startNative(){if(!handheldReady||!pendingStart)return;pendingStart=false;$('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-start'},location.origin);}
