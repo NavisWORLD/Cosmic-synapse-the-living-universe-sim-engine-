@@ -39,6 +39,15 @@ window.addEventListener('message',async event=>{
   if(!current){status('Send the Beast before returning a journey.');return;}
   $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-return-request'},location.origin);return;
  }
+ if(event.data?.type==='sol-spark-observe-request'){
+  if(!cloudOrigin||event.origin!==cloudOrigin||!current?.qbeast?.profile?.id ||
+     event.data.qbeast_id!==current.qbeast.profile.id)return;
+  const requestId=typeof event.data.requestId==='string'?event.data.requestId.slice(0,70):'';
+  if(requestId) $('handheld').contentWindow?.postMessage({
+   source:'living-universe',type:'sol-spark-observe-request',requestId
+  },location.origin);
+  return;
+ }
  if(event.data?.type!=='sol-spark-qbeast')return;
  try{
   if(!table)throw Error('Recorded seed table is still loading.');
@@ -64,6 +73,21 @@ function storedMatch(bytes){
 }
 window.addEventListener('message',async event=>{
  if(event.origin===location.origin&&event.source===$('handheld').contentWindow&&event.data?.source==='living-universe'){
+  if(event.data?.type==='sol-spark-observation'){
+   if(cloudOrigin&&current?.qbeast?.profile?.id){
+    // Forward a bounded optics summary only, never a canvas, screenshot or ROM memory.
+    const o=event.data.observation||{};
+    const observation=o.status==='observed'&&['red','green','blue','mixed'].includes(o.dominant)
+     ? {status:'observed',source:'native-emulator-display',
+        brightness:Math.max(0,Math.min(100,Number(o.brightness)||0)),
+        contrast:Math.max(0,Math.min(100,Number(o.contrast)||0)),
+        dominant:o.dominant,frameChange:Math.max(0,Math.min(100,Number(o.frameChange)||0))}
+     : {status:'unavailable',reason:'The running frame could not be observed.'};
+    window.parent.postMessage({type:'sol-spark-observation',
+     qbeast_id:current.qbeast.profile.id,requestId:String(event.data.requestId||'').slice(0,70),observation},cloudOrigin);
+   }
+   return;
+  }
   if(event.data?.type==='sol-spark-audio-state'){
    if(cloudOrigin)window.parent.postMessage({type:'sol-spark-audio-state',wanted:event.data.wanted===true,running:event.data.running===true},cloudOrigin);return;
   }
