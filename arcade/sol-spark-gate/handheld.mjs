@@ -33,12 +33,18 @@ function gameVolume() {
 // Do not equate a requested volume with an audio context actually running.
 function emulatorAudioContexts() {
  const emulator=window.EJS_emulator,gm=emulator?.gameManager;
- const roots=[emulator,gm,emulator?.Module,gm?.Module,emulator?.Module?.AL,gm?.Module?.AL];
+ // Emscripten AL can live on the global module rather than the EmulatorJS wrapper.
+ // Inspect only AudioContext-shaped objects, never assume a nonzero volume proves sound.
+ const roots=[emulator,gm,emulator?.Module,gm?.Module,
+  emulator?.Module?.AL,gm?.Module?.AL,window.Module,window.Module?.AL,
+  window.AL,window.SDL,gm?.game,gm?.game?.Module];
  const contexts=new Set();
  const add=x=>{if(x&&typeof x.resume==='function'&&typeof x.state==='string')contexts.add(x);};
  for(const root of roots){
   add(root?.audioContext);add(root?.audioCtx);add(root?.ctx);add(root?.currentCtx?.audioCtx);
   add(root?.currentCtx?.context);add(root?.currentCtx?.audioContext);
+  add(root?.currentCtx?.gain?.context);add(root?.audio?.audioContext);
+  add(root?.audio?.context);add(root?.audio?.ctx);
   const sources=root?.currentCtx?.sources;
   if(sources&&typeof sources.forEach==='function')sources.forEach(source=>{
    add(source?.gain?.context);add(source?.context);add(source?.node?.context);

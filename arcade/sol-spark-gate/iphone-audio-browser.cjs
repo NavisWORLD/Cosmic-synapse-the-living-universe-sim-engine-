@@ -33,5 +33,25 @@ const root=process.argv[2]||'http://127.0.0.1:8765';
   assert.equal(result.pressed,'true');
   assert.match(result.note,/unlocked/i);
   console.log('PASS: iPhone WebKit trusted sound tap resumes the handheld audio context',result);
+  // Some Emscripten builds put the native OpenAL state in window.AL,
+  // outside EJS_emulator.Module. The same iPhone button must find it there.
+  await page.evaluate(()=>{
+   const context={state:'suspended',resumeCalls:0,resume(){this.resumeCalls++;this.state='running';return Promise.resolve();}};
+   window.AL={currentCtx:{audioCtx:context}};
+   window.EJS_emulator={setVolume(value){window.__iphoneAudio.volumes.push(value);}};
+   window.__iphoneAudio.globalContext=context;
+  });
+  await page.locator('#audio').tap();
+  await page.waitForFunction(()=>document.querySelector('#audio').textContent.includes('Game sound on'));
+  const recovered=await page.evaluate(()=>({
+   state:window.__iphoneAudio.globalContext.state,
+   resumeCalls:window.__iphoneAudio.globalContext.resumeCalls,
+   text:document.querySelector('#audio').textContent
+  }));
+  assert.equal(recovered.state,'running');
+  assert.equal(recovered.resumeCalls,1);
+  assert.match(recovered.text,/Game sound on/);
+  console.log('PASS: iPhone WebKit native AL global-context audio resume',recovered);
+
  }finally{await browser.close();}
 })().catch(err=>{console.error(err);process.exitCode=1});
