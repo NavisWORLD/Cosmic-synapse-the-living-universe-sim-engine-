@@ -14,12 +14,12 @@ const embedded=new URLSearchParams(location.search).get('mode')==='handheld';
 if(embedded){document.body.classList.add('handheld-only');$('spark').removeAttribute('src');}
 if(embedded&&new URLSearchParams(location.search).get('player')==='shell45'){
  document.body.classList.add('player-shell');
- $('handheld').src='./handheld.html?controller=iphoneaudio40&sites=digest43&player=shell45';
+ $('handheld').src='./handheld.html?controller=iphoneaudio40&sites=digest43&player=shell45&optical=01';
 }
 let cloudOrigin=null,handheldReady=false,pendingStart=false;
 function startNative(){if(!handheldReady||!pendingStart)return;pendingStart=false;$('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-start'},location.origin);}
 // Choose the initial child document once; shell display changes never navigate it.
-if(!$('handheld').getAttribute('src'))$('handheld').src='./handheld.html?controller=iphoneaudio40&sites=digest43';
+if(!$('handheld').getAttribute('src'))$('handheld').src='./handheld.html?controller=iphoneaudio40&sites=digest43&optical=01';
 window.addEventListener('message',async event=>{
  if(!embedded||event.source!==window.parent||!isTrustedCloudOrigin(event.origin))return;
  if(event.data?.type==='sol-spark-player-state'){
@@ -132,7 +132,7 @@ $('beast-file').addEventListener('change',async()=>{try{if(!table)throw new Erro
 $('download').addEventListener('click',()=>{if(save)download(`${current.genome.names['1']}${journey?'_JOURNEY':'_STARTER'}.sav`,save);});
 $('receipt').addEventListener('click',()=>{if(current)download(`${current.genome.names['1']}_SPARK_RECEIPT.json`,JSON.stringify({schema:'sol-spark-art-receipt-v1',seed:current.genome.seed,traits:current.genome.inputs.traits,keeper:current.genome.inputs.user_id,runIndex:current.runIndex,forms:current.genome.names,...(current.qbeast?{qbeast:current.qbeast}:{})},null,2),'application/json');});
 $('journey').addEventListener('change',async()=>{try{if(!current)throw new Error('Choose the matching Spark companion first.');const file=$('journey').files[0];if(!file)return;if(file.size!==32768)throw new Error('Choose a 32 KB battery save.');const raw=new Uint8Array(await file.arrayBuffer()),progress=readProgress(current.record.profile,raw);ready(current,attachSparkArt(raw,current.genome,current.runIndex,table,{journey:true,...(current.record.seed===current.genome.seed?{record:current.record}:{})}),true);status(`Journey kept: LV ${progress.level}, bond ${progress.bond}, native form ${progress.stage+1}. Download the updated battery save.`);}catch(err){status(err.message);}finally{$('journey').value='';}});
-$('reset-player').addEventListener('click',()=>{handheldReady=false;$('handheld').src='./handheld.html?controller=iphoneaudio40';});
+$('reset-player').addEventListener('click',()=>{handheldReady=false;$('handheld').src='./handheld.html?controller=iphoneaudio40&optical=01';});
 $('handheld').addEventListener('load',()=>{handheldReady=true;if(save)ready(current,save,journey);startNative();});
 try{table=await loadTable();
  const approved=await fetch('./public-seeds.json').then(r=>{if(!r.ok)throw Error('Public recorded seeds unavailable.');return r.json()});
