@@ -22,3 +22,25 @@ test('frame sampling respects delayed second read and never discloses raw pixels
  const v=await observeNativePixels(doc,async ms=>assert.equal(ms,145));
  assert.equal(v.status,'observed');assert.equal('pixels' in v,false);
 });
+
+test('WebGL cleared backbuffer falls back to on-demand composited stream; every track stops',async()=>{
+ const empty=frame([0,0,0]),shown=frame([75,155,205]);let current=null,stopped=0,paused=0;
+ const track={stop(){stopped++}},stream={getTracks:()=>[track]};
+ const source={width:240,height:160,captureStream:rate=>{assert.equal(rate,12);return stream}};
+ const video={videoWidth:240,videoHeight:160,muted:false,srcObject:null,play:()=>Promise.resolve(),pause:()=>{paused++}};
+ const doc={
+  getElementById:()=>({querySelector:()=>source,querySelectorAll:()=>[source]}),
+  createElement:type=>type==='video'?video:{
+   width:0,height:0,
+   getContext:()=>({
+    drawImage:x=>{current=x},
+    getImageData:()=>({data:current===video?shown:empty})
+   })
+  }
+ };
+ const result=await observeNativePixels(doc,async()=>{});
+ assert.equal(result.status,'observed');
+ assert.equal(result.dominant,'blue');
+ assert.equal(stopped,1);assert.equal(paused,1);assert.equal(video.srcObject,null);
+ assert.ok(!('pixels' in result));
+});
