@@ -53,7 +53,8 @@ async function testSpeaker(){
   const Audio=window.AudioContext||window.webkitAudioContext;
   if(!Audio){syncAudioUi('Safari Web Audio is unavailable on this device.');return;}
   if(!speakerContext||speakerContext.state==='closed')speakerContext=new Audio();
-  if(speakerContext.state!=='running')await speakerContext.resume();
+  // Resume without awaiting first: create/arm the oscillator inside this exact iOS touch.
+  if(speakerContext.state!=='running')void speakerContext.resume().catch(()=>syncAudioUi('Speaker resume was blocked by Safari.'));
   const osc=speakerContext.createOscillator(),gain=speakerContext.createGain(),t=speakerContext.currentTime;
   osc.type='sine';osc.frequency.setValueAtTime(620,t);osc.frequency.exponentialRampToValueAtTime(890,t+.11);
   gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.08,t+.015);
