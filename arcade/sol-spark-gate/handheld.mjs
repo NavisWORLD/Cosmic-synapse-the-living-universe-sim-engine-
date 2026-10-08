@@ -1,4 +1,5 @@
 import {sha256Hex} from './digest.mjs';
+import {observeNativePixels} from './native-observation.mjs';
 import { verifySparkArt } from './cartridge.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
 import {batteryName,prepareBattery,keepCoreBattery,cacheNativeBattery,loadNativeBattery} from './battery.mjs';
@@ -28,16 +29,38 @@ function gameVolume() {
   return state.audioWanted && state.playerVisible ? 0.35 : 0;
 }
 
+// Emscripten/EmulatorJS versions expose their AudioContext at different paths.
+// Do not equate a requested volume with an audio context actually running.
 function emulatorAudioContexts() {
-  const contexts = new Set();
-  const sources = window.EJS_emulator?.Module?.AL?.currentCtx?.sources;
-  if (sources && typeof sources.forEach === 'function') {
-    sources.forEach((source) => {
-      const context = source?.gain?.context;
-      if (context && typeof context.resume === 'function') contexts.add(context);
-    });
-  }
-  return [...contexts];
+ const emulator=window.EJS_emulator,gm=emulator?.gameManager;
+ const roots=[emulator,gm,emulator?.Module,gm?.Module,emulator?.Module?.AL,gm?.Module?.AL];
+ const contexts=new Set();
+ const add=x=>{if(x&&typeof x.resume==='function'&&typeof x.state==='string')contexts.add(x);};
+ for(const root of roots){
+  add(root?.audioContext);add(root?.audioCtx);add(root?.ctx);add(root?.currentCtx?.audioCtx);
+  add(root?.currentCtx?.context);add(root?.currentCtx?.audioContext);
+  const sources=root?.currentCtx?.sources;
+  if(sources&&typeof sources.forEach==='function')sources.forEach(source=>{
+   add(source?.gain?.context);add(source?.context);add(source?.node?.context);
+  });
+ }
+ return [...contexts];
+}
+let speakerContext=null;
+async function testSpeaker(){
+ // This is a separate audible diagnostic, NEVER evidence that native game sound works.
+ try{
+  const Audio=window.AudioContext||window.webkitAudioContext;
+  if(!Audio){syncAudioUi('Safari Web Audio is unavailable on this device.');return;}
+  if(!speakerContext||speakerContext.state==='closed')speakerContext=new Audio();
+  if(speakerContext.state!=='running')await speakerContext.resume();
+  const osc=speakerContext.createOscillator(),gain=speakerContext.createGain(),t=speakerContext.currentTime;
+  osc.type='sine';osc.frequency.setValueAtTime(620,t);osc.frequency.exponentialRampToValueAtTime(890,t+.11);
+  gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.08,t+.015);
+  gain.gain.exponentialRampToValueAtTime(.0001,t+.18);
+  osc.connect(gain);gain.connect(speakerContext.destination);osc.start(t);osc.stop(t+.2);
+  syncAudioUi('Speaker test sent. If you heard a chirp but game music is silent, the emulator audio context is still unavailable/suspended.');
+ }catch{syncAudioUi('Speaker test could not start. Check Safari media volume and audio output.');}
 }
 
 function syncAudioUi(note = '') {
@@ -68,12 +91,13 @@ async function unlockGameAudio() {
   const contexts = emulatorAudioContexts();
   const resumes = [];
   for (const context of contexts) {
-    if (context.state === 'suspended') {
+    if (context.state === 'suspended' || context.state === 'interrupted') {
       try { resumes.push(context.resume()); } catch { /* retry on the next tap */ }
     }
   }
   window.EJS_emulator?.setVolume?.(gameVolume());
   if (resumes.length) await Promise.allSettled(resumes);
+  window.EJS_emulator?.setVolume?.(gameVolume());
   syncAudioUi(contexts.length
     ? ''
     : (state.started
@@ -257,6 +281,17 @@ window.addEventListener('message', (event) => {
     state.playerVisible=data.active===true;
     window.EJS_emulator?.setVolume?.(gameVolume());syncAudioUi();return;
   }
+  if(data.type==='sol-spark-observe-request'){
+    if(!state.started||!window.EJS_emulator?.gameManager||!/^[-a-zA-Z0-9]{8,80}$/.test(String(data.requestId||'')))return;
+    const requestId=data.requestId,qbeast_id=String(data.qbeast_id||'').slice(0,120);
+    // Capture only when the user explicitly requested it through the verified parent.
+    void observeNativePixels(document).then(observation=>{
+      window.parent.postMessage({source:'living-universe',type:'sol-spark-observation',requestId,qbeast_id,
+       observation:observation||{status:'unavailable'}},location.origin);
+    }).catch(()=>window.parent.postMessage({source:'living-universe',type:'sol-spark-observation',
+      requestId,qbeast_id,observation:{status:'unavailable'}},location.origin));
+    return;
+  }
   if(data.type==='sol-spark-input'){
     const input=normalizeHandheldInput(data.button,data.down);
     const applied=!!input&&applyHandheldInput(window.EJS_emulator?.gameManager,input.button,input.down);
@@ -366,6 +401,7 @@ $('bin').addEventListener('change', async () => {
 
 $('bring').addEventListener('click', bringIn);
 $('audio').addEventListener('click', () => { void unlockGameAudio(); });
+$('test-audio').addEventListener('click', () => { void testSpeaker(); });
 syncAudioUi();
 $('play').addEventListener('click', () => {
   if (state.started) {
