@@ -89,6 +89,8 @@ async function unlockGameAudio() {
   state.audioWanted = true;
   // Important for iOS Safari: call resume() synchronously from this button's
   // trusted gesture in the same document that owns EmulatorJS.
+  // Set cartridge volume first: some EmulatorJS cores lazily initialize audio nodes.
+  window.EJS_emulator?.setVolume?.(gameVolume());
   const contexts = emulatorAudioContexts();
   const resumes = [];
   for (const context of contexts) {
