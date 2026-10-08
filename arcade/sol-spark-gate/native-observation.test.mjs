@@ -44,3 +44,25 @@ test('WebGL cleared backbuffer falls back to on-demand composited stream; every 
  assert.equal(stopped,1);assert.equal(paused,1);assert.equal(video.srcObject,null);
  assert.ok(!('pixels' in result));
 });
+
+test('native game screenshot PNG yields numerical optical signal without retaining pixels',async()=>{
+ const shown=frame([25,110,165]);let captures=0,closes=0,pixelSource=null;
+ const fakePng=new Uint8Array([137,80,78,71,13,10,26,10,0,0,0,0,0,0,0,0,0,0]);
+ const view={
+  EJS_emulator:{gameManager:{screenshot:async()=>{captures++;return fakePng}}},
+  createImageBitmap:async blob=>{assert.equal(blob.type,'image/png');return {close(){closes++}}}
+ };
+ const doc={
+  defaultView:view,
+  getElementById:()=>null,
+  createElement:()=>({getContext:()=>({
+   drawImage:x=>{pixelSource=x},
+   getImageData:()=>({data:pixelSource?shown:null})
+  })})
+ };
+ const value=await observeNativePixels(doc,async()=>{});
+ assert.equal(value.status,'observed');assert.equal(value.source,'native-emulator-display');
+ assert.equal(value.dominant,'blue');
+ assert.equal(captures,2);assert.equal(closes,2);
+ assert.ok(!('pixels' in value)&&!('png' in value));
+});
