@@ -63,7 +63,7 @@ test('both measured Marrakesh PUBs append after historical and Fez rows without 
  assert.deepEqual(table.runs.slice(0,historical.runs.length),historical.runs);
  assert.deepEqual(table.runs.slice(historical.runs.length,historical.runs.length+2),fez.runs);
  assert.deepEqual(table.runs.slice(historical.runs.length+2,historical.runs.length+4),expected.runs);
- assert.equal(table.runs.length,historical.runs.length+8);
+ assert.equal(table.runs.length,historical.runs.length+10);
  assert.deepEqual(table.totals,historical.totals);
  assert.equal(table.claim,historical.claim_boundary);
  for(const row of expected.runs)assert.deepEqual(table.byKey.get(row.key),row);
