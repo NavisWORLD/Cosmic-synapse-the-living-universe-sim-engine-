@@ -31,6 +31,13 @@ const SUPPLEMENTS = [
     sourceDigest: 'd084218f57511e33070fbbf82a055d74bf77636b6c07eaa82bd6f1d1208a18d9',
     rowDigests: ['55b08466e641cb8c25bb0a32f7a576f4d585abe78f7352808cc9551e4b4e3c6c','916d1da1a468d7ae7186304cab805983ed42ff36996723c2670277718c84eb7a'],
   },
+  {
+    file: 'ibm-magmascale-20261009-supplement.json',
+    schema: 'lost-cosmos-ibm-magmascale-20261009-cartridge-supplement-v1',
+    job: 'db4nlt2mb58s7389er6g', backend: 'ibm_fez', shots: 4096,
+    sourceDigest: 'd6d39ff479cd9aaf4d80eb16cb42bb393ea17fe2eaa9e23cdb151245165fd9d6',
+    rowDigests: ['05d68e876d185e002e5b810b662057352a8800e9eb24e31a36ae3dda8d687b98','f9c94b48ad85a5517175b9f64ae0f81844819bc11aa04646244127c9db891538'],
+  },
 ];
 
 export function indexTable(table) {

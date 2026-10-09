@@ -1,0 +1,50 @@
+{
+  "schema": "navisworld-ibm-longer-onejob-physics-receipt-v1",
+  "source_class": "RECORDED_IBM_HARDWARE",
+  "job_id": "db4nlt2mb58s7389er6g",
+  "backend_name": "ibm_fez",
+  "job_status": "DONE",
+  "shot_count": 16384,
+  "counts_digest_sha256": "d6d39ff479cd9aaf4d80eb16cb42bb393ea17fe2eaa9e23cdb151245165fd9d6",
+  "beast_genesis_digest_sha256": "c78dcbece1a36d4ce19666c53c2ff0b09aaf0bba30e6a044a54d9ff82cfa4c39",
+  "measurements": {
+    "bell_xx": {
+      "10": 91,
+      "11": 1941,
+      "00": 1995,
+      "01": 69
+    },
+    "bell_zz": {
+      "10": 178,
+      "11": 1863,
+      "00": 1940,
+      "01": 115
+    },
+    "decoupled_xx": {
+      "10": 2062,
+      "11": 16,
+      "00": 2005,
+      "01": 13
+    },
+    "decoupled_zz": {
+      "10": 53,
+      "11": 56,
+      "00": 1971,
+      "01": 2016
+    }
+  },
+  "expectations": {
+    "bell_XX": 0.921875,
+    "bell_ZZ": 0.85693359375,
+    "decoupled_XX": -0.01318359375,
+    "decoupled_ZZ": -0.01025390625
+  },
+  "qpu_job_limit_seconds": 120,
+  "source_actions_run_id": 38005372001,
+  "source_artifact_id": 11650509285,
+  "study_limitations": [
+    "ZZ and XX basis parity are correlations, not a full quantum density matrix or CHSH test.",
+    "The separable control removes the CX gate. Creature behavior is classical.",
+    "This authentic physical IBM result is separate from the Azure Rigetti QVM simulator and the hosted model."
+  ]
+}
