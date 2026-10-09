@@ -1,11 +1,15 @@
-name: Real IBM Fez Cartridge Source Contract
+name: Recorded IBM Cartridge Source Contract
 on:
   pull_request:
     paths:
       - 'arcade/spark-beasts/runs.mjs'
       - 'arcade/spark-beasts/data/ibm-fez-20261009-supplement.json'
+      - 'arcade/spark-beasts/data/ibm-marrakesh-20261009-supplement.json'
       - 'arcade/sol-spark-gate/ibm-fez-cartridge-source.test.mjs'
+      - 'arcade/sol-spark-gate/ibm-marrakesh-cartridge-source.test.mjs'
+      - 'arcade/sol-spark-gate/fixtures/ibm-marrakesh-*'
       - '.github/workflows/real-ibm-fez-cartridge-source.yml'
+      - '.github/workflows/pages.yml'
 permissions:
   contents: read
 jobs:
@@ -19,5 +23,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Run direct native cartridge generator against both measured Fez PUBs
-        run: node --test arcade/sol-spark-gate/ibm-fez-cartridge-source.test.mjs
+      - name: Verify measured Fez and Marrakesh sources, exact Noctlet admission and source corruption rejection
+        run: node --test arcade/sol-spark-gate/*cartridge-source.test.mjs

@@ -1,0 +1,41 @@
+{
+  "schema": "lost-cosmos-ibm-marrakesh-20261009-cartridge-supplement-v1",
+  "source_class": "RECORDED_IBM_HARDWARE",
+  "job_id": "db4l2uclf4us73c2td10",
+  "backend": "ibm_marrakesh",
+  "counts_digest_sha256": "6b5438dc3ad1ab02cd6440822ea8fe89e1b66fa664174454c9471a65196d2910",
+  "source_receipt_url": "https://github.com/NavisWORLD/The-beast-box-/blob/48658f18e220d8b9957305a30aaec5bc3464c3b0/apps/beastbox-cloud/experiment-input/ibm-marrakesh-20261009-longer-receipt.json",
+  "note": "Two recorded 4096-shot two-bit Bell PUB distributions from the completed IBM Marrakesh job, appended after Fez. The source digest covers all four measured PUBs; only Bell ZZ/XX are admitted here. Classical replay only; no ongoing QPU connection or entanglement inference from these distributions alone.",
+  "runs": [
+    {
+      "key": "db4l2uclf4us73c2td10:bell-zz",
+      "backend": "ibm_marrakesh",
+      "job_id": "db4l2uclf4us73c2td10",
+      "pub_index": 0,
+      "num_bits": 2,
+      "shots": 4096,
+      "counts": {
+        "10": 35,
+        "11": 1980,
+        "00": 2057,
+        "01": 24
+      },
+      "counts_sha256": "9ab6237bef9799575f9ffb557d442e8b2975839b53f7a19848e218ac14adb7b8"
+    },
+    {
+      "key": "db4l2uclf4us73c2td10:bell-xx",
+      "backend": "ibm_marrakesh",
+      "job_id": "db4l2uclf4us73c2td10",
+      "pub_index": 1,
+      "num_bits": 2,
+      "shots": 4096,
+      "counts": {
+        "10": 18,
+        "11": 2057,
+        "00": 1994,
+        "01": 27
+      },
+      "counts_sha256": "8722018cf2e7c23cb09aea30072eb375dac111d6106fddc6ce27365813cf5e19"
+    }
+  ]
+}

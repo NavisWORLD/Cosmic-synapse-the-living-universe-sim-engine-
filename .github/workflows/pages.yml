@@ -24,6 +24,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y clang lld llvm gcc libmgba-dev
       - run: npm run verify
       - run: npm run test:link
+      - name: Verify exact recorded IBM source admission before publishing
+        run: node --test arcade/sol-spark-gate/*cartridge-source.test.mjs
       - run: npm run build:cartridge
       - name: Boot past map building with a Spark cage save
         run: python3 gba/lost-cosmos-living-multiverse/tests/test_mgba_cage_overworld.py --rom arcade/lost-cosmos/rom/lost-cosmos.gba --elf gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.elf --out /tmp/mgba-cage-overworld
