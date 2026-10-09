@@ -1,0 +1,40 @@
+{
+  "schema": "lost-cosmos-ibm-fez-20261009-cartridge-supplement-v1",
+  "source_class": "RECORDED_IBM_HARDWARE",
+  "job_id": "db4kcfklf4us73c2sjb0",
+  "backend": "ibm_fez",
+  "counts_digest_sha256": "db2e398585112c5125e3b08c915c3125d7ad4878160c6c6f95d3a7acbb0945ab",
+  "note": "Two recorded 256-shot two-bit PUB distributions from the independently executed IBM Fez job. No live link; no entanglement claim derived from these individual distributions alone.",
+  "runs": [
+    {
+      "key": "db4kcfklf4us73c2sjb0:bell-zz",
+      "backend": "ibm_fez",
+      "job_id": "db4kcfklf4us73c2sjb0",
+      "pub_index": 0,
+      "num_bits": 2,
+      "shots": 256,
+      "counts": {
+        "10": 11,
+        "11": 106,
+        "00": 131,
+        "01": 8
+      },
+      "counts_sha256": "1fc1feaf53498754dbb05253629aa062994fa97f3ffa24a9a82aa8fd53d9f4eb"
+    },
+    {
+      "key": "db4kcfklf4us73c2sjb0:bell-xx",
+      "backend": "ibm_fez",
+      "job_id": "db4kcfklf4us73c2sjb0",
+      "pub_index": 1,
+      "num_bits": 2,
+      "shots": 256,
+      "counts": {
+        "10": 5,
+        "11": 119,
+        "00": 124,
+        "01": 8
+      },
+      "counts_sha256": "253c5771133b9ead7aa71aa381da1fc779ddee2374b3c51de369c5563d19e0ab"
+    }
+  ]
+}

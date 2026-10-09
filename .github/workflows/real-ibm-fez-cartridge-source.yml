@@ -1,0 +1,23 @@
+name: Real IBM Fez Cartridge Source Contract
+on:
+  pull_request:
+    paths:
+      - 'arcade/spark-beasts/runs.mjs'
+      - 'arcade/spark-beasts/data/ibm-fez-20261009-supplement.json'
+      - 'arcade/sol-spark-gate/ibm-fez-cartridge-source.test.mjs'
+      - '.github/workflows/real-ibm-fez-cartridge-source.yml'
+permissions:
+  contents: read
+jobs:
+  exact-recipe-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run direct native cartridge generator against both measured Fez PUBs
+        run: node --test arcade/sol-spark-gate/ibm-fez-cartridge-source.test.mjs
