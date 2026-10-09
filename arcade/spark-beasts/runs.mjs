@@ -1,3 +1,4 @@
+import {canon, sha256Hex} from './hash.mjs';
 /** Recorded IBM Quantum count table. Historical seeds only. */
 
 export function indexTable(table) {
