@@ -1,0 +1,40 @@
+{
+  "schema": "lost-cosmos-ibm-magmascale-20261009-cartridge-supplement-v1",
+  "source_class": "RECORDED_IBM_HARDWARE",
+  "job_id": "db4nlt2mb58s7389er6g",
+  "backend": "ibm_fez",
+  "counts_digest_sha256": "d6d39ff479cd9aaf4d80eb16cb42bb393ea17fe2eaa9e23cdb151245165fd9d6",
+  "source_receipt_url": "https://github.com/NavisWORLD/The-beast-box-/actions/runs/38005372001/artifacts/11650509285",
+  "runs": [
+    {
+      "key": "db4nlt2mb58s7389er6g:bell-zz",
+      "backend": "ibm_fez",
+      "job_id": "db4nlt2mb58s7389er6g",
+      "pub_index": 0,
+      "num_bits": 2,
+      "shots": 4096,
+      "counts": {
+        "10": 178,
+        "11": 1863,
+        "00": 1940,
+        "01": 115
+      },
+      "counts_sha256": "05d68e876d185e002e5b810b662057352a8800e9eb24e31a36ae3dda8d687b98"
+    },
+    {
+      "key": "db4nlt2mb58s7389er6g:bell-xx",
+      "backend": "ibm_fez",
+      "job_id": "db4nlt2mb58s7389er6g",
+      "pub_index": 1,
+      "num_bits": 2,
+      "shots": 4096,
+      "counts": {
+        "10": 91,
+        "11": 1941,
+        "00": 1995,
+        "01": 69
+      },
+      "counts_sha256": "f9c94b48ad85a5517175b9f64ae0f81844819bc11aa04646244127c9db891538"
+    }
+  ]
+}
