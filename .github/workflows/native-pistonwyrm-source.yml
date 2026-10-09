@@ -1,0 +1,26 @@
+name: Native GBA measured dragon source admission (Pistonwyrm and Umbrascale)
+on:
+  pull_request:
+    paths:
+      - 'arcade/spark-beasts/runs.mjs'
+      - 'arcade/spark-beasts/data/ibm-pistonwyrm-20261009-supplement.json'
+      - 'arcade/sol-spark-gate/fixtures/ibm-pistonwyrm-20261009-*'
+      - 'arcade/sol-spark-gate/ibm-*-cartridge-source.test.mjs'
+      - '.github/workflows/native-pistonwyrm-source.yml'
+permissions:
+  contents: read
+jobs:
+  exact-source-admission:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify full native source registry and exact two-dragon admission
+        run: |
+          node --check arcade/spark-beasts/runs.mjs
+          node --test arcade/sol-spark-gate/ibm-pistonwyrm-cartridge-source.test.mjs arcade/sol-spark-gate/ibm-final-live-cartridge-source.test.mjs arcade/sol-spark-gate/ibm-marrakesh-cartridge-source.test.mjs

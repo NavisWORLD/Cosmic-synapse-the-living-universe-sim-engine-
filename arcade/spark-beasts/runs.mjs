@@ -24,6 +24,13 @@ const SUPPLEMENTS = [
     sourceDigest: 'cf0a4973c0dbc074fc11a6bc7ce8439ecd61248c1a5c96a63571725c61e8b25b',
     rowDigests: ['64afa7f43c593c0d41758bb36b02f64bacf41441fa7dcf75ea49632dd02b5150', '85c22950478b53047cd3398e4e8a32a6e4e0c6f8ffc746c5eef76e8b82079add'],
   },
+  {
+    file: 'ibm-pistonwyrm-20261009-supplement.json',
+    schema: 'lost-cosmos-ibm-pistonwyrm-20261009-cartridge-supplement-v1',
+    job: 'db4n37g4qg6s73c2de00', backend: 'ibm_fez', shots: 4096,
+    sourceDigest: 'd084218f57511e33070fbbf82a055d74bf77636b6c07eaa82bd6f1d1208a18d9',
+    rowDigests: ['55b08466e641cb8c25bb0a32f7a576f4d585abe78f7352808cc9551e4b4e3c6c','916d1da1a468d7ae7186304cab805983ed42ff36996723c2670277718c84eb7a'],
+  },
 ];
 
 export function indexTable(table) {
