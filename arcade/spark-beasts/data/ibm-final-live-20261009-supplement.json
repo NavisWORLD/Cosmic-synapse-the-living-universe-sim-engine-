@@ -1,0 +1,40 @@
+{
+  "schema": "lost-cosmos-ibm-final-live-20261009-cartridge-supplement-v1",
+  "source_class": "RECORDED_IBM_HARDWARE",
+  "job_id": "db4m3bslf4us73c2ui9g",
+  "backend": "ibm_fez",
+  "counts_digest_sha256": "cf0a4973c0dbc074fc11a6bc7ce8439ecd61248c1a5c96a63571725c61e8b25b",
+  "source_receipt_url": "https://github.com/NavisWORLD/The-beast-box-/blob/4dba2485b778b2be300b16ca1774924bc66a0d8f/apps/beastbox-cloud/experiment-input/ibm-final-live-20261009-receipt.json",
+  "runs": [
+    {
+      "key": "db4m3bslf4us73c2ui9g:bell-zz",
+      "backend": "ibm_fez",
+      "job_id": "db4m3bslf4us73c2ui9g",
+      "pub_index": 0,
+      "num_bits": 2,
+      "shots": 4096,
+      "counts": {
+        "10": 134,
+        "11": 1848,
+        "00": 1986,
+        "01": 128
+      },
+      "counts_sha256": "64afa7f43c593c0d41758bb36b02f64bacf41441fa7dcf75ea49632dd02b5150"
+    },
+    {
+      "key": "db4m3bslf4us73c2ui9g:bell-xx",
+      "backend": "ibm_fez",
+      "job_id": "db4m3bslf4us73c2ui9g",
+      "pub_index": 1,
+      "num_bits": 2,
+      "shots": 4096,
+      "counts": {
+        "10": 74,
+        "11": 1835,
+        "00": 2054,
+        "01": 133
+      },
+      "counts_sha256": "85c22950478b53047cd3398e4e8a32a6e4e0c6f8ffc746c5eef76e8b82079add"
+    }
+  ]
+}
