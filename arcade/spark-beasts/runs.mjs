@@ -17,6 +17,13 @@ const SUPPLEMENTS = [
     sourceDigest: '6b5438dc3ad1ab02cd6440822ea8fe89e1b66fa664174454c9471a65196d2910',
     rowDigests: ['9ab6237bef9799575f9ffb557d442e8b2975839b53f7a19848e218ac14adb7b8', '8722018cf2e7c23cb09aea30072eb375dac111d6106fddc6ce27365813cf5e19'],
   },
+  {
+    file: 'ibm-final-live-20261009-supplement.json',
+    schema: 'lost-cosmos-ibm-final-live-20261009-cartridge-supplement-v1',
+    job: 'db4m3bslf4us73c2ui9g', backend: 'ibm_fez', shots: 4096,
+    sourceDigest: 'cf0a4973c0dbc074fc11a6bc7ce8439ecd61248c1a5c96a63571725c61e8b25b',
+    rowDigests: ['64afa7f43c593c0d41758bb36b02f64bacf41441fa7dcf75ea49632dd02b5150', '85c22950478b53047cd3398e4e8a32a6e4e0c6f8ffc746c5eef76e8b82079add'],
+  },
 ];
 
 export function indexTable(table) {
