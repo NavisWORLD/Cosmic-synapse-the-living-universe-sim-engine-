@@ -1,0 +1,49 @@
+{
+  "schema": "navisworld-ibm-longer-onejob-physics-receipt-v1",
+  "job_id": "db4og3slf4us73c319h0",
+  "job_status": "DONE",
+  "backend_name": "ibm_fez",
+  "source_class": "RECORDED_IBM_HARDWARE",
+  "shot_count": 16384,
+  "counts_digest_sha256": "2ac2025a72f6d376783aded12561370260d5285fb697ecd2040c31f4ebcbb8d7",
+  "beast_genesis_digest_sha256": "849c2c806757878563d6f7898db62a97d0557a286c0bd290ae537569dc827145",
+  "expectations": {
+    "bell_XX": 0.69287109375,
+    "bell_ZZ": -0.078125,
+    "decoupled_XX": 0.06884765625,
+    "decoupled_ZZ": -0.37548828125
+  },
+  "measurements": {
+    "bell_xx": {
+      "10": 327,
+      "11": 1649,
+      "00": 1818,
+      "01": 302
+    },
+    "bell_zz": {
+      "10": 1206,
+      "11": 973,
+      "00": 915,
+      "01": 1002
+    },
+    "decoupled_xx": {
+      "10": 571,
+      "11": 343,
+      "00": 1846,
+      "01": 1336
+    },
+    "decoupled_zz": {
+      "10": 113,
+      "11": 350,
+      "00": 929,
+      "01": 2704
+    }
+  },
+  "audio_pre_hardware": {
+    "original_song_sha256": "4410ed871310ae2ce4429c7f525b93105f1a5d4521213fe052f0ecefea9a7e47",
+    "full_cosmos_12d_packet_sha256": "84807db6e44e0bad5b494a6408ec7a0d8390f66399759e439b56f19ac8bb0e99",
+    "gate_design": "RX RY RZ actual audio 12D gate conditioning before IBM shots",
+    "music_precedes_hardware": true
+  },
+  "no_qpu_physical_sound_upload": true
+}
