@@ -25,7 +25,7 @@ test('fresh Umbrascale enters the real cartridge save with its measured identity
  assert.equal(beast.genome.names[1],'Umbrascale');
  assert.equal(beast.genome.body,'dragonling');
  assert.equal(beast.runIndex,historical.runs.length+5);
- assert.equal(table.runs.length,historical.runs.length+12);
+ assert.equal(table.runs.length,historical.runs.length+14);
  assert.equal(new DataView(save.buffer).getUint32(24712,true),0x8546076e);
  assert.equal(verifySparkArt(save),true);
  assert.deepEqual(table.runs.slice(0,historical.runs.length),historical.runs);

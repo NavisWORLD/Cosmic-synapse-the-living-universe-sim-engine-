@@ -1,0 +1,39 @@
+{
+  "backend": "ibm_fez",
+  "counts_digest_sha256": "e0565f6879b9ac8016fb1dfc660c62962c3bdf38ae675fff23114c9cc05b12e6",
+  "job_id": "db4q484vf2bc73cuuuag",
+  "runs": [
+    {
+      "backend": "ibm_fez",
+      "counts": {
+        "00": 1960,
+        "01": 110,
+        "10": 193,
+        "11": 1833
+      },
+      "counts_sha256": "5aad95f57efe59008f8a9b9ee4b2964c20f055b6581359fe9cee7f028238fc67",
+      "job_id": "db4q484vf2bc73cuuuag",
+      "key": "db4q484vf2bc73cuuuag:bell-zz",
+      "num_bits": 2,
+      "pub_index": 0,
+      "shots": 4096
+    },
+    {
+      "backend": "ibm_fez",
+      "counts": {
+        "00": 2023,
+        "01": 76,
+        "10": 108,
+        "11": 1889
+      },
+      "counts_sha256": "151c96aed2079f274a3b3b0bf725d5f27b8bda0d83164c335d1b203bc5dd0bdc",
+      "job_id": "db4q484vf2bc73cuuuag",
+      "key": "db4q484vf2bc73cuuuag:bell-xx",
+      "num_bits": 2,
+      "pub_index": 1,
+      "shots": 4096
+    }
+  ],
+  "schema": "lost-cosmos-ibm-zeref-heart-sound-20261010-cartridge-supplement-v1",
+  "source_class": "RECORDED_IBM_HARDWARE"
+}
