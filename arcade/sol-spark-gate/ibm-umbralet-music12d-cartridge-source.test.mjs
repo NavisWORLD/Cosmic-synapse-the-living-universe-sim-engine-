@@ -28,7 +28,7 @@ test('third NEW real IBM hardware fixture matches recorded physical counts and h
  assert.equal(source.audio_pre_hardware.full_cosmos_12d_packet_sha256,'84807db6e44e0bad5b494a6408ec7a0d8390f66399759e439b56f19ac8bb0e99');
  assert.equal(measured.audio_packet_sha256,source.audio_pre_hardware.full_cosmos_12d_packet_sha256);
  assert.equal(measured.source_receipt_url,'https://github.com/NavisWORLD/The-beast-box-/actions/runs/38009590963/artifacts/11652269157');
- assert.equal(table.runs.length,historical.runs.length+14);
+ assert.equal(table.runs.length,historical.runs.length+18);
  assert.deepEqual(table.runs.slice(0,historical.runs.length),historical.runs);assert.deepEqual(table.totals,historical.totals);
  for(const [index,basis] of ['bell_zz','bell_xx'].entries()){
   const row=measured.runs[index];

@@ -19,7 +19,7 @@ function localFetch(t,mutate=null){
 test('new Zeref genome is admitted by the native cartridge after every existing measured source',async t=>{
  localFetch(t);const table=await loadTable(),beast=await readSparkFile(bytes,table),save=checkedSparkSave(beast,table);
  assert.equal(beast.genome.names[1],'Scorchwyrm');assert.equal(beast.genome.body,'dragonling');
- assert.equal(beast.runIndex,historical.runs.length+13);assert.equal(table.runs.length,historical.runs.length+14);
+ assert.equal(beast.runIndex,historical.runs.length+13);assert.equal(table.runs.length,historical.runs.length+18);
  assert.equal(new DataView(save.buffer).getUint32(24712,true),0xdeada969);assert.equal(verifySparkArt(save),true);
  assert.deepEqual(table.runs.slice(0,historical.runs.length),historical.runs);assert.deepEqual(table.totals,historical.totals);
 });

@@ -1,0 +1,24 @@
+name: Wraith and Lumenwisp genuine two-generation IBM cartridge admission
+on:
+  pull_request:
+    paths:
+      - 'arcade/spark-beasts/runs.mjs'
+      - 'arcade/spark-beasts/data/ibm-wraith-20261010-supplement.json'
+      - 'arcade/spark-beasts/data/ibm-lumenwisp-20261010-supplement.json'
+      - 'arcade/sol-spark-gate/ibm-wraith-lumenwisp-source.test.mjs'
+      - '.github/workflows/wraith-lumenwisp-native-two-gen.yml'
+permissions:
+  contents: read
+jobs:
+  authentic-additive-native-quantum:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Validate existing cartridge's exact two-generation measured sources, old identities and tamper refusal
+        run: |
+          node --check arcade/spark-beasts/runs.mjs
+          node --test arcade/sol-spark-gate/ibm-wraith-lumenwisp-source.test.mjs arcade/sol-spark-gate/ibm-umbralet-music12d-cartridge-source.test.mjs arcade/sol-spark-gate/ibm-magmascale-cartridge-source.test.mjs arcade/sol-spark-gate/ibm-pistonwyrm-cartridge-source.test.mjs arcade/sol-spark-gate/ibm-final-live-cartridge-source.test.mjs arcade/sol-spark-gate/ibm-marrakesh-cartridge-source.test.mjs
