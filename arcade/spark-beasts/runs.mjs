@@ -45,6 +45,13 @@ const SUPPLEMENTS = [
     sourceDigest: '2ac2025a72f6d376783aded12561370260d5285fb697ecd2040c31f4ebcbb8d7',
     rowDigests: ['8eb3a18ffb9ce08189bcaf401f3d394bd936d8ad187856e5cab999dc11a14432','f89e093ce5f8a6f5546c28760bd36a8f2501e382ed43ac14cf829b400db4629d'],
   },
+  {
+    file: 'ibm-zeref-heart-sound-20261010-supplement.json',
+    schema: 'lost-cosmos-ibm-zeref-heart-sound-20261010-cartridge-supplement-v1',
+    job: 'db4q484vf2bc73cuuuag', backend: 'ibm_fez', shots: 4096,
+    sourceDigest: 'e0565f6879b9ac8016fb1dfc660c62962c3bdf38ae675fff23114c9cc05b12e6',
+    rowDigests: ["5aad95f57efe59008f8a9b9ee4b2964c20f055b6581359fe9cee7f028238fc67", "151c96aed2079f274a3b3b0bf725d5f27b8bda0d83164c335d1b203bc5dd0bdc"],
+  },
 ];
 
 export function indexTable(table) {
