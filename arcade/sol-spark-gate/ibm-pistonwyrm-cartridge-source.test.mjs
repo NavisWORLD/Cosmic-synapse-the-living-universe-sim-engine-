@@ -32,7 +32,7 @@ test('Pistonwyrm measured source is pinned to original physical job and preserve
  assert.equal(pinned.source_receipt_url,SOURCE);
  assert.equal(pinned.counts_digest_sha256,receipt.counts_digest_sha256);
  assert.deepEqual(table.runs.slice(0,historical.runs.length),historical.runs);
- assert.equal(table.runs.length,historical.runs.length+10);
+ assert.equal(table.runs.length,historical.runs.length+12);
  assert.deepEqual(table.totals,historical.totals);
  for(const [pub,basis] of ['bell_zz','bell_xx'].entries()){
   const row=pinned.runs[pub];

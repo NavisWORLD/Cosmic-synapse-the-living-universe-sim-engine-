@@ -38,6 +38,13 @@ const SUPPLEMENTS = [
     sourceDigest: 'd6d39ff479cd9aaf4d80eb16cb42bb393ea17fe2eaa9e23cdb151245165fd9d6',
     rowDigests: ['05d68e876d185e002e5b810b662057352a8800e9eb24e31a36ae3dda8d687b98','f9c94b48ad85a5517175b9f64ae0f81844819bc11aa04646244127c9db891538'],
   },
+  {
+    file: 'ibm-umbralet-music12d-20261009-supplement.json',
+    schema: 'lost-cosmos-ibm-audio-cst12-umbralet-20261009-cartridge-supplement-v1',
+    job: 'db4og3slf4us73c319h0', backend: 'ibm_fez', shots: 4096,
+    sourceDigest: '2ac2025a72f6d376783aded12561370260d5285fb697ecd2040c31f4ebcbb8d7',
+    rowDigests: ['8eb3a18ffb9ce08189bcaf401f3d394bd936d8ad187856e5cab999dc11a14432','f89e093ce5f8a6f5546c28760bd36a8f2501e382ed43ac14cf829b400db4629d'],
+  },
 ];
 
 export function indexTable(table) {
