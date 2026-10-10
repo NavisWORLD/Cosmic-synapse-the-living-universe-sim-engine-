@@ -52,6 +52,20 @@ const SUPPLEMENTS = [
     sourceDigest: 'e0565f6879b9ac8016fb1dfc660c62962c3bdf38ae675fff23114c9cc05b12e6',
     rowDigests: ["5aad95f57efe59008f8a9b9ee4b2964c20f055b6581359fe9cee7f028238fc67", "151c96aed2079f274a3b3b0bf725d5f27b8bda0d83164c335d1b203bc5dd0bdc"],
   },
+  {
+    file: 'ibm-wraith-20261010-supplement.json',
+    schema: 'lost-cosmos-ibm-wraith-20261010-cartridge-supplement-v1',
+    job: 'db4rg5klf4us73c34tqg', backend:'ibm_marrakesh', shots:4096,
+    sourceDigest:'de17933e5400a6c18467bd3a454af5f32147135f517c8ef656fc0e5d36ec5377',
+    rowDigests:['3b4e9826108d6c4e83d72221e8a43fafe4b79e95288b4535d0d88ee96b6a42e7','d57fd08ac4544ee32d560a1a4712e9cb9d1202439618ce094920e1e501a2d17f'],
+  },
+  {
+    file: 'ibm-lumenwisp-20261010-supplement.json',
+    schema: 'lost-cosmos-ibm-lumenwisp-20261010-cartridge-supplement-v1',
+    job: 'db4sba4lf4us73c36910', backend:'ibm_marrakesh', shots:4096,
+    sourceDigest:'62effbad67bf75e985c0250e0c8a6b1d94f92d8c9e46d25e52a81975461bcce7',
+    rowDigests:['b9585341995fafcf0446d3a244f19592cf215774740f70646c7e502c7440671f','8749dd0c94224d4cf6b3939fc41d85c497bf5624e3e8ba8a3ed691253f774a1c'],
+  },
 ];
 
 export function indexTable(table) {
