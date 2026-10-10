@@ -1,0 +1,26 @@
+name: Umbralet real music-CST12 IBM native source acceptance
+on:
+  pull_request:
+    paths:
+      - 'arcade/spark-beasts/runs.mjs'
+      - 'arcade/spark-beasts/data/ibm-umbralet-music12d-20261009-supplement.json'
+      - 'arcade/sol-spark-gate/fixtures/ibm-umbralet-music12d-20261009*'
+      - 'arcade/sol-spark-gate/ibm-umbralet-music12d-cartridge-source.test.mjs'
+      - '.github/workflows/native-song-cst12-umbralet.yml'
+permissions:
+  contents: read
+jobs:
+  audio-measured-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify real physical song-conditioned IBM admission and all older dragons
+        run: |
+          node --check arcade/spark-beasts/runs.mjs
+          node --test arcade/sol-spark-gate/ibm-umbralet-music12d-cartridge-source.test.mjs arcade/sol-spark-gate/ibm-magmascale-cartridge-source.test.mjs arcade/sol-spark-gate/ibm-pistonwyrm-cartridge-source.test.mjs arcade/sol-spark-gate/ibm-final-live-cartridge-source.test.mjs arcade/sol-spark-gate/ibm-marrakesh-cartridge-source.test.mjs
