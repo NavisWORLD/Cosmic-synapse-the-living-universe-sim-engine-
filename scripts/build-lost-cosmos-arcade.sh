@@ -16,7 +16,7 @@ python3 - "$out" <<'PY'
 import hashlib, json, pathlib, subprocess, sys
 out = pathlib.Path(sys.argv[1])
 rom = (out / 'lost-cosmos.gba').read_bytes()
-manifest = {'version': '11.3', 'sha256': hashlib.sha256(rom).hexdigest(),
+manifest = {'version': '11.4', 'sha256': hashlib.sha256(rom).hexdigest(),
             'bytes': len(rom), 'source_commit': subprocess.check_output(
                 ['git', 'rev-parse', 'HEAD'], cwd=out, text=True).strip()}
 (out / 'release.json').write_text(json.dumps(manifest, indent=2) + '\n')

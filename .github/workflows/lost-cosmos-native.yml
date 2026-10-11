@@ -118,6 +118,12 @@ jobs:
       - name: Release gate - actual Hollow Grove reflection, real Wraith, Earth crystal and separate new cold boot
         timeout-minutes: 7
         run: python3 tests/test_mgba_hollow_grove_controller.py --eldoria artifacts/mgba_eldoria --out artifacts/mgba_grove
+      - name: Release gate - PROLOGUE Ash in the Forge Q00-Q04, both choices, cold boot, and V11.3 save migration
+        timeout-minutes: 7
+        run: |
+          python3 tests/test_mgba_prologue.py --out artifacts/mgba_prologue/compiled_defend --choice 1
+          python3 tests/test_mgba_prologue.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_prologue/runtime_carry --choice 2
+          python3 tests/test_mgba_prologue_migration.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_prologue/migration
       - name: Bundle portable controller runtime
         if: always()
         run: |
@@ -148,6 +154,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act2/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_eldoria/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_grove/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_prologue/
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/parts.json
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/REASSEMBLE.txt
           retention-days: 30
