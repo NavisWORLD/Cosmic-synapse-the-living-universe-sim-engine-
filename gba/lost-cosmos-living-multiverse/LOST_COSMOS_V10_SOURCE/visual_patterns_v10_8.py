@@ -1536,6 +1536,30 @@ HOME_TILES = [pixels(p, 8, 8) for p in [
 ]]
 assert len(HOME_TILES) == len(HOME_TILE_NAMES) == 14
 
+
+# V11.6 ground-backed star markers, BG tiles 270..271. A star trigger used to
+# draw the space tile T_STAR, whose empty pixels showed the black backdrop as
+# a square on the road. The star now sits on the road (palette 1) or grass
+# (palette 0): gold 15, white 14 and a small dark shadow 13, the same slots in
+# every bank. "." keeps the ground pixel.
+MARK_TILE_NAMES = ["PATH_STAR", "GRASS_STAR"]
+MARK_STAR = ["...F....",
+             "...F....",
+             "..FEF...",
+             "FFEEEFF.",
+             "..FEF...",
+             "...F....",
+             "..DFD...",
+             "...D...."]
+def _mark(base):
+    out=[r[:] for r in base]
+    for y,row in enumerate(MARK_STAR):
+        for x,c in enumerate(row):
+            if c!=".": out[y][x]=int(c,16)
+    return out
+MARK_TILES = [_mark(TERRAIN_VARIANTS[8]), _mark(TERRAIN_VARIANTS[0])]
+assert len(MARK_TILES) == len(MARK_TILE_NAMES) == 2
+
 # V11.5 Beast Home care emotes, 16x16 OBJ drawn for HOME_EMOTE_PAL.
 HOME_EMOTE_NAMES = ["HEART", "NOTE", "SLEEP", "FOOD"]
 HOME_EMOTES = [pixels(p) for p in ["""

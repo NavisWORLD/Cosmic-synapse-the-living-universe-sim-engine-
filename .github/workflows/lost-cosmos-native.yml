@@ -129,6 +129,11 @@ jobs:
         run: |
           python3 tests/test_mgba_beast_home.py --out artifacts/mgba_beast_home/compiled
           python3 tests/test_mgba_beast_home.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_beast_home/runtime
+      - name: Release gate - FIRST-PERSON / MODE-7 VIEW (V11.6) SYSTEM toggle, beast beside player, exact top-down restore
+        timeout-minutes: 7
+        run: |
+          python3 tests/test_mgba_first_person.py --out artifacts/mgba_first_person/compiled
+          python3 tests/test_mgba_first_person.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_first_person/runtime
       - name: Bundle portable controller runtime
         if: always()
         run: |
@@ -161,6 +166,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/mgba_grove/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_prologue/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_beast_home/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_first_person/
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/parts.json
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/REASSEMBLE.txt
           retention-days: 30
