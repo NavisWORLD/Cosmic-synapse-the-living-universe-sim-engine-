@@ -220,6 +220,15 @@ static int v11_draw_pause(void){int i,id,start;
  }else ui_text(4,12,"NOT MET ON THE MAP YET.",8);
  if(lc_mail_live){int spark=0;for(i=0;i<lc_party.count;i++)if(lc_mail_matches(lc_party.slots[i].identity))spark=i+1;
   if(spark){v11_portrait(spark,176,96,0);if(lc_mail_name[0])ui_text(22,11,lc_mail_name,14);}}
+ }else if(pause_page==11&&v11_sub==2){static const char*st[4]={"LOCKED","ACTIVE","READY","COMPLETE"};const char*obj;v11_header("QUESTS // STORY");v11_list_count=0;for(i=0;i<CQ_COUNT;i++)if(cq_state[i])v11_list[v11_list_count++]=(u8)i;if(v11_sel>=v11_list_count)v11_sel=0;start=v11_sel/5*5;
+ for(i=start;i<mini(start+5,v11_list_count);i++){id=v11_list[i];v11_row(4+i-start,i==v11_sel,CQ_NAMES[id],cq_state[id]==CQ_DONE?13:14);}
+ if(v11_list_count){id=v11_list[v11_sel];ui_text(2,10,st[cq_state[id]&3],cq_state[id]==CQ_DONE?13:14);
+  obj=(cq_state[id]==CQ_ACTIVE&&id<5)?prologue_hud_line():0;
+  if(obj)v11_short(2,11,obj,26,15);else if(cq_state[id]==CQ_ACTIVE&&id==5)v11_lines(2,11,"OAKWOOD LIES ON THE EAST ROAD FROM BRINDLEMARK. ASK FOR LORD RAVENSWOOD.",26,3,15);
+  if(id<5&&(pro_flags&PF_MIGRATED))v11_short(2,14,"RECORDED FROM AN EARLIER SAVE",26,8);
+  else if(id<5&&pro_choice&&cq_state[1]==CQ_DONE)v11_short(2,14,pro_choice==1?"CHOSE: DEFENDED STORES":"CHOSE: CARRIED INJURED",26,13);}
+ else ui_text(2,10,"NO STORY QUESTS YET.",15);
+ ui_text(2,16,"LEFT RIGHT: VIEWS",8);
  }else if(pause_page==11){v11_header(v11_sub?"QUESTS // DONE":"QUESTS // ACTIVE");v11_list_count=0;for(i=0;i<15;i++)if(v11_quest_started&(1u<<i)){if(((v11_quest_done>>i)&1)==(v11_sub&1))v11_list[v11_list_count++]=(u8)i;}if(v11_sel>=v11_list_count)v11_sel=0;start=v11_sel/5*5;
  for(i=start;i<mini(start+5,v11_list_count);i++){id=v11_list[i];v11_row(4+i-start,i==v11_sel,V11_QUEST_NAMES[id],v11_track==id?14:15);}
  if(v11_list_count){id=v11_list[v11_sel];v11_short(2,10,V11_QUEST_GIVERS[id],26,13);v11_lines(2,11,V11_QUEST_VOICE[id],26,3,15);
@@ -309,7 +318,7 @@ static int v11_update_pause(u16 k){int i,id,n;
  else if(pause_page==49){sol_chat_input_step(k);}
  else if(pause_page==46){if(k&KEY_LEFT)v11_rename_letter=(u8)wrapi(v11_rename_letter-1,27);if(k&KEY_RIGHT)v11_rename_letter=(u8)wrapi(v11_rename_letter+1,27);if(k&KEY_UP)v11_rename_letter=(u8)wrapi(v11_rename_letter-9,27);if(k&KEY_DOWN)v11_rename_letter=(u8)wrapi(v11_rename_letter+9,27);if(k&KEY_A&&v11_rename_pos<11){v11_name_edit[v11_rename_pos++]=v11_rename_letter==26?' ':'A'+v11_rename_letter;v11_name_edit[v11_rename_pos]=0;}if(k&KEY_L&&v11_rename_pos)v11_name_edit[--v11_rename_pos]=0;if(k&KEY_SELECT){if(v11_name_edit[0])copystr(v11_assign?v11_names[v11_assign-1]:v11_cosmos_name,v11_name_edit,12);save_game();v11_back();}}
  else if(pause_page==20){if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,100);if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,100);}
- else if(pause_page==11){if(k&(KEY_LEFT|KEY_RIGHT)){v11_sub^=1;v11_sel=0;}if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,maxi(1,v11_list_count));if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,maxi(1,v11_list_count));if(k&KEY_A&&v11_list_count){id=v11_list[v11_sel];v11_track=v11_track==id?255:id;save_game();}if(k&KEY_SELECT){pause_page=13;v11_page_previous=255;}}
+ else if(pause_page==11){if(k&KEY_RIGHT){v11_sub=(u8)((v11_sub+1)%3);v11_sel=0;}if(k&KEY_LEFT){v11_sub=(u8)((v11_sub+2)%3);v11_sel=0;}if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,maxi(1,v11_list_count));if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,maxi(1,v11_list_count));if(k&KEY_A&&v11_list_count&&v11_sub!=2){id=v11_list[v11_sel];v11_track=v11_track==id?255:id;save_game();}if(k&KEY_SELECT){pause_page=13;v11_page_previous=255;}}
  else if(pause_page==1){if(k&KEY_UP)v11_sel=(v11_sel+7)%8;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%8;if(k&KEY_SELECT)v11_map_legacy^=1;if(k&KEY_START&&V11_IS_ROOM){pause_page=47;v11_page_previous=255;return 1;}if(k&KEY_A){if(v11_map_legacy)v11_message("THE ORIGINAL WORLDS ARE REACHED WITH LUNA-ARC.");else if(v11_beacons&(1u<<v11_sel))v11_enter(v11_sel);else v11_message("THIS BEACON IS NOT LIT. WALK THERE AND RETURN ITS SIGNAL.");v11_detail=2;}}
  else if(pause_page==9){if(k&KEY_UP)v11_sel=(v11_sel+12)%13;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%13;if(v11_sel>=11&&(k&(KEY_A|KEY_LEFT|KEY_RIGHT))){lc_audio_option(v11_sel-10,(k&KEY_LEFT)?-1:(k&KEY_RIGHT)?1:0);return 1;}if(k&KEY_A){if(v11_sel==0)audio_on^=1;if(v11_sel==1)v11_text_speed=(v11_text_speed+1)%3;if(v11_sel==2)v11_brightness=v11_brightness%5+1;
  if(v11_sel==3||v11_sel==4){v11_sub=v11_sel==4;pause_page=44;v11_sel=0;v11_page_previous=44;}else if(v11_sel==5){pause_page=26;v11_parent=9;v11_page_previous=255;}else if(v11_sel==6){touch_mode^=1;save_game();}else if(v11_sel==7){buddy_quantum^=1;save_game();}else if(v11_sel==8){buddy_talk^=1;save_game();}else if(v11_sel==9){pause_page=15;role_preview=actor_style;}else if(v11_sel==10){pause_page=42;v11_menu_reset();}else save_game();}}
