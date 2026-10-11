@@ -40,6 +40,8 @@ def sources():
        'LOST_COSMOS_V10_SOURCE/content_v11_state.h',
        'LOST_COSMOS_V10_SOURCE/campaign_quests_state.h',
        'LOST_COSMOS_V10_SOURCE/campaign_quests.h',
+       'LOST_COSMOS_V10_SOURCE/beast_home_state.h',
+       'LOST_COSMOS_V10_SOURCE/beast_home.h',
        'LOST_COSMOS_V10_SOURCE/content_v11_art.h',
        'LOST_COSMOS_V10_SOURCE/imported_companion.h',
        'content/v11_1_catalog.json'}
