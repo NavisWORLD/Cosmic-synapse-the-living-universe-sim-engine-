@@ -124,6 +124,11 @@ jobs:
           python3 tests/test_mgba_prologue.py --out artifacts/mgba_prologue/compiled_defend --choice 1
           python3 tests/test_mgba_prologue.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_prologue/runtime_carry --choice 2
           python3 tests/test_mgba_prologue_migration.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_prologue/migration
+      - name: Release gate - BEAST HOME (V11.5) cage import and Sol starter, care, idle movement, cold-boot identity
+        timeout-minutes: 7
+        run: |
+          python3 tests/test_mgba_beast_home.py --out artifacts/mgba_beast_home/compiled
+          python3 tests/test_mgba_beast_home.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_beast_home/runtime
       - name: Bundle portable controller runtime
         if: always()
         run: |
@@ -155,6 +160,7 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/mgba_eldoria/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_grove/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_prologue/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_beast_home/
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/parts.json
             gba/lost-cosmos-living-multiverse/artifacts/runtime-parts/REASSEMBLE.txt
           retention-days: 30

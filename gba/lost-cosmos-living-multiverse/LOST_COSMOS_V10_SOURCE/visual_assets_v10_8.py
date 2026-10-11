@@ -130,7 +130,9 @@ def bg_palettes() -> list[list[list[tuple[int,int,int]]]]:
             shade=[base[0],darken(base[2],4),darken(base[3],3),darken(base[4],2),base[1]]
             # Retain original shade indices1..4. Supplemental colors are darker
             # surface equivalents, leaving white and emissive pixel accents.
-            shade += [darken(c,3) for c in base[5:14]] + base[14:16]
+            # V11.5: slots 9..11 are the shared ground greens that ground-
+            # matched tiles (flowers) sit on, so they stay exact in shade banks.
+            shade += [darken(c,3) for c in base[5:9]] + base[9:12] + [darken(c,3) for c in base[12:14]] + base[14:16]
             palettes.append(shade)
         result.append(palettes)
     return result
@@ -258,6 +260,9 @@ def build_data():
                 npcs=[sprite_words(p) for p in art.NPC_FRAMES],species=species,
                 enemies=[sprite_words(art.SPECIES_BASE[s][stage]) for s,stage in [(4,0),(0,0),(1,0),(2,0),(3,0),(4,1)]],
                 anim=[[tile_words(p) for p in frames] for frames in art.BG_ANIM],
+                home=[tile_words(p) for p in art.HOME_TILES],
+                emotes=[sprite_words(p) for p in art.HOME_EMOTES],
+                emote_pal=[rgb5(c) for c in art.HOME_EMOTE_PAL],
                 bg_pal=[[[rgb5(c) for c in palette] for palette in world] for world in bg_palettes()],
                 obj_pal=[[rgb5(c) for c in palette] for palette in obj_palettes()])
 
@@ -275,6 +280,10 @@ def make_header(data) -> str:
        "#define V108_SPECIES_STAGES 3", "#define V108_SPECIES_FRAMES 2",
        "#define V108_DECOR_COUNT 11",f"#define V108_TERRAIN_BASE {data['terrain_base']}",
        f"#define V108_PATH_EDGE_BASE {data['path_base']}",f"#define V108_PROP_BASE {data['props_base']}",
+       "/* V11.5 Beast Home furniture BG tiles (CB0 256..269) and care emotes. */",
+       "#define V115_HOME_TILE_BASE 256","#define V115_HOME_TILE_COUNT 14",
+       "enum { "+", ".join("V115_HOME_"+n for n in art.HOME_TILE_NAMES)+" };",
+       "enum { "+", ".join("V115_EMOTE_"+n for n in art.HOME_EMOTE_NAMES)+" };",
        "enum { V108_DECOR_OAK, V108_DECOR_WILLOW, V108_DECOR_COTTAGE,",
        " V108_DECOR_RUIN_ARCH, V108_DECOR_WATERFALL_0, V108_DECOR_WATERFALL_1,",
        " V108_DECOR_CRYSTAL_SPIRE, V108_DECOR_FORGE, V108_DECOR_CORAL,",
@@ -291,6 +300,9 @@ def make_header(data) -> str:
         ("u32","V108_SPECIES","[8][3][2][32]","species",8),
         ("u16","V108_BG_PALETTES","[8][12][16]","bg_pal",4),
         ("u16","V108_OBJ_PALETTES","[15][16]","obj_pal",4),
+        ("u32","V115_HOME_TILES","[14][8]","home",8),
+        ("u32","V115_HOME_EMOTES","[4][32]","emotes",8),
+        ("u16","V115_HOME_EMOTE_PAL","[16]","emote_pal",4),
     ]:
         s.append(f"static const {ctype} {name}{dims} = {initializer(data[key],digits=digits)};")
     s.append("static const u8 V108_ANIM_TILE_TYPES[6] = {3,6,14,9,24,29};")
@@ -334,6 +346,8 @@ def validate(data) -> dict:
     assert all(0<=c<=0x7FFF for p in data["obj_pal"] for c in p)
     assert 384+8*3*2*4==576 < 640 # imported OBJ reservation is disjoint
     assert 256*32<=0x4000 # extra BG tiles stay inside CB0
+    assert len(data["home"])==14 and 256+14<=512 # home tiles stay inside CB0
+    assert len(data["emotes"])==4 and len(data["emote_pal"])==16
     for frames in data["anim"]:
         assert len(set(tuple(p) for p in frames))==4
     return {"bg_core_tiles":32,"bg_extra_tiles":192,"bg_extra_first":64,"bg_extra_last":255,
@@ -401,6 +415,10 @@ def save_assets(data,report):
     tiles=Image.new("RGBA",(128,16))
     for i,p in enumerate(art.TILES): tiles.paste(rgba(p,palettes[0][material_map[i]]),((i%16)*8,(i//16)*8))
     tiles.save(ASSETS/"core_tiles_native_128x16.png")
+    home=Image.new("RGBA",(len(art.HOME_TILES)*8+len(art.HOME_EMOTES)*16,16))
+    for i,p in enumerate(art.HOME_TILES): home.paste(rgba(p,palettes[0][6]),(i*8,0))
+    for i,p in enumerate(art.HOME_EMOTES): home.paste(rgba(p,art.HOME_EMOTE_PAL),(len(art.HOME_TILES)*8+i*16,0))
+    home.save(ASSETS/"beast_home_native.png")
     report["decorations"]=data["descriptors"]
     report["pattern_source_sha256"]=hashlib.sha256((HERE/"visual_patterns_v10_8.py").read_bytes()).hexdigest()
     report["compiled_header_sha256"]=hashlib.sha256(HEADER.read_bytes()).hexdigest()

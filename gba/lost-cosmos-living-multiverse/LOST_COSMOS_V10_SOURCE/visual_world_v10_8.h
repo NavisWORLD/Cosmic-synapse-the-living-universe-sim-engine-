@@ -15,6 +15,7 @@ static int v108_stamp(int id,int xx,int yy){int x,y,i,t;const V108Decor*d=&V108_
  for(y=0;y<d->h;y++)for(x=0;x<d->w;x++)set_map_entry(xx+x,yy+y,map_attr(d->base+y*d->w+x,d->palette));
  return 1;
 }
+static int v115_is_road(int t){return t==T_PATH||(t>=232&&t<=235)||(t>=240&&t<=247);}
 static void v108_paint_world(void){int x,y,t,h,theme;
  theme=COMP_IS_ROOM?COMPLETION_SCENES[current_room-COMPLETION_FIRST_ROOM].theme:
   current_world==0?(current_room==7?3:current_room==8?2:current_room==9?1:current_room==12?5:0):current_world;
@@ -37,11 +38,18 @@ static void v108_paint_world(void){int x,y,t,h,theme;
   h=(x*13+y*17+current_room*5+current_world*19)&3;
   if(t==T_GRASS)set_map_entry(x,y,map_attr(224+h,0));
   else if(t==T_FLOOR)set_map_entry(x,y,map_attr(228+h,0));
-  else if(t==T_PATH){int edge=0;
-   if(map_read_tile(x,y-1)!=T_PATH)edge=1;
-   else if(map_read_tile(x,y+1)!=T_PATH)edge=2;
-   else if(map_read_tile(x-1,y)!=T_PATH)edge=3;
-   set_map_entry(x,y,map_attr(edge?240+(edge-1)*2+(h&1):232+h,1));
+  else if(t==T_PATH){
+   /* V11.5: the neighbours above and to the left were already repainted in
+    * this pass, so a painted road tile still counts as road. The edge tile
+    * follows which sides meet grass: a one-tile road is a strip, not a
+    * random top/right or bottom/left edge (the old "plank" look). */
+   int n=!v115_is_road(map_read_tile(x,y-1)),s=!v115_is_road(map_read_tile(x,y+1));
+   int w=!v115_is_road(map_read_tile(x-1,y)),e=!v115_is_road(map_read_tile(x+1,y)),k;
+   if(n&&s&&!(w&&e))k=240+(h&1);
+   else if(w&&e&&!(n&&s))k=242+(h&1);
+   else if(n)k=244;else if(s)k=245;else if(w)k=246;else if(e)k=247;
+   else k=232+h;
+   set_map_entry(x,y,map_attr(k,1));
   }else if(t==T_RUIN)set_map_entry(x,y,map_attr(236+h,4));
  }
 }

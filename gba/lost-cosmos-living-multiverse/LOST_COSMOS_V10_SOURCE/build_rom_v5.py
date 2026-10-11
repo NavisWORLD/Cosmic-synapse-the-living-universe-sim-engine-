@@ -13,7 +13,7 @@ def main():
     header=bytearray(0xC0)
     header[0:4]=bytes.fromhex('2e0000ea')
     header[4:0xA0]=NINTENDO_LOGO
-    header[0xA0:0xAC]=b'COSMOS V11.2'
+    header[0xA0:0xAC]=b'COSMOS V11.5'
     header[0xAC:0xB0]=b'ERL8'
     header[0xB0:0xB2]=b'01'
     header[0xB2]=0x96

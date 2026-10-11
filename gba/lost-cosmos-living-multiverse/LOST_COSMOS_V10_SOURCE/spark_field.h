@@ -41,7 +41,7 @@ static void spark_follow_tick(void){
 }
 static void spark_field_tick(void){
  int i;
- if(game_mode!=MODE_SURFACE)return;
+ if(game_mode!=MODE_SURFACE||BH_IS_ROOM)return;
  spark_field_ensure();
  spark_follow_tick();
  if((frame&3)!=0)return;
@@ -108,6 +108,7 @@ static void spark_field_sprites(void){
 }
 static void spark_field_draw(void){
  const char*near;
+ if(BH_IS_ROOM){OAM16[43*4]=OAM16[44*4]=OAM16[45*4]=0x0200;spark_uploaded_id[0]=spark_uploaded_id[1]=spark_uploaded_id[2]=-1;return;}
  spark_field_sprites();
  if(lc_mail_live&&lc_mail_name[0])ui_text(18,1,lc_mail_name,14);
  near=spark_field_near_name();
