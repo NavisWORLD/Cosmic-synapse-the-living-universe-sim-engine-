@@ -116,7 +116,7 @@ static void v11_save(void){u8 b[V11_BYTES];int i,j,o=16;u32 crc;
  b[527]=v11_active_cosmos;b[528]=v11_export_ready;b[529]=v11_cosmos_stage;
  for(i=0;i<12;i++)b[530+i]=(u8)v11_cosmos_name[i];b[542]=v11_forage_day;for(i=0;i<100;i++)b[548+i]=v11_pending[i];
  b[648]=v11_act;b[649]=v11_story_flags;b[650]=v11_spark_wins;b[651]=v11_befriend_count;b[652]=v11_rival_phase;
- campaign_save_into(b);bh_save_into(b);
+ campaign_save_into(b);bh_save_into(b);act1_save_into(b);
  #undef V11_PUT16
  crc=lc_crc32(b,764);for(i=0;i<4;i++)b[764+i]=(u8)(crc>>(i*8));
  for(i=0;i<V11_BYTES;i++)SRAM[V11_SRAM+i]=b[i];
@@ -127,7 +127,7 @@ static void v11_restore(void){u8 b[V11_BYTES];int i,j,o=16;u32 crc,got;
  v11_reset();
  if(b[0]!='L'||b[1]!='C'||b[2]!='1'||b[3]!='1'||b[4]!=1||b[5]!=1||crc!=got){
   v11_hp=(u16)(player.hp*4);v11_mp=(u16)(player_mp*4);v11_credits=credits;
-  if(V11_IS_ROOM){current_room=2;player.x=160;player.y=344;}campaign_restore_from(b,0);bh_restore_from(b,0);return;}
+  if(V11_IS_ROOM){current_room=2;player.x=160;player.y=344;}campaign_restore_from(b,0);bh_restore_from(b,0);act1_restore_from(b,0);return;}
  for(i=0;i<100;i++)v11_qty[i]=(u8)mini(99,b[o++]);for(i=0;i<100;i++)v11_encounters[i]=b[o++];
  for(i=0;i<13;i++)v11_learned[i]=b[o++];
  for(i=0;i<3;i++){int n=b[o++];v11_equipment[i]=(u8)(n<70&&V11_ITEMS[n].kind==i&&v11_qty[n]?n:255);}
@@ -156,7 +156,7 @@ static void v11_restore(void){u8 b[V11_BYTES];int i,j,o=16;u32 crc,got;
  v11_active_cosmos=b[527]&1;v11_export_ready=b[528]&1;v11_cosmos_stage=(u8)mini(2,b[529]);v11_forage_day=b[542];for(i=0;i<100;i++)v11_pending[i]=(u8)mini(99,b[548+i]);
  v11_act=(u8)mini(5,b[648]);v11_story_flags=b[649];v11_spark_wins=b[650];v11_befriend_count=b[651];v11_rival_phase=(u8)mini(2,b[652]);
  v11_story_sync();
- campaign_restore_from(b,1);bh_restore_from(b,1);
+ campaign_restore_from(b,1);bh_restore_from(b,1);act1_restore_from(b,1);
  for(i=0;i<11;i++){u8 c=b[530+i];v11_cosmos_name[i]=(char)((c>='A'&&c<='Z')||c==' '||c==0?c:0);}v11_cosmos_name[11]=0;
  #undef V11_GET16
  #undef V11_GET32
