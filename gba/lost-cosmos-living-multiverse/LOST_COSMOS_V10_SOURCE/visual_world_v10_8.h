@@ -15,7 +15,7 @@ static int v108_stamp(int id,int xx,int yy){int x,y,i,t;const V108Decor*d=&V108_
  for(y=0;y<d->h;y++)for(x=0;x<d->w;x++)set_map_entry(xx+x,yy+y,map_attr(d->base+y*d->w+x,d->palette));
  return 1;
 }
-static int v115_is_road(int t){return t==T_PATH||(t>=232&&t<=235)||(t>=240&&t<=247);}
+static int v115_is_road(int t){return t==T_PATH||(t>=232&&t<=235)||(t>=240&&t<=247)||t==V116_MARK_TILE_BASE+V116_MARK_PATH_STAR;}
 static void v108_paint_world(void){int x,y,t,h,theme;
  theme=COMP_IS_ROOM?COMPLETION_SCENES[current_room-COMPLETION_FIRST_ROOM].theme:
   current_world==0?(current_room==7?3:current_room==8?2:current_room==9?1:current_room==12?5:0):current_world;
@@ -34,7 +34,17 @@ static void v108_paint_world(void){int x,y,t,h,theme;
  /* Rich surface variations and path edges retain original collision/trigger
   * data. Every old mandatory corridor stays exactly as wide as authored. */
  for(y=2;y<62;y++)for(x=2;x<62;x++){
-  if(trigger[mi(x,y)])continue;t=map_read_tile(x,y);if(t>=64)continue;
+  if(trigger[mi(x,y)]){
+   /* V11.6: a star trigger on open ground gets a road- or grass-backed star
+    * instead of the space tile's black square. Trigger and collision stay. */
+   if(map_read_tile(x,y)==T_STAR){
+    int road=v115_is_road(map_read_tile(x,y-1))||v115_is_road(map_read_tile(x,y+1))||v115_is_road(map_read_tile(x-1,y))||v115_is_road(map_read_tile(x+1,y));
+    int grass=!road&&(map_read_tile(x-1,y)==T_GRASS||(map_read_tile(x-1,y)>=224&&map_read_tile(x-1,y)<=227));
+    if(road)set_map_entry(x,y,map_attr(V116_MARK_TILE_BASE+V116_MARK_PATH_STAR,1));
+    else if(grass)set_map_entry(x,y,map_attr(V116_MARK_TILE_BASE+V116_MARK_GRASS_STAR,0));
+   }
+   continue;}
+  t=map_read_tile(x,y);if(t>=64)continue;
   h=(x*13+y*17+current_room*5+current_world*19)&3;
   if(t==T_GRASS)set_map_entry(x,y,map_attr(224+h,0));
   else if(t==T_FLOOR)set_map_entry(x,y,map_attr(228+h,0));

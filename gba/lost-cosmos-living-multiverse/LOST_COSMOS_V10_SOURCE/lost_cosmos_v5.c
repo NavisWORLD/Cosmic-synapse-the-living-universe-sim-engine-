@@ -146,7 +146,8 @@ static void lc_present(void){int i;volatile u16*io=(volatile u16*)0x04000000;
  lc_blit32(lc_pal_shadow,0x05000000u,32);
  lc_blit32(lc_ui_shadow,0x06000000u+UI_MAP_BASE*2048u,64);
 }
-static void lc_vsync(void){(wait_vblank)();lc_present();}
+static void fp_vblank(void);
+static void lc_vsync(void){(wait_vblank)();lc_present();fp_vblank();}
 #define wait_vblank() lc_vsync()
 #endif
 static void vram_copy32(volatile u32* dst,const u32*src,int words){ int i; for(i=0;i<words;i++) dst[i]=src[i]; }
@@ -638,6 +639,7 @@ static const NPCDef NPCS[]={
 #include "content_v11_state.h"
 #include "campaign_quests_state.h"
 #include "beast_home_state.h"
+#include "first_person_state.h"
 
 /* ---------- quantum tape ---------- */
 static u8 next_q(void){ u8 v=QSEED[qi++]; if(qi>=QSEED_LEN)qi=0; return v; }
@@ -875,7 +877,7 @@ static void make_foreground_tiles(void){u32 t[8];int x,y;
  tile_pixel(t,5,3,2);tile_pixel(t,4,5,3);
  upload_bg_tile(V8_FG_SPARK,t);
 }
-static void make_all_tiles(void){ int i; for(i=0;i<T_MAX;i++)make_bg_tile(i,i);for(i=0;i<V108_BG_EXTRA_COUNT;i++)upload_bg_tile(V108_BG_EXTRA_BASE+i,V108_BG_EXTRA[i]);for(i=0;i<V115_HOME_TILE_COUNT;i++)upload_bg_tile(V115_HOME_TILE_BASE+i,V115_HOME_TILES[i]);make_foreground_tiles();make_ui_tiles(); }
+static void make_all_tiles(void){ int i; for(i=0;i<T_MAX;i++)make_bg_tile(i,i);for(i=0;i<V108_BG_EXTRA_COUNT;i++)upload_bg_tile(V108_BG_EXTRA_BASE+i,V108_BG_EXTRA[i]);for(i=0;i<V115_HOME_TILE_COUNT;i++)upload_bg_tile(V115_HOME_TILE_BASE+i,V115_HOME_TILES[i]);for(i=0;i<V116_MARK_TILE_COUNT;i++)upload_bg_tile(V116_MARK_TILE_BASE+i,V116_MARK_TILES[i]);make_foreground_tiles();make_ui_tiles(); }
 
 /* ---------- object sprite generation ---------- */
 static void objpix(u32*b,int x,int y,u8 c){ int tile=(x>>3)+((y>>3)<<1),ly=y&7,lx=x&7,idx=tile*8+ly;u32 mask=(u32)15<<(lx*4);b[idx]=(b[idx]&~mask)|((u32)(c&15)<<(lx*4)); }
@@ -2244,7 +2246,11 @@ static int nearest_interest(s16*x,s16*y,u8*goal){int best=9999,bx=player.x,by=pl
  if(current_world==5&&keys_found==7){tx=55*8;ty=8*8;d=iabs(player.x-tx)+iabs(player.y-ty);if(d<best){best=d;bx=tx;by=ty;g=GOAL_APPROACH;}}
  }
  *x=(s16)bx;*y=(s16)by;*goal=g;return best;}
-static void choose_buddy_goal(void){int scores[GOAL_COUNT],i,best=-999,bestg=0;u8 q=next_q();s16 ix,iy;u8 ig;int pd=iabs(cosmos.x-player.x)+iabs(cosmos.y-player.y);nearest_interest(&ix,&iy,&ig);for(i=0;i<GOAL_COUNT;i++)scores[i]=0;scores[GOAL_FOLLOW]=120+(pd>80?90:0)+cosmos.trust/3;scores[GOAL_EXPLORE]=60+cosmos.curiosity/2+(q&31);scores[GOAL_INSPECT]=ig==GOAL_INSPECT?170:20;scores[GOAL_WAIT]=cosmos.energy<80?130:20;scores[GOAL_RETURN]=pd>150?240:10;scores[GOAL_WARN]=(current_world==4||collision[mi(clampi(player.x>>3,0,63),clampi(player.y>>3,0,63))]==C_HAZARD)?160+cosmos.avoid/2:15;scores[GOAL_SEEK_KEY]=ig==GOAL_SEEK_KEY?190+cosmos.curiosity/3:5;scores[GOAL_SEEK_MEMORY]=(current_world==2||current_world==0)?100+(cosmos.curiosity>>2):20;scores[GOAL_APPROACH]=ig==GOAL_APPROACH?220:30;scores[GOAL_AVOID]=current_world==4?120+cosmos.avoid/2:10;scores[GOAL_BOARD]=(game_mode==MODE_SPACE)?150:10;scores[GOAL_REST]=cosmos.energy<55?220:15;scores[GOAL_WANDER]=50+(q>>1);for(i=0;i<GOAL_COUNT;i++){scores[i]+=(next_q()&15);if(i==cosmos.goal)scores[i]+=28; /* hysteresis */if(scores[i]>best){best=scores[i];bestg=i;}}cosmos.goal=(u8)bestg;cosmos.cooldown=(u8)(50+(next_q()&63));if((q&7)==0)buddy_speak_context();}
+static void choose_buddy_goal(void){int scores[GOAL_COUNT],i,best=-999,bestg=0;u8 q=next_q();s16 ix,iy;u8 ig;int pd=iabs(cosmos.x-player.x)+iabs(cosmos.y-player.y);nearest_interest(&ix,&iy,&ig);for(i=0;i<GOAL_COUNT;i++)scores[i]=0;scores[GOAL_FOLLOW]=120+(pd>80?90:0)+cosmos.trust/3;scores[GOAL_EXPLORE]=60+cosmos.curiosity/2+(q&31);scores[GOAL_INSPECT]=ig==GOAL_INSPECT?170:20;scores[GOAL_WAIT]=cosmos.energy<80?130:20;scores[GOAL_RETURN]=pd>150?240:10;scores[GOAL_WARN]=(current_world==4||collision[mi(clampi(player.x>>3,0,63),clampi(player.y>>3,0,63))]==C_HAZARD)?160+cosmos.avoid/2:15;scores[GOAL_SEEK_KEY]=ig==GOAL_SEEK_KEY?190+cosmos.curiosity/3:5;scores[GOAL_SEEK_MEMORY]=(current_world==2||current_world==0)?100+(cosmos.curiosity>>2):20;scores[GOAL_APPROACH]=ig==GOAL_APPROACH?220:30;scores[GOAL_AVOID]=current_world==4?120+cosmos.avoid/2:10;scores[GOAL_BOARD]=(game_mode==MODE_SPACE)?150:10;scores[GOAL_REST]=cosmos.energy<55?220:15;scores[GOAL_WANDER]=50+(q>>1);for(i=0;i<GOAL_COUNT;i++){scores[i]+=(next_q()&15);if(i==cosmos.goal)scores[i]+=28; /* hysteresis */if(scores[i]>best){best=scores[i];bestg=i;}}cosmos.goal=(u8)bestg;cosmos.cooldown=(u8)(50+(next_q()&63));
+ /* V11.6: idle chatter waits for the line on screen (a sign, an NPC) to
+    finish instead of replacing it, and stays quiet inside the Beast Home so
+    the care lines (fill the bowl -> licks it clean) read as one moment. */
+ if((q&7)==0&&!dialogue_timer&&!BH_IS_ROOM)buddy_speak_context();}
 static int buddy_tile_blocked(int x,int y){int tx=x>>3,ty=y>>3;if((unsigned)tx>=64u||(unsigned)ty>=64u)return 1;return collision[mi(tx,ty)]==C_WALL;}
 static void buddy_tick(void){s16 tx=player.x+18,ty=player.y-10,ix,iy;u8 ig;int dx,dy,step=1;if(game_mode!=MODE_SURFACE)return;if(cosmos.cooldown)cosmos.cooldown--;else choose_buddy_goal();nearest_interest(&ix,&iy,&ig);if(cosmos.goal==GOAL_SEEK_KEY||cosmos.goal==GOAL_INSPECT||cosmos.goal==GOAL_APPROACH||cosmos.goal==GOAL_SEEK_MEMORY){tx=ix;ty=iy;}else if(cosmos.goal==GOAL_EXPLORE||cosmos.goal==GOAL_WANDER){int q=buddy_quantum?qstate.phase:next_q();tx=(s16)clampi(player.x+(q-128),16,496);ty=(s16)clampi(player.y+((buddy_quantum?qstate.parity:next_q())-128),16,496);}else if(cosmos.goal==GOAL_WAIT||cosmos.goal==GOAL_REST){tx=cosmos.x;ty=cosmos.y;}else if(cosmos.goal==GOAL_AVOID||cosmos.goal==GOAL_WARN){tx=(s16)clampi(player.x+signi(player.x-256)*50,16,496);ty=(s16)clampi(player.y+signi(player.y-256)*50,16,496);}if(buddy_quantum&&qstate.coherence>200)step=2;dx=signi(tx-cosmos.x)*step;dy=signi(ty-cosmos.y)*step;if(!buddy_tile_blocked(cosmos.x+dx,cosmos.y))cosmos.x+=(s16)dx;if(!buddy_tile_blocked(cosmos.x,cosmos.y+dy))cosmos.y+=(s16)dy;cosmos.energy=(u8)clampi(cosmos.energy+((cosmos.goal==GOAL_REST)?1:-((frame&15)==0)),0,255);cosmos.mood=(u8)((cosmos.avoid>190)?3:(cosmos.curiosity>190?2:(cosmos.trust>190?1:0)));}
 
@@ -2544,7 +2550,7 @@ static void buddy_combat_assist(void){int i,best=-1,d=999;if(game_mode!=MODE_SUR
  }
  damage_enemy(&enemies[best],damage);
 }if(buddy_talk&&(qstate.parity&7)==0)say("I CAN HELP. I AM USING THE CURRENT WORKLOAD WINDOW TO TIME THE HIT.");}}}
-static void workload_buddy_tick(void){if(!buddy_quantum)return;if((frame&15)==0)quantum_workload_step();if(buddy_talk_timer)buddy_talk_timer--;if(buddy_talk&&!dialogue_timer&&!buddy_talk_timer){u8 s=(u8)((qstate.phase+qstate.parity+current_world*17)%6);if(s==0)say("THE CURRENT WORKLOAD WINDOW IS QUIET. I WANT TO SCOUT AHEAD.");else if(s==1)say("THE TAPE JUST SHIFTED PHASE. I AM CHANGING MY ROUTE, NOT YOURS.");else if(s==2)say("HIGH SPREAD. I AM STAYING CLOSER TO YOU FOR A WHILE.");else if(s==3)say("THIS PATTERN REPEATS, BUT THE WORLD AROUND IT DOES NOT.");else if(s==4)say("I FOUND A COHERENT WINDOW. MY NEXT MOVE SHOULD BE LESS ERRATIC.");else say("I AM REPLAYING ARCHIVED WORKLOAD STATE THROUGH THE SYNAPSE LOOP.");buddy_talk_timer=(u16)(360+(qstate.mean*2));}}
+static void workload_buddy_tick(void){if(!buddy_quantum)return;if((frame&15)==0)quantum_workload_step();if(buddy_talk_timer)buddy_talk_timer--;if(buddy_talk&&!dialogue_timer&&!buddy_talk_timer&&!BH_IS_ROOM){ /* V11.6: quiet in the Beast Home */u8 s=(u8)((qstate.phase+qstate.parity+current_world*17)%6);if(s==0)say("THE CURRENT WORKLOAD WINDOW IS QUIET. I WANT TO SCOUT AHEAD.");else if(s==1)say("THE TAPE JUST SHIFTED PHASE. I AM CHANGING MY ROUTE, NOT YOURS.");else if(s==2)say("HIGH SPREAD. I AM STAYING CLOSER TO YOU FOR A WHILE.");else if(s==3)say("THIS PATTERN REPEATS, BUT THE WORLD AROUND IT DOES NOT.");else if(s==4)say("I FOUND A COHERENT WINDOW. MY NEXT MOVE SHOULD BE LESS ERRATIC.");else say("I AM REPLAYING ARCHIVED WORKLOAD STATE THROUGH THE SYNAPSE LOOP.");buddy_talk_timer=(u16)(360+(qstate.mean*2));}}
 /* ---------- movement / collisions ---------- */
 static int blocked_px(int x,int y){int tx=x>>3,ty=y>>3;if((unsigned)tx>=64u||(unsigned)ty>=64u)return 1;return collision[mi(tx,ty)]==C_WALL;}
 static u8 tile_collision_at(int x,int y){int tx=clampi(x>>3,0,63),ty=clampi(y>>3,0,63);return collision[mi(tx,ty)];}
@@ -2871,7 +2877,7 @@ static void world_light_tick(void){
  BG_PALETTE[5*16+3]=brighter5(signal,phase==1?2:0);
  BG_PALETTE[7*16+3]=brighter5(danger,phase==3?1:0);
 }
-static void render(void){spark_walk_phase=(u8)((frame>>4)&1);if(!intro&&!cinema_active&&game_mode==MODE_SURFACE&&V11_IS_ROOM){refresh_camera();v11_draw_field();return;}if((frame&15)==0&&!cinema_active&&!intro&&game_mode!=MODE_PAUSE&&!V11_IS_ROOM){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){qa_surface_gate=2;draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
+static void render(void){spark_walk_phase=(u8)((frame>>4)&1);if(fp_active){if(intro||cinema_active||v108_credits_active||game_mode!=MODE_SURFACE)fp_exit();else{fp_render();return;}}if(!intro&&!cinema_active&&game_mode==MODE_SURFACE&&V11_IS_ROOM){refresh_camera();v11_draw_field();return;}if((frame&15)==0&&!cinema_active&&!intro&&game_mode!=MODE_PAUSE&&!V11_IS_ROOM){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){qa_surface_gate=2;draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
 
 /* ---------- postgame anomaly ---------- */
 static void postgame_tick(void){if(!postgame||game_mode!=MODE_SURFACE||current_room)return;anomaly_counter++;if(anomaly_counter==600){int tx=12+((current_world*9+ending*7+keys_found*3)%40),ty=12+((current_world*13+ending*11)%40);map_put(tx,ty,T_CRYSTAL,3,C_FREE,TR_ANOMALY);say("A NEW ANOMALY JUST WROTE ITSELF INTO THE MAP.");}}
@@ -3246,6 +3252,7 @@ static void v10_title_input(u16 newk){
 #include "content_v11_menus.h"
 #include "campaign_quests.h"
 #include "beast_home.h"
+#include "first_person.h"
 /* Music follows the scene. Menus keep the scene's track playing. */
 static u8 lc_music_context(void){static u8 last=LC_SONG_TITLE;
  if(intro||v10_opening)return last=LC_SONG_TITLE;
@@ -3295,7 +3302,9 @@ void gba_main(void){u16 k,newk;
    if(newk&(KEY_A|KEY_START))cinema_end();
    else if(cinema_timer&&!--cinema_timer)cinema_end();
   }else{
-   if(game_mode!=MODE_PAUSE&&!v11_gameover&&(newk&KEY_START))enter_pause();
+   if(fp_request){fp_request=0;fp_enter();}
+   if(fp_active&&game_mode==MODE_SURFACE)fp_update(k,newk);
+   else if(game_mode!=MODE_PAUSE&&!v11_gameover&&(newk&KEY_START))enter_pause();
    else if(game_mode==MODE_PAUSE)update_pause(newk);
    else if(game_mode==MODE_SURFACE)update_surface(k,newk);
    else if(game_mode==MODE_BATTLE)update_battle(newk);

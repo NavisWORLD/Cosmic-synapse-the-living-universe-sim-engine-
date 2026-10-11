@@ -261,6 +261,7 @@ def build_data():
                 enemies=[sprite_words(art.SPECIES_BASE[s][stage]) for s,stage in [(4,0),(0,0),(1,0),(2,0),(3,0),(4,1)]],
                 anim=[[tile_words(p) for p in frames] for frames in art.BG_ANIM],
                 home=[tile_words(p) for p in art.HOME_TILES],
+                marks=[tile_words(p) for p in art.MARK_TILES],
                 emotes=[sprite_words(p) for p in art.HOME_EMOTES],
                 emote_pal=[rgb5(c) for c in art.HOME_EMOTE_PAL],
                 bg_pal=[[[rgb5(c) for c in palette] for palette in world] for world in bg_palettes()],
@@ -284,6 +285,9 @@ def make_header(data) -> str:
        "#define V115_HOME_TILE_BASE 256","#define V115_HOME_TILE_COUNT 14",
        "enum { "+", ".join("V115_HOME_"+n for n in art.HOME_TILE_NAMES)+" };",
        "enum { "+", ".join("V115_EMOTE_"+n for n in art.HOME_EMOTE_NAMES)+" };",
+       "/* V11.6 ground-backed star markers (CB0 270..271). */",
+       "#define V116_MARK_TILE_BASE 270","#define V116_MARK_TILE_COUNT 2",
+       "enum { "+", ".join("V116_MARK_"+n for n in art.MARK_TILE_NAMES)+" };",
        "enum { V108_DECOR_OAK, V108_DECOR_WILLOW, V108_DECOR_COTTAGE,",
        " V108_DECOR_RUIN_ARCH, V108_DECOR_WATERFALL_0, V108_DECOR_WATERFALL_1,",
        " V108_DECOR_CRYSTAL_SPIRE, V108_DECOR_FORGE, V108_DECOR_CORAL,",
@@ -303,6 +307,7 @@ def make_header(data) -> str:
         ("u32","V115_HOME_TILES","[14][8]","home",8),
         ("u32","V115_HOME_EMOTES","[4][32]","emotes",8),
         ("u16","V115_HOME_EMOTE_PAL","[16]","emote_pal",4),
+        ("u32","V116_MARK_TILES","[2][8]","marks",8),
     ]:
         s.append(f"static const {ctype} {name}{dims} = {initializer(data[key],digits=digits)};")
     s.append("static const u8 V108_ANIM_TILE_TYPES[6] = {3,6,14,9,24,29};")
@@ -419,6 +424,9 @@ def save_assets(data,report):
     for i,p in enumerate(art.HOME_TILES): home.paste(rgba(p,palettes[0][6]),(i*8,0))
     for i,p in enumerate(art.HOME_EMOTES): home.paste(rgba(p,art.HOME_EMOTE_PAL),(len(art.HOME_TILES)*8+i*16,0))
     home.save(ASSETS/"beast_home_native.png")
+    marks=Image.new("RGBA",(16,8))
+    marks.paste(rgba(art.MARK_TILES[0],palettes[0][1]),(0,0)); marks.paste(rgba(art.MARK_TILES[1],palettes[0][0]),(8,0))
+    marks.save(ASSETS/"star_markers_native.png")
     report["decorations"]=data["descriptors"]
     report["pattern_source_sha256"]=hashlib.sha256((HERE/"visual_patterns_v10_8.py").read_bytes()).hexdigest()
     report["compiled_header_sha256"]=hashlib.sha256(HEADER.read_bytes()).hexdigest()

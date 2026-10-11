@@ -26,5 +26,9 @@ SECTIONS
     . = ALIGN(4);
     __bss_end__ = .;
   }
+  /* V11.6: work buffers in on-board EWRAM (unused before), never loaded. */
+  .ewram 0x02000000 (NOLOAD) : {
+    *(.ewram*)
+  }
   /DISCARD/ : { *(.ARM.exidx*) *(.ARM.extab*) *(.comment*) *(.note*) }
 }
