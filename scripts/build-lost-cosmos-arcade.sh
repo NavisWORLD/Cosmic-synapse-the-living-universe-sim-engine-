@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the current Lost Cosmos cartridge (V11.6) into the handheld.
+# Build the current Lost Cosmos cartridge (V11.7) into the handheld.
 # The ROM is original homebrew and is not committed.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/.." && pwd)

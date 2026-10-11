@@ -104,4 +104,12 @@ static int act1_battle_fight(Enemy*e);
 static void act1_boss_update(u16 newk);
 static void act1_boss_draw(void);
 static void act1_frame(void);
+static int a1_has(u16 f);
+static void cq_set(int q,u8 s);
+static void a1_market_buy(int row);
+static void a1_rg_act(void);
+#ifdef QA_AUTORUN
+static void qa_a1_talk(int id);
+static void qa_a1_flush(void);
+#endif
 #endif

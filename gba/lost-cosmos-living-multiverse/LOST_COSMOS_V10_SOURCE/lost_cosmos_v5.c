@@ -1735,6 +1735,7 @@ static void draw_battle(void){if(a1_boss){act1_boss_draw();return;}if(V11_IS_ROO
    v11_draw_import_battle(3,104,8,c->identity);
  }
  if(current_world==0&&current_room==6&&e->elite)ui_text(3,3,"NIHILOS ECHO",13);
+ if(act1_stone_skin(e)){ui_text(3,3,"STONE SENTRY      ",13);ui_text(3,5,a1_parry?"GUARD OPEN: STRIKE":"STONE SKIN: PARRY",a1_parry?13:8);}
 
 }
 static void draw_intro(void){
@@ -2403,6 +2404,7 @@ static void battle_enter(int index){Enemy*e;
  if(index<0||index>=10)return;
  e=&enemies[index];if(!e->active||game_mode!=MODE_SURFACE)return;
  battle_index=(u8)index;battle_cursor=battle_phase=battle_evade=0;battle_timer=0;
+ a1_parry=0;
  p4_guard=p4_ward=p4_slow=0;p4_charges=(u8)(lc_party.count?
    (2+(lc_party.slots[lc_party.active].stage>=2)):0);
  v11_battle_pose=255;e->hurt=0;e->windup=0;game_mode=MODE_BATTLE;
@@ -2411,6 +2413,7 @@ static void battle_enter(int index){Enemy*e;
   (e->elite&&e==&enemies[8]&&current_world==0&&current_room==8)?"FROST WOLF: YOU MAY TALK WITH AN ETHER.":
   (e->elite&&e==&enemies[8]&&current_world==0&&current_room==9)?"PHOENIX: PROVE COURAGE OR OFFER HEALING.":
   (e->elite&&e==&enemies[8]&&current_world==7&&current_room==10)?"THE HOLLOW WRAITH WAITS. RELEASE OR FIGHT.":
+  act1_stone_skin(e)?"STONE SENTRY: BRACE WITH B WHEN IT SWINGS.":
   (current_world==0&&current_room==7&&e->elite)?"THE SENTINEL HURTS. FIGHT OR TALK WITH AN ETHER.":e->elite?(current_room==6?"ECHO OF NIHILOS WILL NOT FLEE.":"A GUARDIAN BLOCKS YOUR PATH."):"A WILD CREATURE APPEARED.";
  tone(1100);
 }
@@ -2975,20 +2978,51 @@ static void gameplay_qa(void){
       break;}
     qa_require(found&&(quest_started&(1u<<6)),0x75);
    }
-   /* V7 real native quest QA: town, market, Cragstone puzzle, Malakar, and Heart. */
-   {int i;
+   /* V11.7 ACT I host QA: Oakwood map quest, journal, market, ascent, the three
+      temple rooms, rune order, the Stone Regent (restore route) and the Heart. */
+   {int i,k;
     current_world=0;current_room=0;current_layer=1;generate_surface();player.x=20*8;player.y=48*8;story_gate();
     qa_require(current_room==2&&npc_count>=1,0x81);npc_speak(0);npc_dialogue_page=2;npc_advance();npc_close();
     qa_require((story_flags&ST_TOWN)!=0,0x82);
+    for(i=0;i<5;i++)cq_set(i,CQ_DONE);cq_set(5,CQ_ACTIVE);act1_reset();
     player.x=54*8;player.y=8*8;story_gate();qa_require(current_room==3,0x83);
-    for(i=0;i<npc_count;i++)if(npc_runtime[i].id==16){npc_speak(i);npc_dialogue_page=2;npc_advance();npc_close();break;}
-    qa_require((story_flags&ST_OAKWOOD)!=0,0x84);
-    credits=10;shop_sel=0;shop_trade();qa_require(credits==5&&inv[ITEM_POTION]>=3,0x85);
-    player.x=54*8;player.y=12*8;story_gate();qa_require(current_room==4,0x86);
-    rune_touch(2);rune_touch(0);rune_touch(3);rune_touch(1);
-    qa_require((story_flags&ST_PUZZLE)&&enemies[8].active,0x87);
-    enemies[8].hp=1;damage_enemy(&enemies[8],15);qa_require(story_flags&ST_MALAKAR,0x88);
-    story_interact(TR_HEART);qa_require((story_flags&ST_HEART)&&inv[ITEM_CORE]>=2,0x89);
+    qa_a1_talk(16);qa_require(a1_has(A1F_MET_RAVEN)&&!(story_flags&ST_OAKWOOD),0x84);
+    inv[ITEM_POTION]=1;qa_a1_talk(NPC_A1_PELL);qa_require(a1_has(A1F_PELL_HEALED)&&inv[ITEM_POTION]==0,0x85);
+    near_trigger_x=6;near_trigger_y=12;act1_interact(TR_A1_TREE);qa_require(!a1_has(A1F_MAP_FOUND),0x86);
+    near_trigger_x=A1_SPLIT_TX;near_trigger_y=A1_SPLIT_TY;act1_interact(TR_A1_TREE);qa_require(a1_has(A1F_MAP_FOUND),0x87);
+    qa_a1_talk(16);qa_a1_flush();qa_require(cq_state[5]==CQ_DONE&&cq_state[6]==CQ_ACTIVE,0x88);
+    act1_interact(TR_A1_TO_ASCENT);qa_require(current_room==3,0x89);
+    act1_interact(TR_A1_JOURNAL);qa_a1_flush();qa_require((story_flags&ST_OAKWOOD)&&cq_state[7]==CQ_ACTIVE,0x8A);
+    credits=10;k=inv[ITEM_POTION];a1_market_buy(0);qa_require(credits<=6&&inv[ITEM_POTION]==k+1,0x8B);
+    act1_interact(TR_A1_TO_ASCENT);qa_require(current_room==A1_ASCENT&&npc_count>=1,0x8C);
+    act1_interact(TR_A1_TO_TEMPLE);qa_a1_flush();qa_require(current_room==4,0x8D);
+    act1_interact(TR_RUNE_C);qa_require(a1_rune_step==0&&!(story_flags&ST_PUZZLE),0x8E);
+    act1_interact(TR_A1_TO_GALLERY);qa_require(current_room==A1_GALLERY&&enemies[0].active&&enemies[1].active&&enemies[2].active,0x8F);
+    k=enemies[0].hp;enemies[0].hurt=0;damage_enemy(&enemies[0],50);qa_require(enemies[0].active&&enemies[0].hp==k,0x90);
+    for(i=0;i<3;i++){enemies[i].hurt=0;battle_enter(i);battle_cursor=0;k=enemies[i].hp;battle_act();qa_require(enemies[i].active&&enemies[i].hp==k,0x91);
+     act1_on_block(&enemies[i]);battle_phase=0;battle_cursor=0;enemies[i].hp=1;battle_act();qa_require(!enemies[i].active,0x92);battle_exit();}
+    qa_require(a1_sentries==7,0x93);
+    act1_interact(TR_A1_GUARD_SEAL);qa_a1_flush();qa_require(a1_has(A1F_GUARD),0x94);
+    act1_interact(TR_A1_TO_HALL);act1_interact(TR_A1_TO_VAULT);qa_require(current_room==A1_VAULT,0x95);
+    act1_interact(TR_A1_FORGE);qa_require(pro_ui==0,0x96);
+    act1_interact(TR_A1_MOULD);act1_interact(TR_A1_ORE);act1_interact(TR_A1_FORGE);qa_require(pro_ui==7,0x97);
+    for(i=0;i<3;i++){a1_heat=11;a1_heat_dir=0;act1_update(KEY_A);}qa_a1_flush();qa_require(a1_has(A1F_KEY),0x98);
+    act1_interact(TR_A1_VAULT_DOOR);act1_interact(TR_A1_KEEP_SEAL);qa_a1_flush();qa_require(a1_has(A1F_VAULT_OPEN|A1F_KEEP),0x99);
+    act1_interact(TR_A1_TO_HALL);qa_require(current_room==4,0x9A);
+    act1_interact(TR_RUNE_A);qa_require(a1_rune_step==0,0x9B);
+    act1_interact(TR_RUNE_C);act1_interact(TR_RUNE_A);act1_interact(TR_RUNE_D);act1_interact(TR_RUNE_B);qa_a1_flush();
+    qa_require((story_flags&ST_PUZZLE)&&cq_state[8]==CQ_ACTIVE&&collision[mi(32,9)]==C_FREE,0x9C);
+    act1_interact(TR_A1_HEART_DOOR);qa_require(current_room==A1_CHAMBER,0x9D);
+    act1_interact(TR_A1_REGENT);qa_a1_flush();qa_require(a1_boss&&game_mode==MODE_BATTLE,0x9E);
+    cosmos.trust=120;
+    for(k=0;k<400&&a1_boss;k++){player.hp=max_hp;if(a1_rg_phase==0){a1_rg_open=1;a1_rg_cursor=5;a1_rg_act();}else act1_boss_update(0);}
+    qa_a1_flush();qa_require(a1_regent==2&&cq_state[8]==CQ_DONE&&cq_state[9]==CQ_ACTIVE&&game_mode==MODE_SURFACE,0x9F);
+    act1_interact(TR_A1_HEART);qa_a1_flush();qa_require(pro_ui==5,0xA0);
+    act1_update(KEY_A);qa_a1_flush();qa_require(pro_ui==6&&a1_reply==1,0xA1);
+    for(i=0;i<2;i++){a1_heat=16;a1_heat_dir=0;act1_update(KEY_B);}qa_a1_flush();
+    qa_require((story_flags&(ST_HEART|ST_MALAKAR))==(ST_HEART|ST_MALAKAR)&&inv[ITEM_CORE]>=2&&cq_state[9]==CQ_DONE&&cq_state[10]==CQ_ACTIVE,0xA2);
+    {static u8 b[768];u16 f=a1_flags;for(i=0;i<768;i++)b[i]=0;act1_save_into(b);act1_reset();act1_restore_from(b,1);
+     qa_require(a1_flags==f&&a1_regent==2&&a1_reply==1&&a1_sentries==7&&b[A1_SRAM_AT]=='A',0xA3);}
     current_world=0;current_room=0;current_layer=1;generate_surface();
    }
    /* Real ARM emulator must execute the turn-based arena's OAM/UI and its outcome. */

@@ -40,6 +40,8 @@ def sources():
        'LOST_COSMOS_V10_SOURCE/content_v11_state.h',
        'LOST_COSMOS_V10_SOURCE/campaign_quests_state.h',
        'LOST_COSMOS_V10_SOURCE/campaign_quests.h',
+       'LOST_COSMOS_V10_SOURCE/act1_heart_state.h',
+       'LOST_COSMOS_V10_SOURCE/act1_heart.h',
        'LOST_COSMOS_V10_SOURCE/beast_home_state.h',
        'LOST_COSMOS_V10_SOURCE/beast_home.h',
        'LOST_COSMOS_V10_SOURCE/first_person_state.h',

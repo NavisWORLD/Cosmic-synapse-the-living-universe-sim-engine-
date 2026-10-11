@@ -2,10 +2,10 @@ name: Sol nursery browser verification
 on:
   push:
     branches: [main]
-    paths: ['arcade/sol-beast-lab/**', 'arcade/sol-spark-gate/**', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/sol_*.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_menus.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.c', 'gba/lost-cosmos-living-multiverse/tests/test*sol*spark*.py', '.github/workflows/sol-nursery.yml']
+    paths: ['arcade/sol-beast-lab/**', 'arcade/sol-spark-gate/**', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/sol_*.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_menus.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.c', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/act1_heart*.h', 'gba/lost-cosmos-living-multiverse/tests/test*sol*spark*.py', '.github/workflows/sol-nursery.yml']
   pull_request:
     branches: [main]
-    paths: ['arcade/sol-beast-lab/**', 'arcade/sol-spark-gate/**', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/sol_*.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_menus.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.c', 'gba/lost-cosmos-living-multiverse/tests/test*sol*spark*.py', '.github/workflows/sol-nursery.yml']
+    paths: ['arcade/sol-beast-lab/**', 'arcade/sol-spark-gate/**', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/sol_*.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/content_v11_menus.h', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/lost_cosmos_v5.c', 'gba/lost-cosmos-living-multiverse/LOST_COSMOS_V10_SOURCE/act1_heart*.h', 'gba/lost-cosmos-living-multiverse/tests/test*sol*spark*.py', '.github/workflows/sol-nursery.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -39,8 +39,8 @@ jobs:
         run: |
           python3 tests/test_mgba_content_v11.py --out artifacts/sol-ci/journey
           python3 tests/test_mgba_content_v11.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/sol-ci/runtime/lost_cosmos_v5.elf --starter artifacts/sol-ci/runtime-import/sol_starter.sav --out artifacts/sol-ci/sol-journey
-          python3 tests/test_mgba_act1_controller.py --out artifacts/sol-ci/act1
-          python3 tests/test_mgba_act1_resume.py --out artifacts/sol-ci/act1
+          python3 tests/test_mgba_prologue.py --out artifacts/sol-ci/prologue --choice 1
+          python3 tests/test_mgba_act1_heart.py --save artifacts/sol-ci/prologue/prologue.sav --out artifacts/sol-ci/act1
           python3 tests/test_mgba_act2_controller.py --act1 artifacts/sol-ci/act1 --out artifacts/sol-ci/act2
           python3 tests/test_mgba_eldoria_controller.py --act2 artifacts/sol-ci/act2 --out artifacts/sol-ci/eldoria
           python3 tests/test_mgba_hollow_grove_controller.py --eldoria artifacts/sol-ci/eldoria --out artifacts/sol-ci/grove

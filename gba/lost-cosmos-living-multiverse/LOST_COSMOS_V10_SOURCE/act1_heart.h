@@ -17,6 +17,8 @@ static void act1_migrate(void){int i,done=4;
  if(done>=7)a1_flags|=A1F_ASCENT|A1F_GUARD|A1F_MOULD|A1F_ORE|A1F_KEY|A1F_VAULT_OPEN|A1F_KEEP|A1F_ORDER;a1_sentries=7;
  if(done>=8)a1_regent=1;
  if(done>=9)a1_flags|=A1F_MALAKAR;
+ /* The story flags prove the prologue was behind this save. */
+ for(i=0;i<5;i++)if(cq_state[i]!=CQ_DONE){cq_set(i,CQ_DONE);pro_flags|=PF_MIGRATED;}
  for(i=5;i<=done;i++)cq_set(i,CQ_DONE);
  if(done<9)cq_set(done+1,CQ_ACTIVE);else if(cq_state[10]==CQ_LOCKED)cq_set(10,CQ_ACTIVE);}
 static void act1_restore_from(const u8*b,int valid){int o=A1_SRAM_AT;
@@ -28,17 +30,17 @@ static void a1_go(int room,int tx,int ty){current_room=(u8)room;current_layer=1;
 /* ---------- story cards ---------- */
 static const ProCard A1_RAVEN_MAP[]={
  {"LORD RAVENSWOOD","YOU FOUND IT. AUREL'S HAND, EVERY LINE OF IT. MY BROTHER DREW THIS MAP THE YEAR HE VANISHED."},
- {"LORD RAVENSWOOD","HE CLIMBED CRAGSTONE AND FOUND A TEMPLE THE MOUNTAIN HAD SWALLOWED. HE CAME BACK ONCE. THEN NEVER."},
- {"LORD RAVENSWOOD","THE VILLAGE SAYS THE TEMPLE IS CURSED. AUREL SAID THE OPPOSITE. THE STONE GUARDS ARE KEEPING A PROMISE."},
+ {"LORD RAVENSWOOD","HE FOUND A TEMPLE THE MOUNTAIN HAD SWALLOWED. HE CAME BACK ONCE. THEN NEVER."},
+ {"LORD RAVENSWOOD","OAKWOOD CALLS THE TEMPLE CURSED. AUREL SAID ITS STONE GUARDS KEEP A PROMISE."},
  {"LORD RAVENSWOOD","THEY DEFEND THE HEART FROM ANYONE WHO WANTS TO COMMAND IT. HIS JOURNAL IS ON MY STUDY DESK. READ IT."}};
 static const ProCard A1_JOURNAL_CARDS[]={
  {"AUREL'S JOURNAL","DAY 9. THE GUARDIANS ANSWER ORDER, NOT FORCE. THE HALL HAS FOUR SOCKETS AND TWO SEALED SIDE ROOMS."},
- {"AUREL'S JOURNAL","DAY 11. THE WEST GALLERY TESTS THE BLADE. ITS SENTRIES ONLY CRACK WHEN YOU TURN THEIR OWN BLOW ASIDE."},
+ {"AUREL'S JOURNAL","DAY 11. THE WEST GALLERY TESTS THE BLADE. ITS SENTRIES CRACK ONLY AFTER A PARRY."},
  {"AUREL'S JOURNAL","DAY 12. THE EAST VAULT KEY MUST BE CAST, NOT CUT. A SMITH COULD DO IT. I AM NOT A SMITH."},
  {"AUREL'S JOURNAL","DAY 14. THE STONE REGENT IS NOT CURSED. ITS INSTRUCTION IS CHIPPED. THREE RUNES MIGHT MEND IT."},
  {"LORD RAVENSWOOD","THE EAST ROAD CLIMBS TO CRAGSTONE. THE GATE IS YOURS, ARIN. BRING AUREL'S STORY HOME IF NOT AUREL."}};
 static const ProCard A1_TEMPLE_ARRIVE[]={
- {"CRAGSTONE TEMPLE","A HALL CUT INTO THE MOUNTAIN. FOUR DARK SOCKETS FACE A SEALED DOOR. TWO SIDE DOORS STAND OPEN."},
+ {"CRAGSTONE TEMPLE","A HALL CUT INTO THE MOUNTAIN. FOUR DARK SOCKETS. A SEALED DOOR. TWO SIDE ROOMS."},
  {"COSMOS","THIS PLACE IS LISTENING. NOT TO US. TO WHATEVER IS BEHIND THAT DOOR."}};
 static const ProCard A1_GUARD_CARDS[]={
  {"GALLERY OF BLADES","THE LAST SENTRY KNEELS. THE SEAL ON THE PEDESTAL WARMS: THE RUNE OF GUARD."},
@@ -67,7 +69,7 @@ static const ProCard A1_REGENT_MENDED[]={
  {"COSMOS","YOU FIXED IT INSTEAD OF BREAKING IT. I THINK IT WILL REMEMBER THAT LONGER THAN WE WILL."}};
 static const ProCard A1_MALAKAR_CARDS[]={
  {"MALAKAR","SO THE BLACKSMITH CLIMBED THE MOUNTAIN. AND MENDED THE STONE. HOW VERY LIKE YOU."},
- {"MALAKAR","LOOK AT THE SKY, ARIN. EVERY TEAR IN IT IS A WORLD BLEEDING INTO ANOTHER. FEAR. FAMINE. RAIDS."},
+ {"MALAKAR","LOOK UP, ARIN. EVERY TEAR IS A WORLD BLEEDING INTO ANOTHER. FEAR. FAMINE. RAIDS."},
  {"MALAKAR","SEAL EVERY BOUNDARY AND THE SUFFERING STOPS. ONE WORLD, ONE ORDER, NO MORE BROKEN SKIES."},
  {"MALAKAR","GIVE ME THE HEART. I WILL END THE PAIN YOU ARE TOO KIND TO END YOURSELF."}};
 static const ProCard A1_REPLY_1[]={
@@ -83,7 +85,7 @@ static const ProCard A1_AXIS_CARDS[]={
  {"ARIN","NOT A CROWN. I'LL SET IT INTO THE FORGE TOOL. IT REPAIRS THINGS. THAT'S WHAT IT SHOULD DO."},
  {"COSMOS","BROKEN METAL AND BROKEN WORLDS BOTH KEEP THE MARKS OF THEIR MAKERS. MAYBE THAT'S HOW THEY HEAL."},
  {"LUNA-ARC","ABOARD THE SHIP, AN EIGHT-WORLD CHART IGNITES. THE STAR LANES BURN BRIGHT AGAIN."},
- {"ACT I COMPLETE","THE FIRST AXIS IS RECLAIMED. NEXT: THE HIDDEN CITY, BY THE NORTHEAST RUNE IN BRINDLEMARK."}};
+ {"ACT I COMPLETE","THE FIRST AXIS IS RECLAIMED. NEXT: THE HIDDEN CITY, PAST BRINDLEMARK'S NE RUNE."}};
 #define A1_CARDS(a,t) pro_cards_open(PRO_CARD_SET(a),t)
 /* ---------- quest steps ---------- */
 static void a1_q05_active(void){if(cq_state[5]==CQ_LOCKED){cq_set(5,CQ_ACTIVE);}}
@@ -107,7 +109,7 @@ static void act1_after_cards(int tag){
   else if(!a1_has(A1F_KEEP))say("ONE SEAL LEFT: THE COLD VAULT, EAST DOOR OF THE HALL.");
   else if(!a1_has(A1F_ORDER))say("BOTH SEALS FOUND. NOW THE FOUR SOCKETS: SKY, ROOT, HEART, STAR.");
   save_game();}
- else if(tag==27){a1_boss=1;a1_rg_max=(s16)(30+player_level*2);a1_rg_hp=a1_rg_max;a1_rg_core=0;a1_rg_phase=0;a1_rg_open=0;a1_rg_runes=0;a1_rg_cursor=0;a1_rg_stagger=0;
+ else if(tag==27){a1_boss=1;a1_rg_max=(s16)(48+player_level*4);a1_rg_hp=a1_rg_max;a1_rg_core=0;a1_rg_phase=0;a1_rg_open=0;a1_rg_runes=0;a1_rg_cursor=0;a1_rg_stagger=0;
   a1_notice="THE REGENT RAISES ITS GUARD.";game_mode=MODE_BATTLE;battle_phase=0;lc_sfx(SFX_CRY);}
  else if(tag==28||tag==29){say("Q09 THE HEART OF ERIDORIA IS AT THE NORTH END OF THE CHAMBER.");}
  else if(tag==30){pro_ui=5;a1_sel=0;a1_choice_tag=2;}
@@ -214,8 +216,8 @@ static void act1_npc_speak(void){int id=npc_dialogue_id;
  if(id==16){
   if(cq_state[5]==CQ_ACTIVE&&!a1_has(A1F_MET_RAVEN))
    pro_say_lines(40,"LORD RAVENSWOOD LOWERS A LETTER. THE TEMPLE? YOU'RE THE SECOND PERSON TO ASK. MY BROTHER WAS THE FIRST.",
-    "AUREL'S MAP CASE WAS COMING HOME WITH A COURIER, PELL. GLITCHLINGS RAN HIM DOWN ON THE ORCHARD ROAD.",
-    "PELL IS RESTING AT THE FALLOW INN, SOUTH OF THE MARKET. BRING ME THAT MAP AND I'LL TELL YOU EVERYTHING.");
+    "A COURIER, PELL, CARRIED AUREL'S MAP CASE. GLITCHLINGS RAN HIM DOWN IN THE ORCHARD.",
+    "PELL RESTS AT THE FALLOW INN, SOUTH OF THE MARKET. BRING ME THAT MAP. THEN WE TALK.");
   else if(cq_state[5]==CQ_ACTIVE&&!a1_has(A1F_MAP_FOUND))pro_say_lines(41,"PELL IS AT THE FALLOW INN. THE MAP CASE IS SOMEWHERE IN THE ORCHARD.",0,0);
   else if(cq_state[5]==CQ_ACTIVE)pro_say_lines(42,"IS THAT... THE CASE? GIVE IT HERE. CAREFULLY. IT'S ALL I HAVE LEFT OF HIM.",0,0);
   else if(cq_state[6]==CQ_ACTIVE)pro_say_lines(43,"AUREL'S JOURNAL IS ON MY DESK, EAST SIDE OF THIS ROOM. READ IT BEFORE YOU CLIMB.",0,0);
@@ -226,17 +228,17 @@ static void act1_npc_speak(void){int id=npc_dialogue_id;
   else if(a1_has(A1F_PELL_HEALED))pro_say_lines(47,"THE SPLIT OAK. FOURTH ROW FROM THE NORTH, THIRD TREE FROM THE WEST. I STUFFED THE CASE IN ITS CRACK.",0,0);
   else if(a1_has(A1F_MET_RAVEN)&&inv[ITEM_POTION])pro_say_lines(48,"A COURIER WITH A BAD LEG ON A COT. YOU'RE FROM RAVENSWOOD? MY LEG... DO YOU HAVE A POTION?",
    "YOU HAND PELL A POTION. HE DRINKS IT IN ONE GULP AND FLEXES HIS KNEE.",
-   "THE GLITCHLINGS CHASED ME INTO THE ORCHARD. I HID THE CASE IN THE SPLIT OAK: FOURTH ROW, THIRD FROM THE WEST.");
+   "I HID THE CASE FROM THE GLITCHLINGS IN THE SPLIT OAK. FOURTH ROW, THIRD FROM THE WEST.");
   else if(a1_has(A1F_MET_RAVEN))pro_say_lines(49,"I'D TALK BETTER WITHOUT THIS LEG SCREAMING. A POTION? THE TRADER SELLS THEM. ASK BREE.",0,0);
-  else pro_say_lines(50,"A COURIER NURSES A BANDAGED LEG. RUN THE ORCHARD ROAD AT NIGHT, THEY SAID. IT'LL BE FINE, THEY SAID.",0,0);
+  else pro_say_lines(50,"A COURIER NURSES A BANDAGED LEG. TAKE THE ORCHARD ROAD AT NIGHT, THEY SAID.",0,0);
  }else if(id==NPC_A1_BREE){
   if(cq_state[5]==CQ_ACTIVE&&a1_has(A1F_MET_RAVEN)&&!a1_has(A1F_PELL_HEALED)&&!inv[ITEM_POTION]&&!a1_has(A1F_INN_GIFT))
    pro_say_lines(51,"FOR PELL? TAKE THIS POTION. PAY ME WHEN THE WORLD STOPS ENDING.",0,0);
   else pro_say_lines(52,"WELCOME TO THE FALLOW INN. A BED IS THREE CREDITS. HOT SOUP IS FREE IF YOU LOOK THIS TIRED.",0,0);
  }else if(id==NPC_A1_WYN){
   if(story_flags&ST_HEART)pro_say_lines(53,"THEY SAY A SMITH WALKED OUT OF CRAGSTONE WITH LIGHT IN HIS POCKETS. WAS IT YOU? IT WAS YOU.",0,0);
-  else if(cq_state[5]==CQ_ACTIVE)pro_say_lines(54,"PSST. PELL CAME IN LIMPING, SHOUTING ABOUT GLITCHLINGS IN THE ORCHARD. NORTHWEST OF THE STALLS.",
-   "AND THE LORD HASN'T SMILED SINCE HIS BROTHER WENT UP THE MOUNTAIN. NOBODY'S FAULT. EVERYBODY'S BUSINESS.",0);
+  else if(cq_state[5]==CQ_ACTIVE)pro_say_lines(54,"PSST. PELL LIMPED IN SHOUTING ABOUT GLITCHLINGS IN THE ORCHARD, WEST OF THE STALLS.",
+   "THE LORD HASN'T SMILED SINCE HIS BROTHER CLIMBED THE MOUNTAIN. EVERYBODY'S BUSINESS.",0);
   else pro_say_lines(55,"THE TEMPLE ISN'T CURSED, YOU KNOW. MY GRAN SAID THE STONES THERE ARE JUST... STUBBORN.",0,0);
  }else if(id==NPC_A1_ODA){
   pro_say_lines(56,"AN OLD CLIMBER WARMS HER HANDS. THE TEMPLE STONES HIT HARD BUT HONEST. THEY RAISE THEIR ARMS FIRST.",
@@ -274,15 +276,15 @@ static int act1_interact(u8 t){
  if(t==TR_A1_TREE){int tx=near_trigger_x,ty=near_trigger_y;
   if(tx==A1_SPLIT_TX&&ty==A1_SPLIT_TY){
    if(a1_has(A1F_MAP_FOUND)){say("THE SPLIT OAK. THE CRACK IS EMPTY NOW.");return 1;}
-   if(!a1_has(A1F_PELL_HEALED)){say("AN OLD OAK SPLIT BY LIGHTNING. ONLY BARK AND BEETLES IN THE CRACK. OR SO IT SEEMS.");return 1;}
-   a1_flags|=A1F_MAP_FOUND;a1_q05_active();lc_sfx(SFX_CONFIRM);add_xp(6);save_game();say("A LEATHER MAP CASE, WEDGED DEEP IN THE CRACK. AUREL'S MAP! TAKE IT TO RAVENSWOOD.");return 1;}
+   if(!a1_has(A1F_PELL_HEALED)){say("A LIGHTNING-SPLIT OAK. ONLY BARK AND BEETLES IN THE CRACK. OR SO IT SEEMS.");return 1;}
+   a1_flags|=A1F_MAP_FOUND;a1_q05_active();lc_sfx(SFX_CONFIRM);add_xp(6);save_game();say("A MAP CASE, WEDGED DEEP IN THE CRACK. AUREL'S MAP! TAKE IT TO RAVENSWOOD.");return 1;}
   say((tx+ty)&1?"ONLY APPLES. A WASP DISAGREES WITH YOU ABOUT THEM.":"THE TREE IS HEAVY WITH APPLES. NO MAP CASE HERE.");return 1;}
  if(t==TR_A1_JOURNAL){
   if(cq_state[6]==CQ_ACTIVE){a1_finish_q06();A1_CARDS(A1_JOURNAL_CARDS,22);return 1;}
   say(a1_has(A1F_JOURNAL)?"AUREL'S JOURNAL. DAY 14: THREE RUNES MIGHT MEND IT.":"A DESK STACKED WITH LETTERS. THE LORD'S PRIVATE STUDY.");return 1;}
  if(t==TR_A1_CAMP){player.hp=max_hp;player_mp=max_mp;save_game();say("YOU REST BY ODA'S FIRE. HP AND MP RESTORED. THE GAME IS SAVED.");return 1;}
- if(t==TR_A1_LOOKOUT){say("FROM THE LOOKOUT: OAKWOOD'S ROOFS, BRINDLEMARK'S BEACON, AND A SKY WITH A SEAM IN IT.");return 1;}
- if(t==TR_A1_MURAL){say("A MURAL OF A SKY, AN EYE, AND A ROOT: FIRST THE SKY THAT WATCHES, THEN THE ROOT THAT HOLDS.");return 1;}
+ if(t==TR_A1_LOOKOUT){say("OAKWOOD'S ROOFS, BRINDLEMARK'S BEACON, AND A SKY WITH A SEAM IN IT.");return 1;}
+ if(t==TR_A1_MURAL){say("MURAL: FIRST THE SKY THAT WATCHES, THEN THE ROOT THAT HOLDS.");return 1;}
  if(t==TR_A1_GUARD_SEAL){
   if(a1_has(A1F_GUARD)){say("THE RUNE OF GUARD IS YOURS.");return 1;}
   if((a1_sentries&7)!=7){say("THE SEAL WON'T WAKE WHILE ITS SENTRIES STAND. DUEL THEM: SELECT+A.");return 1;}
@@ -294,7 +296,7 @@ static int act1_interact(u8 t){
   if(!a1_has(A1F_MOULD|A1F_ORE)){say(a1_has(A1F_MOULD)?"YOU HAVE THE MOULD. THE ORE VEIN IS IN THE SOUTH WALL.":a1_has(A1F_ORE)?"YOU HAVE ORE. THE KEY MOULD SITS ON THE NORTH PEDESTAL.":"A COLD FORGE. TO CAST A KEY: A MOULD AND ORE.");return 1;}
   pro_ui=7;a1_strikes=0;a1_heat=0;a1_heat_dir=0;a1_flash=0;dialogue_timer=0;return 1;}
  if(t==TR_A1_VAULT_DOOR){
-  if(!a1_has(A1F_KEY)){say("A VAULT DOOR WITH A KEYHOLE SHAPED LIKE A FLAME. THE KEY HAS TO BE CAST.");return 1;}
+  if(!a1_has(A1F_KEY)){say("A FLAME-SHAPED KEYHOLE. THIS KEY HAS TO BE CAST, NOT CUT.");return 1;}
   a1_flags|=A1F_VAULT_OPEN;save_game();lc_sfx(SFX_CONFIRM);a1_go(A1_VAULT,40,26);say("THE CAST KEY TURNS. THE VAULT DOOR SWINGS OPEN.");return 1;}
  if(t==TR_A1_KEEP_SEAL){
   if(a1_has(A1F_KEEP)){say("THE RUNE OF KEEPING IS YOURS.");return 1;}
@@ -311,7 +313,7 @@ static int act1_interact(u8 t){
   map_put(32,9,T_DOOR,2,C_FREE,TR_A1_HEART_DOOR);
   map_put(21,22,T_STAR,3,C_FREE,TR_RUNE_A);map_put(28,22,T_STAR,3,C_FREE,TR_RUNE_B);map_put(35,22,T_STAR,3,C_FREE,TR_RUNE_C);map_put(42,22,T_STAR,3,C_FREE,TR_RUNE_D);
   save_game();A1_CARDS(A1_ORDER_CARDS,26);return 1;}
- if(current_room==4&&t==TR_TERMINAL){say("FOUR SOCKETS FACE THE HEART DOOR. THE GALLERY AND THE VAULT EACH KEEP HALF OF THEIR ORDER.");return 1;}
+ if(current_room==4&&t==TR_TERMINAL){say("FOUR SOCKETS. THE GALLERY AND THE VAULT EACH KEEP HALF OF THEIR ORDER.");return 1;}
  if(t==TR_A1_REGENT){if(a1_regent)return 1;A1_CARDS(A1_REGENT_MEET,27);return 1;}
  if(t==TR_A1_HEART){
   if(a1_has(A1F_MALAKAR)){say("THE HEART'S FIRST AXIS HUMS IN YOUR FORGE TOOL. THE CHAMBER IS QUIET.");return 1;}
@@ -370,7 +372,9 @@ static void act1_boss_update(u16 newk){
   if((newk&KEY_B)&&a1_rg_timer<=40&&!a1_rg_braced)a1_rg_braced=1;
   if(a1_rg_timer)a1_rg_timer--;
   if(!a1_rg_timer){
-   if(a1_rg_tell==0&&a1_rg_braced){a1_rg_open=1;a1_notice="PARRY! THE SLAM GLANCES AWAY. ITS GUARD IS OPEN.";lc_sfx(SFX_CONFIRM);cosmos.trust=(u8)mini(255,cosmos.trust+1);}
+   if(a1_rg_tell==0&&a1_rg_braced){lc_sfx(SFX_CONFIRM);cosmos.trust=(u8)mini(255,cosmos.trust+1);
+    if(a1_rg_core==0){a1_rg_open=1;a1_notice="PARRY! THE STONE FIST GLANCES AWAY. ITS GUARD IS OPEN.";}
+    else a1_notice="PARRIED, BUT THE CORE STILL GLOWS. HIT IT WITH ITS WEAKNESS.";}
    else{int dmg=a1_rg_tell?1:2;player.hp=(u8)(dmg>=player.hp?0:player.hp-dmg);lc_sfx(SFX_HIT);
     a1_notice=a1_rg_tell?"THE FLOOR HEAVES. NOTHING TO BRACE AGAINST.":"THE SLAM LANDS. BRACE WITH B NEXT TIME.";
     if(!player.hp){player.hp=max_hp;player_mp=max_mp;a1_rg_phase=5;a1_rg_timer=70;a1_notice="ARIN FALLS. COSMOS CATCHES HIS SIGNAL.";return;}}
@@ -386,11 +390,12 @@ static void act1_boss_draw(void){static const char*ACT[6]={"FIGHT","EMBER","TIDE
  ui_text(3,5,"CORE",15);ui_text(8,5,A1_CORE_NAME[a1_rg_core&3],a1_rg_core?14:8);
  ui_text(3,6,"RUNES",15);ui_num(9,6,a1_rg_runes,15);ui_text(10,6,"/3",15);
  if(a1_rg_open)ui_text(3,7,"GUARD OPEN",13);else if(a1_rg_stagger)ui_text(3,7,"STAGGERED",13);
+ if(a1_rg_core){static const u8 W[4]={0,2,3,1};ui_text(3,8,"WEAK TO",15);ui_text(11,8,A1_CORE_NAME[W[a1_rg_core&3]],14);}else ui_text(3,8,"PARRY THE SLAM",15);
  ui_text(2,10,"ARIN",14);ui_text(8,10,"LV",15);ui_num(11,10,player_level,15);
  ui_text(2,11,"HP",13);ui_num(5,11,player.hp,15);ui_text(8,11,"/",15);ui_num(10,11,max_hp,15);ui_text(16,11,"MP",13);ui_num(19,11,player_mp,15);
  ui_text(16,10,"TRUST",14);ui_num(22,10,cosmos.trust,15);
  for(i=0;i<6;i++){int x=(i&1)?15:2,y=13+(i>>1);ui_text(x,y,(a1_rg_phase==0&&a1_rg_cursor==i)?">":" ",13);ui_text(x+2,y,ACT[i],a1_rg_phase==0?15:14);}
- if(a1_rg_phase==1){ui_text(2,16,a1_rg_tell?"IT STAMPS: A QUAKE IS COMING.":"IT RAISES BOTH FISTS!",13);if(!a1_rg_tell)ui_text(2,17,a1_rg_timer<=40?"B BRACE NOW":"WAIT FOR IT",a1_rg_timer<=40?14:8);}
+ if(a1_rg_phase==1){ui_text(2,16,a1_rg_tell?"IT STAMPS: A QUAKE!":"IT RAISES BOTH FISTS!",13);if(!a1_rg_tell)ui_text(2,17,a1_rg_timer<=40?"B BRACE NOW":"WAIT FOR IT",a1_rg_timer<=40?14:8);}
  else ui_wrap_text(16,a1_notice,14,3);
  oam_hide_all();oam_set32(0,43,59,272,0);oam_ui_portrait(0);
  if(a1_rg_phase!=3&&a1_rg_phase!=4){oam_set32(2,169+((a1_rg_phase==1&&a1_rg_timer<=40)?(int)((frame>>1)&1)*2:0),54,160+EN_CROWN*16,5+EN_CROWN);oam_ui_portrait(2);}}
@@ -460,7 +465,7 @@ static int act1_draw(void){int i;
   ui_text(2,15,"DEFLECTED",13);for(i=0;i<2;i++)ui_text(13+i*2,15,i<a1_deflects?"*":"-",i<a1_deflects?14:8);
   ui_text(2,16,a1_flash==200?"THE LANCE GRAZES YOU. AGAIN.":a1_flash?"DEFLECTED! THE HEART FLARES.":"PRESS B IN THE + ZONE.",a1_flash==200?8:15);
   ui_text(2,18,"B BRACE",14);return 1;}
- if(pro_ui==7){ui_frame(9,19,15);ui_text(2,10,"COLD VAULT FORGE",14);ui_text(2,11,"CAST THE KEY: STRIKE IN THE GLOW",15);
+ if(pro_ui==7){ui_frame(9,19,15);ui_text(2,10,"COLD VAULT FORGE",14);ui_text(2,11,"CAST THE KEY IN THE GLOW",15);
   for(i=0;i<18;i++){const char*c=(i==a1_heat)?"*":(i>=11&&i<=13)?"+":"-";ui_text(5+i,13,c,(i==a1_heat)?14:(i>=11&&i<=13)?13:8);}
   ui_text(2,15,"STRIKES",13);for(i=0;i<3;i++)ui_text(11+i*2,15,i<a1_strikes?"*":"-",i<a1_strikes?14:8);
   ui_text(2,16,a1_flash==200?"THE METAL SPITS. AGAIN.":a1_flash?"CLANG! THE KEY TAKES SHAPE.":"WAIT FOR THE + ZONE.",a1_flash==200?8:15);
@@ -478,11 +483,11 @@ static int act1_draw(void){int i;
  return 0;}
 /* ---------- HUD ---------- */
 static const char*act1_objective(int q){
- if(q==5){if(!a1_has(A1F_MET_RAVEN))return "OAKWOOD: TALK TO RAVENSWOOD";if(a1_has(A1F_MAP_FOUND))return "Q05 BRING THE MAP TO RAVENSWOOD";
-  if(a1_has(A1F_PELL_HEALED))return "Q05 SPLIT OAK: ROW 4, TREE 3";return "Q05 HELP PELL AT THE INN";}
+ if(q==5){if(!a1_has(A1F_MET_RAVEN))return "Q05 TALK TO RAVENSWOOD";if(a1_has(A1F_MAP_FOUND))return "Q05 MAP TO RAVENSWOOD";
+  if(a1_has(A1F_PELL_HEALED))return "Q05 SPLIT OAK: ROW 4 TREE 3";return "Q05 HELP PELL AT THE INN";}
  if(q==6)return "Q06 READ AUREL'S JOURNAL";
- if(q==7){if(!a1_has(A1F_ASCENT))return "Q07 CLIMB CRAGSTONE: EAST GATE";
-  if(!a1_has(A1F_GUARD)&&!a1_has(A1F_KEEP))return "Q07 SEALS: GALLERY AND VAULT";
+ if(q==7){if(!a1_has(A1F_ASCENT))return "Q07 CRAGSTONE: EAST GATE";
+  if(!a1_has(A1F_GUARD)&&!a1_has(A1F_KEEP))return "Q07 SEALS: GALLERY + VAULT";
   if(!a1_has(A1F_GUARD))return "Q07 SEAL: GALLERY OF BLADES";
   if(!a1_has(A1F_KEEP))return a1_has(A1F_KEY)?"Q07 OPEN THE VAULT DOOR":"Q07 CAST THE VAULT KEY";
   return "Q07 LIGHT THE FOUR SOCKETS";}
@@ -491,12 +496,21 @@ static const char*act1_objective(int q){
  return 0;}
 static const char*act1_hud_line(void){int q;
  if(current_world!=0||game_mode!=MODE_SURFACE||BH_IS_ROOM)return 0;
- if(!(current_room==3||current_room==4||A1_IS_ROOM))return 0;
+ if(!(current_room==2||current_room==3||current_room==4||A1_IS_ROOM))return 0;
+ if(current_room==2&&cq_state[5]==CQ_ACTIVE&&!a1_has(A1F_MET_RAVEN))return "Q05 OAKWOOD: NORTHEAST ROAD";
  for(q=5;q<=9;q++)if(cq_state[q]==CQ_ACTIVE)return act1_objective(q);
+ if(cq_state[10]==CQ_ACTIVE&&cq_state[9]==CQ_DONE&&!(story_flags&ST_CITY))return "Q10 HIDDEN CITY: NE RUNE";
  return 0;}
 static void act1_frame(void){
+ if(v10_tutorial&&cq_state[5]!=CQ_LOCKED&&a1_flags)v10_tutorial=0;
  if(current_world==0&&current_room==3&&game_mode==MODE_SURFACE&&cq_state[5]==CQ_LOCKED&&(cq_state[4]==CQ_DONE||cq_state[0]==CQ_LOCKED||(pro_flags&PF_MIGRATED))){
   cq_set(5,CQ_ACTIVE);save_game();}
  if(current_world==0&&current_room==A1_GALLERY&&game_mode==MODE_SURFACE){int i;
   for(i=0;i<3;i++)if(!enemies[i].active&&!(a1_sentries&(1u<<i))){a1_sentries|=(u8)(1u<<i);save_game();}}}
+#ifdef QA_AUTORUN
+/* Host QA helpers: speak to an NPC already spawned in this room, and click through story cards. */
+static void qa_a1_talk(int id){int i,k;for(i=0;i<npc_count;i++)if(npc_runtime[i].id==id){npc_speak(i);
+  for(k=0;k<8&&npc_dialogue_active;k++)npc_advance();if(npc_dialogue_active)npc_close();return;}}
+static void qa_a1_flush(void){int n=0;while(pro_ui==4&&n++<24)prologue_update(KEY_A);}
+#endif
 #endif
