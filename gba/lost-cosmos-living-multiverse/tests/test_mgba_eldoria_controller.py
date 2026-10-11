@@ -108,9 +108,19 @@ def run(rom,elf,act2,out):
     mark("0"+str(5+index)+"_real_element_"+str(index))
    nav.fight_enemy(7)  # Real native guarded last shrine; no forged kill_count.
    mark("08_actual_Storm_Guardian_defeated")
-   nav.interact(21,at=(48,17))
+   # A wandering field enemy can knock Arin off the shrine tile during the
+   # A press (seen after Act I raises his level/XP route). Re-walk and press
+   # again with real input; each attempt is recorded in the input trace.
+   for attempt in range(4):
+    nav.interact(21,at=(48,17))
+    if emu.read_symbol("element_mask")==15:break
+    report.setdefault("fourth_shrine_retries",[]).append({"attempt":attempt,"pos":nav.position(),"near":[emu.read_symbol("near_trigger_x"),emu.read_symbol("near_trigger_y")]})
+    emu.step((),30)
    if emu.read_symbol("element_mask")!=15 or not emu.read_symbol("story_flags")&1024:
-    raise RuntimeError("Fourth real shrine + ST_ELEMENTS not earned")
+    report["fourth_shrine_diag"]={"pos":nav.position(),"near":[emu.read_symbol("near_trigger_x"),emu.read_symbol("near_trigger_y")],
+      "last_element_index":emu.read_symbol("last_element_index"),"count":emu.read_symbol("last_element_interact_count"),
+      "active_elites":[e.index for e in nav.enemies() if e.active and e.elite],"game_mode":emu.read_symbol("game_mode")}
+    raise RuntimeError("Fourth real shrine + ST_ELEMENTS not earned "+repr(report["fourth_shrine_diag"]))
    mark("09_all_four_real_elements")
    emu.step((),180)  # Native dual-bank CRC SRAM journal commit.
    report["passed"]=True

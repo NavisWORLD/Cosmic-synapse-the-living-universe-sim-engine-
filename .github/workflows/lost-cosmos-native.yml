@@ -56,6 +56,8 @@ jobs:
           python3 tests/test_sol_navigation_native.py
       - name: Gate NPC reachability with the actual native 10px collision footprint
         run: python3 tests/test_act1_pixel_reachability.py
+      - name: Gate world sweep - every door/warp lands standable, every room has an exit, every room enterable
+        run: python3 tests/test_world_sweep.py
       - name: Gate Quantum Beast public import, field-art derivation and native save identity
         run: |
           python3 -m py_compile tools/build_quantum_beast_v11.py tools/import_beastbox.py
@@ -116,6 +118,7 @@ jobs:
           python3 tests/test_mgba_act1_heart.py --save artifacts/mgba_prologue/compiled_defend/prologue.sav --out artifacts/mgba_act1 --route restore --reply 0
           python3 tests/test_mgba_act1_heart.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --save artifacts/mgba_prologue/runtime_carry/prologue.sav --out artifacts/mgba_act1_runtime_fight --route fight --reply 1
           python3 tests/test_mgba_act1_migration.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_act1_migration
+          python3 tests/test_mgba_world_menus.py --act1 artifacts/mgba_act1 --out artifacts/mgba_world_menus
       - name: Release gate - real controller-only Act II from earned SRAM to Sentinel and Dream trials plus cold boot
         timeout-minutes: 7
         run: python3 tests/test_mgba_act2_controller.py --act1 artifacts/mgba_act1 --out artifacts/mgba_act2
@@ -163,6 +166,8 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1_runtime_fight/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1_migration/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_world_menus/
+            gba/lost-cosmos-living-multiverse/artifacts/world_sweep/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_story_act1/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act2/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_eldoria/
