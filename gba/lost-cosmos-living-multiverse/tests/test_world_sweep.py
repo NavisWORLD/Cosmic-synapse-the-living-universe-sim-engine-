@@ -34,13 +34,14 @@ static u8 visited[NLOC];static Arr qa_q[4096];static int qh=0,qt=0;static u8 arr
 static int lid(int w,int r,int l){return (w*128+r)*3+l;}
 static int is_warp(int t){return t==TR_SHIP||t==TR_DOOR||t==TR_EXIT||t==TR_LIFT||t==TR_GATE||t==TR_RIFT||t==TR_ARC_ENTER||t==TR_ARC_NEXT||t==TR_ARC_EXIT||t==TR_ARC_EPILOGUE||
  t==TR_G6_PORTAL||t==TR_G6_EXIT||t==TR_G7_PORTAL||t==TR_G7_EXIT||t==TR_G7_NEXT||t==TR_COMP_ENTER||t==TR_COMP_EXIT||t==TR_COMP_NEXT||t==TR_V11_ENTER||t==TR_V11_EXIT||t==TR_V11_NEXT||
- t==TR_BH_ENTER||t==TR_BH_EXIT||(t>=TR_A1_TO_ASCENT&&t<=TR_A1_TO_TEMPLE)||(t>=TR_A1_TO_ASCENT_TOP&&t<=TR_A1_TO_HALL)||t==TR_A1_VAULT_DOOR;}
+ t==TR_BH_ENTER||t==TR_BH_EXIT||(t>=TR_A1_TO_ASCENT&&t<=TR_A1_TO_TEMPLE)||(t>=TR_A1_TO_ASCENT_TOP&&t<=TR_A1_TO_HALL)||t==TR_A1_VAULT_DOOR||
+ t==TR_A2_TO_BRINDLE||(t>=TR_A2_CITY_GATE&&t<=TR_A2_TO_CITY);}
 static int open_mode=0,seed_k=-1;static char seed_f=0;
 static void base_state(void){
  init_new_game();init_graphics();intro=0;
  for(int i=0;i<5;i++)cq_set(i,CQ_DONE);cq_set(5,CQ_ACTIVE);pro_flags|=0x1FFF;
  if(open_mode){story_flags=0xFFFF;keys_found=7;v10_relic=0xFFFF;element_mask=15;
-  for(int i=5;i<=9;i++)cq_set(i,CQ_DONE);cq_set(10,CQ_ACTIVE);a1_flags=0x7FFF;a1_regent=2;a1_sentries=7;
+  for(int i=5;i<=14;i++)cq_set(i,CQ_DONE);cq_set(15,CQ_ACTIVE);a1_flags=0x7FFF;a1_regent=2;a1_sentries=7;a2_flags=0x7FFF;a2_arena_result=7;
   arc_progress=ARC_STAGES;completion_done=0xFFFFFFu;v11_beacons=0xFF;
   postgame=1;ending=1;arc_petals=3;arc_route=1;g7_pillars=3;g7_orbs=31;g6_done=0xF;g7_done=0xFFF;
   if(seed_f=='a'){arc_progress=(u8)seed_k;}
@@ -50,7 +51,7 @@ static void base_state(void){
   v11_visited=0xFF;
   if(!lc_party.count){lc_party.count=1;lc_party.active=0;lc_party.slots[0].species=1;lc_party.slots[0].stage=1;lc_party.slots[0].level=5;lc_party.slots[0].identity=0x1234u;}}
 }
-static void transient(void){game_mode=MODE_SURFACE;pro_ui=0;cinema_active=0;dialogue_timer=0;npc_dialogue_active=0;a1_boss=0;shop_open=0;
+static void transient(void){game_mode=MODE_SURFACE;pro_ui=0;cinema_active=0;dialogue_timer=0;npc_dialogue_active=0;a1_boss=0;a2_arena=0;shop_open=0;
  v11_wild=0;v11_shop=0;v11_lore=0;v11_dialogue=0;v11_gameover=0;}
 static void load(Arr a){transient();current_world=a.w;current_room=a.r;current_layer=a.l;player.x=a.x;player.y=a.y;generate_surface();transient();player.x=a.x;player.y=a.y;}
 static void push(Arr a,const char*via){int k=lid(a.w,a.r,a.l);
@@ -118,7 +119,7 @@ for mode,rooms in res.items():
    if w["moved"] and not w["space"] and not w["standable"]:problems.append((mode,"warp lands in a wall",r["loc"],w))
   if r["standable"] and not any(w["moved"] for w in r["warps"]):problems.append((mode,"no working exit",r["loc"],r["name"]))
 summary["problems"]=problems
-universe=[(0,r,1) for r in list(range(0,10))+[12]+list(range(13,78))+[90,91,92,93,94]]+[(w,0,1) for w in range(1,8)]
+universe=[(0,r,1) for r in list(range(0,10))+[12]+list(range(13,78))+[90,91,92,93,94,95,96,97,98,99,100,101]]+[(w,0,1) for w in range(1,8)]
 reached=set()
 for mode,rooms in res.items():
  if mode!="fresh":reached|={tuple(r["loc"]) for r in rooms}

@@ -85,7 +85,7 @@ static const ProCard A1_AXIS_CARDS[]={
  {"ARIN","NOT A CROWN. I'LL SET IT INTO THE FORGE TOOL. IT REPAIRS THINGS. THAT'S WHAT IT SHOULD DO."},
  {"COSMOS","BROKEN METAL AND BROKEN WORLDS BOTH KEEP THE MARKS OF THEIR MAKERS. MAYBE THAT'S HOW THEY HEAL."},
  {"LUNA-ARC","ABOARD THE SHIP, AN EIGHT-WORLD CHART IGNITES. THE STAR LANES BURN BRIGHT AGAIN."},
- {"ACT I COMPLETE","THE FIRST AXIS IS RECLAIMED. NEXT: THE HIDDEN CITY, PAST BRINDLEMARK'S NE RUNE."}};
+ {"ACT I COMPLETE","THE FIRST AXIS IS RECLAIMED. NEXT: TIDE MEMORY, PAST BRINDLEMARK'S NE RUNE."}};
 #define A1_CARDS(a,t) pro_cards_open(PRO_CARD_SET(a),t)
 /* ---------- quest steps ---------- */
 static void a1_q05_active(void){if(cq_state[5]==CQ_LOCKED){cq_set(5,CQ_ACTIVE);}}
@@ -114,7 +114,7 @@ static void act1_after_cards(int tag){
  else if(tag==28||tag==29){say("Q09 THE HEART OF ERIDORIA IS AT THE NORTH END OF THE CHAMBER.");}
  else if(tag==30){pro_ui=5;a1_sel=0;a1_choice_tag=2;}
  else if(tag==31){pro_ui=6;a1_deflects=0;a1_lances=0;a1_heat=0;a1_heat_dir=0;a1_flash=0;}
- else if(tag==32){a1_finish_act();say("ACT I COMPLETE. NEXT: THE HIDDEN CITY, BRINDLEMARK'S NORTHEAST RUNE.");}
+ else if(tag==32){a1_finish_act();say("ACT I COMPLETE. NEXT: TIDE MEMORY, BRINDLEMARK'S NORTHEAST RUNE.");}
 }
 /* ---------- rooms ---------- */
 static void act1_place_room3(void){int x,y,i,j;
@@ -336,6 +336,14 @@ static int act1_battle_fight(Enemy*e){
  if(!e->active){a1_sentries|=(u8)(1u<<(e-enemies));save_game();}
  return 1;}
 /* ---------- the Stone Regent ---------- */
+/* V11.9: the Regent has its own 32x32 art (regent_art.h, OBJ tiles 288-319,
+   frame 1 = fists raised) and palette, loaded into OBJ palette 13 while it is
+   on screen; index 7 is its core and takes the current battle core colour. */
+#define A1_REGENT_TILE 288
+#define A1_REGENT_PAL 13
+static void a1_regent_pal(int core){static const u16 CORE[5]={0x7F34,0x19DF,0x7E88,0x2B8C,0x2B3F};int i;
+ for(i=0;i<16;i++)OBJ_PALETTE[A1_REGENT_PAL*16+i]=REGENT_PAL[i];OBJ_PALETTE[A1_REGENT_PAL*16+7]=CORE[core<5?core:0];}
+static void a1_regent_pal_release(void){int i;for(i=0;i<16;i++)OBJ_PALETTE[A1_REGENT_PAL*16+i]=V108_OBJ_PALETTES[A1_REGENT_PAL][i];}
 static const char*const A1_CORE_NAME[4]={"STONE","EMBER","TIDE","BLOOM"};
 /* EMBER is answered by TIDE, TIDE by BLOOM, BLOOM by EMBER (the spark cycle). */
 static int a1_counter(int core,int spell){return (core==1&&spell==2)||(core==2&&spell==3)||(core==3&&spell==1);}
@@ -398,14 +406,15 @@ static void act1_boss_draw(void){static const char*ACT[6]={"FIGHT","EMBER","TIDE
  if(a1_rg_phase==1){ui_text(2,16,a1_rg_tell?"IT STAMPS: A QUAKE!":"IT RAISES BOTH FISTS!",13);if(!a1_rg_tell)ui_text(2,17,a1_rg_timer<=40?"B BRACE NOW":"WAIT FOR IT",a1_rg_timer<=40?14:8);}
  else ui_wrap_text(16,a1_notice,14,3);
  oam_hide_all();oam_set32(0,43,59,272,0);oam_ui_portrait(0);
- if(a1_rg_phase!=3&&a1_rg_phase!=4){oam_set32(2,169+((a1_rg_phase==1&&a1_rg_timer<=40)?(int)((frame>>1)&1)*2:0),54,160+EN_CROWN*16,5+EN_CROWN);oam_ui_portrait(2);}}
+ if(a1_rg_phase!=3&&a1_rg_phase!=4){int up=a1_rg_phase==1&&!a1_rg_tell;a1_regent_pal(a1_rg_core&3);
+  oam_set32(2,169+((a1_rg_phase==1&&a1_rg_timer<=40)?(int)((frame>>1)&1)*2:0),54,A1_REGENT_TILE+(up?16:0),A1_REGENT_PAL);oam_ui_portrait(2);}}
 /* ---------- field sprites (Regent and Malakar in the Heart Chamber) ---------- */
 static u8 a1_oam_used=0;
 static void act1_sprites(void){
  if(!(current_world==0&&current_room==A1_CHAMBER&&game_mode==MODE_SURFACE)){
-  if(a1_oam_used){OAM16[A1_REGENT_OAM*4]=0x0200;OAM16[A1_MALAKAR_OAM*4]=0x0200;a1_oam_used=0;}return;}
+  if(a1_oam_used){OAM16[A1_REGENT_OAM*4]=0x0200;OAM16[A1_MALAKAR_OAM*4]=0x0200;a1_oam_used=0;if(!a1_boss)a1_regent_pal_release();}return;}
  a1_oam_used=1;
- if(a1_regent!=1)oam_set32(A1_REGENT_OAM,(a1_regent==2?40:32)*8-cam_x-16,(a1_regent==2?27:30)*8-cam_y-24,160+EN_CROWN*16,5+EN_CROWN);
+ if(a1_regent!=1){a1_regent_pal(a1_regent==2?4:0);oam_set32(A1_REGENT_OAM,(a1_regent==2?40:32)*8-cam_x-16,(a1_regent==2?27:30)*8-cam_y-24,A1_REGENT_TILE,A1_REGENT_PAL);}
  else OAM16[A1_REGENT_OAM*4]=0x0200;
  if(a1_regent&&!a1_has(A1F_MALAKAR)&&pro_ui>=4&&cq_state[9]==CQ_ACTIVE)oam_set32(A1_MALAKAR_OAM,32*8-cam_x-16,13*8-cam_y-24,256,5+EN_VOID);
  else OAM16[A1_MALAKAR_OAM*4]=0x0200;}
@@ -499,7 +508,7 @@ static const char*act1_hud_line(void){int q;
  if(!(current_room==2||current_room==3||current_room==4||A1_IS_ROOM))return 0;
  if(current_room==2&&cq_state[5]==CQ_ACTIVE&&!a1_has(A1F_MET_RAVEN))return "Q05 OAKWOOD: NORTHEAST ROAD";
  for(q=5;q<=9;q++)if(cq_state[q]==CQ_ACTIVE)return act1_objective(q);
- if(cq_state[10]==CQ_ACTIVE&&cq_state[9]==CQ_DONE&&!(story_flags&ST_CITY))return "Q10 HIDDEN CITY: NE RUNE";
+ if(cq_state[10]==CQ_ACTIVE&&cq_state[9]==CQ_DONE&&!(story_flags&ST_CITY))return "Q10 TIDE MEMORY: NE RUNE";
  return 0;}
 static void act1_frame(void){
  if(v10_tutorial&&cq_state[5]!=CQ_LOCKED&&a1_flags)v10_tutorial=0;

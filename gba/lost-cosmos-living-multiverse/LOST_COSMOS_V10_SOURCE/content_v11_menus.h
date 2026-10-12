@@ -225,9 +225,14 @@ static int v11_draw_pause(void){int i,id,start;
  if(v11_list_count){id=v11_list[v11_sel];ui_text(2,10,st[cq_state[id]&3],cq_state[id]==CQ_DONE?13:14);
   obj=(cq_state[id]==CQ_ACTIVE&&id<5)?prologue_hud_line():0;
   if(!obj&&cq_state[id]==CQ_ACTIVE&&id>=5&&id<=9)obj=act1_objective(id);
-  if(obj)v11_short(2,11,obj,26,15);else if(cq_state[id]==CQ_ACTIVE&&id==10)v11_lines(2,11,"THE HIDDEN CITY LIES BEYOND THE NORTHEAST RUNE IN BRINDLEMARK.",26,3,15);
+  if(!obj&&cq_state[id]==CQ_ACTIVE&&id>=10&&id<=14)obj=act2_objective(id);
+  if(obj)v11_short(2,11,obj,26,15);
   if(id==8&&cq_state[8]==CQ_DONE)v11_short(2,14,a1_regent==2?"REGENT MENDED: THREE RUNES":a1_regent==1?"REGENT DEFEATED IN BATTLE":"RECORDED FROM AN EARLIER SAVE",26,13);
   else if(id==9&&cq_state[9]==CQ_DONE)v11_short(2,14,a1_reply==1?"TOLD MALAKAR: NO ERASING":a1_reply==2?"ASKED MALAKAR: WHO DECIDES":"FIRST AXIS RECLAIMED",26,13);
+  else if(id>=10&&id<=14&&cq_state[id]==CQ_DONE&&(a2_flags&A2F_MIGRATED)&&!(id==13&&(a2_flags&A2F_PACT)))v11_short(2,14,"RECORDED FROM AN EARLIER SAVE",26,8);
+  else if(id==11&&cq_state[11]==CQ_DONE)v11_short(2,14,"THE MIRROR LOWERED ITS HAMMER",26,13);
+  else if(id==13&&cq_state[13]==CQ_DONE)v11_short(2,14,(a2_flags&A2F_PACT)?"ALL SPARED: SOUL PACT":"LEVER HELD: UNITY RECORDED",26,13);
+  else if(id==14&&cq_state[14]==CQ_DONE)v11_short(2,14,"NIHILOS: THE ABSENCE REMEMBERED",26,13);
   else if(id>=5&&id<=7&&cq_state[id]==CQ_DONE&&(a1_flags&A1F_MIGRATED))v11_short(2,14,"RECORDED FROM AN EARLIER SAVE",26,8);
   if(id<5&&(pro_flags&PF_MIGRATED))v11_short(2,14,"RECORDED FROM AN EARLIER SAVE",26,8);
   else if(id<5&&pro_choice&&cq_state[1]==CQ_DONE)v11_short(2,14,pro_choice==1?"CHOSE: DEFENDED STORES":"CHOSE: CARRIED INJURED",26,13);}

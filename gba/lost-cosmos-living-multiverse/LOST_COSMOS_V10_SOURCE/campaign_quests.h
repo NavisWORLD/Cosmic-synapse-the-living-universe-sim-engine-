@@ -71,6 +71,7 @@ static const ProCard PRO_REWARD[]={
  {"NEXT: ACT I","OAKWOOD LIES ON THE EAST ROAD FROM BRINDLEMARK. ASK FOR LORD RAVENSWOOD."}};
 #define PRO_CARD_SET(a) a,(int)(sizeof(a)/sizeof(a[0]))
 static void pro_after_cards(int tag){
+ if(tag>=40){act2_after_cards(tag);return;}
  if(tag>=20){act1_after_cards(tag);return;}
  if(tag==1){spawn_monsters();say("Q01 DRIVE OFF THE RAID. A STRIKES. SELECT+A OPENS A DUEL: TALK CAN SPARE.");save_game();}
  else if(tag==2){pro_ui=3;pro_sel=0;return;}
@@ -115,7 +116,7 @@ static const u16 PRO_SEAT_KEYS[3]={KEY_LEFT,KEY_UP,KEY_RIGHT};
 static int prologue_npc_visible(int id){
  if(id==NPC_PRO_MIRA)return cq_state[0]!=CQ_LOCKED&&!(pro_flags&PF_MIGRATED)&&cq_state[4]!=CQ_DONE;
  if(id==NPC_PRO_TRAVELER)return cq_state[0]!=CQ_LOCKED&&!(pro_flags&PF_MIGRATED)&&cq_state[4]!=CQ_DONE;
- return 1;}
+ return act2_npc_visible(id);}
 static void pro_say_lines(int id,const char*a,const char*b,const char*c){
  pro_script=(u8)id;pro_script_lines[0]=a;pro_script_lines[1]=b;pro_script_lines[2]=c;pro_script_n=(u8)(c?3:(b?2:1));}
 static void prologue_npc_speak(void){int id=npc_dialogue_id;pro_script=0;pro_script_n=0;
@@ -162,7 +163,7 @@ static int prologue_npc_advance(void){
  if(pro_script==3)pro_flags|=PF_MIRA;
  if(pro_script==6)pro_flags|=PF_TRAVELER;
  if(pro_script==9)pro_flags|=PF_ASTRID;
- {int sid=pro_script;pro_script=0;pro_script_n=0;if(sid>=40)act1_script_done(sid);}pro_check_q03();save_game();npc_dialogue_active=0;npc_dialogue_page=0;return 1;}
+ {int sid=pro_script;pro_script=0;pro_script_n=0;if(sid>=60)act2_script_done(sid);else if(sid>=40)act1_script_done(sid);}pro_check_q03();save_game();npc_dialogue_active=0;npc_dialogue_page=0;return 1;}
 /* ---------- interaction hooks ---------- */
 static int prologue_interact(u8 t){
  if(!pro_in_brindlemark())return 0;
@@ -185,6 +186,7 @@ static void prologue_place_room2(void){
  map_put(PRO_STALL_TX,PRO_STALL_TY,T_LANTERN,3,C_FREE,TR_PRO_STALL);}
 /* ---------- per-frame input (returns 1 when the prologue owns the pad) ---------- */
 static int prologue_update(u16 newk){
+ if(pro_ui>=10)return act2_update(newk);
  if(pro_ui>=5)return act1_update(newk);
  if(pro_ui==1){
   if(!pro_heat_dir){if(++pro_heat>=19)pro_heat_dir=1;}else{if(!--pro_heat)pro_heat_dir=0;}
@@ -212,6 +214,7 @@ static int prologue_update(u16 newk){
  return 0;}
 /* ---------- drawing ---------- */
 static int prologue_draw(void){int i;
+ if(pro_ui>=10)return act2_draw();
  if(pro_ui>=5)return act1_draw();
  if(pro_ui==1){ui_frame(9,19,15);ui_text(2,10,"BRINDLEMARK FORGE",14);ui_text(2,11,"STRIKE WHILE THE IRON GLOWS",15);
   for(i=0;i<20;i++){const char*c=(i==pro_heat)?"*":(i>=12&&i<=15)?"+":"-";ui_text(5+i,13,c,(i==pro_heat)?14:(i>=12&&i<=15)?13:8);}
