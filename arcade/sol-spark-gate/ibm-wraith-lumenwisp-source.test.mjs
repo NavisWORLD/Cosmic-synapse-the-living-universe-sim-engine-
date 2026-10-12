@@ -18,7 +18,7 @@ function localFetch(t,overrides=new Map()){
 }
 test('Wraith and NEW physical Lumenwisp are genuine independently sourced additive IBM jobs',async t=>{
  localFetch(t);const table=await loadTable();
- assert.equal(table.runs.length,historical.runs.length+18);
+ assert.equal(table.runs.length,historical.runs.length+20);
  assert.deepEqual(table.runs.slice(0,historical.runs.length),historical.runs);
  assert.deepEqual(table.totals,historical.totals);
  for(let index=0;index<sources.length;index++){

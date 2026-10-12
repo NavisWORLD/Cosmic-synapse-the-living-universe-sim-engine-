@@ -3,6 +3,7 @@ import {observeNativePixels} from './native-observation.mjs';
 import { verifySparkArt } from './cartridge.mjs';
 import { readProgress } from '../sol-beast-lab/design.mjs';
 import {batteryName,prepareBattery,keepCoreBattery,cacheNativeBattery,loadNativeBattery} from './battery.mjs';
+import {nativeIdentity} from './identity-handoff.mjs';
 import {handleOptionalWakeLock} from './wake-lock.mjs';
 import {applyHandheldInput,normalizeHandheldInput} from './controls.mjs?controller=beastboy39';
 /* Sol Spark handheld adapter. Original living-link player stays unchanged. */
@@ -23,7 +24,21 @@ const state = {
   journey: false,
   playerVisible: true,
   audioWanted: false,
+  paused: false,
 };
+function reportNativeIdentity(bytes){
+ if(!state.identityProfile||!bytes)return;
+ const identity=nativeIdentity(bytes,state.identityProfile),signature=JSON.stringify(identity);
+ if(signature===state.lastIdentity)return;
+ state.lastIdentity=signature;
+ window.parent.postMessage({source:'living-universe',type:'sol-spark-identity-status',identity},location.origin);
+}
+function applyPause(){
+ const core=window.EJS_emulator;
+ const applied=!!core?.gameManager&&typeof core[state.paused?'pause':'play']==='function';
+ if(applied)core[state.paused?'pause':'play']();
+ window.parent.postMessage({source:'living-universe',type:'sol-spark-pause-state',paused:state.paused,applied},location.origin);
+}
 
 function gameVolume() {
   return state.audioWanted && state.playerVisible ? 0.35 : 0;
@@ -240,6 +255,8 @@ async function installEmulator(bytes,{autoStart=false}={}) {
     status(state.battery?.resumed?'Journey restored. Choose CONTINUE to keep your Spark companion and earned progress.':'Cartridge running. Choose NEW GAME to receive your verified Spark companion.');
     $('save-journey').disabled=false;
     window.parent.postMessage({source:'living-universe',type:'sol-spark-running',resumed:state.battery?.resumed===true},location.origin);
+    if(state.paused)applyPause();
+    reportNativeIdentity(state.battery?.bytes||bytes);
     state.checkpoint=setInterval(checkpointNow,5000);
     if (new URLSearchParams(location.search).get('demo') === '1') demoPress(gm);
   };
@@ -290,6 +307,21 @@ window.addEventListener('message', (event) => {
     state.playerVisible=data.active===true;
     window.EJS_emulator?.setVolume?.(gameVolume());syncAudioUi();return;
   }
+  if(data.type==='sol-player-pause'){
+    if(typeof data.paused!=='boolean')return;
+    state.paused=data.paused;applyPause();return;
+  }
+  if(data.type==='sol-spark-checkpoint-reload'){
+    try{
+      const bytes=state.started?checkpointNow():state.save;
+      if(!bytes)throw Error('The running cartridge has not confirmed a battery checkpoint. Export the journey before reloading.');
+      verifySparkArt(bytes);
+      const identity=nativeIdentity(bytes,state.identityProfile);
+      if(identity.status==='invalid'||identity.status==='missing')throw Error(identity.message);
+      window.parent.postMessage({source:'living-universe',type:'sol-spark-reload-checkpoint',save:bytes},location.origin);
+    }catch(error){window.parent.postMessage({source:'living-universe',type:'sol-spark-reload-error',message:String(error?.message||'The native battery needs recovery.').slice(0,180)},location.origin);}
+    return;
+  }
   if(data.type==='sol-spark-observe-request'){
     if(!state.started||!window.EJS_emulator?.gameManager||!/^[-a-zA-Z0-9]{8,80}$/.test(String(data.requestId||'')))return;
     const requestId=data.requestId,qbeast_id=String(data.qbeast_id||'').slice(0,120);
@@ -303,7 +335,7 @@ window.addEventListener('message', (event) => {
   }
   if(data.type==='sol-spark-input'){
     const input=normalizeHandheldInput(data.button,data.down);
-    const applied=!!input&&applyHandheldInput(window.EJS_emulator?.gameManager,input.button,input.down);
+    const applied=!!input&&(!input.down||!state.paused)&&applyHandheldInput(window.EJS_emulator?.gameManager,input.button,input.down);
     window.parent.postMessage({source:'living-universe',type:'sol-spark-input-ack',button:input?.button||'',down:input?.down===true,applied},location.origin);
     return;
   }
@@ -329,9 +361,11 @@ window.addEventListener('message', (event) => {
         return;
       }
       state.save = bytes;
+      state.identityProfile=profileFromBcp1(bytes.slice(MAILBOX_OFFSET+32,MAILBOX_OFFSET+96),{gameSeed:new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).getUint32(MAILBOX_OFFSET+10,true)});
       state.journey = data.type === 'sol-spark-journey';
       state.mailNote = `${data.callsign || 'A beast'} is in the cartridge mailbox with verified Spark art.`;
       status(state.mailNote);
+      reportNativeIdentity(bytes);
     } catch (err) {
       status(err.message || 'The cage save was rejected.');
     }
@@ -342,6 +376,7 @@ function checkpointNow(){
  const gm=window.EJS_emulator?.gameManager;if(!gm||!state.save)return null;
  gm.saveSaveFiles();const bytes=gm.getSaveFile(false);
  try{cacheNativeBattery(localStorage,state.save,bytes);}catch{/* The user can still download the exact battery. */}
+ reportNativeIdentity(bytes);
  return bytes;
 }
 window.addEventListener('pagehide',checkpointNow);
