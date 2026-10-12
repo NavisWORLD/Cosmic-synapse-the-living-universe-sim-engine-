@@ -315,7 +315,10 @@ def regent_battle(emu,route,shots):
    opened=emu.read_symbol("a1_rg_open") or emu.read_symbol("a1_rg_stagger")
    core=emu.read_symbol("a1_rg_core");mp=emu.read_symbol("player_mp");hp=emu.read_symbol("player",width=1,offset=7) if False else None
    if route=="restore":
-    act=5 if opened else (0 if core==0 else ((COUNTER[core]%3)+1 if mp>=2 else 0))
+    # Open its guard by parrying the slam, or by staggering a glowing core
+    # with its weakness (the slam pattern depends on frame timing, so waiting
+    # only for STONE can run out of mana), then RESTORE.
+    act=5 if opened else (0 if core==0 else (COUNTER[core] if mp>=2 else 0))
    else:
     act=0 if opened or core==0 or mp<2 else COUNTER[core]
    to_cursor(act);emu.tap("A",hold=4,release=4);emu.step((),4)

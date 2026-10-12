@@ -88,6 +88,10 @@ static void lf_choose(void){int i;
  if(lf_called){lf_go(LFG_RETURN,lf_ptile());return;}
  for(i=0;i<10;i++)if(enemies[i].active&&!(lf_alerted&(1u<<i))&&iabs(enemies[i].x-cosmos.x)+iabs(enemies[i].y-cosmos.y)<96){
   lf_alerted|=(u16)(1u<<i);lf_rec.encounters++;lf_go(LFG_ALERT,lf_ptile());return;}
+ /* Guard: while an enemy is near Arin the beast stays at Arin's side, where
+  * the normal combat assist (72px rule) can reach it. */
+ for(i=0;i<10;i++)if(enemies[i].active&&iabs(enemies[i].x-player.x)+iabs(enemies[i].y-player.y)<112){
+  if(lf_pdist()>28)lf_go(LFG_ALERT,lf_ptile());else lf_wait=20;return;}
  if(lf_far>=1200){lf_far=0;lf_go(LFG_CHECKIN,lf_ptile());return;}
  for(i=0;i<npc_count&&i<8;i++)if(npc_runtime[i].active&&!(lf_greeted&(1u<<i))&&iabs(npc_runtime[i].x-cosmos.x)+iabs(npc_runtime[i].y-cosmos.y)<96){
   lf_npc=(u8)i;lf_go(LFG_NPC,((npc_runtime[i].y>>3)<<6)|((npc_runtime[i].x>>3)&63));return;}
