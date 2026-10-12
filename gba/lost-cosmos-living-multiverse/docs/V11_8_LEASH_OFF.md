@@ -20,6 +20,7 @@ Each frame the beast picks the first goal that applies:
 |---|---|---|
 | 6 | RETURN (COMING BACK) | the player chose CALL BEAST |
 | 4 | ALERT (WARNING YOU) | a new enemy is within 96 px of the beast; it goes to Arin |
+| 4 | ALERT, guarding | an enemy is within 112 px of Arin: it goes to (or stays at) Arin's side so the normal combat assist can reach |
 | 7 | CHECKIN (CHECKING IN) | it has been more than 160 px from Arin for 1200 frames |
 | 3 | NPC (MEETING SOMEONE) | an NPC it has not greeted in this room is within 96 px |
 | 2 | POI (SNIFFING A SPOT) | a visible point of interest (door, sign, chest, warp; never secrets or anomalies) within 40 path steps, at most 16 per room |
