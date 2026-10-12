@@ -17,17 +17,16 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def run(rom,elf,act1,out):
  out.mkdir(parents=True,exist_ok=True)
- previous=json.loads((act1/"act1_controller_report.json").read_text())
- cold=json.loads((act1/"act1_second_boot_report.json").read_text())
+ previous=json.loads((act1/"act1_heart_report.json").read_text())
  if (not previous["passed"] or previous["rom_sha256"]!=sha256(rom) or
-     previous["completed_stages"][-1]["stage"]!="08_real_First_Heart" or
-     not cold["passed"] or cold["rom_sha256"]!=sha256(rom)):
-  raise RuntimeError("Require REAL matching-ROM controller Act I + true cold-boot evidence")
+     previous["stages"][-1]["stage"]!="43_back_in_oakwood" or
+     previous.get("cold_boot")!=previous.get("final_live")):
+  raise RuntimeError("Require REAL matching-ROM controller Act I (Q05-Q09) + true cold-boot evidence")
  save=out/"act2_real_controller.sav"
- shutil.copy2(act1/"act1_fresh.sav",save)  # Preserve previous Act I save intact.
+ shutil.copy2(act1/"act1_complete.sav",save)  # Preserve previous Act I save intact.
  report={"suite":"real_mgba_act2_controller_with_two_cold_boots",
          "rom_sha256":sha256(rom),"elf_sha256":sha256(elf),
-         "source_ActI_save_sha256":sha256(act1/"act1_fresh.sav"),
+         "source_ActI_save_sha256":sha256(act1/"act1_complete.sav"),
          "controller_only":True,"memory_writes":False,"savestates":False,
          "stages":[],"passed":False,"cold_boot_passed":False}
  with Mgba(rom,elf=elf,save_path=save,trace_path=out/"act2_controller_inputs.jsonl") as emu:
@@ -49,12 +48,10 @@ def run(rom,elf,act1,out):
    if emu.read_symbol("v10_title_sel")!=1:raise RuntimeError("Cannot select CONTINUE")
    emu.tap("A",hold=12,release=12)
    wait(emu,lambda:False,"noop") if False else None
-   wait(lambda:emu.read_symbol("intro")==0 and emu.read_symbol("current_room")==4,"Cragstone continue")
+   wait(lambda:emu.read_symbol("intro")==0 and emu.read_symbol("current_room")==3,"Oakwood continue")
    emu.step((),30)
    if emu.read_symbol("story_flags")&31!=31:raise RuntimeError("Act I real flags not present")
    nav=Navigator(emu);mark("01_ActI_sram_genuinely_reused")
-   nav.interact(12,at=(32,55))
-   if nav.location()!=(0,3,1):raise RuntimeError("Cragstone->Oakwood real route failed")
    emu.step((),25);mark("02_return_to_Oakwood")
    nav.interact(12,at=(8,54))
    if nav.location()!=(0,2,1):raise RuntimeError("Oakwood->Brindlemark real route failed")

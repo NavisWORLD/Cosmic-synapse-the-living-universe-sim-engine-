@@ -71,6 +71,7 @@ static const ProCard PRO_REWARD[]={
  {"NEXT: ACT I","OAKWOOD LIES ON THE EAST ROAD FROM BRINDLEMARK. ASK FOR LORD RAVENSWOOD."}};
 #define PRO_CARD_SET(a) a,(int)(sizeof(a)/sizeof(a[0]))
 static void pro_after_cards(int tag){
+ if(tag>=20){act1_after_cards(tag);return;}
  if(tag==1){spawn_monsters();say("Q01 DRIVE OFF THE RAID. A STRIKES. SELECT+A OPENS A DUEL: TALK CAN SPARE.");save_game();}
  else if(tag==2){pro_ui=3;pro_sel=0;return;}
  else if(tag==3){cq_set(1,CQ_DONE);cq_set(2,CQ_ACTIVE);say("Q02 MIRA IS AT THE NORTH BEACON. THE ROAD UP THE MIDDLE.");save_game();}
@@ -161,7 +162,7 @@ static int prologue_npc_advance(void){
  if(pro_script==3)pro_flags|=PF_MIRA;
  if(pro_script==6)pro_flags|=PF_TRAVELER;
  if(pro_script==9)pro_flags|=PF_ASTRID;
- pro_check_q03();pro_script=0;pro_script_n=0;save_game();npc_dialogue_active=0;npc_dialogue_page=0;return 1;}
+ {int sid=pro_script;pro_script=0;pro_script_n=0;if(sid>=40)act1_script_done(sid);}pro_check_q03();save_game();npc_dialogue_active=0;npc_dialogue_page=0;return 1;}
 /* ---------- interaction hooks ---------- */
 static int prologue_interact(u8 t){
  if(!pro_in_brindlemark())return 0;
@@ -184,6 +185,7 @@ static void prologue_place_room2(void){
  map_put(PRO_STALL_TX,PRO_STALL_TY,T_LANTERN,3,C_FREE,TR_PRO_STALL);}
 /* ---------- per-frame input (returns 1 when the prologue owns the pad) ---------- */
 static int prologue_update(u16 newk){
+ if(pro_ui>=5)return act1_update(newk);
  if(pro_ui==1){
   if(!pro_heat_dir){if(++pro_heat>=19)pro_heat_dir=1;}else{if(!--pro_heat)pro_heat_dir=0;}
   if(pro_flash&&pro_flash!=200)pro_flash--;
@@ -210,6 +212,7 @@ static int prologue_update(u16 newk){
  return 0;}
 /* ---------- drawing ---------- */
 static int prologue_draw(void){int i;
+ if(pro_ui>=5)return act1_draw();
  if(pro_ui==1){ui_frame(9,19,15);ui_text(2,10,"BRINDLEMARK FORGE",14);ui_text(2,11,"STRIKE WHILE THE IRON GLOWS",15);
   for(i=0;i<20;i++){const char*c=(i==pro_heat)?"*":(i>=12&&i<=15)?"+":"-";ui_text(5+i,13,c,(i==pro_heat)?14:(i>=12&&i<=15)?13:8);}
   ui_text(2,15,"STRIKES",13);for(i=0;i<3;i++)ui_text(11+i*2,15,i<pro_strikes?"*":"-",i<pro_strikes?14:8);

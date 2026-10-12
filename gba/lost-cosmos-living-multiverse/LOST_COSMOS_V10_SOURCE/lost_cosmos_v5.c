@@ -558,7 +558,7 @@ static u8 audio_fx_cooldown=0;
 static u8 quest_started=0, quest_completed=0, npc_dialogue_active=0, npc_dialogue_page=0, npc_dialogue_id=0;
 static u32 npc_seen=0; static u8 npc_recent=0;
 typedef struct { u8 id,kind,active,wanders; s16 x,y,home_x,home_y; } NPC;
-static NPC npc_runtime[4]; static u8 npc_count=0;
+static NPC npc_runtime[6]; static u8 npc_count=0;
 /* Optional V7 SRAM extension at bytes 200-207, outside historical V5 checksum. */
 static u16 story_flags=0; static u8 rune_progress=0,element_mask=0,shop_open=0,shop_sel=0,npc_log_offset=0,riddle_open=0;
 #define ST_TOWN 1u
@@ -607,8 +607,8 @@ static const NPCDef NPCS[]={
  {"ASTRID","ARIN, THE SKY ABOVE BRINDLEMARK HAS FRACTURED.","MALAKAR SEEKS THE HEART OF ERIDORIA. CLAIM ITS FIRST SIGNAL IN EMBER.","THE HEART IS WAKING. THE NEXT REALM WILL NEED US.",0,0,1,33,43,3,6,0},
  {"BRINDLE ELDER","ARIN, YOUR FORGE IS OUR LAST LIGHT.","TAKE THE EAST ROAD TO OAKWOOD. ASK FOR RAVENSWOOD.","YOUR RETURN GAVE THE VILLAGE HOPE.",0,2,1,26,31,0,255,0},
  {"OAKWOOD TRADER","WELCOME TO OAKWOOD'S OPEN MARKET.","I BUY SHARDS AND CORES AND SELL POTIONS AND ETHERS.","TRADE BRINGS EVEN DISTANT REALMS TOGETHER.",0,3,1,19,39,3,255,0},
- {"RAVENSWOOD","MY BROTHER FOUND THE CRAGSTONE TEMPLE.","THE RUNE ORDER IS SKY ROOT HEART STAR. FIND THE HEART.","THE OLD MAP NOW POINTS BEYOND THE FIRST GATE.",0,3,1,30,17,0,255,0},
- {"STONE KEEPER","FOUR RUNES. SKY ROOT HEART STAR.","MALAKAR WAITS BEYOND THE FOURTH SEAL.","THE TEMPLE CAN NOW REMEMBER YOUR DEED.",0,4,1,19,32,2,255,0},
+ {"RAVENSWOOD","MY BROTHER FOUND THE CRAGSTONE TEMPLE.","AUREL MAPPED CRAGSTONE. THE GUARDIANS THERE KEEP A PROMISE.","THE OLD MAP NOW POINTS BEYOND THE FIRST GATE.",0,3,1,30,17,0,255,0},
+ {"STONE KEEPER","FOUR SOCKETS. TWO SEALS. ONE ORDER.","THE STONE REGENT WAITS BEYOND THE FOURTH SEAL.","THE TEMPLE CAN NOW REMEMBER YOUR DEED.",0,4,1,19,32,2,255,0},
  {"WHITE SENTINEL","THE HIDDEN CITY IS NOT A TOMB.","FACE WISDOM COURAGE AND UNITY IN THE DREAM VEIL.","YOU PASSED THROUGH THE MIRROR IN PEACE.",0,5,1,31,17,1,255,0},
  {"DREAMWEAVER","DREAMS ARE REAL PATHS WHILE YOU WALK THEM.","THE THREE TRIALS WILL OPEN ELDORIA'S SKY.","YOU KNOW THE WAY BEYOND THE DREAM.",6,0,1,19,47,1,255,1},
  {"THORNE","THE FOUR ELEMENTS HAVE GROWN RESTLESS.","FIND THE FOUR SHRINES AND UNITE THEIR POWER.","THE LATTICE IS READY FOR THE CROWN.",7,0,1,24,45,0,255,0},
@@ -623,7 +623,12 @@ static const NPCDef NPCS[]={
  {"NYSSA","ONE SONG. MANY DIFFERENT VOICES.","CENTER CHIME FIRST, WEST NEXT, EAST LAST. LET EACH VOICE ANSWER.","WE MADE SOMETHING NO ONE COULD MAKE ALONE.",6,11,1,30,41,3,255,0},
  /* 30-31: PROLOGUE ASH IN THE FORGE (campaign_quests.h scripts their lines). */
  {"MIRA","THE BEACON IS DARK, ARIN.","THE BEACON HOLDS THE DISTANCE.","THE BEACON HOLDS.",0,2,1,37,12,0,255,0},
- {"THE TRAVELER","A ROBED STRANGER WATCHES THE SKY.","MALAKAR COLLECTS THE OLD ARTIFACTS.","THE ROAD IS YOURS NOW.",0,2,1,23,28,1,255,0}
+ {"THE TRAVELER","A ROBED STRANGER WATCHES THE SKY.","MALAKAR COLLECTS THE OLD ARTIFACTS.","THE ROAD IS YOURS NOW.",0,2,1,23,28,1,255,0},
+ /* 32-35: ACT I THE FIRST HEART (act1_heart.h scripts their lines). */
+ {"BREE","WELCOME TO THE FALLOW INN.","A BED IS THREE CREDITS.","THE INN IS FULL OF YOUR STORY.",0,3,1,43,48,3,255,0},
+ {"PELL","A COURIER NURSES A BAD LEG.","THE ORCHARD ROAD IS DANGEROUS.","PELL IS RUNNING ROUTES AGAIN.",0,3,1,48,50,1,255,0},
+ {"WYN","OAKWOOD HEARS EVERYTHING.","ASK ME ANYTHING. I KNOW MOST OF IT.","EVERYONE IS TALKING ABOUT YOU.",0,3,1,24,42,2,255,1},
+ {"ODA","AN OLD CLIMBER WARMS HER HANDS.","THE TEMPLE STONES RAISE THEIR ARMS FIRST.","THE MOUNTAIN IS QUIETER NOW.",0,91,1,10,38,0,255,0}
 };
 #define NPC_DEF_COUNT ((int)(sizeof(NPCS)/sizeof(NPCS[0])))
 
@@ -638,6 +643,7 @@ static const NPCDef NPCS[]={
 #define MEM_SHIP           (1u<<7)
 #include "content_v11_state.h"
 #include "campaign_quests_state.h"
+#include "act1_heart_state.h"
 #include "beast_home_state.h"
 #include "first_person_state.h"
 
@@ -1228,6 +1234,7 @@ static void eridoria_area(void){int x,y;
   map_put(8,54,T_DOOR,3,C_FREE,TR_GATE);map_put(54,12,T_RUNE,3,C_FREE,TR_GATE);
   add_noise_decor(72,T_LANTERN,3,30,0);
   map_put(39,40,T_ARCHIVE,3,C_FREE,TR_G5_BOOK_OAK);
+  act1_place_room3();
  }else if(current_room==4){ /* Cragstone Temple, puzzle and locked Heart chamber. */
   map_wall_box(10,7,46,49,2);map_door(32,55,TR_GATE);
   for(y=13;y<=50;y++)map_put(32,y,T_PATH,1,C_FREE,0);
@@ -1243,6 +1250,7 @@ static void eridoria_area(void){int x,y;
   for(y=9;y<=54;y++)map_put(32,y,(y==15)?T_ARCHIVE:T_PATH,1,C_FREE,(y==15)?TR_TERMINAL:((y==9)?TR_HEART:0));
   map_put(32,9,T_CRYSTAL,3,C_FREE,TR_HEART);
   map_put(32,38,T_ARCHIVE,3,C_FREE,TR_G5_BOOK_TEMPLE);
+  act1_place_room4();
  }else if(current_room==7){v10_generate_heartwood();}
  else if(current_room==8){v10_generate_glacial();}
  else if(current_room==9){v10_generate_ember_caverns();}
@@ -1298,7 +1306,7 @@ static void generate_room(void){int x,y;map_fill(T_FLOOR,0);for(y=0;y<32;y++)for
 static void spawn_monsters(void);
 static void spawn_npcs(void){int i,dx,dy,best,tx,ty,k;NPC*n;const NPCDef*d;
  npc_count=0;
- for(i=0;i<NPC_DEF_COUNT&&npc_count<4;i++){
+ for(i=0;i<NPC_DEF_COUNT&&npc_count<6;i++){
   d=&NPCS[i];if(d->world!=current_world||d->room!=current_room||d->layer!=current_layer)continue;
   if(!prologue_npc_visible(i))continue;
   tx=d->tx;ty=d->ty;best=999;
@@ -1387,6 +1395,7 @@ static void generate_surface(void){int i;if(V11_IS_ROOM){world_build_cover("FOLL
  else if(COMP_IS_ROOM){completion_generate_map();}
  else if(current_world==0&&current_room==ARC_EPILOGUE_ROOM){arc_generate_epilogue();}
  else if(BH_IS_ROOM){beast_home_generate();}
+ else if(A1_IS_ROOM){act1_generate();}
  else if((current_world==0 && ((current_room>=2 && current_room<=5)||(current_room>=7&&current_room<=9)||current_room==12))||(current_world==7&&current_room==10)||(current_world==6&&current_room==11)){eridoria_area();}else if(current_room){generate_room();}else{if(current_world==6)generate_dreams();else if(current_world==7)generate_eldoria();else if(current_world==0)generate_origin();else if(current_world==1)generate_ember();else if(current_world==2)generate_tide();else if(current_world==3)generate_bloom();else if(current_world==4)generate_black();else generate_crown();if(current_world<6)generate_layer_overlay();}paint_v4_scenery();
  if(current_world==0&&current_room==0&&current_layer==1){int y;
  for(y=48;y<=51;y++)map_put(20,y,T_PATH,1,C_FREE,0);map_put(20,48,T_DOOR,3,C_FREE,TR_GATE);
@@ -1561,11 +1570,11 @@ static void quest_reward(int q){if(q==0){inv[ITEM_SHARD]--;inv[ITEM_POTION]=(u8)
 }
 static void npc_speak(int rt){const NPCDef*d=&NPCS[npc_runtime[rt].id];
  npc_dialogue_active=1;npc_dialogue_id=npc_runtime[rt].id;npc_dialogue_page=0;
- npc_seen|=(1u<<npc_dialogue_id);npc_recent=npc_dialogue_id;
+ if(npc_dialogue_id<32)npc_seen|=(1u<<npc_dialogue_id);npc_recent=npc_dialogue_id;
  if(npc_dialogue_id==14&&v10_tutorial==1)v10_tutorial=2;
  if(npc_dialogue_id==13&&v10_tutorial==3)v10_tutorial=4;
  if(npc_dialogue_id==0&&v10_tutorial==4)v10_tutorial=0;
- prologue_npc_speak();
+ prologue_npc_speak();act1_npc_speak();
  save_game();
  tone((u16)(1040+(next_q()&127)));
 }
@@ -1582,8 +1591,9 @@ static void npc_advance(void){const NPCDef*d=&NPCS[npc_dialogue_id];int q=d->que
  if(npc_dialogue_page<2){npc_dialogue_page++;return;}
  if(npc_dialogue_id>=14){
   if(npc_dialogue_id==14){story_flags|=ST_TOWN;say("QUEST: TRAVEL TO OAKWOOD, THEN CRAGSTONE.");}
-  else if(npc_dialogue_id==15){shop_open=1;shop_sel=0;npc_close();return;}
-  else if(npc_dialogue_id==16){story_flags|=ST_OAKWOOD;say("CRAGSTONE UNLOCKED. SKY ROOT HEART STAR.");}
+  else if(npc_dialogue_id==15){if(current_world==0&&current_room==3){pro_ui=8;a1_sel=0;}else{shop_open=1;shop_sel=0;}npc_close();return;}
+  else if(npc_dialogue_id==16){npc_close();return;}
+  else if(npc_dialogue_id>=32){npc_close();return;}
   else if(npc_dialogue_id==18){if(story_flags&ST_HEART)story_flags|=ST_CITY;}
   else if(npc_dialogue_id==19){if((story_flags&(ST_WISDOM|ST_COURAGE))==(ST_WISDOM|ST_COURAGE))story_flags|=ST_DREAM;}
   else if(npc_dialogue_id==20){if(element_mask==15)story_flags|=ST_ELEMENTS;}
@@ -1605,7 +1615,7 @@ static const char* npc_line(void){const NPCDef*d=&NPCS[npc_dialogue_id];
  if(npc_dialogue_page==3)return "QUEST UPDATED. YOUR WORLD REMEMBERS THIS CHOICE.";
  if(npc_dialogue_id>=14){
   if(npc_dialogue_id==15)return "A OPEN MARKET. POTIONS, ETHERS, SHARDS, CORES.";
-  if(npc_dialogue_id==16)return "EAST: CRAGSTONE. THE ORDER IS SKY ROOT HEART STAR.";
+  if(npc_dialogue_id==16)return "AUREL CLIMBED CRAGSTONE. ASK ME AGAIN WHEN YOU ARE READY.";
   if(npc_dialogue_id==19)return "THREE TRIALS: WISDOM, COURAGE, UNITY.";
   if(npc_dialogue_id==20)return "EARTH WATER FIRE AIR. UNITE ALL FOUR.";
   return "A CONTINUE YOUR ERIDORIA STORY. B LEAVE.";
@@ -1626,6 +1636,7 @@ static const char* layer_name(void){return current_layer==0?"UNDER":(current_lay
 static const char* crown_zone(void){int x=player.x>>3,y=player.y>>3;if(y>=49)return "ENTRY";if(y<16)return x<32?"X CHAMBER":"Y CHAMBER";if(y<32)return x<32?"Z CHAMBER":"MEMORY";if(y<48)return x<32?"STATE":"CHOICE";return "CORE";}
 static const char* location_name(void){
  if(BH_IS_ROOM)return "BEAST HOME";
+ if(A1_IS_ROOM)return act1_room_name();
  if(COMP_IS_ROOM)return COMPLETION_SCENES[current_room-COMPLETION_FIRST_ROOM].name;
  if(G7_IS_ROOM)return G7_NAMES[current_room-G7_FIRST_ROOM];
  if(G6_IS_ROOM)return G6_NAME[current_room-G6_FIRST_ROOM];
@@ -1679,6 +1690,7 @@ static void draw_hud(void){ui_clear();ui_fill_rows(0,0,63,15);
   ui_text(2,18,"RIFT",14);ui_num(7,18,v9_wave,13);if(v9_combo_time&&v9_combo>=2){ui_text(14,18,"COMBO",13);ui_num(20,18,v9_combo,15);}
   ui_text(2,19,"SEL+R JUMP   SEL+L BOND",15);
  }else if(prologue_hud_line()){ui_fill_rows(19,19,62,15);ui_text(2,19,prologue_hud_line(),14);
+ }else if(act1_hud_line()){ui_fill_rows(19,19,62,15);ui_text(2,19,act1_hud_line(),14);
  }else if(v10_tutorial){ui_fill_rows(19,19,62,15);
   ui_text(2,19,(v10_tutorial==1)?"FIND THE BRINDLE ELDER":(v10_tutorial==2)?"WEST GATE / SEEK ASTRID":(v10_tutorial==3)?"ORIGIN / SPEAK TO ASTRID":"FIND MIRA / REPAIR BEACON",14);
  }
@@ -1695,7 +1707,7 @@ static void shop_trade(void){if(shop_sel==0){if(credits<5){say("NEED FIVE CREDIT
  else{if(!inv[ITEM_CORE]){say("YOU HAVE NO CORES TO TRADE.");return;}inv[ITEM_CORE]--;credits=(u8)mini(255,credits+12);}
  if(shop_sel<2)prologue_shop_bought();tone(1550);save_game();
 }
-static void draw_battle(void){if(V11_IS_ROOM){v11_draw_battle();return;}Enemy*e=&enemies[battle_index];
+static void draw_battle(void){if(a1_boss){act1_boss_draw();return;}if(V11_IS_ROOM){v11_draw_battle();return;}Enemy*e=&enemies[battle_index];
  static const char*ACT[6]={"FIGHT","MAGIC","ITEM","TALK","RUN","ALLY"};int i;
  ui_frame(0,19,15);
  ui_text(2,2,"ERIDORIA // DUEL",14); /* row 2: a blank row under the frame, like the start menu */
@@ -1723,6 +1735,7 @@ static void draw_battle(void){if(V11_IS_ROOM){v11_draw_battle();return;}Enemy*e=
    v11_draw_import_battle(3,104,8,c->identity);
  }
  if(current_world==0&&current_room==6&&e->elite)ui_text(3,3,"NIHILOS ECHO",13);
+ if(act1_stone_skin(e)){ui_text(3,3,"STONE SENTRY      ",13);ui_text(3,5,a1_parry?"GUARD OPEN: STRIKE":"STONE SKIN: PARRY",a1_parry?13:8);}
 
 }
 static void draw_intro(void){
@@ -1924,7 +1937,7 @@ static void draw_pause(void){int i;REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE
  else if(pause_page==10){ui_text(2,5,"SAVE COMPLETE",14);ui_text(4,7,"LOCAL CARTRIDGE SAVE",15);ui_text(4,9,"ADVENTURE SAVED",13);ui_text(2,17,"B BACK",13);}
  else if(pause_page==11){static const char*QN[7]={"BEACON SHARD","FORGE TEST","OLD ARCHIVE","SEED MACHINE","LOST FUTURE","THREE AXES","HEART OF ERIDORIA"};ui_text(4,2,"QUEST JOURNAL",14);
  for(i=0;i<7;i++){ui_text(2,5+i,quest_completed&(1u<<i)?"*":quest_started&(1u<<i)?"+":"-",13);ui_text(4,5+i,QN[i],15);}ui_text(2,13,"* DONE   + ACTIVE   - OPEN",13);ui_text(2,17,"B BACK",13);}
- else if(pause_page==12){int row=5,seen=0;ui_text(2,3,"INHABITANTS MET",14);for(i=0;i<NPC_DEF_COUNT;i++)if(npc_seen&(1u<<i)){
+ else if(pause_page==12){int row=5,seen=0;ui_text(2,3,"INHABITANTS MET",14);for(i=0;i<NPC_DEF_COUNT&&i<32;i++)if(npc_seen&(1u<<i)){
  if(seen++<npc_log_offset)continue;if(row>=16)break;ui_text(2,row,"*",13);ui_text(4,row++,NPCS[i].name,15);
  }ui_text(2,17,"UP DOWN SCROLL / B BACK",13);}
  else if(pause_page==13){ui_text(2,2,"ERIDORIA CAMPAIGN",14);
@@ -2301,6 +2314,7 @@ static void v9_rift_tick(void){int i,alive=0;
 static void spawn_monsters(void){int i;clear_combat();if(game_mode!=MODE_SURFACE)return;
  if(BH_IS_ROOM)return;
  if(prologue_spawn())return;
+ if(act1_spawn())return;
  if(COMP_IS_ROOM){completion_spawn();return;}
  if(ARC_IS_ROOM){arc_generate_boss();return;}
  if(current_world==0&&current_room==ARC_EPILOGUE_ROOM)return;if(current_room){if(current_world==0&&current_room==6){v9_spawn_wave();return;}
@@ -2383,13 +2397,14 @@ static void enemy_die(Enemy*e){u8 r;prologue_enemy_down(e,1);if(completion_enemy
  if(e->elite){if(current_world==0&&current_room==4){story_flags|=ST_MALAKAR;say("MALAKAR HAS BEEN DRIVEN FROM THE TEMPLE.");}if(current_world==6)story_flags|=ST_COURAGE;if(current_world==5&&(story_flags&ST_ALL)==ST_ALL)story_flags|=ST_LATTICE;boss_flags|=(u8)(1u<<current_world);drop_item_at(e->x,e->y,ITEM_CORE);credits=(u8)clampi(credits+12,0,255);say("ELITE SIGNAL COLLAPSED. COSMOS MARKED THE LOOT.");}else{r=(u8)((buddy_quantum?qstate.parity:next_q())+e->type*17);drop_item_at(e->x,e->y,(r%9==0)?ITEM_CORE:((r&1)?ITEM_POTION:ITEM_SHARD));credits=(u8)clampi(credits+1+e->type,0,255);}/* All realms have independent world-biome loot, without consuming QSEED. */
  if((v9_next()%100)<35)v9_gear_drop(e->x,e->y,v9_roll_tier(e->elite));
  add_xp((u16)(4+e->type*2+(e->elite?15:0)));kill_count++;e->active=0;tone((u16)(500+e->type*90));}
-static void damage_enemy(Enemy*e,int dmg){if(!e->active||e->hurt)return;if(dmg<1)dmg=1;e->hp=(u8)((dmg>=e->hp)?0:e->hp-dmg);e->hurt=10;e->windup=0;e->recover=e->elite?22:14;if(!e->hp)enemy_die(e);}
+static void damage_enemy(Enemy*e,int dmg){if(!e->active||e->hurt)return;if(game_mode!=MODE_BATTLE&&act1_stone_skin(e)){e->hurt=12;if(!dialogue_timer)say("STONE SKIN. DUEL IT WITH SELECT+A AND PARRY WITH B.");return;}if(dmg<1)dmg=1;e->hp=(u8)((dmg>=e->hp)?0:e->hp-dmg);e->hurt=10;e->windup=0;e->recover=e->elite?22:14;if(!e->hp)enemy_die(e);}
 /* ---------- compact Pokemon-inspired encounter, built on authoritative RPG stats ---------- */
 static void battle_exit(void){game_mode=MODE_SURFACE;battle_phase=battle_timer=0;ui_clear();save_game();}
 static void battle_enter(int index){Enemy*e;
  if(index<0||index>=10)return;
  e=&enemies[index];if(!e->active||game_mode!=MODE_SURFACE)return;
  battle_index=(u8)index;battle_cursor=battle_phase=battle_evade=0;battle_timer=0;
+ a1_parry=0;
  p4_guard=p4_ward=p4_slow=0;p4_charges=(u8)(lc_party.count?
    (2+(lc_party.slots[lc_party.active].stage>=2)):0);
  v11_battle_pose=255;e->hurt=0;e->windup=0;game_mode=MODE_BATTLE;
@@ -2398,11 +2413,13 @@ static void battle_enter(int index){Enemy*e;
   (e->elite&&e==&enemies[8]&&current_world==0&&current_room==8)?"FROST WOLF: YOU MAY TALK WITH AN ETHER.":
   (e->elite&&e==&enemies[8]&&current_world==0&&current_room==9)?"PHOENIX: PROVE COURAGE OR OFFER HEALING.":
   (e->elite&&e==&enemies[8]&&current_world==7&&current_room==10)?"THE HOLLOW WRAITH WAITS. RELEASE OR FIGHT.":
+  act1_stone_skin(e)?"STONE SENTRY: BRACE WITH B WHEN IT SWINGS.":
   (current_world==0&&current_room==7&&e->elite)?"THE SENTINEL HURTS. FIGHT OR TALK WITH AN ETHER.":e->elite?(current_room==6?"ECHO OF NIHILOS WILL NOT FLEE.":"A GUARDIAN BLOCKS YOUR PATH."):"A WILD CREATURE APPEARED.";
  tone(1100);
 }
 static void battle_act(void){Enemy*e=&enemies[battle_index];int damage;
  if(!e->active){battle_exit();return;}
+ {int h=act1_battle_fight(e);if(h==2)return;if(h==1){if(!e->active){battle_phase=3;battle_timer=65;return;}battle_phase=1;battle_evade=0;battle_timer=35;return;}}
  if(battle_cursor==4){if(e->elite){battle_notice="THE GUARDIAN WON'T LET YOU FLEE.";}
   else {battle_exit();return;}}
  else if(battle_cursor==0){
@@ -2444,7 +2461,7 @@ static void battle_act(void){Enemy*e=&enemies[battle_index];int damage;
  battle_phase=1;battle_evade=0;battle_timer=e->elite?50:35;
  if(p4_slow){battle_timer=(u16)(battle_timer+22);p4_slow=0;}
 }
-static void update_battle(u16 newk){if(V11_IS_ROOM){v11_update_battle(newk);return;}Enemy*e=&enemies[battle_index];
+static void update_battle(u16 newk){if(a1_boss){act1_boss_update(newk);return;}if(V11_IS_ROOM){v11_update_battle(newk);return;}Enemy*e=&enemies[battle_index];
  if(battle_phase==3){if(battle_timer)battle_timer--;else battle_exit();return;}
  if(battle_phase==1){
   if(newk&KEY_B){battle_evade=1;battle_notice="ARIN BRACES FOR THE IMPACT!";}
@@ -2460,7 +2477,7 @@ static void update_battle(u16 newk){if(V11_IS_ROOM){v11_update_battle(newk);retu
     if(!player.hp){player.hp=max_hp;player_mp=max_mp;
      credits=(u8)(credits/2);player.x=80;player.y=400;
      battle_notice="COSMOS RESTORED ARIN'S LAST SIGNAL.";battle_phase=3;battle_timer=65;return;}
-   }else{battle_notice="BLOCKED! ARIN HOLDS THE LINE.";cosmos.trust=(u8)mini(255,cosmos.trust+1);}
+   }else{battle_notice="BLOCKED! ARIN HOLDS THE LINE.";cosmos.trust=(u8)mini(255,cosmos.trust+1);act1_on_block(e);}
    battle_phase=2;battle_timer=35;
   }return;
  }
@@ -2820,7 +2837,7 @@ static void story_interact(u8 t){if(t>=TR_COMP_ENTER){completion_interact(t);ret
  if(t==TR_VOID_SIGIL){if((story_flags&ST_HEART)&&(keys_found&7)==7){story_flags|=ST_VOID;say("VOID SIGIL RECOVERED. NIHILOS CANNOT CLAIM THIS MEMORY.");save_game();}
   else say("THE VOID SIGIL REQUIRES THE HEART AND THREE AXES.");return;}
 }
-static void interact(void){u8 t=trigger_near();if(prologue_interact(t))return;if(beast_home_interact(t))return;if(t==TR_V11_ENTER){v11_enter(0);return;}if(t>=TR_GATE){story_interact(t);return;}if(t==TR_SHIP){board_ship();return;}if(t==TR_DOOR){enter_room();return;}if(t==TR_EXIT){exit_room();return;}if(t==TR_KEY_X){recover_key(1,"X AXIS RESTORED. HORIZONTAL DISTANCE FEELS REAL AGAIN.");return;}if(t==TR_KEY_Y){recover_key(2,"Y AXIS RESTORED. NEAR AND FAR AGREE AGAIN.");return;}if(t==TR_KEY_Z){recover_key(4,"Z AXIS RESTORED. THE WORLD REMEMBERS UP AND DOWN.");return;}if(t==TR_TERMINAL){terminal_interact();return;}if(t==TR_SECRET){secret_interact();return;}if(t==TR_CROWN_CORE){crown_interact();return;}if(t==TR_ANOMALY){cosmos.memory_flags|=MEM_ANOMALY;say("POSTGAME ANOMALY RECORDED. IT WAS NOT HERE IN THE OLD STORY.");save_game();return;}buddy_speak_context();}
+static void interact(void){u8 t=trigger_near();if(prologue_interact(t))return;if(beast_home_interact(t))return;if(act1_interact(t))return;if(t==TR_V11_ENTER){v11_enter(0);return;}if(t>=TR_GATE){story_interact(t);return;}if(t==TR_SHIP){board_ship();return;}if(t==TR_DOOR){enter_room();return;}if(t==TR_EXIT){exit_room();return;}if(t==TR_KEY_X){recover_key(1,"X AXIS RESTORED. HORIZONTAL DISTANCE FEELS REAL AGAIN.");return;}if(t==TR_KEY_Y){recover_key(2,"Y AXIS RESTORED. NEAR AND FAR AGREE AGAIN.");return;}if(t==TR_KEY_Z){recover_key(4,"Z AXIS RESTORED. THE WORLD REMEMBERS UP AND DOWN.");return;}if(t==TR_TERMINAL){terminal_interact();return;}if(t==TR_SECRET){secret_interact();return;}if(t==TR_CROWN_CORE){crown_interact();return;}if(t==TR_ANOMALY){cosmos.memory_flags|=MEM_ANOMALY;say("POSTGAME ANOMALY RECORDED. IT WAS NOT HERE IN THE OLD STORY.");save_game();return;}buddy_speak_context();}
 static void drop_beacon(void){if(game_mode!=MODE_SURFACE){say("BEACONS ANCHOR SURFACE MEMORY. LAND FIRST.");return;}if(beacon_count<8){Beacon*b=&beacons[beacon_count++];b->world=current_world;b->room=current_room;b->layer=current_layer;b->x=player.x;b->y=player.y;say("BEACON DROPPED. THIS PLACE NOW HAS A RETURNING NAME.");save_game();}else{beacon_count=0;say("BEACON TABLE CLEARED. THE WORLD ITSELF REMAINS.");save_game();}}
 
 /* ---------- render sprites ---------- */
@@ -2862,6 +2879,7 @@ static void render_surface_sprites(void){int sx=player.x-cam_x-8,sy=player.y-cam
  for(i=0;i<10;i++){if(enemies[i].active&&enemies[i].windup&&((frame&7)<5))
   oam_set(48+i,enemies[i].x-cam_x-8,enemies[i].y-cam_y-28,124,11,0);
   else OAM16[(48+i)*4]=0x0200;}
+ act1_sprites();
 
 }
 static void render_space_sprites(void){int i,oi=1;int camx=clampi(ship_x-120,0,272),camy=clampi(ship_y-80,0,352);REG_BG0HOFS=(u16)camx;REG_BG0VOFS=(u16)camy;oam_set(0,ship_x-camx-8,ship_y-camy-8,48,0,0);for(i=0;i<8;i++)oam_set(oi++,PLANET_X[i]-camx-8,PLANET_Y[i]-camy-8,52,8+PLANET_COL[i]-1,0);while(oi<12){OAM16[oi*4]=0x0200;oi++;}
@@ -2960,20 +2978,51 @@ static void gameplay_qa(void){
       break;}
     qa_require(found&&(quest_started&(1u<<6)),0x75);
    }
-   /* V7 real native quest QA: town, market, Cragstone puzzle, Malakar, and Heart. */
-   {int i;
+   /* V11.7 ACT I host QA: Oakwood map quest, journal, market, ascent, the three
+      temple rooms, rune order, the Stone Regent (restore route) and the Heart. */
+   {int i,k;
     current_world=0;current_room=0;current_layer=1;generate_surface();player.x=20*8;player.y=48*8;story_gate();
     qa_require(current_room==2&&npc_count>=1,0x81);npc_speak(0);npc_dialogue_page=2;npc_advance();npc_close();
     qa_require((story_flags&ST_TOWN)!=0,0x82);
+    for(i=0;i<5;i++)cq_set(i,CQ_DONE);cq_set(5,CQ_ACTIVE);act1_reset();
     player.x=54*8;player.y=8*8;story_gate();qa_require(current_room==3,0x83);
-    for(i=0;i<npc_count;i++)if(npc_runtime[i].id==16){npc_speak(i);npc_dialogue_page=2;npc_advance();npc_close();break;}
-    qa_require((story_flags&ST_OAKWOOD)!=0,0x84);
-    credits=10;shop_sel=0;shop_trade();qa_require(credits==5&&inv[ITEM_POTION]>=3,0x85);
-    player.x=54*8;player.y=12*8;story_gate();qa_require(current_room==4,0x86);
-    rune_touch(2);rune_touch(0);rune_touch(3);rune_touch(1);
-    qa_require((story_flags&ST_PUZZLE)&&enemies[8].active,0x87);
-    enemies[8].hp=1;damage_enemy(&enemies[8],15);qa_require(story_flags&ST_MALAKAR,0x88);
-    story_interact(TR_HEART);qa_require((story_flags&ST_HEART)&&inv[ITEM_CORE]>=2,0x89);
+    qa_a1_talk(16);qa_require(a1_has(A1F_MET_RAVEN)&&!(story_flags&ST_OAKWOOD),0x84);
+    inv[ITEM_POTION]=1;qa_a1_talk(NPC_A1_PELL);qa_require(a1_has(A1F_PELL_HEALED)&&inv[ITEM_POTION]==0,0x85);
+    near_trigger_x=6;near_trigger_y=12;act1_interact(TR_A1_TREE);qa_require(!a1_has(A1F_MAP_FOUND),0x86);
+    near_trigger_x=A1_SPLIT_TX;near_trigger_y=A1_SPLIT_TY;act1_interact(TR_A1_TREE);qa_require(a1_has(A1F_MAP_FOUND),0x87);
+    qa_a1_talk(16);qa_a1_flush();qa_require(cq_state[5]==CQ_DONE&&cq_state[6]==CQ_ACTIVE,0x88);
+    act1_interact(TR_A1_TO_ASCENT);qa_require(current_room==3,0x89);
+    act1_interact(TR_A1_JOURNAL);qa_a1_flush();qa_require((story_flags&ST_OAKWOOD)&&cq_state[7]==CQ_ACTIVE,0x8A);
+    credits=10;k=inv[ITEM_POTION];a1_market_buy(0);qa_require(credits<=6&&inv[ITEM_POTION]==k+1,0x8B);
+    act1_interact(TR_A1_TO_ASCENT);qa_require(current_room==A1_ASCENT&&npc_count>=1,0x8C);
+    act1_interact(TR_A1_TO_TEMPLE);qa_a1_flush();qa_require(current_room==4,0x8D);
+    act1_interact(TR_RUNE_C);qa_require(a1_rune_step==0&&!(story_flags&ST_PUZZLE),0x8E);
+    act1_interact(TR_A1_TO_GALLERY);qa_require(current_room==A1_GALLERY&&enemies[0].active&&enemies[1].active&&enemies[2].active,0x8F);
+    k=enemies[0].hp;enemies[0].hurt=0;damage_enemy(&enemies[0],50);qa_require(enemies[0].active&&enemies[0].hp==k,0x90);
+    for(i=0;i<3;i++){enemies[i].hurt=0;battle_enter(i);battle_cursor=0;k=enemies[i].hp;battle_act();qa_require(enemies[i].active&&enemies[i].hp==k,0x91);
+     act1_on_block(&enemies[i]);battle_phase=0;battle_cursor=0;enemies[i].hp=1;battle_act();qa_require(!enemies[i].active,0x92);battle_exit();}
+    qa_require(a1_sentries==7,0x93);
+    act1_interact(TR_A1_GUARD_SEAL);qa_a1_flush();qa_require(a1_has(A1F_GUARD),0x94);
+    act1_interact(TR_A1_TO_HALL);act1_interact(TR_A1_TO_VAULT);qa_require(current_room==A1_VAULT,0x95);
+    act1_interact(TR_A1_FORGE);qa_require(pro_ui==0,0x96);
+    act1_interact(TR_A1_MOULD);act1_interact(TR_A1_ORE);act1_interact(TR_A1_FORGE);qa_require(pro_ui==7,0x97);
+    for(i=0;i<3;i++){a1_heat=11;a1_heat_dir=0;act1_update(KEY_A);}qa_a1_flush();qa_require(a1_has(A1F_KEY),0x98);
+    act1_interact(TR_A1_VAULT_DOOR);act1_interact(TR_A1_KEEP_SEAL);qa_a1_flush();qa_require(a1_has(A1F_VAULT_OPEN|A1F_KEEP),0x99);
+    act1_interact(TR_A1_TO_HALL);qa_require(current_room==4,0x9A);
+    act1_interact(TR_RUNE_A);qa_require(a1_rune_step==0,0x9B);
+    act1_interact(TR_RUNE_C);act1_interact(TR_RUNE_A);act1_interact(TR_RUNE_D);act1_interact(TR_RUNE_B);qa_a1_flush();
+    qa_require((story_flags&ST_PUZZLE)&&cq_state[8]==CQ_ACTIVE&&collision[mi(32,9)]==C_FREE,0x9C);
+    act1_interact(TR_A1_HEART_DOOR);qa_require(current_room==A1_CHAMBER,0x9D);
+    act1_interact(TR_A1_REGENT);qa_a1_flush();qa_require(a1_boss&&game_mode==MODE_BATTLE,0x9E);
+    cosmos.trust=120;
+    for(k=0;k<400&&a1_boss;k++){player.hp=max_hp;if(a1_rg_phase==0){a1_rg_open=1;a1_rg_cursor=5;a1_rg_act();}else act1_boss_update(0);}
+    qa_a1_flush();qa_require(a1_regent==2&&cq_state[8]==CQ_DONE&&cq_state[9]==CQ_ACTIVE&&game_mode==MODE_SURFACE,0x9F);
+    act1_interact(TR_A1_HEART);qa_a1_flush();qa_require(pro_ui==5,0xA0);
+    act1_update(KEY_A);qa_a1_flush();qa_require(pro_ui==6&&a1_reply==1,0xA1);
+    for(i=0;i<2;i++){a1_heat=16;a1_heat_dir=0;act1_update(KEY_B);}qa_a1_flush();
+    qa_require((story_flags&(ST_HEART|ST_MALAKAR))==(ST_HEART|ST_MALAKAR)&&inv[ITEM_CORE]>=2&&cq_state[9]==CQ_DONE&&cq_state[10]==CQ_ACTIVE,0xA2);
+    {static u8 b[768];u16 f=a1_flags;for(i=0;i<768;i++)b[i]=0;act1_save_into(b);act1_reset();act1_restore_from(b,1);
+     qa_require(a1_flags==f&&a1_regent==2&&a1_reply==1&&a1_sentries==7&&b[A1_SRAM_AT]=='A',0xA3);}
     current_world=0;current_room=0;current_layer=1;generate_surface();
    }
    /* Real ARM emulator must execute the turn-based arena's OAM/UI and its outcome. */
@@ -3016,6 +3065,7 @@ static int nearest_battle_enemy(int range){int i,best=range,id=-1;
 static int enemy_near_player(int range){int i;for(i=0;i<10;i++)if(enemies[i].active&&iabs(enemies[i].x-player.x)+iabs(enemies[i].y-player.y)<range)return 1;return 0;}
 static void update_surface(u16 k,u16 newk){if(V11_IS_ROOM){v11_update_field(k,newk);return;}int speed=(k&KEY_B)?3:2,dx=0,dy=0;u8 t;qa_last_surface_k=k;qa_last_surface_newk=newk;if(newk&KEY_A)qa_surface_a_edges++;qa_surface_gate=1;
  if(prologue_update(newk)){qa_surface_gate=13;return;}
+ act1_frame();
  if((k&(KEY_A|KEY_SELECT))==(KEY_A|KEY_SELECT)&&(newk&(KEY_A|KEY_SELECT))){
   int e=nearest_battle_enemy(50);if(e>=0){battle_enter(e);return;}
  }if(shop_open){if(newk&KEY_B){shop_open=0;return;}if(newk&KEY_UP)shop_sel=(u8)((shop_sel+3)%4);if(newk&KEY_DOWN)shop_sel=(u8)((shop_sel+1)%4);if(newk&KEY_A)shop_trade();return;}
@@ -3196,7 +3246,7 @@ static void init_new_game(void){int i;keys_found=secrets_mask=chapter=ending=pos
  v9_equipped=v9_gear_sel=0;v9_rng=0xC0A571D5u;
  for(i=0;i<5;i++)v9_loot[i]=0;
  lc_roster_init(&lc_party);lc_party_sel=0;lc_mail_live=lc_mail_ready=0;lc_mail_identity=0;lc_mail_epoch=0;lc_mail_trade=lc_mail_grown=0;lc_add_exported_profile();
- current_world=0;current_room=0;current_layer=1;game_mode=MODE_SURFACE;ship_world=0;ship_x=PLANET_X[0];ship_y=PLANET_Y[0]+26;copystr(dialogue,"I REMEMBER A SKY MADE OF SQUARES.",90);v11_reset();campaign_reset();bh_reset();}
+ current_world=0;current_room=0;current_layer=1;game_mode=MODE_SURFACE;ship_world=0;ship_x=PLANET_X[0];ship_y=PLANET_Y[0]+26;copystr(dialogue,"I REMEMBER A SKY MADE OF SQUARES.",90);v11_reset();campaign_reset();bh_reset();act1_reset();}
 /* These are actual user-facing transitions, not fabricated quest-flag jumps. */
 static void v10_start_opening(void){
  init_new_game();intro=0;v10_opening=1;v10_opening_step=0;v10_title_sub=0;
@@ -3251,6 +3301,7 @@ static void v10_title_input(u16 newk){
 #include "content_v11_story.h"
 #include "content_v11_menus.h"
 #include "campaign_quests.h"
+#include "act1_heart.h"
 #include "beast_home.h"
 #include "first_person.h"
 /* Music follows the scene. Menus keep the scene's track playing. */

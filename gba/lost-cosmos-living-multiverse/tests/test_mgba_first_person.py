@@ -11,7 +11,7 @@ collision and triggers, no affine sprites left, 4-way movement and the pause
 menu. The view is opened again in the Beast Home and left with START.
 
 The same run checks the V11.6 fixes: the G5 book star in Brindlemark is a
-road-backed star (no black square), the SYSTEM page says V11.6, and COSMOS
+road-backed star (no black square), the SYSTEM page says the current version, and COSMOS
 chatter no longer replaces Beast Home care lines.
 No memory writes, savestates or warps: every action is a key press.
 """
@@ -86,8 +86,8 @@ def open_3d(emu, label):
     rows = [bh.ui_row(emu, r) for r in range(4, 18)]
     if not any("3D VIEW" in r and "ENTER" in r for r in rows):
         raise RuntimeError(f"{label}: no 3D VIEW row: {rows}")
-    if not any("V11" in r and "6  OLDER SAVES LOAD" in r for r in rows):
-        raise RuntimeError(f"{label}: SYSTEM page does not say V11.6: {rows}")
+    if not any("V11" in r and "7  OLDER SAVES LOAD" in r for r in rows):
+        raise RuntimeError(f"{label}: SYSTEM page does not say V11.7: {rows}")
     return rows
 
 

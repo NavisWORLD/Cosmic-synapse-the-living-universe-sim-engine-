@@ -250,8 +250,8 @@ class Navigator:
 
     def npcs(self):
         symbol = self.emu.symbols["npc_runtime"]
-        if symbol.size != 48:
-            raise ValueError("NPC runtime layout changed; expected four native 12-byte entries")
+        if symbol.size not in (48, 72):
+            raise ValueError("NPC runtime layout changed; expected four or six native 12-byte entries")
         data = self.emu.read_range(symbol.address, symbol.size)
         result = []
         for slot in range(self.value("npc_count")):

@@ -56,6 +56,8 @@ jobs:
           python3 tests/test_sol_navigation_native.py
       - name: Gate NPC reachability with the actual native 10px collision footprint
         run: python3 tests/test_act1_pixel_reachability.py
+      - name: Gate world sweep - every door/warp lands standable, every room has an exit, every room enterable
+        run: python3 tests/test_world_sweep.py
       - name: Gate Quantum Beast public import, field-art derivation and native save identity
         run: |
           python3 -m py_compile tools/build_quantum_beast_v11.py tools/import_beastbox.py
@@ -104,11 +106,19 @@ jobs:
       - name: Act I story - Listener, flower spark Fight/Befriend/Potion/Run, Lys, the Quiet, crown listener, CONTINUE
         timeout-minutes: 7
         run: python3 tests/test_mgba_story_act1.py --out artifacts/mgba_story_act1
-      - name: Release gate - real controller-only Act I to Malakar and First Heart, plus real second cold boot
+      - name: Release gate - PROLOGUE Ash in the Forge Q00-Q04, both choices, cold boot, and V11.3 save migration
         timeout-minutes: 7
         run: |
-          python3 tests/test_mgba_act1_controller.py --out artifacts/mgba_act1
-          python3 tests/test_mgba_act1_resume.py --out artifacts/mgba_act1
+          python3 tests/test_mgba_prologue.py --out artifacts/mgba_prologue/compiled_defend --choice 1
+          python3 tests/test_mgba_prologue.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_prologue/runtime_carry --choice 2
+          python3 tests/test_mgba_prologue_migration.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_prologue/migration
+      - name: Release gate - ACT I THE FIRST HEART Q05-Q09 from the earned prologue saves, both Regent routes, cold boot, V11.6 save migration
+        timeout-minutes: 9
+        run: |
+          python3 tests/test_mgba_act1_heart.py --save artifacts/mgba_prologue/compiled_defend/prologue.sav --out artifacts/mgba_act1 --route restore --reply 0
+          python3 tests/test_mgba_act1_heart.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --save artifacts/mgba_prologue/runtime_carry/prologue.sav --out artifacts/mgba_act1_runtime_fight --route fight --reply 1
+          python3 tests/test_mgba_act1_migration.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_act1_migration
+          python3 tests/test_mgba_world_menus.py --act1 artifacts/mgba_act1 --out artifacts/mgba_world_menus
       - name: Release gate - real controller-only Act II from earned SRAM to Sentinel and Dream trials plus cold boot
         timeout-minutes: 7
         run: python3 tests/test_mgba_act2_controller.py --act1 artifacts/mgba_act1 --out artifacts/mgba_act2
@@ -118,12 +128,6 @@ jobs:
       - name: Release gate - actual Hollow Grove reflection, real Wraith, Earth crystal and separate new cold boot
         timeout-minutes: 7
         run: python3 tests/test_mgba_hollow_grove_controller.py --eldoria artifacts/mgba_eldoria --out artifacts/mgba_grove
-      - name: Release gate - PROLOGUE Ash in the Forge Q00-Q04, both choices, cold boot, and V11.3 save migration
-        timeout-minutes: 7
-        run: |
-          python3 tests/test_mgba_prologue.py --out artifacts/mgba_prologue/compiled_defend --choice 1
-          python3 tests/test_mgba_prologue.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_prologue/runtime_carry --choice 2
-          python3 tests/test_mgba_prologue_migration.py --rom ../../arcade/lost-cosmos/rom/lost-cosmos.gba --elf artifacts/arcade/lost_cosmos_v5.elf --out artifacts/mgba_prologue/migration
       - name: Release gate - BEAST HOME (V11.5) cage import and Sol starter, care, idle movement, cold-boot identity
         timeout-minutes: 7
         run: |
@@ -160,6 +164,10 @@ jobs:
             gba/lost-cosmos-living-multiverse/artifacts/mgba_title/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_v11_content/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act1/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_act1_runtime_fight/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_act1_migration/
+            gba/lost-cosmos-living-multiverse/artifacts/mgba_world_menus/
+            gba/lost-cosmos-living-multiverse/artifacts/world_sweep/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_story_act1/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_act2/
             gba/lost-cosmos-living-multiverse/artifacts/mgba_eldoria/
