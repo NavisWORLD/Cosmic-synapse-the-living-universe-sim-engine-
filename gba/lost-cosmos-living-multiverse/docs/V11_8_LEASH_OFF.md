@@ -27,6 +27,12 @@ Each frame the beast picks the first goal that applies:
 | 1 | EXPLORE (EXPLORING) | nearest 8x8-tile cell it has not walked, 3..48 path steps away |
 | 0 | IDLE (LOOKING AROUND) | otherwise a short random wander |
 
+Paths are breadth-first fields over the 64x64 tile map, built 160 tiles per
+frame (double-buffered) so the search never costs a whole frame; the beast
+waits while a field is being built (typically 10-20 frames). Goal search
+(points of interest, unwalked cells, rest spot, wander tile) runs inside the
+same budgeted search, up to 48 steps from the beast.
+
 Movement is tile centre to tile centre, 1 px per frame (2 px when called),
 along the path field. Only `collision == C_FREE` tiles are entered. A goal
 times out after 900 frames. If the beast is called and has not arrived after
@@ -142,7 +148,8 @@ tile:
 | 14..38 | `sight[25]`: 5x5 collision classes around the beast, row major, 0 open, 1 wall (also off-map), 2 hazard |
 
 Perception rule for tooling (e.g. a read-only RAWRPHOS observation bridge):
-read only the LCL1 bytes and `leash_obs`. Do not read `lf_dist`, `lf_q`,
+read only the LCL1 bytes and `leash_obs`. Do not read the path fields
+(`lf_fa`, `lf_fb`, `lf_dist`, `lf_work`, `lf_q`), the survey picks (`lf_s_*`),
 `lf_rng`, enemy HP/AI state, triggers, story or quest flags as observations;
 those are not things the companion perceives.
 

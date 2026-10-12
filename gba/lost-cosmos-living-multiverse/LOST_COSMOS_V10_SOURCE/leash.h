@@ -12,8 +12,17 @@
  * The LCL1 record counts what happened; it is a log, not a mind. */
 #ifndef LC_LEASH_H
 #define LC_LEASH_H
-static u16 lf_dist[4096] LF_EWRAM;
+/* Path fields are built a slice at a time (LF_BUDGET tiles per frame) so a
+ * 64x64 breadth-first search never costs a whole frame: lf_dist is the ready
+ * field the beast walks on, lf_work is the one being built, lf_q its queue. */
+static u16 lf_fa[4096] LF_EWRAM __attribute__((aligned(4)));
+static u16 lf_fb[4096] LF_EWRAM __attribute__((aligned(4)));
 static u16 lf_q[4096] LF_EWRAM;
+static u16*lf_dist=lf_fa,*lf_work=lf_fb;
+#define LF_BUDGET 160
+#define LF_NONE 0xFFFFu
+static u8 lf_ready=0,lf_bmode=0,lf_s_pickn=0,lf_s_fav=255,lf_s_tired=0,lf_pmin=255; /* bmode 0 idle, 1 survey, 2 path */
+static u16 lf_bh=0,lf_bt=0,lf_btarget=0,lf_s_poi=LF_NONE,lf_s_pick=0,lf_s_exp=LF_NONE,lf_s_idle=LF_NONE,lf_s_rest=LF_NONE,lf_s_n=0;
 static u8 lf_goal=LFG_IDLE,lf_called=0,lf_loc=255,lf_layer=255,lf_slot=0,lf_poi_n=0,lf_npc=255,lf_moving=0,lf_stepping=0,lf_greeted=0;
 static u16 lf_alerted=0,lf_wait=0,lf_far=0,lf_goal_t=0,lf_target=0,lf_poi_pick=0,lf_frames=0,lf_poi_done[16];
 static s16 lf_nx,lf_ny;
@@ -29,13 +38,6 @@ static int lf_cell(int t){return (((t>>6)>>3)<<3)|((t&63)>>3);}
 static u8 lf_loc_id(void){return current_world?(u8)(128+((current_world-1)<<4)+(current_room&15)):(u8)(current_room&127);}
 static int lf_pdist(void){return iabs(cosmos.x-player.x)+iabs(cosmos.y-player.y);}
 static int leash_autonomous(void){return !leash_on&&!BH_IS_ROOM&&game_mode==MODE_SURFACE;}
-static void lf_bfs(int r){int h=0,t=0,i;
- for(i=0;i<4096;i++)lf_dist[i]=0xFFFF;lf_dist[r]=0;lf_q[t++]=(u16)r;
- while(h<t){int c=lf_q[h++],x=c&63;u16 d=(u16)(lf_dist[c]+1);
-  if(x>0&&lf_dist[c-1]==0xFFFF&&lf_pass(c-1)){lf_dist[c-1]=d;lf_q[t++]=(u16)(c-1);}
-  if(x<63&&lf_dist[c+1]==0xFFFF&&lf_pass(c+1)){lf_dist[c+1]=d;lf_q[t++]=(u16)(c+1);}
-  if(c>=64&&lf_dist[c-64]==0xFFFF&&lf_pass(c-64)){lf_dist[c-64]=d;lf_q[t++]=(u16)(c-64);}
-  if(c<4032&&lf_dist[c+64]==0xFFFF&&lf_pass(c+64)){lf_dist[c+64]=d;lf_q[t++]=(u16)(c+64);}}}
 static int lf_bits(const u8*m){int n=0,i;u8 b;for(i=0;i<8;i++)for(b=m[i];b;b&=(u8)(b-1))n++;return n;}
 static void lf_enter_loc(u8 loc){int i,best=0,bn=999;
  for(i=0;i<LF_SLOTS;i++)if(lf_rec.slot_loc[i]==loc){lf_slot=(u8)i;return;}
@@ -50,32 +52,46 @@ static void lf_fav(void){int c=lf_cell(lf_tile()),i,low=0;
  lf_rec.fav_loc[low]=lf_loc;lf_rec.fav_cell[low]=(u8)c;lf_rec.fav_n[low]=(u16)(lf_rec.fav_n[low]+1);}
 static int lf_poi(int t){u8 v=trigger[t];return v&&v!=TR_SECRET&&v!=TR_ANOMALY;}
 static int lf_poi_was(int p){int i;for(i=0;i<lf_poi_n;i++)if(lf_poi_done[i]==p)return 1;return 0;}
-static void leash_room_reset(void){lf_goal=LFG_IDLE;lf_moving=lf_stepping=0;lf_poi_n=0;lf_greeted=0;lf_alerted=0;lf_wait=30;lf_far=0;lf_npc=255;}
+static void lf_bfs_begin(int r,u8 mode){int i;u32*w=(u32*)lf_work;
+ for(i=0;i<2048;i++)w[i]=0xFFFFFFFFu;lf_work[r]=0;lf_q[0]=(u16)r;lf_bh=0;lf_bt=1;lf_bmode=mode;lf_btarget=(u16)r;
+ if(mode==1){lf_s_poi=lf_s_exp=lf_s_idle=lf_s_rest=LF_NONE;lf_s_n=0;lf_s_pickn=lf_rand()&31;lf_s_fav=255;lf_s_tired=cosmos.energy<60;
+  if(lf_s_tired){int fi=-1;for(i=0;i<LF_FAV;i++)if(lf_rec.fav_n[i]&&lf_rec.fav_loc[i]==lf_loc&&(fi<0||lf_rec.fav_n[i]>lf_rec.fav_n[fi]))fi=i;if(fi>=0)lf_s_fav=lf_rec.fav_cell[fi];}}}
+static void lf_go(u8 g,int target){lf_goal=g;lf_target=(u16)target;lf_goal_t=0;lf_moving=1;lf_ready=0;lf_bfs_begin(target,2);}
+static void lf_survey_done(void){int b=lf_tile();
+ if(lf_s_poi!=LF_NONE){if(lf_poi_n<16)lf_poi_done[lf_poi_n++]=lf_s_pick;lf_go(LFG_POI,lf_s_poi);return;}
+ if(lf_s_tired){lf_go(LFG_REST,lf_s_rest!=LF_NONE?lf_s_rest:b);return;}
+ if(lf_s_exp!=LF_NONE){lf_go(LFG_EXPLORE,lf_s_exp);return;}
+ if(lf_s_idle!=LF_NONE)lf_go(LFG_IDLE,lf_s_idle);else{lf_goal=LFG_IDLE;lf_moving=0;lf_wait=90;}}
+static void lf_bfs_step(void){int n=LF_BUDGET;u16*w=lf_work;
+ if(!lf_bmode)return;
+ while(n-->0&&lf_bh<lf_bt){int c=lf_q[lf_bh++],x=c&63;u16 d=w[c];
+  if(lf_bmode==1){if(d>48){lf_bh=lf_bt;break;}
+   if(lf_poi_n<16&&d<=40){int p=-1;
+    if(lf_poi(c))p=c;else if(x>0&&lf_poi(c-1))p=c-1;else if(x<63&&lf_poi(c+1))p=c+1;else if(c>=64&&lf_poi(c-64))p=c-64;else if(c<4032&&lf_poi(c+64))p=c+64;
+    if(p>=0&&!lf_poi_was(p)){lf_s_poi=(u16)c;lf_s_pick=(u16)p;lf_bh=lf_bt;break;}}
+   if(lf_s_rest==LF_NONE&&lf_s_fav!=255&&lf_cell(c)==lf_s_fav)lf_s_rest=(u16)c;
+   if(lf_s_exp==LF_NONE&&d>=3&&!lf_cell_seen(c))lf_s_exp=(u16)c;
+   if(d>=4&&d<=12){if(lf_s_n<=lf_s_pickn)lf_s_idle=(u16)c;lf_s_n++;}}
+  d++;
+  if(x>0&&w[c-1]==0xFFFF&&lf_pass(c-1)){w[c-1]=d;lf_q[lf_bt++]=(u16)(c-1);}
+  if(x<63&&w[c+1]==0xFFFF&&lf_pass(c+1)){w[c+1]=d;lf_q[lf_bt++]=(u16)(c+1);}
+  if(c>=64&&w[c-64]==0xFFFF&&lf_pass(c-64)){w[c-64]=d;lf_q[lf_bt++]=(u16)(c-64);}
+  if(c<4032&&w[c+64]==0xFFFF&&lf_pass(c+64)){w[c+64]=d;lf_q[lf_bt++]=(u16)(c+64);}}
+ if(lf_bh>=lf_bt){u8 m=lf_bmode;lf_bmode=0;
+  if(m==2){u16*t=lf_dist;lf_dist=lf_work;lf_work=t;lf_ready=1;lf_target=lf_btarget;}
+  else lf_survey_done();}}
+static void leash_room_reset(void){lf_bmode=0;lf_ready=0;lf_goal=LFG_IDLE;lf_moving=lf_stepping=0;lf_poi_n=0;lf_greeted=0;lf_alerted=0;lf_wait=30;lf_far=0;lf_npc=255;}
 static void leash_reset(void){u8*p=(u8*)&lf_rec;unsigned i;for(i=0;i<sizeof(lf_rec);i++)p[i]=0;
  for(i=0;i<LF_SLOTS;i++)lf_rec.slot_loc[i]=255;leash_on=0;lf_called=0;lf_loc=lf_layer=255;leash_room_reset();}
-static void lf_go(u8 g,int target){lf_goal=g;lf_target=(u16)target;lf_goal_t=0;lf_bfs(target);lf_moving=1;}
 static void lf_beside_player(void){int t=lf_ptile();cosmos.x=(s16)(((t&63)<<3)+4);cosmos.y=(s16)(((t>>6)<<3)+4);lf_stepping=0;}
-static void lf_choose(void){int b=lf_tile(),i,d,best=-1;u16 bd=0xFFFF;
+static void lf_choose(void){int i;
  if(lf_called){lf_go(LFG_RETURN,lf_ptile());return;}
  for(i=0;i<10;i++)if(enemies[i].active&&!(lf_alerted&(1u<<i))&&iabs(enemies[i].x-cosmos.x)+iabs(enemies[i].y-cosmos.y)<96){
   lf_alerted|=(u16)(1u<<i);lf_rec.encounters++;lf_go(LFG_ALERT,lf_ptile());return;}
  if(lf_far>=1200){lf_far=0;lf_go(LFG_CHECKIN,lf_ptile());return;}
  for(i=0;i<npc_count&&i<8;i++)if(npc_runtime[i].active&&!(lf_greeted&(1u<<i))&&iabs(npc_runtime[i].x-cosmos.x)+iabs(npc_runtime[i].y-cosmos.y)<96){
   lf_npc=(u8)i;lf_go(LFG_NPC,((npc_runtime[i].y>>3)<<6)|((npc_runtime[i].x>>3)&63));return;}
- lf_bfs(b);
- if(lf_poi_n<16){for(i=0;i<4096;i++){int p=-1;d=lf_dist[i];if(d==0xFFFF||d>40||d>=bd)continue;
-   if(lf_poi(i))p=i;else if((i&63)>0&&lf_poi(i-1))p=i-1;else if((i&63)<63&&lf_poi(i+1))p=i+1;else if(i>=64&&lf_poi(i-64))p=i-64;else if(i<4032&&lf_poi(i+64))p=i+64;
-   if(p<0||lf_poi_was(p))continue;bd=(u16)d;best=i;lf_poi_pick=(u16)p;}
-  if(best>=0){lf_poi_done[lf_poi_n++]=lf_poi_pick;lf_go(LFG_POI,best);return;}}
- if(cosmos.energy<60){int fi=-1;
-  for(i=0;i<LF_FAV;i++)if(lf_rec.fav_n[i]&&lf_rec.fav_loc[i]==lf_loc&&(fi<0||lf_rec.fav_n[i]>lf_rec.fav_n[fi]))fi=i;
-  if(fi>=0){int c=lf_rec.fav_cell[fi],x0=(c&7)<<3,y0=(c>>3)<<3,x,y;
-   for(y=y0;y<y0+8;y++)for(x=x0;x<x0+8;x++){d=lf_dist[(y<<6)|x];if(d<bd){bd=(u16)d;best=(y<<6)|x;}}}
-  lf_go(LFG_REST,best>=0?best:b);return;}
- for(i=0;i<4096;i++){d=lf_dist[i];if(d==0xFFFF||d<3||d>48||d>=bd||lf_cell_seen(i))continue;bd=(u16)d;best=i;}
- if(best>=0){lf_go(LFG_EXPLORE,best);return;}
- {int n=0,pick=lf_rand()&31;for(i=0;i<4096;i++){d=lf_dist[i];if(d>=4&&d<=12){best=i;if(n++>=pick)break;}}}
- if(best>=0)lf_go(LFG_IDLE,best);else{lf_goal=LFG_IDLE;lf_moving=0;lf_wait=90;}}
+ if(lf_bmode!=1)lf_bfs_begin(lf_tile(),1);}
 static void lf_complete(void){u8 g=lf_goal;lf_rec.done[g]++;lf_moving=0;lf_wait=40;
  if(g==LFG_POI){lf_rec.pois++;lf_fav();lf_wait=60;}
  else if(g==LFG_NPC){lf_rec.npcs++;lf_greeted|=(u8)(1u<<lf_npc);lf_fav();lf_wait=90;}
@@ -90,12 +106,14 @@ static void lf_observe(void){int i,d,bt=lf_tile(),bx=bt&63,by=bt>>6,x,y;volatile
  o->enemy_dist=o->npc_dist=255;
  for(i=0;i<10;i++)if(enemies[i].active){d=(iabs(enemies[i].x-cosmos.x)+iabs(enemies[i].y-cosmos.y))>>3;if(d<=12&&d<o->enemy_dist)o->enemy_dist=(u8)d;}
  for(i=0;i<npc_count;i++)if(npc_runtime[i].active){d=(iabs(npc_runtime[i].x-cosmos.x)+iabs(npc_runtime[i].y-cosmos.y))>>3;if(d<=12&&d<o->npc_dist)o->npc_dist=(u8)d;}
- if((frame&7)==0){o->poi_dist=255;for(y=by-12;y<=by+12;y++)for(x=bx-12;x<=bx+12;x++){if(x<0||y<0||x>63||y>63)continue;d=iabs(x-bx)+iabs(y-by);if(d<=12&&d<o->poi_dist&&lf_poi((y<<6)|x))o->poi_dist=(u8)d;}}
+ {int band=frame&7,r;if(band==0)lf_pmin=255; /* 25x25 POI sweep spread over 8 frames */
+  for(r=band*4;r<band*4+4&&r<25;r++){y=by-12+r;if(y<0||y>63)continue;for(x=bx-12;x<=bx+12;x++){if(x<0||x>63)continue;d=iabs(x-bx)+iabs(y-by);if(d<=12&&d<lf_pmin&&lf_poi((y<<6)|x))lf_pmin=(u8)d;}}
+  if(band==7)o->poi_dist=lf_pmin;}
  for(i=0;i<25;i++){x=bx+(i%5)-2;y=by+(i/5)-2;o->sight[i]=(u8)((x<0||y<0||x>63||y>63)?1:collision[(y<<6)|x]);}}
 static void leash_tick(void){int t,c,d,i,speed;u8 loc=lf_loc_id();
  if(loc!=lf_loc||current_layer!=lf_layer){lf_loc=loc;lf_layer=current_layer;lf_enter_loc(loc);leash_room_reset();
   if(!lf_pass(lf_tile())||lf_pdist()>48)lf_beside_player();}
- leash_obs.cell_new=0;
+ leash_obs.cell_new=0;lf_bfs_step();
  if(++lf_frames>=60){lf_frames=0;lf_rec.secs++;}
  if(lf_pdist()>160)lf_far++;else lf_far=0;
  if(lf_moving&&(frame&31)==0&&cosmos.energy)cosmos.energy--;
@@ -112,14 +130,15 @@ static void leash_tick(void){int t,c,d,i,speed;u8 loc=lf_loc_id();
  lf_goal_t++;
  if(lf_goal==LFG_RETURN||lf_goal==LFG_ALERT||lf_goal==LFG_CHECKIN){
   if(lf_pdist()<=20){lf_complete();lf_observe();return;}
-  if((lf_goal_t&15)==0&&lf_ptile()!=lf_target){lf_target=(u16)lf_ptile();lf_bfs(lf_target);}
+  if((lf_goal_t&15)==0&&!lf_bmode&&lf_ptile()!=lf_target)lf_bfs_begin(lf_ptile(),2);
   if(lf_called&&lf_goal_t>=300){lf_beside_player();lf_rec.catchups++;lf_complete();lf_observe();return;}}
  else if(lf_goal==LFG_NPC){NPC*n=&npc_runtime[lf_npc<6?lf_npc:0];
   if(lf_npc>=npc_count||!n->active){lf_moving=0;lf_goal=LFG_IDLE;lf_observe();return;}
   if(iabs(n->x-cosmos.x)+iabs(n->y-cosmos.y)<=16){lf_complete();lf_observe();return;}
-  c=((n->y>>3)<<6)|((n->x>>3)&63);if((lf_goal_t&31)==0&&c!=lf_target){lf_target=(u16)c;lf_bfs(c);}}
+  c=((n->y>>3)<<6)|((n->x>>3)&63);if((lf_goal_t&31)==0&&!lf_bmode&&c!=lf_target)lf_bfs_begin(c,2);}
  else if(t==lf_target){lf_complete();lf_observe();return;}
  if(lf_goal_t>900){lf_moving=0;lf_goal=LFG_IDLE;lf_wait=30;lf_observe();return;}
+ if(!lf_ready){lf_observe();return;} /* path field still being built */
  d=lf_dist[t];
  if(d==0xFFFF){lf_rec.no_path++;
   if(lf_called&&lf_goal==LFG_RETURN){if(lf_goal_t>=120){lf_beside_player();lf_rec.catchups++;lf_complete();}}
@@ -128,7 +147,7 @@ static void leash_tick(void){int t,c,d,i,speed;u8 loc=lf_loc_id();
  {static const s8 ox[4]={1,-1,0,0},oy[4]={0,0,1,-1};int s=lf_rand()&3,k;c=-1;
   for(k=0;k<4;k++){int j=(s+k)&3,x=(t&63)+ox[j],y=(t>>6)+oy[j],n;if(x<0||y<0||x>63||y>63)continue;n=(y<<6)|x;
    if(lf_dist[n]==d-1){c=n;break;}}
-  if(c<0||(!lf_pass(c)&&c!=lf_target)){lf_rec.moves_blocked++;lf_bfs(lf_target);}
+  if(c<0||(!lf_pass(c)&&c!=lf_target)){if(!lf_bmode){lf_rec.moves_blocked++;lf_ready=0;lf_bfs_begin(lf_target,2);}}
   else if(!lf_pass(c)){lf_complete();} /* the goal tile itself is solid: standing next to it is arriving */
   else{lf_nx=(s16)(((c&63)<<3)+4);lf_ny=(s16)(((c>>6)<<3)+4);lf_stepping=1;}}
  (void)i;lf_observe();}
