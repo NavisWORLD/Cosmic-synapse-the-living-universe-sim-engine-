@@ -171,7 +171,7 @@ static void v11_draw_local_map(void){int x,y,i,w=v11_world();
 #include "sol_beast_chat.h"
 static int v11_draw_pause(void){int i,id,start;
  if(pause_page==0)return 0;
- if(pause_page!=40&&pause_page!=4&&pause_page!=5&&pause_page!=28&&pause_page!=18&&pause_page!=20&&pause_page!=11&&pause_page!=1&&pause_page!=9&&pause_page!=26&&pause_page!=27&&pause_page!=41&&pause_page!=42&&pause_page!=44&&pause_page!=45&&pause_page!=46&&pause_page!=47&&pause_page!=48&&pause_page!=49)return 0;
+ if(pause_page!=40&&pause_page!=4&&pause_page!=5&&pause_page!=28&&pause_page!=18&&pause_page!=20&&pause_page!=11&&pause_page!=1&&pause_page!=9&&pause_page!=26&&pause_page!=27&&pause_page!=41&&pause_page!=42&&pause_page!=44&&pause_page!=45&&pause_page!=46&&pause_page!=47&&pause_page!=48&&pause_page!=49&&pause_page!=50)return 0;
  if(pause_page==45&&v11_evolution){if(V11_IS_ROOM)v11_palette();else set_world_palette(current_world);}
  v11_menu_palette();
  if(pause_page==40){v11_header("ARIN // STATUS");ui_text(23,2,"LV",13);ui_num(26,2,player_level,15);
@@ -244,8 +244,8 @@ static int v11_draw_pause(void){int i,id,start;
  for(i=0;i<8;i++){int known=v11_map_legacy?(visited_mask&(1u<<i)):(v11_visited&(1u<<i));ui_text(2,4+i,i==v11_sel?">":" ",13);ui_text(4,4+i,known?(v11_map_legacy?"*":(v11_beacons&(1u<<i))?"*":"."):"-",known?14:8);v11_short(6,4+i,known?(v11_map_legacy?WORLDS[i].name:V11_WORLDS[i]):"???",22,known?15:8);if(!v11_map_legacy&&V11_IS_ROOM&&i==v11_world()&&(frame>>4)&1)ui_text(4,4+i,">",13);}
  ui_text(2,14,"THE MAP FILLS AS YOU RECALL",14);ui_text(2,15,V11_IS_ROOM?"START LOCAL LANDMARK MAP":"* KNOWN WORLD",14);ui_text(2,16,"SELECT CAMPAIGN / SIGNALS",13);
  }else if(pause_page==47){v11_draw_local_map();
- }else if(pause_page==9){static const char*s[14]={"AUDIO","TEXT SPEED","BRIGHTNESS","SAVE GAME","LOAD GAME","BEAST BOX","TOUCH CONTROLS","COSMIC REPLAY","AUTO TALK","HERO","CAMPAIGN PACK","MUSIC","SFX","3D VIEW"};v11_header("SYSTEM");start=v11_sel/6*6;for(i=start;i<mini(start+6,14);i++){if(i==13)ui_text(22,4+i-start,return_mode==MODE_SURFACE?"ENTER":"ON FOOT",14);if(i>=11&&i<=12)ui_text(22,4+i-start,lc_level_name(i==11?snd_music:snd_sfx),14);v11_row(4+i-start,i==v11_sel,s[i],15);if(i==0)ui_text(22,4+i-start,audio_on?"ON":"OFF",14);if(i==1)ui_text(22,4+i-start,v11_text_speed==0?"SLOW":v11_text_speed==1?"NORM":"FAST",14);if(i==2)ui_num(24,4+i-start,v11_brightness,14);if(i==6)ui_text(22,4+i-start,touch_mode?"ON":"OFF",14);if(i==7)ui_text(22,4+i-start,buddy_quantum?"ON":"OFF",14);if(i==8)ui_text(22,4+i-start,buddy_talk?"ON":"OFF",14);}
- ui_text(2,15,"ACT I  SYNAPSE ROAD",13);ui_text(2,16,"V11.7  OLDER SAVES LOAD",14);
+ }else if(pause_page==9){static const char*s[16]={"AUDIO","TEXT SPEED","BRIGHTNESS","SAVE GAME","LOAD GAME","BEAST BOX","TOUCH CONTROLS","COSMIC REPLAY","AUTO TALK","HERO","CAMPAIGN PACK","MUSIC","SFX","3D VIEW","LEASH","CALL BEAST"};v11_header("SYSTEM");start=v11_sel/6*6;for(i=start;i<mini(start+6,16);i++){if(i==14)ui_text(22,4+i-start,leash_on?"ON":"OFF",14);if(i==13)ui_text(22,4+i-start,return_mode==MODE_SURFACE?"ENTER":"ON FOOT",14);if(i>=11&&i<=12)ui_text(22,4+i-start,lc_level_name(i==11?snd_music:snd_sfx),14);v11_row(4+i-start,i==v11_sel,s[i],15);if(i==0)ui_text(22,4+i-start,audio_on?"ON":"OFF",14);if(i==1)ui_text(22,4+i-start,v11_text_speed==0?"SLOW":v11_text_speed==1?"NORM":"FAST",14);if(i==2)ui_num(24,4+i-start,v11_brightness,14);if(i==6)ui_text(22,4+i-start,touch_mode?"ON":"OFF",14);if(i==7)ui_text(22,4+i-start,buddy_quantum?"ON":"OFF",14);if(i==8)ui_text(22,4+i-start,buddy_talk?"ON":"OFF",14);}
+ ui_text(2,15,"ACT I  SYNAPSE ROAD",13);ui_text(2,16,"V11.8  OLDER SAVES LOAD",14);
  }else if(pause_page==44){v11_header(v11_sub?"LOAD // THREE SLOTS":"SAVE // THREE SLOTS");for(i=0;i<3;i++){int o=25600+i*2048;ui_text(2,5+i*3,i==v11_sel?">":" ",13);ui_text(4,5+i*3,"SLOT",15);ui_num(10,5+i*3,i+1,15);
  if(v11_slot_valid(i)){int w=SRAM[o+4],room=SRAM[o+5];v11_short(12,5+i*3,w==0&&room>=70&&room<=77?V11_WORLDS[room-70]:WORLDS[w%8].name,16,14);ui_text(4,6+i*3,"LV",13);ui_num(7,6+i*3,SRAM[o+6],15);ui_text(11,6+i*3,"TIME",13);ui_num(16,6+i*3,((int)sr32(o+8))/216000,15);ui_text(20,6+i*3,"%",13);ui_num(23,6+i*3,SRAM[o+7],15);}
  else ui_text(12,5+i*3,"NO SIGNAL",8);}
@@ -266,6 +266,7 @@ static int v11_draw_pause(void){int i,id,start;
  ui_text(2,15,"A BUILD  SELECT REPAIR 10C",14);
  }else if(pause_page==45){v11_header("EVOLUTION // A HELD SIGNAL");v11_short(2,4,v11_assign?v11_creature_name(v11_assign-1):v11_cosmos_label(),26,13);v11_portrait(v11_assign,88,48,v11_evolution?v11_evo_timer:0);ui_text(2,14,v11_evolution?"THE BOND CARRIES FORWARD":"IS CHANGING. LET IT?",14);ui_text(2,17,v11_evolution?"B BACK":"A YES   B NOT YET",13);
  if(v11_evolution){ui_text(2,5,"STAGE",13);ui_num(8,5,v11_evo_old,15);ui_text(11,5,"->",13);ui_num(15,5,v11_evo_old+1,15);if(v11_evo_timer<12){for(i=0;i<256;i++)BG_PALETTE[i]=brighter5(BG_PALETTE[i],20-v11_evo_timer);}}
+ }else if(pause_page==50){v11_header("BEAST // FIELD RECORD");leash_draw_record();
  }else if(pause_page==49){sol_chat_draw();
  }else if(pause_page==46){v11_header("RENAME // DISPLAY NAME");ui_text(2,5,v11_name_edit,14);ui_text(2,7,"A ADD LETTER. SELECT DONE.",15);static const char*letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ ";for(i=0;i<27;i++){char b[2]={letters[i],0};ui_text(3+(i%9)*3,10+(i/9)*2,b,i==v11_rename_letter?13:15);if(i==v11_rename_letter)ui_text(2+(i%9)*3,10+(i/9)*2,">",13);}ui_text(2,16,"L ERASE  B CANCEL",14);
  }
@@ -285,7 +286,7 @@ static void v11_menu_changed(void){if(v11_page_previous==pause_page)return;v11_u
 static void v11_back(void){v11_sel=v11_detail=v11_menu_mode=0;v11_release_confirm=0;
  if(pause_page==45){if(V11_IS_ROOM)v11_palette();else set_world_palette(current_world);}
  if(pause_page==47){pause_page=1;v11_page_previous=255;return;}
- if(pause_page==27||pause_page==45||pause_page==46||pause_page==49)pause_page=18;
+ if(pause_page==27||pause_page==45||pause_page==46||pause_page==49||pause_page==50)pause_page=18;
  else if(pause_page==44||pause_page==42||pause_page==48)pause_page=9;
  else if(pause_page==26)pause_page=v11_parent==18?18:0;else pause_page=0;v11_page_previous=255;}
 static int v11_update_pause(u16 k){int i,id,n;
@@ -315,7 +316,7 @@ static int v11_update_pause(u16 k){int i,id,n;
  if(k&KEY_A){LcCreature*c=v11_assign?&lc_party.slots[v11_assign-1]:0;
  if(v11_sel==0){v11_active_cosmos=(u8)(!v11_assign);if(c){lc_party.active=v11_assign-1;v9_bonded=c->bond>=55;v9_bond_type=c->species%EN_COUNT;}save_game();v11_back();}
  if(v11_sel==1){if(v11_scrap<3&&inv[ITEM_SHARD]<2){v11_message("TRAIN WITH THREE SCRAP OR TWO CAMPAIGN SHARDS.");v11_detail=2;}else{if(v11_scrap>=3)v11_scrap-=3;else inv[ITEM_SHARD]-=2;if(c)lc_bond(&lc_party,v11_assign-1,(c->species>=128?c->species-128:c->species)%3,85);else v11_trust(8);v11_unlock();save_game();v11_message("WE TRAINED TOGETHER. THE BOND GREW.");v11_detail=2;}}
- if(v11_sel==2){pause_page=45;v11_page_previous=45;v11_evolution=0;v11_evo_old=c?c->stage:v11_cosmos_stage;}if(v11_sel==3)v11_back();if(v11_sel==4){pause_page=46;v11_page_previous=46;v11_name_edit[0]=0;v11_rename_pos=v11_rename_letter=0;}
+ if(v11_sel==2){pause_page=45;v11_page_previous=45;v11_evolution=0;v11_evo_old=c?c->stage:v11_cosmos_stage;}if(v11_sel==3){pause_page=50;v11_page_previous=50;}if(v11_sel==4){pause_page=46;v11_page_previous=46;v11_name_edit[0]=0;v11_rename_pos=v11_rename_letter=0;}
  if(v11_sel==7){pause_page=49;v11_page_previous=49;sol_chat_open();sol_spark_chirp(c?c->identity:0x43534d53u);}
  if(v11_sel==5){v11_prepare_export(v11_assign);v11_detail=2;}if(v11_sel==6){if(!c||c->species>=LC_SPECIES_IMPORTED){v11_message("COSMOS AND IMPORTED PUBLIC IDENTITIES STAY WITH YOU.");v11_detail=2;}else if(!v11_release_confirm)v11_release_confirm=1;else{int ix=v11_assign-1;if(lc_release_wild(&lc_party,ix)==LC_OK){for(i=ix;i<11;i++)copystr(v11_names[i],v11_names[i+1],12);v11_names[11][0]=0;save_game();v11_back();}}}}}
  else if(pause_page==45){if(k&KEY_A){LcCreature*c=v11_assign?&lc_party.slots[v11_assign-1]:0;int ok;if(c)ok=lc_evolve(&lc_party,v11_assign-1,(u8)(v11_qty[96]?1:0))==LC_OK;else{ok=v11_cosmos_stage<2&&v11_bond()>=(v11_cosmos_stage==0?5:10);if(ok)v11_cosmos_stage++;}if(ok){v11_evolution=1;v11_evo_timer=0;save_game();}else{v11_message("NOT YET. FIRST: LV12/BOND55. NEXT: LV28/BOND80. IMPORTS ALSO NEED HEARTWOOD SIGIL.");v11_detail=2;}}}
@@ -324,13 +325,15 @@ static int v11_update_pause(u16 k){int i,id,n;
  else if(pause_page==20){if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,100);if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,100);}
  else if(pause_page==11){if(k&KEY_RIGHT){v11_sub=(u8)((v11_sub+1)%3);v11_sel=0;}if(k&KEY_LEFT){v11_sub=(u8)((v11_sub+2)%3);v11_sel=0;}if(k&KEY_UP)v11_sel=(u8)wrapi(v11_sel-1,maxi(1,v11_list_count));if(k&KEY_DOWN)v11_sel=(u8)wrapi(v11_sel+1,maxi(1,v11_list_count));if(k&KEY_A&&v11_list_count&&v11_sub!=2){id=v11_list[v11_sel];v11_track=v11_track==id?255:id;save_game();}if(k&KEY_SELECT){pause_page=13;v11_page_previous=255;}}
  else if(pause_page==1){if(k&KEY_UP)v11_sel=(v11_sel+7)%8;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%8;if(k&KEY_SELECT)v11_map_legacy^=1;if(k&KEY_START&&V11_IS_ROOM){pause_page=47;v11_page_previous=255;return 1;}if(k&KEY_A){if(v11_map_legacy)v11_message("THE ORIGINAL WORLDS ARE REACHED WITH LUNA-ARC.");else if(v11_beacons&(1u<<v11_sel))v11_enter(v11_sel);else v11_message("THIS BEACON IS NOT LIT. WALK THERE AND RETURN ITS SIGNAL.");v11_detail=2;}}
- else if(pause_page==9){if(k&KEY_UP)v11_sel=(v11_sel+13)%14;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%14;
+ else if(pause_page==9){if(k&KEY_UP)v11_sel=(v11_sel+15)%16;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%16;
+ if(v11_sel>=14){if(k&KEY_A){if(v11_sel==14){leash_toggle();v11_message(leash_on?"LEASH ON. YOUR BEAST FOLLOWS ARIN.":"LEASH OFF. YOUR BEAST ROAMS ON ITS OWN.");}else if(leash_on)v11_message("THE LEASH IS ON. YOUR BEAST IS ALREADY WITH YOU.");else{leash_call();v11_message("CALLED. YOUR BEAST IS COMING BACK.");}v11_detail=2;}return 1;}
  /* V11.6: 3D VIEW leaves the menu the way B does and opens the perspective view. */
  if(v11_sel==13){if((k&KEY_A)&&return_mode==MODE_SURFACE){v11_resume_art();game_mode=return_mode;ui_clear();fp_request=1;}return 1;}
  if(v11_sel>=11&&(k&(KEY_A|KEY_LEFT|KEY_RIGHT))){lc_audio_option(v11_sel-10,(k&KEY_LEFT)?-1:(k&KEY_RIGHT)?1:0);return 1;}if(k&KEY_A){if(v11_sel==0)audio_on^=1;if(v11_sel==1)v11_text_speed=(v11_text_speed+1)%3;if(v11_sel==2)v11_brightness=v11_brightness%5+1;
  if(v11_sel==3||v11_sel==4){v11_sub=v11_sel==4;pause_page=44;v11_sel=0;v11_page_previous=44;}else if(v11_sel==5){pause_page=26;v11_parent=9;v11_page_previous=255;}else if(v11_sel==6){touch_mode^=1;save_game();}else if(v11_sel==7){buddy_quantum^=1;save_game();}else if(v11_sel==8){buddy_talk^=1;save_game();}else if(v11_sel==9){pause_page=15;role_preview=actor_style;}else if(v11_sel==10){pause_page=42;v11_menu_reset();}else save_game();}}
  else if(pause_page==44){if(!v11_menu_mode){if(k&KEY_UP)v11_sel=(v11_sel+2)%3;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%3;}if(k&KEY_A){if(!v11_menu_mode&&v11_slot_valid(v11_sel))v11_menu_mode=1;else{if(v11_sub)v11_slot_load(v11_sel);else v11_slot_save(v11_sel);v11_menu_mode=0;if(game_mode==MODE_PAUSE)v11_detail=2;}}}
  else if(pause_page==26){if(k&KEY_A){v11_import_snapshot();v11_detail=2;}}
+ else if(pause_page==50){if(k&KEY_A){if(leash_on)v11_message("THE LEASH IS ON. YOUR BEAST IS ALREADY WITH YOU.");else{leash_call();v11_message("CALLED. YOUR BEAST IS COMING BACK.");}v11_detail=2;}}
  else if(pause_page==41){if(k&KEY_UP)v11_sel=(v11_sel+10)%11;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%11;if(k&KEY_A){v11_craft();v11_detail=2;}if(k&KEY_SELECT){int cost=v11_charm(56)?5:10;if(v11_credits>=cost){v11_credits-=cost;v11_repair_all();save_game();v11_message("ALL GEAR REPAIRED.");}else v11_message("REPAIR NEEDS TEN CREDITS, FIVE WITH GEAR TOOTH.");v11_detail=2;}}
  else if(pause_page==42||pause_page==48){if(k&KEY_UP)v11_sel=(v11_sel+3)%4;if(k&KEY_DOWN)v11_sel=(v11_sel+1)%4;if(pause_page==42){if(k&KEY_A)use_item(v11_sel);if(k&KEY_SELECT){pause_page=21;p4_craft_sel=0;}}else if(k&KEY_A){if(v11_sel==0){if(weapon==0&&gear_owned&2)weapon=1;else if(weapon==1&&gear_owned&16)weapon=2;else weapon=0;}if(v11_sel==1)armor=(u8)((gear_owned&4)?!armor:0);if(v11_sel==2)charm=(u8)((gear_owned&8)?!charm:0);if(v11_sel==3){u8 s=current_spell;do{s=(s+1)%4;}while(s>0&&!(keys_found&(1u<<(s-1))));current_spell=s;}refresh_player_frames();save_game();}}
  return 1;

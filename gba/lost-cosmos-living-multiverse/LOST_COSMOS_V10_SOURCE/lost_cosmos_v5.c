@@ -646,6 +646,7 @@ static const NPCDef NPCS[]={
 #include "act1_heart_state.h"
 #include "beast_home_state.h"
 #include "first_person_state.h"
+#include "leash_state.h"
 
 /* ---------- quantum tape ---------- */
 static u8 next_q(void){ u8 v=QSEED[qi++]; if(qi>=QSEED_LEN)qi=0; return v; }
@@ -2179,7 +2180,7 @@ static void save_game(void){lc_mailbox_refresh(1);sol_spark_checked=0;sol_spark_
  SRAM[233]=0xD3;SRAM[234]=(u8)v10_relic;SRAM[235]=(u8)(v10_relic>>8);
  SRAM[236]=v10_realm_choices&7;
  SRAM[237]=(u8)(0x72^SRAM[233]^SRAM[234]^SRAM[235]^SRAM[236]^SRAM[200]^SRAM[201]);
- lc_save_roster();arc_save();p4_save();g5_save();g6_save();g7_save();completion_save();v11_save();journal_commit();}
+ lc_save_roster();arc_save();p4_save();g5_save();g6_save();g7_save();completion_save();v11_save();leash_save();journal_commit();}
 
 static void lc_save_roster(void){
  u8 bytes[LC_ROSTER_BYTES];unsigned i;
@@ -2242,7 +2243,7 @@ static void load_game(void){int i;if(save_valid()||save_valid_v4()||save_valid_v
  if(!old_v3&&!old_v4&&SRAM[233]==0xD3&&SRAM[237]==(u8)(0x72^SRAM[233]^SRAM[234]^SRAM[235]^SRAM[236]^SRAM[200]^SRAM[201])){
     v10_relic=(u16)SRAM[234]|((u16)SRAM[235]<<8);v10_realm_choices=SRAM[236]&7;
  }else{v10_relic=0;v10_realm_choices=0;}
- lc_restore_roster();arc_restore();p4_restore();g5_restore();g6_restore();g7_restore();completion_restore();v11_restore();
+ lc_restore_roster();arc_restore();p4_restore();g5_restore();g6_restore();g7_restore();completion_restore();v11_restore();leash_restore();
  touch_mode=(!old_v3&&!old_v4&&((SRAM[168]&0xFE)==0xC0))?(SRAM[168]&1):0;if(old_v3||old_v4||((SRAM[168]&0xFE)!=0xC0))save_game();
  return;}if(save_valid_v2()){load_common();player_level=1;player_xp=0;max_hp=6;player.hp=clampi(player.hp?player.hp:3,1,max_hp);player_mp=max_mp=6;str_stat=2;def_stat=1;mag_stat=2;inv[ITEM_POTION]=2;inv[ITEM_ETHER]=1;gear_owned=1;weapon=armor=charm=0;buddy_talk=buddy_quantum=1;quest_started=quest_completed=0;npc_seen=0;npc_recent=0;workload_qi=qi;touch_mode=0;actor_style=0;save_game();}}
 
@@ -2265,7 +2266,7 @@ static void choose_buddy_goal(void){int scores[GOAL_COUNT],i,best=-999,bestg=0;u
     the care lines (fill the bowl -> licks it clean) read as one moment. */
  if((q&7)==0&&!dialogue_timer&&!BH_IS_ROOM)buddy_speak_context();}
 static int buddy_tile_blocked(int x,int y){int tx=x>>3,ty=y>>3;if((unsigned)tx>=64u||(unsigned)ty>=64u)return 1;return collision[mi(tx,ty)]==C_WALL;}
-static void buddy_tick(void){s16 tx=player.x+18,ty=player.y-10,ix,iy;u8 ig;int dx,dy,step=1;if(game_mode!=MODE_SURFACE)return;if(cosmos.cooldown)cosmos.cooldown--;else choose_buddy_goal();nearest_interest(&ix,&iy,&ig);if(cosmos.goal==GOAL_SEEK_KEY||cosmos.goal==GOAL_INSPECT||cosmos.goal==GOAL_APPROACH||cosmos.goal==GOAL_SEEK_MEMORY){tx=ix;ty=iy;}else if(cosmos.goal==GOAL_EXPLORE||cosmos.goal==GOAL_WANDER){int q=buddy_quantum?qstate.phase:next_q();tx=(s16)clampi(player.x+(q-128),16,496);ty=(s16)clampi(player.y+((buddy_quantum?qstate.parity:next_q())-128),16,496);}else if(cosmos.goal==GOAL_WAIT||cosmos.goal==GOAL_REST){tx=cosmos.x;ty=cosmos.y;}else if(cosmos.goal==GOAL_AVOID||cosmos.goal==GOAL_WARN){tx=(s16)clampi(player.x+signi(player.x-256)*50,16,496);ty=(s16)clampi(player.y+signi(player.y-256)*50,16,496);}if(buddy_quantum&&qstate.coherence>200)step=2;dx=signi(tx-cosmos.x)*step;dy=signi(ty-cosmos.y)*step;if(!buddy_tile_blocked(cosmos.x+dx,cosmos.y))cosmos.x+=(s16)dx;if(!buddy_tile_blocked(cosmos.x,cosmos.y+dy))cosmos.y+=(s16)dy;cosmos.energy=(u8)clampi(cosmos.energy+((cosmos.goal==GOAL_REST)?1:-((frame&15)==0)),0,255);cosmos.mood=(u8)((cosmos.avoid>190)?3:(cosmos.curiosity>190?2:(cosmos.trust>190?1:0)));}
+static void buddy_tick(void){s16 tx=player.x+18,ty=player.y-10,ix,iy;u8 ig;int dx,dy,step=1;if(game_mode!=MODE_SURFACE)return;if(leash_autonomous()){leash_tick();return;}if(cosmos.cooldown)cosmos.cooldown--;else choose_buddy_goal();nearest_interest(&ix,&iy,&ig);if(cosmos.goal==GOAL_SEEK_KEY||cosmos.goal==GOAL_INSPECT||cosmos.goal==GOAL_APPROACH||cosmos.goal==GOAL_SEEK_MEMORY){tx=ix;ty=iy;}else if(cosmos.goal==GOAL_EXPLORE||cosmos.goal==GOAL_WANDER){int q=buddy_quantum?qstate.phase:next_q();tx=(s16)clampi(player.x+(q-128),16,496);ty=(s16)clampi(player.y+((buddy_quantum?qstate.parity:next_q())-128),16,496);}else if(cosmos.goal==GOAL_WAIT||cosmos.goal==GOAL_REST){tx=cosmos.x;ty=cosmos.y;}else if(cosmos.goal==GOAL_AVOID||cosmos.goal==GOAL_WARN){tx=(s16)clampi(player.x+signi(player.x-256)*50,16,496);ty=(s16)clampi(player.y+signi(player.y-256)*50,16,496);}if(buddy_quantum&&qstate.coherence>200)step=2;dx=signi(tx-cosmos.x)*step;dy=signi(ty-cosmos.y)*step;if(!buddy_tile_blocked(cosmos.x+dx,cosmos.y))cosmos.x+=(s16)dx;if(!buddy_tile_blocked(cosmos.x,cosmos.y+dy))cosmos.y+=(s16)dy;cosmos.energy=(u8)clampi(cosmos.energy+((cosmos.goal==GOAL_REST)?1:-((frame&15)==0)),0,255);cosmos.mood=(u8)((cosmos.avoid>190)?3:(cosmos.curiosity>190?2:(cosmos.trust>190?1:0)));}
 
 /* ---------- action RPG systems ---------- */
 static int can_stand(int x,int y);
@@ -2554,7 +2555,7 @@ static void enemy_tick(void){int i;
    if(can_stand(e->x,e->y+dy))e->y+=(s16)dy;}
  }
 }
-static void buddy_combat_assist(void){int i,best=-1,d=999;if(game_mode!=MODE_SURFACE)return;for(i=0;i<10;i++)if(enemies[i].active){int q=iabs(enemies[i].x-cosmos.x)+iabs(enemies[i].y-cosmos.y);if(q<d){d=q;best=i;}}if(best>=0&&d<62&&(frame&31)==0){int threshold=buddy_quantum?qstate.coherence:128;if(threshold>96){{
+static void buddy_combat_assist(void){int i,best=-1,d=999;if(game_mode!=MODE_SURFACE)return;if(!leash_on&&iabs(cosmos.x-player.x)+iabs(cosmos.y-player.y)>72)return;for(i=0;i<10;i++)if(enemies[i].active){int q=iabs(enemies[i].x-cosmos.x)+iabs(enemies[i].y-cosmos.y);if(q<d){d=q;best=i;}}if(best>=0&&d<62&&(frame&31)==0){int threshold=buddy_quantum?qstate.coherence:128;if(threshold>96){{
  int damage=1+(qstate.burst>150)+(v9_bonded?1:0);
  if(lc_party.count){
   const LcCreature *c=&lc_party.slots[lc_party.active];
@@ -3240,7 +3241,7 @@ static void update_pause(u16 newk){
 
 /* ---------- boot ---------- */
 static void init_graphics(void){int i;REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;REG_BG0CNT=(u16)(2|(BG_TILE_CB<<2)|(BG_MAP_BASE<<8)|(3u<<14));REG_BG1CNT=(u16)((UI_TILE_CB<<2)|(UI_MAP_BASE<<8));make_all_tiles();make_obj_tiles();lc_upload_import_art();oam_hide_all();for(i=0;i<4*1024;i++)screenblock(BG_MAP_BASE)[i]=0;ui_clear();}
-static void init_new_game(void){int i;keys_found=secrets_mask=chapter=ending=postgame=cosmos_preference=player_choice=beacon_count=0;visited_mask=1;arc_reset();p4_reset();g5_reset();g6_reset();g7_reset();completion_reset();story_flags=0;rune_progress=element_mask=shop_open=shop_sel=npc_log_offset=riddle_open=0;quest_started=quest_completed=0;npc_seen=0;npc_recent=0;npc_dialogue_active=0;player.x=80;player.y=408;player.face=1;player_level=1;player_xp=0;max_hp=6;player.hp=max_hp;max_mp=6;player_mp=max_mp;str_stat=2;def_stat=1;mag_stat=2;credits=0;for(i=0;i<ITEM_COUNT;i++)inv[i]=0;inv[ITEM_POTION]=2;inv[ITEM_ETHER]=1;gear_owned=1;weapon=armor=charm=0;current_spell=SPELL_PULSE;buddy_talk=buddy_quantum=1;qstate.mean=128;qstate.coherence=128;qstate.phase=0;cosmos.x=100;cosmos.y=396;cosmos.goal=GOAL_FOLLOW;cosmos.trust=96;cosmos.curiosity=205;cosmos.avoid=30;cosmos.energy=240;cosmos.focus=130;dodge_timer=dodge_cooldown=heavy_cooldown=0;touch_mode=0;hold_a_frames=0;workload_qi=0;v10_tutorial=0;v10_ending_card=0;v108_credits_reset();v10_hw_choice=v10_hw_riddle=0;v10_relic=0;v10_realm_choices=v10_realm_riddle=v10_festival_notes=0;actor_style=0;role_preview=0;chronicle_page=0;
+static void init_new_game(void){int i;leash_reset();keys_found=secrets_mask=chapter=ending=postgame=cosmos_preference=player_choice=beacon_count=0;visited_mask=1;arc_reset();p4_reset();g5_reset();g6_reset();g7_reset();completion_reset();story_flags=0;rune_progress=element_mask=shop_open=shop_sel=npc_log_offset=riddle_open=0;quest_started=quest_completed=0;npc_seen=0;npc_recent=0;npc_dialogue_active=0;player.x=80;player.y=408;player.face=1;player_level=1;player_xp=0;max_hp=6;player.hp=max_hp;max_mp=6;player_mp=max_mp;str_stat=2;def_stat=1;mag_stat=2;credits=0;for(i=0;i<ITEM_COUNT;i++)inv[i]=0;inv[ITEM_POTION]=2;inv[ITEM_ETHER]=1;gear_owned=1;weapon=armor=charm=0;current_spell=SPELL_PULSE;buddy_talk=buddy_quantum=1;qstate.mean=128;qstate.coherence=128;qstate.phase=0;cosmos.x=100;cosmos.y=396;cosmos.goal=GOAL_FOLLOW;cosmos.trust=96;cosmos.curiosity=205;cosmos.avoid=30;cosmos.energy=240;cosmos.focus=130;dodge_timer=dodge_cooldown=heavy_cooldown=0;touch_mode=0;hold_a_frames=0;workload_qi=0;v10_tutorial=0;v10_ending_card=0;v108_credits_reset();v10_hw_choice=v10_hw_riddle=0;v10_relic=0;v10_realm_choices=v10_realm_riddle=v10_festival_notes=0;actor_style=0;role_preview=0;chronicle_page=0;
  kill_count=0;v9_wave=1;v9_best_wave=v9_completed=v9_bonded=v9_bond_type=0;
  v9_jump=v9_jump_cd=v9_combo=v9_combo_time=v9_wave_delay=0;
  v9_equipped=v9_gear_sel=0;v9_rng=0xC0A571D5u;
@@ -3303,6 +3304,7 @@ static void v10_title_input(u16 newk){
 #include "campaign_quests.h"
 #include "act1_heart.h"
 #include "beast_home.h"
+#include "leash.h"
 #include "first_person.h"
 /* Music follows the scene. Menus keep the scene's track playing. */
 static u8 lc_music_context(void){static u8 last=LC_SONG_TITLE;

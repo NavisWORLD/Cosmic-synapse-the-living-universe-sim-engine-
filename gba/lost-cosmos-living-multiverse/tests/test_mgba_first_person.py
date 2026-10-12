@@ -80,14 +80,16 @@ def open_3d(emu, label):
         raise RuntimeError(f"{label}: pause menu did not select SYSTEM")
     emu.tap("A", hold=8, release=8)
     bh.wait(emu, lambda: emu.read_symbol("pause_page") == 9, f"{label} SYSTEM page", 120, 2)
-    emu.tap("UP", hold=8, release=8); emu.step((), 4)
+    # SYSTEM has 16 rows since V11.8 (14 LEASH, 15 CALL BEAST); 3D VIEW is 13.
+    for _ in range(3):
+        emu.tap("UP", hold=8, release=8); emu.step((), 4)
     if emu.read_symbol("v11_sel") != 13:
         raise RuntimeError(f"{label}: SYSTEM did not reach 3D VIEW")
     rows = [bh.ui_row(emu, r) for r in range(4, 18)]
     if not any("3D VIEW" in r and "ENTER" in r for r in rows):
         raise RuntimeError(f"{label}: no 3D VIEW row: {rows}")
-    if not any("V11" in r and "7  OLDER SAVES LOAD" in r for r in rows):
-        raise RuntimeError(f"{label}: SYSTEM page does not say V11.7: {rows}")
+    if not any("V11" in r and "8  OLDER SAVES LOAD" in r for r in rows):
+        raise RuntimeError(f"{label}: SYSTEM page does not say V11.8: {rows}")
     return rows
 
 
