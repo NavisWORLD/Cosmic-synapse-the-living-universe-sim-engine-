@@ -66,6 +66,13 @@ const SUPPLEMENTS = [
     sourceDigest:'62effbad67bf75e985c0250e0c8a6b1d94f92d8c9e46d25e52a81975461bcce7',
     rowDigests:['b9585341995fafcf0446d3a244f19592cf215774740f70646c7e502c7440671f','8749dd0c94224d4cf6b3939fc41d85c497bf5624e3e8ba8a3ed691253f774a1c'],
   },
+  {
+    file: 'ibm-bone-pig-20261010-supplement.json',
+    schema: 'lost-cosmos-ibm-bone-pig-20261010-cartridge-supplement-v1',
+    job: 'db4pa784qg6s73c2g5vg', backend:'ibm_marrakesh', shots:4096,
+    sourceDigest:'3d56c29500e4b010b70cc9abb41545024548be21c9ce4185217fb944116952ea',
+    rowDigests:['f89780cb1d353bb262d71998685da11c2c0701397fe35885cf5f33caf347a89a','c3ec5e564a6e4de91690cbf07c5d2de378317f7a06511057e42de9c59c6b50c5'],
+  },
 ];
 
 export function indexTable(table) {

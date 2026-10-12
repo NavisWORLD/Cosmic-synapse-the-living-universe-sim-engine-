@@ -8,6 +8,7 @@ import { readProgress } from '../sol-beast-lab/design.mjs';
 import {sha256Hex} from './digest.mjs';
 import {normalizeHandheldInput} from './controls.mjs?controller=beastboy39';
 import {isTrustedCloudOrigin} from './cloud-origin.mjs?controller=previeworigin41&sites=livingcosmos42';
+import {checkedCloudBattery,nativeIdentity} from './identity-handoff.mjs';
 const $=id=>document.getElementById(id),status=s=>$('status').textContent=s;
 let table,current=null,save=null,journey=false;
 const embedded=new URLSearchParams(location.search).get('mode')==='handheld';
@@ -16,14 +17,34 @@ if(embedded&&new URLSearchParams(location.search).get('player')==='shell45'){
  document.body.classList.add('player-shell');
  $('handheld').src='./handheld.html?controller=iphoneaudio40&sites=digest43&player=shell45&optical=01';
 }
-let cloudOrigin=null,handheldReady=false,pendingStart=false;
+let cloudOrigin=null,handheldReady=false,pendingStart=false,reloadPending=false,reloadTimer=null;
+function reportIdentity(bytes){
+ if(!cloudOrigin||!current?.qbeast?.profile?.id)return;
+ const verified=nativeIdentity(bytes,current.record.profile);
+ const {publicId,gameSeed,...details}=verified;
+ window.parent.postMessage({type:'sol-spark-identity-status',qbeast_id:current.qbeast.profile.id,seed:current.genome.seed,...details},cloudOrigin);
+}
+function reloadNative(){
+ handheldReady=false;pendingStart=true;
+ $('handheld').src='./handheld.html?controller=iphoneaudio40&sites=digest43&'+(document.body.classList.contains('player-shell')?'player=shell45&':'')+'optical=01';
+ if(cloudOrigin)window.parent.postMessage({type:'sol-spark-reloading'},cloudOrigin);
+}
 function startNative(){if(!handheldReady||!pendingStart)return;pendingStart=false;$('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-start'},location.origin);}
 // Choose the initial child document once; shell display changes never navigate it.
 if(!$('handheld').getAttribute('src'))$('handheld').src='./handheld.html?controller=iphoneaudio40&sites=digest43&optical=01';
 window.addEventListener('message',async event=>{
  if(!embedded||event.source!==window.parent||!isTrustedCloudOrigin(event.origin))return;
  if(event.data?.type==='sol-spark-player-state'){
-  $('handheld').contentWindow.postMessage({source:'living-universe',type:'sol-player-visibility',active:event.data.active===true},location.origin);return;
+  $('handheld').contentWindow.postMessage({source:'living-universe',type:'sol-player-visibility',active:event.data.active===true},location.origin);
+  if(typeof event.data.paused==='boolean')$('handheld').contentWindow.postMessage({source:'living-universe',type:'sol-player-pause',paused:event.data.paused},location.origin);
+  return;
+ }
+ if(event.data?.type==='sol-spark-reload-request'){
+  if(!current||!cloudOrigin||event.origin!==cloudOrigin||reloadPending)return;
+  reloadPending=true;
+  reloadTimer=setTimeout(()=>{reloadPending=false;if(cloudOrigin)window.parent.postMessage({type:'sol-spark-reload-error',message:'The running cartridge did not confirm its battery. It was left open; export the journey before retrying.'},cloudOrigin);},6000);
+  $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-checkpoint-reload'},location.origin);
+  return;
  }
  if(event.data?.type==='sol-spark-start'){
   if(!current){status('Send the Beast before starting the cartridge.');return;}
@@ -52,14 +73,17 @@ window.addEventListener('message',async event=>{
   if(!table)throw Error('Recorded seed table is still loading.');
   if(typeof event.data.text!=='string'||event.data.text.length>524288)throw Error('Spark handoff is outside its public limit.');
   const beast=await readSparkFile(new TextEncoder().encode(event.data.text),table);beast.qbeast=JSON.parse(event.data.text);
+  const starter=checkedSparkSave(beast,table);
+  const incoming=Object.hasOwn(event.data,'native_save')?checkedCloudBattery(event.data.native_save,starter):starter;
+  const earned=String.fromCharCode(...incoming.subarray(0,4))==='LCV5';
   const ledger=loadCage(localStorage);await admit(ledger,beast.record,'import');saveCage(ledger,localStorage);
-  ready(beast,checkedSparkSave(beast,table));cloudOrigin=event.origin;
+  cloudOrigin=event.origin;ready(beast,incoming,earned);
   window.parent.postMessage({type:'sol-spark-admitted',id:beast.qbeast.profile.id,seed:beast.genome.seed},event.origin);
  }catch(err){status(err.message);window.parent.postMessage({type:'sol-spark-rejected',message:err.message},event.origin);}
 });
 const download=(name,bytes,type='application/octet-stream')=>{const u=URL.createObjectURL(new Blob([bytes],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);};
 const base64Bytes=bytes=>{let out='';for(let i=0;i<bytes.length;i+=8192)out+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(out);};
-function ready(beast,bytes,earned=false){current=beast;save=bytes;journey=earned;$('companion').textContent=`${beast.genome.names['1']} · ${beast.genome.island}`;$('download').disabled=$('receipt').disabled=false;$('download').textContent=earned?'↓ Journey .sav':'↓ Starter .sav';$('handheld').contentWindow.postMessage({source:'living-universe',type:earned?'sol-spark-journey':'lc-import-save',save:bytes,callsign:beast.record.callsign,species:beast.genome.names['1']},location.origin);status(earned?'Your earned journey and companion art are ready. Reload the handheld before importing another save.':'The verified Beast is in the cartridge. Press Start Lost COSMOS.');}
+function ready(beast,bytes,earned=false){current=beast;save=bytes;journey=earned;$('companion').textContent=`${beast.genome.names['1']} · ${beast.genome.island}`;$('download').disabled=$('receipt').disabled=false;$('download').textContent=earned?'↓ Journey .sav':'↓ Starter .sav';$('handheld').contentWindow.postMessage({source:'living-universe',type:earned?'sol-spark-journey':'lc-import-save',save:bytes,callsign:beast.record.callsign,species:beast.genome.names['1']},location.origin);reportIdentity(bytes);status(earned?'Your verified journey and companion art are ready. Choose CONTINUE to preserve the native roster.':'The verified Beast is ready in the local cartridge mailbox. Start Lost COSMOS, then choose NEW GAME to import it.');}
 function storedMatch(bytes){
  const store=loadStore(localStorage);
  for(const b of Object.values(store.beasts)){
@@ -72,6 +96,28 @@ function storedMatch(bytes){
 }
 window.addEventListener('message',async event=>{
  if(event.origin===location.origin&&event.source===$('handheld').contentWindow&&event.data?.source==='living-universe'){
+  if(event.data?.type==='sol-spark-identity-status'){
+   const state=event.data.identity;
+   if(cloudOrigin&&current?.qbeast?.profile?.id&&state?.publicId===current.record.profile.publicId&&state?.gameSeed===current.record.profile.gameSeed&&['mailbox-ready','imported','missing','invalid'].includes(state.status)){
+    const details={status:state.status,origin:'local-mailbox',source:state.source==='local-mailbox'?'local-mailbox':'native-battery-checkpoint',message:String(state.message||'').slice(0,180)};
+    if(state.status==='imported'){details.level=state.level;details.stage=state.stage;}
+    window.parent.postMessage({type:'sol-spark-identity-status',qbeast_id:current.qbeast.profile.id,seed:current.genome.seed,...details},cloudOrigin);
+   }
+   return;
+  }
+  if(event.data?.type==='sol-spark-reload-checkpoint'){
+   if(!reloadPending)return;
+   clearTimeout(reloadTimer);reloadPending=false;
+   try{
+    if(event.data.save){const raw=event.data.save instanceof Uint8Array?event.data.save:new Uint8Array(event.data.save);save=checkedCloudBattery(base64Bytes(raw),checkedSparkSave(current,table));journey=String.fromCharCode(...save.subarray(0,4))==='LCV5';}
+    reloadNative();
+   }catch(error){if(cloudOrigin)window.parent.postMessage({type:'sol-spark-reload-error',message:String(error?.message||'The native battery needs recovery.').slice(0,180)},cloudOrigin);}
+   return;
+  }
+  if(event.data?.type==='sol-spark-reload-error'){
+   clearTimeout(reloadTimer);reloadPending=false;
+   if(cloudOrigin)window.parent.postMessage({type:'sol-spark-reload-error',message:String(event.data.message||'Export the native battery before reloading.').slice(0,180)},cloudOrigin);return;
+  }
   if(event.data?.type==='sol-spark-observation'){
    if(cloudOrigin&&current?.qbeast?.profile?.id===event.data.qbeast_id&&
       /^[-a-zA-Z0-9]{8,80}$/.test(String(event.data.requestId||''))){
@@ -89,6 +135,9 @@ window.addEventListener('message',async event=>{
   }
   if(event.data?.type==='sol-spark-audio-state'){
    if(cloudOrigin)window.parent.postMessage({type:'sol-spark-audio-state',wanted:event.data.wanted===true,running:event.data.running===true},cloudOrigin);return;
+  }
+  if(event.data?.type==='sol-spark-pause-state'){
+   if(cloudOrigin)window.parent.postMessage({type:'sol-spark-pause-state',paused:event.data.paused===true,applied:event.data.applied===true},cloudOrigin);return;
   }
   if(event.data?.type==='sol-spark-input-ack'){
    if(cloudOrigin)window.parent.postMessage({type:'sol-spark-input-ack',button:event.data.button,down:event.data.down,applied:event.data.applied===true},cloudOrigin);
@@ -132,7 +181,11 @@ $('beast-file').addEventListener('change',async()=>{try{if(!table)throw new Erro
 $('download').addEventListener('click',()=>{if(save)download(`${current.genome.names['1']}${journey?'_JOURNEY':'_STARTER'}.sav`,save);});
 $('receipt').addEventListener('click',()=>{if(current)download(`${current.genome.names['1']}_SPARK_RECEIPT.json`,JSON.stringify({schema:'sol-spark-art-receipt-v1',seed:current.genome.seed,traits:current.genome.inputs.traits,keeper:current.genome.inputs.user_id,runIndex:current.runIndex,forms:current.genome.names,...(current.qbeast?{qbeast:current.qbeast}:{})},null,2),'application/json');});
 $('journey').addEventListener('change',async()=>{try{if(!current)throw new Error('Choose the matching Spark companion first.');const file=$('journey').files[0];if(!file)return;if(file.size!==32768)throw new Error('Choose a 32 KB battery save.');const raw=new Uint8Array(await file.arrayBuffer()),progress=readProgress(current.record.profile,raw);ready(current,attachSparkArt(raw,current.genome,current.runIndex,table,{journey:true,...(current.record.seed===current.genome.seed?{record:current.record}:{})}),true);status(`Journey kept: LV ${progress.level}, bond ${progress.bond}, native form ${progress.stage+1}. Download the updated battery save.`);}catch(err){status(err.message);}finally{$('journey').value='';}});
-$('reset-player').addEventListener('click',()=>{handheldReady=false;$('handheld').src='./handheld.html?controller=iphoneaudio40&optical=01';});
+$('reset-player').addEventListener('click',()=>{
+ if(reloadPending)return;reloadPending=true;
+ reloadTimer=setTimeout(()=>{reloadPending=false;status('Reload stopped: no verified battery checkpoint. Export your journey before retrying.');},6000);
+ $('handheld').contentWindow?.postMessage({source:'living-universe',type:'sol-spark-checkpoint-reload'},location.origin);
+});
 $('handheld').addEventListener('load',()=>{handheldReady=true;if(save)ready(current,save,journey);startNative();});
 try{table=await loadTable();
  const approved=await fetch('./public-seeds.json').then(r=>{if(!r.ok)throw Error('Public recorded seeds unavailable.');return r.json()});
