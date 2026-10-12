@@ -173,6 +173,7 @@ static void fp_sprites(void){FpSprite list[FP_MAX_SPRITES];int n=0,i,j;LcCreatur
 
 /* ---------- mode ---------- */
 static void fp_beast_target(int*tx,int*ty){
+ if(leash_autonomous()){*tx=cosmos.x;*ty=cosmos.y;return;} /* LEASH OFF: draw the beast where it really is */
  if(fp_cam==FP_CAM_EYE){*tx=player.x+((fp_fx*40+fp_rx*14)>>14);*ty=player.y+((fp_fy*40+fp_ry*14)>>14);}
  else{*tx=player.x+((fp_rx*16)>>14);*ty=player.y+((fp_ry*16)>>14);}}
 static void fp_enter(void){static const u16 face_heading[4]={0,2048,3072,1024};int tx,ty;
@@ -210,7 +211,9 @@ static void fp_update(u16 k,u16 newk){int sp=0,run=(k&KEY_B)!=0,speed=run?3:2,dx
  if(dx||dy){int ox=player.x,oy=player.y;move_player(dx,dy,run);fp_walked=(u16)(fp_walked+iabs(player.x-ox)+iabs(player.y-oy));}
  else if(!sp)player.anim=0;
  if(player.hurt)player.hurt--;
- /* The beast keeps pace beside the player and never walks into a wall. */
+ /* The beast keeps pace beside the player and never walks into a wall.
+    With the leash off it keeps roaming and is drawn at its own position. */
+ if(leash_autonomous()){leash_tick();fp_beast_x=cosmos.x*256;fp_beast_y=cosmos.y*256;return;}
  fp_beast_target(&tx,&ty);
  {int nx=fp_beast_x+((tx*256-fp_beast_x)>>2),ny=fp_beast_y+((ty*256-fp_beast_y)>>2);
   if(!blocked_px(nx>>8,fp_beast_y>>8))fp_beast_x=nx;if(!blocked_px(fp_beast_x>>8,ny>>8))fp_beast_y=ny;
@@ -221,5 +224,6 @@ static void fp_render(void){static const char*dir[4]={"N","E","S","W"};
  ui_text(1,0,fp_cam==FP_CAM_EYE?"EYE VIEW":"CAGE VIEW",14);
  ui_text(11,0,V11_IS_ROOM?v11_short_world():location_name(),13);
  ui_text(28,0,dir[((fp_heading+512)>>10)&3],15);
+ if(leash_autonomous()){ui_fill_rows(18,18,62,15);ui_text(1,18,"LEASH OFF",14);ui_text(11,18,"CELLS",13);ui_num(17,18,lf_rec.cells,15);ui_text(22,18,"SPOT",13);ui_num(27,18,lf_rec.pois,15);}
  ui_fill_rows(19,19,62,15);ui_text(1,19,"A CAM  L R TILT  SELECT MAP",15);}
 #endif

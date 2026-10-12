@@ -74,8 +74,16 @@ def run(rom,elf,src_save,out,route,reply,record):
   def need(cond,msg):
    if not cond:raise RuntimeError(msg+" :: "+json.dumps(snapshot(emu)))
   def go(value,at,room,npc=None,what=""):
-   nav.interact(value,at=at)
-   wait(emu,lambda:emu.read_symbol("current_room")==room,f"room {room} {what}",900)
+   # A companion chatter line can be open when A lands; that press only
+   # closes the line, so a player presses A again (at most three tries).
+   for attempt in range(3):
+    nav.interact(value,at=at)
+    try:
+     wait(emu,lambda:emu.read_symbol("current_room")==room,f"room {room} {what}",300 if attempt<2 else 900);break
+    except RuntimeError as e:
+     if attempt<2:continue
+     dlg=bytes(emu.read_range(emu.symbols["dialogue"].address,90)).split(b"\0")[0].decode("ascii","replace")
+     raise RuntimeError(f"{e}; player={nav.position()} dialogue={dlg!r} pro_ui={emu.read_symbol('pro_ui')} mode={emu.read_symbol('game_mode')}")
    settle(emu,nav,npc)
   try:
    if record:emu.start_recording(out/"LOST_COSMOS_ACT1_FIRST_HEART.mp4")
@@ -307,7 +315,10 @@ def regent_battle(emu,route,shots):
    opened=emu.read_symbol("a1_rg_open") or emu.read_symbol("a1_rg_stagger")
    core=emu.read_symbol("a1_rg_core");mp=emu.read_symbol("player_mp");hp=emu.read_symbol("player",width=1,offset=7) if False else None
    if route=="restore":
-    act=5 if opened else (0 if core==0 else ((COUNTER[core]%3)+1 if mp>=2 else 0))
+    # Open its guard by parrying the slam, or by staggering a glowing core
+    # with its weakness (the slam pattern depends on frame timing, so waiting
+    # only for STONE can run out of mana), then RESTORE.
+    act=5 if opened else (0 if core==0 else (COUNTER[core] if mp>=2 else 0))
    else:
     act=0 if opened or core==0 or mp<2 else COUNTER[core]
    to_cursor(act);emu.tap("A",hold=4,release=4);emu.step((),4)

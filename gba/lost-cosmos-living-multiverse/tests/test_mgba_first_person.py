@@ -24,6 +24,7 @@ sys.path.insert(0, str(ROOT))
 from mgba import Mgba, sha256
 from mgba_navigate import Navigator
 import test_mgba_beast_home as bh
+from test_mgba_menu_visual import goto_index
 
 MODE_SURFACE, MODE_PAUSE = 0, 2
 FP_BG2CNT = 1 | (2 << 2) | (29 << 8) | (2 << 14)
@@ -75,20 +76,46 @@ def pixel(rgb, x, y):
 def open_3d(emu, label):
     emu.tap("START", hold=8, release=8)
     bh.wait(emu, lambda: emu.read_symbol("game_mode") == MODE_PAUSE, f"{label} pause", 120, 2)
-    emu.tap("RIGHT", hold=8, release=8); emu.tap("UP", hold=8, release=8)
+    goto_index(emu, 9)
     if emu.read_symbol("pause_sel") != 9:
         raise RuntimeError(f"{label}: pause menu did not select SYSTEM")
     emu.tap("A", hold=8, release=8)
     bh.wait(emu, lambda: emu.read_symbol("pause_page") == 9, f"{label} SYSTEM page", 120, 2)
-    emu.tap("UP", hold=8, release=8); emu.step((), 4)
+    # SYSTEM has 16 rows since V11.8 (14 LEASH, 15 CALL BEAST); 3D VIEW is 13.
+    for _ in range(3):
+        emu.tap("UP", hold=8, release=8); emu.step((), 4)
     if emu.read_symbol("v11_sel") != 13:
         raise RuntimeError(f"{label}: SYSTEM did not reach 3D VIEW")
     rows = [bh.ui_row(emu, r) for r in range(4, 18)]
     if not any("3D VIEW" in r and "ENTER" in r for r in rows):
         raise RuntimeError(f"{label}: no 3D VIEW row: {rows}")
-    if not any("V11" in r and "7  OLDER SAVES LOAD" in r for r in rows):
-        raise RuntimeError(f"{label}: SYSTEM page does not say V11.7: {rows}")
+    if not any("V11" in r and "8  OLDER SAVES LOAD" in r for r in rows):
+        raise RuntimeError(f"{label}: SYSTEM page does not say V11.8: {rows}")
     return rows
+
+
+def leash_on(emu, label):
+    """V11.8: LEASH OFF (roaming) is the default. This suite checks the V11.6
+    follower in the 3D view, so it turns the leash ON with the controller
+    (PAUSE > SYSTEM > LEASH). tests/test_mgba_leash.py covers LEASH OFF."""
+    emu.tap("START", hold=8, release=8)
+    bh.wait(emu, lambda: emu.read_symbol("game_mode") == MODE_PAUSE, f"{label} pause", 120, 2)
+    goto_index(emu, 9); emu.tap("A", hold=8, release=8)
+    bh.wait(emu, lambda: emu.read_symbol("pause_page") == 9, f"{label} SYSTEM page", 120, 2)
+    for _ in range(18):
+        if emu.read_symbol("v11_sel") == 14:
+            break
+        emu.tap("UP", hold=8, release=8); emu.step((), 4)
+    if emu.read_symbol("v11_sel") != 14:
+        raise RuntimeError(f"{label}: SYSTEM did not reach LEASH")
+    emu.tap("A", hold=10, release=10); emu.step((), 8)
+    for _ in range(6):
+        if emu.read_symbol("game_mode") == 0:
+            break
+        emu.tap("B", hold=10, release=10); emu.step((), 8)
+    if emu.read_symbol("leash_on") != 1 or emu.read_symbol("game_mode") != 0:
+        raise RuntimeError(f"{label}: LEASH ON did not take")
+    emu.step((), 30)
 
 
 def confirm_3d(emu, label):
@@ -141,6 +168,7 @@ def run_case(rom, elf, out, label, save_src, record=False):
         if p["count"] < 1:
             raise RuntimeError(f"{label}: no beast in the party")
         rep["beast"] = p
+        leash_on(emu, label)
         # G5 book star in Brindlemark: road-backed star tile, trigger kept.
         sb = 24 + (31 >= 32) + ((40 >= 32) << 1)
         entry = emu.read16(0x06000000 + sb * 2048 + ((40 & 31) * 32 + (31 & 31)) * 2)

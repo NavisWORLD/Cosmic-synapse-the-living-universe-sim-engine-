@@ -34,6 +34,7 @@ static void spark_follow_tick(void){
  s16 tx,ty;int dx,dy;
  spark_follow_place();
  if(!lc_mail_live||game_mode!=MODE_SURFACE)return;
+ if(leash_autonomous()){spark_follow_x=(s16)(cosmos.x+8);spark_follow_y=(s16)(cosmos.y+12);return;}
  tx=(s16)(player.x-22);ty=(s16)(player.y+12);
  dx=signi(tx-spark_follow_x);dy=signi(ty-spark_follow_y);
  if(dx&&!buddy_tile_blocked(spark_follow_x+dx,spark_follow_y))spark_follow_x=(s16)(spark_follow_x+dx);
