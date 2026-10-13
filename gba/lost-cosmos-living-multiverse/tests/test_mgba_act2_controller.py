@@ -237,6 +237,29 @@ def run(rom, elf, act1, out):
                 raise RuntimeError("Q14 Chronoheart not earned")
             mark("11_chronoheart_earned")
 
+            # Q14 queues two back-to-back card sets. Do not silently walk
+            # through a lingering native modal: verify the real controller
+            # actually dismissed all of them before the Old Quarter exit.
+            if value("pro_ui") == 4:
+                cards("remaining Act II finale")
+            status = {
+                "pro_ui": value("pro_ui"),
+                "intro": value("intro"),
+                "opening": value("v10_opening"),
+                "credits": value("v108_credits_active"),
+                "cinema": value("cinema_active"),
+                "dialogue": value("npc_dialogue_active"),
+                "game_mode": value("game_mode"),
+                "position": nav.position(),
+                "down_collision": [nav.board()[y * 64 + 32] for y in range(14, 21)]
+            }
+            print("ACT2_LEAVING_SANCTUM", status, flush=True)
+            if status["pro_ui"] != 0 or status["credits"] or status["cinema"] or status["dialogue"]:
+                raise RuntimeError("Cannot exit Sanctum while native overlay is active: " + repr(status))
+            emu.step("DOWN", 16)
+            if nav.position()[1] <= status["position"][1]:
+                raise RuntimeError("Native Sanctum player cannot move south after Act II finale: "
+                                   + repr(status))
             nav.interact(TR_CITY, at=(32, 57))
             ensure_room(A2_CITY, "Sanctum return")
             nav.interact(TR_OLDQ, at=(10, 59))
