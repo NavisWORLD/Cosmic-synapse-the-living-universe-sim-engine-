@@ -83,6 +83,9 @@ def run(rom, elf, act1, out):
         def ensure_room(room, label):
             if (value("current_world"), value("current_room")) != (0, room):
                 raise RuntimeError("Actual " + label + " landed in wrong room")
+            # Native warp returns the new room before deferred world-building
+            # and triggered map writes are necessarily visible to the host.
+            emu.step((), 30)
 
         try:
             emu.step((), 180)
