@@ -83,8 +83,23 @@ def run(rom, elf, act1, out):
         def ensure_room(room, label):
             if (value("current_world"), value("current_room")) != (0, room):
                 raise RuntimeError("Actual " + label + " landed in wrong room")
-            # Native warp returns the new room before deferred world-building
-            # and triggered map writes are necessarily visible to the host.
+            # A native key edge can report its destination before the map
+            # generation completes in the emulated ARM instruction stream.
+            # Require a genuine authored on-map trigger, never write one.
+            witness = {
+                2: (52, 12, TR_GATE),
+                A2_TIDE: (24, 30, TR_ECHO),
+                A2_CITY: (32, 59, TR_TO_TIDE),
+                A2_WHISPERS: (8, 32, TR_MIRROR),
+                A2_LIGHT: (16, 20, TR_PANEL),
+                A2_ARENA: (32, 30, TR_LEVER),
+                A2_SANCTUM: (32, 14, TR_CHRONO)
+            }.get(room)
+            if witness:
+                x, y, expected = witness
+                def complete():
+                    return nav.triggers()[y * 64 + x] == expected
+                wait(complete, label + " native map trigger", 1200)
             emu.step((), 30)
 
         try:
