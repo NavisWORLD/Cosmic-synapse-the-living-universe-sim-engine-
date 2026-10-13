@@ -24,6 +24,17 @@ int main(void){
   for(int i=0;i<4096;i++)printf("%c",'0'+collision[i]);
   printf("\n");
  }
+ /* Act II relocates Lysara from the old city room 5 into the active
+    Forgotten City plaza. Her real collision footprint must be reachable. */
+ story_flags|=ST_HEART;cq_set(9,CQ_DONE);cq_set(10,CQ_ACTIVE);
+ current_world=0;current_room=A2_CITY;current_layer=1;
+ player.x=32*8;player.y=52*8;generate_surface();
+ printf("ROOM %d %d\n",current_room,npc_count);
+ for(int i=0;i<npc_count;i++)
+  printf("NPC %d %d %d\n",npc_runtime[i].id,npc_runtime[i].x,npc_runtime[i].y);
+ printf("COLLISION ");
+ for(int i=0;i<4096;i++)printf("%c",'0'+collision[i]);
+ printf("\n");
  return 0;
 }
 """
@@ -64,9 +75,12 @@ def reachable(board, start):
                 queue.append(point)
     return seen
 
-for room, identity, start in ((2,14,(88,416)),(3,16,(88,416)),(4,17,(248,416)),(5,18,(80,416))):
+assert 18 not in rooms[5]["npcs"], "Lysara must not be duplicated in the old city following Act II relocation"
+for room, identity, start in ((2,14,(88,416)),(3,16,(88,416)),(4,17,(248,416)),(96,18,(32*8,52*8))):
     record = rooms[room]
+    assert identity in record["npcs"], f"Story NPC {identity} missing in native room {room}"
     npc = record["npcs"][identity]
+    assert stand(record["board"],*start), f"Native actor does not fit room {room} start"
     seen = reachable(record["board"], start)
     others = [p for i,p in record["npcs"].items() if i != identity]
     goals = [p for p in seen
@@ -75,4 +89,4 @@ for room, identity, start in ((2,14,(88,416)),(3,16,(88,416)),(4,17,(248,416)),(
                      abs(p[0]-o[0])+abs(p[1]-o[1]) for o in others)]
     print(f"ROOM {room}: NPC {identity} at {npc}, genuine 10px-footprint interaction positions={len(goals)}")
     assert goals, f"Eridoria campaign softlock: NPC {identity} is unreachable from {start} in room {room}"
-print("PASS native C/real actor-footprint: Brindlemark, Ravenswood Oakwood, Cragstone, Forgotten City White Sentinel")
+print("PASS native C/real actor-footprint: Brindlemark, Ravenswood Oakwood, Cragstone, Act II Lysara and no old-city duplicate")

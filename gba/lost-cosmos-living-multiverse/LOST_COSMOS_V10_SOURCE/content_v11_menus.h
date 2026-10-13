@@ -225,9 +225,14 @@ static int v11_draw_pause(void){int i,id,start;
  if(v11_list_count){id=v11_list[v11_sel];ui_text(2,10,st[cq_state[id]&3],cq_state[id]==CQ_DONE?13:14);
   obj=(cq_state[id]==CQ_ACTIVE&&id<5)?prologue_hud_line():0;
   if(!obj&&cq_state[id]==CQ_ACTIVE&&id>=5&&id<=9)obj=act1_objective(id);
-  if(obj)v11_short(2,11,obj,26,15);else if(cq_state[id]==CQ_ACTIVE&&id==10)v11_lines(2,11,"THE HIDDEN CITY LIES BEYOND THE NORTHEAST RUNE IN BRINDLEMARK.",26,3,15);
+  if(!obj&&cq_state[id]==CQ_ACTIVE&&id>=10&&id<=14)obj=act2_objective(id);
+  if(obj)v11_short(2,11,obj,26,15);
   if(id==8&&cq_state[8]==CQ_DONE)v11_short(2,14,a1_regent==2?"REGENT MENDED: THREE RUNES":a1_regent==1?"REGENT DEFEATED IN BATTLE":"RECORDED FROM AN EARLIER SAVE",26,13);
   else if(id==9&&cq_state[9]==CQ_DONE)v11_short(2,14,a1_reply==1?"TOLD MALAKAR: NO ERASING":a1_reply==2?"ASKED MALAKAR: WHO DECIDES":"FIRST AXIS RECLAIMED",26,13);
+  else if(id>=10&&id<=14&&cq_state[id]==CQ_DONE&&(a2_flags&A2F_MIGRATED)&&!(id==13&&(a2_flags&A2F_PACT)))v11_short(2,14,"RECORDED FROM AN EARLIER SAVE",26,8);
+  else if(id==11&&cq_state[11]==CQ_DONE)v11_short(2,14,"THE MIRROR LOWERED ITS HAMMER",26,13);
+  else if(id==13&&cq_state[13]==CQ_DONE)v11_short(2,14,(a2_flags&A2F_PACT)?"ALL SPARED: SOUL PACT":"LEVER HELD: UNITY RECORDED",26,13);
+  else if(id==14&&cq_state[14]==CQ_DONE)v11_short(2,14,"NIHILOS: THE ABSENCE REMEMBERED",26,13);
   else if(id>=5&&id<=7&&cq_state[id]==CQ_DONE&&(a1_flags&A1F_MIGRATED))v11_short(2,14,"RECORDED FROM AN EARLIER SAVE",26,8);
   if(id<5&&(pro_flags&PF_MIGRATED))v11_short(2,14,"RECORDED FROM AN EARLIER SAVE",26,8);
   else if(id<5&&pro_choice&&cq_state[1]==CQ_DONE)v11_short(2,14,pro_choice==1?"CHOSE: DEFENDED STORES":"CHOSE: CARRIED INJURED",26,13);}
@@ -245,7 +250,7 @@ static int v11_draw_pause(void){int i,id,start;
  ui_text(2,14,"THE MAP FILLS AS YOU RECALL",14);ui_text(2,15,V11_IS_ROOM?"START LOCAL LANDMARK MAP":"* KNOWN WORLD",14);ui_text(2,16,"SELECT CAMPAIGN / SIGNALS",13);
  }else if(pause_page==47){v11_draw_local_map();
  }else if(pause_page==9){static const char*s[16]={"AUDIO","TEXT SPEED","BRIGHTNESS","SAVE GAME","LOAD GAME","BEAST BOX","TOUCH CONTROLS","COSMIC REPLAY","AUTO TALK","HERO","CAMPAIGN PACK","MUSIC","SFX","3D VIEW","LEASH","CALL BEAST"};v11_header("SYSTEM");start=v11_sel/6*6;for(i=start;i<mini(start+6,16);i++){if(i==14)ui_text(22,4+i-start,leash_on?"ON":"OFF",14);if(i==13)ui_text(22,4+i-start,return_mode==MODE_SURFACE?"ENTER":"ON FOOT",14);if(i>=11&&i<=12)ui_text(22,4+i-start,lc_level_name(i==11?snd_music:snd_sfx),14);v11_row(4+i-start,i==v11_sel,s[i],15);if(i==0)ui_text(22,4+i-start,audio_on?"ON":"OFF",14);if(i==1)ui_text(22,4+i-start,v11_text_speed==0?"SLOW":v11_text_speed==1?"NORM":"FAST",14);if(i==2)ui_num(24,4+i-start,v11_brightness,14);if(i==6)ui_text(22,4+i-start,touch_mode?"ON":"OFF",14);if(i==7)ui_text(22,4+i-start,buddy_quantum?"ON":"OFF",14);if(i==8)ui_text(22,4+i-start,buddy_talk?"ON":"OFF",14);}
- ui_text(2,15,"ACT I  SYNAPSE ROAD",13);ui_text(2,16,"V11.8  OLDER SAVES LOAD",14);
+ ui_text(2,15,"ACT I  SYNAPSE ROAD",13);ui_text(2,16,"V11.9  OLDER SAVES LOAD",14);
  }else if(pause_page==44){v11_header(v11_sub?"LOAD // THREE SLOTS":"SAVE // THREE SLOTS");for(i=0;i<3;i++){int o=25600+i*2048;ui_text(2,5+i*3,i==v11_sel?">":" ",13);ui_text(4,5+i*3,"SLOT",15);ui_num(10,5+i*3,i+1,15);
  if(v11_slot_valid(i)){int w=SRAM[o+4],room=SRAM[o+5];v11_short(12,5+i*3,w==0&&room>=70&&room<=77?V11_WORLDS[room-70]:WORLDS[w%8].name,16,14);ui_text(4,6+i*3,"LV",13);ui_num(7,6+i*3,SRAM[o+6],15);ui_text(11,6+i*3,"TIME",13);ui_num(16,6+i*3,((int)sr32(o+8))/216000,15);ui_text(20,6+i*3,"%",13);ui_num(23,6+i*3,SRAM[o+7],15);}
  else ui_text(12,5+i*3,"NO SIGNAL",8);}

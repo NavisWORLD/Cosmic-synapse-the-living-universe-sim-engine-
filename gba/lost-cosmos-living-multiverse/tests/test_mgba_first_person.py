@@ -89,8 +89,8 @@ def open_3d(emu, label):
     rows = [bh.ui_row(emu, r) for r in range(4, 18)]
     if not any("3D VIEW" in r and "ENTER" in r for r in rows):
         raise RuntimeError(f"{label}: no 3D VIEW row: {rows}")
-    if not any("V11" in r and "8  OLDER SAVES LOAD" in r for r in rows):
-        raise RuntimeError(f"{label}: SYSTEM page does not say V11.8: {rows}")
+    if not any("V11" in r and "9  OLDER SAVES LOAD" in r for r in rows):
+        raise RuntimeError(f"{label}: SYSTEM page does not say V11.9: {rows}")
     return rows
 
 
