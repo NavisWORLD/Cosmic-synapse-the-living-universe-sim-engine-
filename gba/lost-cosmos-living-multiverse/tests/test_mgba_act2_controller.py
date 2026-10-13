@@ -264,6 +264,7 @@ def run(rom, elf, act1, out):
             emu.step("DOWN", 16)
             after = {
                 "game_frame": value("frame", width=2),
+                "pro_ui": value("pro_ui"),
                 "first_person": value("fp_active"),
                 "surface_key": value("qa_last_surface_k", width=2),
                 "surface_gate": value("qa_surface_gate"),
@@ -271,6 +272,14 @@ def run(rom, elf, act1, out):
                 "down_collision": [nav.board()[y * 64 + 32] for y in range(14, 21)]
             }
             print("ACT2_SANCTUM_DOWN_PROBE", after, flush=True)
+            if nav.position()[1] <= status["position"][1] and after["pro_ui"] == 4:
+                # A queued second epilogue card set is genuine narrative
+                # progression. Dismiss it with A; do not alter any quest flag.
+                cards("late Act II epilogue")
+                emu.step("DOWN", 16)
+                after["after_epilogue"] = {"pro_ui": value("pro_ui"),
+                                            "frame": value("frame", width=2),
+                                            "position": nav.position()}
             if nav.position()[1] <= status["position"][1]:
                 raise RuntimeError("Native Sanctum player cannot move south after Act II finale: "
                                    + repr({"before": status, "after": after}))
