@@ -250,6 +250,11 @@ def run(rom, elf, act1, out):
                 "cinema": value("cinema_active"),
                 "dialogue": value("npc_dialogue_active"),
                 "game_mode": value("game_mode"),
+                "game_frame": value("frame", width=4),
+                "first_person": value("fp_active"),
+                "first_person_request": value("fp_request"),
+                "surface_key": value("qa_last_surface_k", width=2),
+                "surface_gate": value("qa_surface_gate"),
                 "position": nav.position(),
                 "down_collision": [nav.board()[y * 64 + 32] for y in range(14, 21)]
             }
@@ -257,9 +262,18 @@ def run(rom, elf, act1, out):
             if status["pro_ui"] != 0 or status["credits"] or status["cinema"] or status["dialogue"]:
                 raise RuntimeError("Cannot exit Sanctum while native overlay is active: " + repr(status))
             emu.step("DOWN", 16)
+            after = {
+                "game_frame": value("frame", width=4),
+                "first_person": value("fp_active"),
+                "surface_key": value("qa_last_surface_k", width=2),
+                "surface_gate": value("qa_surface_gate"),
+                "position": nav.position(),
+                "down_collision": [nav.board()[y * 64 + 32] for y in range(14, 21)]
+            }
+            print("ACT2_SANCTUM_DOWN_PROBE", after, flush=True)
             if nav.position()[1] <= status["position"][1]:
                 raise RuntimeError("Native Sanctum player cannot move south after Act II finale: "
-                                   + repr(status))
+                                   + repr({"before": status, "after": after}))
             nav.interact(TR_CITY, at=(32, 57))
             ensure_room(A2_CITY, "Sanctum return")
             nav.interact(TR_OLDQ, at=(10, 59))
