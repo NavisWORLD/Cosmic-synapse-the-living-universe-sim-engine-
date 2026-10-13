@@ -250,7 +250,7 @@ def run(rom, elf, act1, out):
                 "cinema": value("cinema_active"),
                 "dialogue": value("npc_dialogue_active"),
                 "game_mode": value("game_mode"),
-                "game_frame": value("frame", width=4),
+                "game_frame": value("frame", width=2),
                 "first_person": value("fp_active"),
                 "first_person_request": value("fp_request"),
                 "surface_key": value("qa_last_surface_k", width=2),
@@ -263,7 +263,7 @@ def run(rom, elf, act1, out):
                 raise RuntimeError("Cannot exit Sanctum while native overlay is active: " + repr(status))
             emu.step("DOWN", 16)
             after = {
-                "game_frame": value("frame", width=4),
+                "game_frame": value("frame", width=2),
                 "first_person": value("fp_active"),
                 "surface_key": value("qa_last_surface_k", width=2),
                 "surface_gate": value("qa_surface_gate"),
