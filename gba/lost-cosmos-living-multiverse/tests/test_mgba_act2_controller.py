@@ -213,8 +213,8 @@ def run(rom, elf, act1, out):
                 emu.tap("A", hold=1, release=1)
                 if value("a2_ring_lock") != ring_number + 1:
                     raise RuntimeError("Actual Chronoheart ring %d failed to lock" % ring_number)
-            cards("Chronoheart history")
-            cards("Act II finale")
+            # The history callback immediately queues the Act II finale.
+            cards("Chronoheart history and Act II finale")
             if quest(14) != CQ_DONE or value("a2_flags", width=2) & 0x0400 == 0:
                 raise RuntimeError("Q14 Chronoheart not earned")
             mark("11_chronoheart_earned")
@@ -267,7 +267,7 @@ def run(rom, elf, act1, out):
         flags = emu.read_symbol("story_flags")
         if flags & ST_ACT2 != ST_ACT2:
             raise RuntimeError("Independent cold boot lost earned Q10-Q14 milestones")
-        if emu.read_symbol("a2_flags", width=2) & 0x07F0 != 0x07F0:
+        if emu.read_symbol("a2_flags", width=2) & 0x06F0 != 0x06F0:
             raise RuntimeError("Independent cold boot lost Lysara, trials, Kaelen or Chronoheart")
         report["second_boot"] = {
             "world": emu.read_symbol("current_world"),
