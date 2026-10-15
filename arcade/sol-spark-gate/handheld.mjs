@@ -10,6 +10,10 @@ import {applyHandheldInput,normalizeHandheldInput} from './controls.mjs?controll
 import { FIXTURE, GROWTH_BYTES, GROWTH_OFFSET, MAILBOX_BYTES, MAILBOX_OFFSET, SRAM_SIZE, buildSave, livingProfile, profileFromBcp1, profileFromBeastJson } from '../lost-cosmos/mailbox.mjs';
 import { MuseLink, mockTraits } from '../lost-cosmos/muse.mjs';
 
+// WebKit builds without MediaRecorder (Linux WebKit, iOS < 14.3) made EmulatorJS throw
+// "Can't find variable: MediaRecorder" at start. Recording is never used here, so
+// expose an inert type that reports nothing supported and refuses to record.
+if(typeof window.MediaRecorder==='undefined'){window.MediaRecorder=class{static isTypeSupported(){return false;}constructor(){throw new Error('Recording is not available in this browser.');}};}
 const $ = (id) => document.getElementById(id);
 if(new URLSearchParams(location.search).get('player')==='shell45')document.body.classList.add('player-frame');
 const status = (text) => { $('status').textContent = text; };
@@ -106,6 +110,20 @@ function syncAudioUi(note = '') {
   }
 }
 
+
+// iPhone Safari: audio inside this frame only unlocks from a tap IN this frame, and the
+// emulator does not advance until its AudioContext runs. A START message from Beast Box is
+// not a gesture here, so show one in-frame tap target that resumes audio (no new context)
+// and keeps the already-booting cartridge going. Without audio it still plays muted.
+function tapGate(show,text){
+ let gate=$('tap-gate');
+ if(!gate){gate=document.createElement('button');gate.id='tap-gate';gate.type='button';
+  gate.style.cssText='position:fixed;inset:0;z-index:20;display:grid;place-content:center;gap:6px;border:0;background:radial-gradient(circle at 50% 40%,#2a1d55e6,#050914f2 70%);color:#efe9ff;font:800 15px system-ui;letter-spacing:.06em;cursor:pointer';
+  gate.addEventListener('click',()=>{void unlockGameAudio().then(()=>{const running=emulatorAudioContexts().some(c=>c.state==='running');if(running||state.gateTaps>0)tapGate(false);else tapGate(true,'▶ TAP AGAIN TO PLAY');state.gateTaps=(state.gateTaps||0)+1;});});
+  document.body.appendChild(gate);}
+ gate.textContent=text||'▶ TAP TO PLAY';gate.hidden=!show;gate.style.display=show?'grid':'none';
+}
+function audioLocked(){const c=emulatorAudioContexts();return c.length===0||c.some(x=>x.state!=='running');}
 async function unlockGameAudio() {
   state.audioWanted = true;
   // Important for iOS Safari: call resume() synchronously from this button's
@@ -237,6 +255,7 @@ async function installEmulator(bytes,{autoStart=false}={}) {
     const gm = window.EJS_emulator?.gameManager;
     window.EJS_emulator?.setVolume?.(gameVolume());
     syncAudioUi();
+    if(audioLocked()&&$('tap-gate')&&!$('tap-gate').hidden)tapGate(true,'▶ TAP TO PLAY');
     if(state.batteryError){gm?.toggleMainLoop?.(1);startError(state.batteryError);return;}
     status(`Lost Cosmos V${receipt.version} is running. Choose NEW GAME or CONTINUE on the title screen.`);
     if (!gm || !bytes) return;
@@ -307,6 +326,7 @@ window.addEventListener('message', (event) => {
     state.playerVisible=data.active===true;
     window.EJS_emulator?.setVolume?.(gameVolume());syncAudioUi();return;
   }
+  if(data.type==='sol-spark-audio-mute'){state.audioWanted=data.muted!==true;window.EJS_emulator?.setVolume?.(gameVolume());syncAudioUi();return;}
   if(data.type==='sol-player-pause'){
     if(typeof data.paused!=='boolean')return;
     state.paused=data.paused;applyPause();return;
@@ -351,6 +371,8 @@ window.addEventListener('message', (event) => {
     if (!state.save) { startError('Send your Spark companion first.'); return; }
     $('consent').checked = true;
     installEmulator(state.save,{autoStart:true});
+    // Show the in-frame tap target until audio is actually running.
+    setTimeout(()=>{if(!state.audioWanted||audioLocked())tapGate(true);},0);
     return;
   }
   if (data.type === 'lc-import-save' || data.type === 'sol-spark-journey') {

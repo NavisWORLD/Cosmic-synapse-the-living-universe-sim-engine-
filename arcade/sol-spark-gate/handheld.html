@@ -26,6 +26,8 @@
   .player-frame #game{order:1;flex:1;min-height:0;width:100%;height:auto;border-radius:0}
   .player-frame .ejs_virtualGamepad_parent,.player-frame .ejs_virtualGamepad_open,.player-frame .ejs_menu_bar,.player-frame .ejs_menu_button,.player-frame .ejs_context_menu,.player-frame .ejs_settings_parent{display:none!important}
   @media(max-height:120px){.player-frame .row:not(.legacy-inputs){display:none}}
+  /* Beast Box owns sound/options in its handheld MENU; the frame keeps only the game + tap-to-play target. */
+  .player-frame .row:not(.legacy-inputs){display:none}
 </style>
 </head>
 <body>
