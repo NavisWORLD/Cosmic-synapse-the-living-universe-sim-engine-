@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import { verifyEmulatorJsAssets } from './verify-emulatorjs-assets.mjs';
 
 const file = 'standalone/SIM_EARTH_7_08_REALITY_BODY.html';
-const EXPECTED = '13854fef4308013f095be01a4bbd4772f5086a82dd8ace8b561122cf5f6c7e97';
+const EXPECTED = 'aed4b42ef2bb8db10d631f37079ba372d096ec59c74161caf138a46b03ee0900';
 const fail = (m) => { console.error(`FAIL: ${m}`); process.exitCode = 1; };
 if (!fs.existsSync(file)) { fail(`missing ${file}`); process.exit(1); }
 const buf = fs.readFileSync(file);
