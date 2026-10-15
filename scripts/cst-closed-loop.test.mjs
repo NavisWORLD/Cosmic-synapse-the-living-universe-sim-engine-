@@ -1,0 +1,9 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
+import {loadLoop,simulate} from '../research/cst-closed-loop/sim.mjs';
+const html=readFileSync(new URL('../standalone/SIM_EARTH_7_08_REALITY_BODY.html',import.meta.url),'utf8');
+const CL=loadLoop(html.match(/<script id="cst-closed-loop">([\s\S]*?)<\/script>/)[1]);
+const tape=JSON.parse(html.match(/<script type="application\/json" id="cst-seed-tape">([\s\S]*?)<\/script>/)[1]);
+test('seed tape is labelled honestly',()=>{assert.match(tape.label,/RECORDED_HISTORICAL_IBM_HARDWARE_SEEDS/);assert.ok(tape.hardware.every(r=>/^ibm_/.test(r.backend)&&/^[a-f0-9]{64}$/.test(r.counts_sha256)));assert.ok(tape.simulated.every(r=>r.label==='SIMULATED'&&r.target==='rigetti.sim.qvm'))});
+test('recorded counts sum to shots and replay deterministically',()=>{for(const r of tape.hardware)assert.equal(Object.values(r.counts).reduce((a,b)=>a+b,0),r.shots);const a=CL.quantumSource('recorded',tape),b=CL.quantumSource('recorded',tape);for(let i=0;i<5000;i++)assert.equal(a.next(),b.next())});
+test('couplings stay bounded and unitless',()=>{const w={biosphere:.5,storm:.5};const v=new Array(54).fill(1);for(let i=0;i<1e4;i++)CL.coupleWorld(w,v,1e6);assert.ok(w.biosphere>=0&&w.biosphere<=1&&w.storm>=0&&w.storm<=1);const m=CL.creatureMood(v);for(const x of Object.values(m))assert.ok(x>=0&&x<=1)});
+test('closed loop is deterministic and world responds to state',()=>{const a=simulate(CL,tape,{seed:3,T:3000}),b=simulate(CL,tape,{seed:3,T:3000});assert.deepEqual(a,b);const o=simulate(CL,tape,{seed:3,T:3000,flags:{worldOn:false}});assert.notEqual(a.biosphere,o.biosphere)});
