@@ -73,7 +73,7 @@ def pixel(rgb, x, y):
     return rgb[i], rgb[i + 1], rgb[i + 2]
 
 
-def open_3d(emu, label):
+def open_3d(emu, label, via_first_person=False):
     emu.tap("START", hold=8, release=8)
     bh.wait(emu, lambda: emu.read_symbol("game_mode") == MODE_PAUSE, f"{label} pause", 120, 2)
     goto_index(emu, 9)
@@ -81,7 +81,17 @@ def open_3d(emu, label):
         raise RuntimeError(f"{label}: pause menu did not select SYSTEM")
     emu.tap("A", hold=8, release=8)
     bh.wait(emu, lambda: emu.read_symbol("pause_page") == 9, f"{label} SYSTEM page", 120, 2)
-    # SYSTEM has 16 rows since V11.8 (14 LEASH, 15 CALL BEAST); 3D VIEW is 13.
+    # V11.10: FIRST PERSON (action 16) is the second row on the first SYSTEM page.
+    first = [bh.ui_row(emu, r) for r in range(4, 10)]
+    if not any("FIRST PERSON" in r for r in first[:2]):
+        raise RuntimeError(f"{label}: FIRST PERSON is not on the first SYSTEM page: {first}")
+    emu.tap("DOWN", hold=8, release=8); emu.step((), 4)
+    if emu.read_symbol("v11_sel") != 16:
+        raise RuntimeError(f"{label}: DOWN from AUDIO did not select FIRST PERSON")
+    if via_first_person:
+        return [bh.ui_row(emu, r) for r in range(4, 18)]
+    emu.tap("UP", hold=8, release=8); emu.step((), 4)
+    # SYSTEM has 17 rows since V11.10 (display order AUDIO, FIRST PERSON, ... 3D VIEW, LEASH, CALL BEAST); 3D VIEW is action 13.
     for _ in range(3):
         emu.tap("UP", hold=8, release=8); emu.step((), 4)
     if emu.read_symbol("v11_sel") != 13:
@@ -300,7 +310,7 @@ def run_case(rom, elf, out, label, save_src, record=False):
         bh.go_home(emu, nav, out, label)
         name = bh.text(emu, "dialogue").split("WELCOME HOME. ", 1)[1].split(" PERKS UP", 1)[0]
         home_before = field_state(emu, nav)
-        open_3d(emu, label + " home")
+        open_3d(emu, label + " home", via_first_person=True)
         confirm_3d(emu, label + " home")
         emu.step((), 30)
         if not any(abs(a["tile"] - top_beast_tile) <= 4 for a in affine_sprites(emu, 16)):

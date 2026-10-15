@@ -153,7 +153,7 @@ def run(rom, elf, output):
         require(emu.read_symbol("pause_sel") == 9, "Real menu did not select SYSTEM")
         emu.tap("A", hold=12, release=12)
         require(emu.read_symbol("pause_page") == 9, "SYSTEM page did not open")
-        for _ in range(3):
+        for _ in range(4):  # V11.10: AUDIO, FIRST PERSON, TEXT SPEED, BRIGHTNESS, SAVE GAME
             emu.tap("DOWN", hold=10, release=10)
         require(emu.read_symbol("v11_sel") == 3, "Real SYSTEM page did not select SAVE GAME")
         emu.tap("A", hold=12, release=12)
