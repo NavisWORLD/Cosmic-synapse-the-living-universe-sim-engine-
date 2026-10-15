@@ -372,7 +372,7 @@ window.addEventListener('message', (event) => {
     $('consent').checked = true;
     installEmulator(state.save,{autoStart:true});
     // Show the in-frame tap target until audio is actually running.
-    setTimeout(()=>{if(!state.audioWanted||audioLocked())tapGate(true);},0);
+    setTimeout(()=>{if(document.body.classList.contains('player-frame')&&(!state.audioWanted||audioLocked()))tapGate(true);},0);
     return;
   }
   if (data.type === 'lc-import-save' || data.type === 'sol-spark-journey') {

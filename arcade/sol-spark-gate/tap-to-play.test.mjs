@@ -4,7 +4,8 @@ test('missing MediaRecorder cannot abort cartridge start',()=>{assert.match(src,
 test('START message shows an in-frame tap target that resumes existing audio contexts (no new context)',()=>{
  const gate=src.slice(src.indexOf('function tapGate'),src.indexOf('async function unlockGameAudio'));
  assert.match(gate,/unlockGameAudio\(\)/);assert.doesNotMatch(gate,/new (window\.)?(AudioContext|webkitAudioContext)/);
- assert.match(src,/installEmulator\(state\.save,\{autoStart:true\}\);\n\s*\/\/ Show the in-frame tap target[^\n]*\n\s*setTimeout\(\(\)=>\{if\(!state\.audioWanted\|\|audioLocked\(\)\)tapGate\(true\);\},0\);/);
+ assert.match(src,/installEmulator\(state\.save,\{autoStart:true\}\);\n\s*\/\/ Show the in-frame tap target[^\n]*\n\s*setTimeout\(\(\)=>\{if\(document\.body\.classList\.contains\('player-frame'\)&&\(!state\.audioWanted\|\|audioLocked\(\)\)\)tapGate\(true\);\},0\);/);
  assert.match(src,/document\.body\.appendChild\(gate\)/);
 });
 test('Beast Box can mute without a gesture; sound/options row is hidden in the player frame',()=>{assert.match(src,/data\.type==='sol-spark-audio-mute'/);assert.match(html,/\.player-frame \.row:not\(\.legacy-inputs\)\{display:none\}/);});
+test('standalone handheld keeps its visible sound row instead of the gate',()=>{assert.match(src,/classList\.contains\('player-frame'\)&&\(!state\.audioWanted/);});
