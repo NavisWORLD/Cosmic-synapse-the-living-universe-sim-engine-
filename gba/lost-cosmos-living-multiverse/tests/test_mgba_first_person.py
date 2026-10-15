@@ -81,17 +81,17 @@ def open_3d(emu, label, via_first_person=False):
         raise RuntimeError(f"{label}: pause menu did not select SYSTEM")
     emu.tap("A", hold=8, release=8)
     bh.wait(emu, lambda: emu.read_symbol("pause_page") == 9, f"{label} SYSTEM page", 120, 2)
-    # V11.10: FIRST PERSON (action 16) is the second row on the first SYSTEM page.
-    first = [bh.ui_row(emu, r) for r in range(4, 10)]
-    if not any("FIRST PERSON" in r for r in first[:2]):
+    # V11.10: FIRST PERSON (action 16) is on the first SYSTEM page (row 7 of 7, after BEAST BOX).
+    first = [bh.ui_row(emu, r) for r in range(4, 11)]
+    if not any("FIRST PERSON" in r and "ENTER" in r for r in first):
         raise RuntimeError(f"{label}: FIRST PERSON is not on the first SYSTEM page: {first}")
-    emu.tap("DOWN", hold=8, release=8); emu.step((), 4)
-    if emu.read_symbol("v11_sel") != 16:
-        raise RuntimeError(f"{label}: DOWN from AUDIO did not select FIRST PERSON")
     if via_first_person:
+        for _ in range(6):
+            emu.tap("DOWN", hold=8, release=8); emu.step((), 4)
+        if emu.read_symbol("v11_sel") != 16:
+            raise RuntimeError(f"{label}: six DOWNs from AUDIO did not select FIRST PERSON")
         return [bh.ui_row(emu, r) for r in range(4, 18)]
-    emu.tap("UP", hold=8, release=8); emu.step((), 4)
-    # SYSTEM has 17 rows since V11.10 (display order AUDIO, FIRST PERSON, ... 3D VIEW, LEASH, CALL BEAST); 3D VIEW is action 13.
+    # SYSTEM has 17 rows since V11.10 (UP from AUDIO still wraps to CALL BEAST, LEASH, 3D VIEW); 3D VIEW is action 13.
     for _ in range(3):
         emu.tap("UP", hold=8, release=8); emu.step((), 4)
     if emu.read_symbol("v11_sel") != 13:
