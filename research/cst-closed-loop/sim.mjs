@@ -3,10 +3,10 @@
 import {createRequire} from 'node:module';
 export function loadLoop(src){const f=new Function('globalThis',src+';return globalThis.CSTClosedLoop;');return f({})}
 const cl=(x,a=0,b=1)=>x<a?a:x>b?b:x,fract=x=>x-Math.floor(x);
-export function simulate(CL,tape,{seed=7,T=6000,dt=1/30,flags={},quantum='recorded'}={}){
+export function simulate(CL,tape,{seed=7,T=6000,dt=1/30,flags={},quantum='recorded',init=null,bell=null,bellMode='recorded',qsrc=null}={}){
  const F={...CL.FLAGS,...flags,quantum};const sr=CL.mulberry32(seed*7919+1);const gauss=()=>{let u=sr()||1e-9,v=sr();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
- const qs=quantum==='legacy'?null:CL.quantumSource(quantum,tape,seed*31+5);
- let w=new Float64Array(12).fill(.5),mem=new Float64Array(12),L={x:.1,y:.2,z:.3},prev=0,hebbPrev=.25;
+ const qs=qsrc||(quantum==='legacy'?null:CL.quantumSource(quantum,tape,seed*31+5));const bs=bell?CL.bellSource(bellMode,bell,seed*17+3):null;let bellSum=0;
+ let w=init?Float64Array.from(init.w):new Float64Array(12).fill(.5),mem=init?Float64Array.from(init.mem):new Float64Array(12),L={x:.1,y:.2,z:.3},prev=0,hebbPrev=.25;
  const world={biosphere:.4,storm:.1};const grav=1,rad=.1,res=.6;let stormInt=0,moodSum={joy:0,curiosity:0,fear:0,calm:0,mischief:0};
  const v=new Float64Array(54);
  for(let t=0;t<T;t++){
@@ -24,7 +24,7 @@ export function simulate(CL,tape,{seed=7,T=6000,dt=1/30,flags={},quantum='record
   const adapt=[hebb,plast,att,cur,avoid,cl(.7+bio*.3),cl(1-anomaly*.6),cl(t*dt/60/120),predE,lr,reson,sing];
   v12.forEach((x,i)=>v[i]=x);v[15]=chaos;v[40]=inst;v[41]=coh;adapt.forEach((x,i)=>v[42+i]=x);
   for(let i=0;i<12;i++){w[i]=cl(w[i]+lr*(adapt[i]*v12[i]-w[i])*.02);mem[i]+=(v12[i]-mem[i])*cl(dt*.15)}
-  hebbPrev=hebb;CL.coupleWorld(world,v,dt,F);stormInt+=world.storm*dt;const m=CL.creatureMood(v);for(const k in m)moodSum[k]+=m[k]/T;
+  hebbPrev=hebb;CL.coupleWorld(world,v,dt,F);if(bs){const pr=bs.next(aro>.5?1:0,cur>.5?1:0);bellSum+=pr/T;CL.bellCouple(world,v,pr,dt,F)}stormInt+=world.storm*dt;const m=CL.creatureMood(v);for(const k in m)moodSum[k]+=m[k]/T;
  }
- return{biosphere:world.biosphere,storm:world.storm,stormTime:stormInt,...Object.fromEntries(Object.entries(moodSum).map(([k,x])=>['mood_'+k,x])),qLabel:qs?qs.label:'LEGACY_SIN_HASH'};
+ return{weights:Array.from(w),mem:Array.from(mem),bellMean:bellSum,biosphere:world.biosphere,storm:world.storm,stormTime:stormInt,...Object.fromEntries(Object.entries(moodSum).map(([k,x])=>['mood_'+k,x])),qLabel:qs?qs.label:'LEGACY_SIN_HASH'};
 }

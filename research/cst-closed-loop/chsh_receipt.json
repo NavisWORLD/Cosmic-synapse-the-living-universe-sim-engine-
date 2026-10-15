@@ -1,0 +1,59 @@
+{
+  "backend": "ibm_marrakesh",
+  "chsh": {
+    "E": {
+      "a0b0": 0.703125,
+      "a0b1": 0.689453125,
+      "a1b0": 0.646484375,
+      "a1b1": -0.71875
+    },
+    "S": 2.7578125,
+    "S_standard_error": 0.04523944556191646,
+    "sigma_above_2": 16.751144727510606
+  },
+  "counts_sha256": "08163a698580c2a3ee42849491cc67b7e8b3e33d87a8bbb1f3d30722595a11cc",
+  "job_id": "db8iu85ckpjs73b13msg",
+  "job_tag": "navisworld-cst-chsh-bell-v1-20261015",
+  "label": "REAL IBM QUANTUM HARDWARE RUN",
+  "limitations": [
+    "Single run; no loophole-free Bell test (locality and detection loopholes open).",
+    "Readout error not mitigated."
+  ],
+  "measurements": {
+    "a0b0": {
+      "00": 458,
+      "01": 81,
+      "10": 71,
+      "11": 414
+    },
+    "a0b1": {
+      "00": 445,
+      "01": 77,
+      "10": 82,
+      "11": 420
+    },
+    "a1b0": {
+      "00": 433,
+      "01": 91,
+      "10": 90,
+      "11": 410
+    },
+    "a1b1": {
+      "00": 78,
+      "01": 435,
+      "10": 445,
+      "11": 66
+    }
+  },
+  "quantum_seconds": null,
+  "recorded_utc": "2026-10-15T19:58:09.175422+00:00",
+  "schema": "navisworld-ibm-chsh-receipt-v1",
+  "settings_rad": {
+    "a0": 0.0,
+    "a1": 1.5707963267948966,
+    "b0": 0.7853981633974483,
+    "b1": -0.7853981633974483
+  },
+  "shots_per_setting": 1024,
+  "source_class": "RECORDED_IBM_HARDWARE"
+}

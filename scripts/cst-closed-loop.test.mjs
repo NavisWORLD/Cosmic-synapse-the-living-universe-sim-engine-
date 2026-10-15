@@ -7,3 +7,7 @@ test('seed tape is labelled honestly',()=>{assert.match(tape.label,/RECORDED_HIS
 test('recorded counts sum to shots and replay deterministically',()=>{for(const r of tape.hardware)assert.equal(Object.values(r.counts).reduce((a,b)=>a+b,0),r.shots);const a=CL.quantumSource('recorded',tape),b=CL.quantumSource('recorded',tape);for(let i=0;i<5000;i++)assert.equal(a.next(),b.next())});
 test('couplings stay bounded and unitless',()=>{const w={biosphere:.5,storm:.5};const v=new Array(54).fill(1);for(let i=0;i<1e4;i++)CL.coupleWorld(w,v,1e6);assert.ok(w.biosphere>=0&&w.biosphere<=1&&w.storm>=0&&w.storm<=1);const m=CL.creatureMood(v);for(const x of Object.values(m))assert.ok(x>=0&&x<=1)});
 test('closed loop is deterministic and world responds to state',()=>{const a=simulate(CL,tape,{seed:3,T:3000}),b=simulate(CL,tape,{seed:3,T:3000});assert.deepEqual(a,b);const o=simulate(CL,tape,{seed:3,T:3000,flags:{worldOn:false}});assert.notEqual(a.biosphere,o.biosphere)});
+test('CHSH tape is the real labelled IBM run and replays its S',()=>{const c=tape.chsh;assert.equal(c.label,'REAL IBM QUANTUM HARDWARE RUN');assert.equal(c.job_id,'db8iu85ckpjs73b13msg');
+ const b=CL.bellSource('recorded',c);const keys=[[0,0],[0,1],[1,0],[1,1]];let S=0;keys.forEach(([i,j],n)=>{let m=0;for(let k=0;k<1024;k++)m+=b.next(i,j);S+=(n===3?-1:1)*m/1024});assert.ok(Math.abs(S-c.chsh.S)<1e-9);
+ assert.ok(CL.bellSource('lhv',c,1).S<=2+1e-12)});
+test('marginals-only PRNG is labelled classical',()=>{assert.match(CL.quantumSource('marginals',tape,1).label,/CLASSICAL/)});
