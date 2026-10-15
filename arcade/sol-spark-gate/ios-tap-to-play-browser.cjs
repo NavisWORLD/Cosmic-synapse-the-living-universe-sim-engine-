@@ -12,7 +12,7 @@ const root=process.argv[2]||'http://127.0.0.1:3000';
   await page.waitForFunction(()=>!document.querySelector('#status').textContent.includes('Loading'));
   await page.evaluate(text=>{window.__ev=[];window.addEventListener('message',e=>{if(e.source===window)window.__ev.push(e.data?.type);});window.postMessage({type:'sol-spark-qbeast',text},location.origin);},text);
   await page.waitForFunction(()=>window.__ev.includes('sol-spark-admitted'),null,{timeout:30000});
-  const hand=page.frameLocator('#handheld');await hand.locator('#status').filter({hasText:'cartridge mailbox'}).waitFor();
+  const hand=page.frameLocator('#handheld');await hand.locator('#status').filter({hasText:'cartridge mailbox'}).waitFor({state:'attached',timeout:30000});
   await page.evaluate(()=>window.postMessage({type:'sol-spark-start'},location.origin));
   await hand.locator('#tap-gate').waitFor({state:'visible',timeout:30000});
   assert.match(await hand.locator('#tap-gate').textContent(),/TAP/);
