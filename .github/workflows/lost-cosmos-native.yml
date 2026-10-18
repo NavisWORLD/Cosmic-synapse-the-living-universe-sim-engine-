@@ -95,6 +95,8 @@ jobs:
       - name: Real mGBA V11.1 full menu visual pilgrimage
         timeout-minutes: 5
         run: python3 tests/test_mgba_menu_visual.py --out artifacts/mgba_menu_visual
+      - name: V12.0 LIVING WORLD (controller only, mGBA)
+        run: python3 tests/test_mgba_living_world.py --out artifacts/mgba_living_world
       - name: Assert title, options, credits and all prologue text on real rendered pixels
         run: |
           python3 tests/test_mgba_title.py --out artifacts/mgba_title/compiled

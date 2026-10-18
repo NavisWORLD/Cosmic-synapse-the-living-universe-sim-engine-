@@ -1,0 +1,408 @@
+[
+ {
+  "id": "q2_01",
+  "act": 2,
+  "name": "Gather Fellowship",
+  "summary": "Recruit Bryn (scared of moths) and Quillan (4 soup spells).",
+  "giver": "Lord Ravenswood",
+  "reward_item_ids": [
+   "warm_ale",
+   "soup_simmer"
+  ]
+ },
+ {
+  "id": "q2_02",
+  "act": 2,
+  "name": "Whispers in Woods",
+  "summary": "Travelers whisper of a city hidden in the dark forest.",
+  "giver": "Tattered Traveler",
+  "reward_item_ids": [
+   "lamp_oil"
+  ]
+ },
+ {
+  "id": "q2_03",
+  "act": 2,
+  "name": "Forest Guardian",
+  "summary": "Wisps lead you in. The guardian sets three tests.",
+  "giver": "Forest Guardian",
+  "reward_item_ids": [
+   "calaminth"
+  ]
+ },
+ {
+  "id": "q2_04",
+  "act": 2,
+  "name": "Grumbleback",
+  "summary": "Get the sacred crystal. Calm the cave beast. It follows you.",
+  "giver": "Forest Guardian",
+  "reward_item_ids": [
+   "sacred_crystal",
+   "grumble_plush"
+  ]
+ },
+ {
+  "id": "q2_05",
+  "act": 2,
+  "name": "The Others' Trials",
+  "summary": "Bryn vs moths. Quillan feeds a giant. Edric admits fear.",
+  "giver": "Edric Ravenswood",
+  "reward_item_ids": [
+   "soup_thicken",
+   "soup_season"
+  ]
+ },
+ {
+  "id": "q2_06",
+  "act": 2,
+  "name": "Citadel in Mist",
+  "summary": "Cross the cliffs. The crystal opens the giant doors.",
+  "giver": "Edric Ravenswood",
+  "reward_item_ids": [
+   "climber_boots"
+  ]
+ },
+ {
+  "id": "q2_07",
+  "act": 2,
+  "name": "The Sentinel",
+  "summary": "All lights die but your beast's glow. Reason with Hesper.",
+  "giver": "Sentinel Hesper",
+  "reward_item_ids": [
+   "sentinel_down"
+  ]
+ },
+ {
+  "id": "q2_08",
+  "act": 2,
+  "name": "Hall of Whispers",
+  "summary": "A mirror shows fears that are not yours. Walk past them.",
+  "giver": "Sentinel Hesper",
+  "reward_item_ids": [
+   "edric_lantern"
+  ]
+ },
+ {
+  "id": "q2_09",
+  "act": 2,
+  "name": "Doubt Made Flesh",
+  "summary": "Your own failures fight back. Declare you are still here.",
+  "giver": "Sentinel Hesper",
+  "reward_item_ids": [
+   "silver_page",
+   "rune_maul"
+  ]
+ },
+ {
+  "id": "q2_10",
+  "act": 2,
+  "name": "Tree of Branches",
+  "summary": "Pick a path: Bright, Shadowed, or Winding. Rivers are stopping.",
+  "giver": "The Tree",
+  "reward_item_ids": [
+   "star_shard"
+  ]
+ },
+ {
+  "id": "q3_11",
+  "act": 3,
+  "name": "Realm of Harmony",
+  "summary": "Get Harmony Shards. Now you hear your beast think in doodles.",
+  "giver": "Spirit of Harmony",
+  "reward_item_ids": [
+   "harmony_shard"
+  ]
+ },
+ {
+  "id": "q3_12",
+  "act": 3,
+  "name": "Grove in Chaos",
+  "summary": "Twelve friends breathe together. The thorns let go.",
+  "giver": "Spirit of Harmony",
+  "reward_item_ids": [
+   "grove_honey"
+  ]
+ },
+ {
+  "id": "q3_13",
+  "act": 3,
+  "name": "The Petal Tree",
+  "summary": "Catch three petals: Wisdom, Courage, Unity.",
+  "giver": "Spirit of Harmony",
+  "reward_item_ids": [
+   "wisdom_petal"
+  ]
+ },
+ {
+  "id": "q3_14",
+  "act": 3,
+  "name": "Gateway of Trials",
+  "summary": "Riddle a shooting star, walk into shadow, stage a show.",
+  "giver": "Gateway Figures",
+  "reward_item_ids": [
+   "star_candy",
+   "festival_fin"
+  ]
+ },
+ {
+  "id": "q3_15",
+  "act": 3,
+  "name": "The Twilight Gift",
+  "summary": "Point where light meets dark. Dusk lives in your palm now.",
+  "giver": "Dusk Keeper",
+  "reward_item_ids": [
+   "twilight_mark",
+   "dusk_silk"
+  ]
+ },
+ {
+  "id": "q3_16",
+  "act": 3,
+  "name": "Crystal of Balance",
+  "summary": "Answer the Guardian of Dawn's Whisper: an echo.",
+  "giver": "Tibbet",
+  "reward_item_ids": [
+   "crys_balance"
+  ]
+ },
+ {
+  "id": "q3_17",
+  "act": 3,
+  "name": "Crystal of Clarity",
+  "summary": "Never fight Rime in anger. It becomes mist and helps.",
+  "giver": "Tibbet",
+  "reward_item_ids": [
+   "crys_clarity",
+   "grotto_fur"
+  ]
+ },
+ {
+  "id": "q3_18",
+  "act": 3,
+  "name": "Crystal of Passion",
+  "summary": "Forge anything at the obsidian anvil. Cinderwake judges.",
+  "giver": "Tibbet",
+  "reward_item_ids": [
+   "crys_passion",
+   "ember_silk",
+   "hearthsteel"
+  ]
+ },
+ {
+  "id": "q3_19",
+  "act": 3,
+  "name": "Crystal of Harmony",
+  "summary": "An angel with no shadow offers rest. Your beast growls.",
+  "giver": "Tibbet",
+  "reward_item_ids": [
+   "crys_harmony"
+  ]
+ },
+ {
+  "id": "q3_20",
+  "act": 3,
+  "name": "Rivers Remember",
+  "summary": "Set four crystals. Every river runs. One crack stays.",
+  "giver": "Edric Ravenswood",
+  "reward_item_ids": [
+   "frost_tea",
+   "ember_pepper"
+  ]
+ },
+ {
+  "id": "q4_21",
+  "act": 4,
+  "name": "Luminous Leaves",
+  "summary": "Step into Eldoria. Glowing trees. Dying crops.",
+  "giver": "Tattered Traveler",
+  "reward_item_ids": [
+   "moon_berry"
+  ]
+ },
+ {
+  "id": "q4_22",
+  "act": 4,
+  "name": "Elder Thorne",
+  "summary": "Thorne coughs. Sethra pretends not to watch him.",
+  "giver": "Elder Thorne",
+  "reward_item_ids": [
+   "herb_poultice"
+  ]
+ },
+ {
+  "id": "q4_23",
+  "act": 4,
+  "name": "Supplies at Dawn",
+  "summary": "Thorne fills your lantern with crystal light.",
+  "giver": "Elder Thorne",
+  "reward_item_ids": [
+   "crystal_lantern"
+  ]
+ },
+ {
+  "id": "q4_24",
+  "act": 4,
+  "name": "The Forgotten",
+  "summary": "A fear-fed wraith at the altar. Burn it with hope.",
+  "giver": "Elder Thorne",
+  "reward_item_ids": [
+   "heart_eldoria"
+  ]
+ },
+ {
+  "id": "q4_25",
+  "act": 4,
+  "name": "But Not Him",
+  "summary": "Fields are green. Thorne is still sick. Just old.",
+  "giver": "Sethra",
+  "reward_item_ids": [
+   "crocus_tea"
+  ]
+ },
+ {
+  "id": "q4_26",
+  "act": 4,
+  "name": "Silent Gales",
+  "summary": "Sit by the pool until the wind shows a hidden path.",
+  "giver": "Guardians of Eldoria",
+  "reward_item_ids": [
+   "wooden_box"
+  ]
+ },
+ {
+  "id": "q4_27",
+  "act": 4,
+  "name": "Hollow Grove",
+  "summary": "What can be broken but never held? A promise.",
+  "giver": "Grove Spirit",
+  "reward_item_ids": [
+   "cave_moss",
+   "leaf_hat"
+  ]
+ },
+ {
+  "id": "q4_28",
+  "act": 4,
+  "name": "Bramble Warden",
+  "summary": "Purify the despairing guardian. It joins you.",
+  "giver": "Grove Spirit",
+  "reward_item_ids": [
+   "mercy_branch"
+  ]
+ },
+ {
+  "id": "q4_29",
+  "act": 4,
+  "name": "Stilled Serpent",
+  "summary": "It bites Sethra. She silences it herself.",
+  "giver": "Sethra",
+  "reward_item_ids": [
+   "nard_balm"
+  ]
+ },
+ {
+  "id": "q4_30",
+  "act": 4,
+  "name": "Gate of Garden",
+  "summary": "Not yet. Go home. Take the branch and spices.",
+  "giver": "Garden Guardian",
+  "reward_item_ids": [
+   "spice_pouch"
+  ]
+ },
+ {
+  "id": "q4_31",
+  "act": 4,
+  "name": "Six Days",
+  "summary": "Tea, stories, a planted branch. Carve his tablets.",
+  "giver": "Elder Thorne",
+  "reward_item_ids": [
+   "thorne_tablet"
+  ]
+ },
+ {
+  "id": "q5_32",
+  "act": 5,
+  "name": "The Tent",
+  "summary": "Day 1. Sit with Sethra. Nothing else is needed.",
+  "giver": "Sethra",
+  "reward_item_ids": [
+   "tiny_scarf"
+  ]
+ },
+ {
+  "id": "q5_33",
+  "act": 5,
+  "name": "Up to Her Neck",
+  "summary": "Day 2. A kind fake angel calls her out of the river.",
+  "giver": "Sethra",
+  "reward_item_ids": [
+   "flint_wick"
+  ]
+ },
+ {
+  "id": "q5_34",
+  "act": 5,
+  "name": "Hidden Doorway",
+  "summary": "Day 3. A door between trees into a laughing night.",
+  "giver": "Bramble Warden",
+  "reward_item_ids": [
+   "pebble"
+  ]
+ },
+ {
+  "id": "q5_35",
+  "act": 5,
+  "name": "The Festival",
+  "summary": "Day 4. Dance. You cannot fail. Tell your own tale.",
+  "giver": "Fairy Host",
+  "reward_item_ids": [
+   "dream_lyre",
+   "wet_sock"
+  ]
+ },
+ {
+  "id": "q5_36",
+  "act": 5,
+  "name": "Gift of Dreams",
+  "summary": "Day 5. Glowing orbs fall into every hand.",
+  "giver": "Dreamweaver",
+  "reward_item_ids": [
+   "dream_orb",
+   "sunseed_lamp"
+  ]
+ },
+ {
+  "id": "q5_37",
+  "act": 5,
+  "name": "Road to the Edge",
+  "summary": "Day 6. Rattlecart to the Erased Margins. Beast rides shotgun.",
+  "giver": "Tattered Traveler",
+  "reward_item_ids": [
+   "corner_sketch",
+   "lighthouse"
+  ]
+ },
+ {
+  "id": "q5_38",
+  "act": 5,
+  "name": "Malakar Unflowing",
+  "summary": "The Stilled Sea. Four phases. An empty passenger seat.",
+  "giver": "Malakar",
+  "reward_item_ids": [
+   "twin_pistol",
+   "last_map"
+  ]
+ },
+ {
+  "id": "q5_39",
+  "act": 5,
+  "name": "Rest / 8th Page",
+  "summary": "Day 7 rest. Day 8 a blank page. Draw what comes next.",
+  "giver": "Master Hollis",
+  "reward_item_ids": [
+   "the_bear",
+   "void_jerky"
+  ]
+ }
+]

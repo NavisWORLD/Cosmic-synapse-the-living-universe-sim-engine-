@@ -655,6 +655,9 @@ static const NPCDef NPCS[]={
 #include "beast_home_state.h"
 #include "first_person_state.h"
 #include "leash_state.h"
+#include "v12_art.h"
+#include "v12_text.h"
+#include "living_world_state.h"
 
 /* ---------- quantum tape ---------- */
 static u8 next_q(void){ u8 v=QSEED[qi++]; if(qi>=QSEED_LEN)qi=0; return v; }
@@ -2910,7 +2913,11 @@ static void world_light_tick(void){
  BG_PALETTE[5*16+3]=brighter5(signal,phase==1?2:0);
  BG_PALETTE[7*16+3]=brighter5(danger,phase==3?1:0);
 }
-static void render(void){spark_walk_phase=(u8)((frame>>4)&1);if(fp_active){if(intro||cinema_active||v108_credits_active||game_mode!=MODE_SURFACE)fp_exit();else{fp_render();return;}}if(!intro&&!cinema_active&&game_mode==MODE_SURFACE&&V11_IS_ROOM){refresh_camera();v11_draw_field();return;}if((frame&15)==0&&!cinema_active&&!intro&&game_mode!=MODE_PAUSE&&!V11_IS_ROOM){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){qa_surface_gate=2;draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
+static void render(void){
+#ifndef HOST_QA
+ if(lw_active){lw_render();return;}
+#endif
+ spark_walk_phase=(u8)((frame>>4)&1);if(fp_active){if(intro||cinema_active||v108_credits_active||game_mode!=MODE_SURFACE)fp_exit();else{fp_render();return;}}if(!intro&&!cinema_active&&game_mode==MODE_SURFACE&&V11_IS_ROOM){refresh_camera();v11_draw_field();return;}if((frame&15)==0&&!cinema_active&&!intro&&game_mode!=MODE_PAUSE&&!V11_IS_ROOM){world_light_tick();make_bg_tile(T_WATER,T_WATER);make_bg_tile(T_LAVA,T_LAVA);make_bg_tile(T_HAZARD,T_HAZARD);make_bg_tile(T_PLANT,T_PLANT);make_bg_tile(T_FOAM,T_FOAM);make_bg_tile(T_FURNACE,T_FURNACE);v108_waterfall_tick();}if(intro){oam_hide_all();draw_intro();return;}if(v108_credits_active){v108_credits_draw();return;}if(cinema_active){oam_hide_all();draw_cinema_caption();return;}if(game_mode==MODE_PAUSE){draw_pause();return;}if(game_mode==MODE_BATTLE){draw_battle();return;}if(shop_open){qa_surface_gate=2;draw_shop();return;}draw_hud();completion_draw_ui();if(game_mode==MODE_SURFACE){refresh_camera();render_surface_sprites();}else render_space_sprites();}
 
 /* ---------- postgame anomaly ---------- */
 static void postgame_tick(void){if(!postgame||game_mode!=MODE_SURFACE||current_room)return;anomaly_counter++;if(anomaly_counter==600){int tx=12+((current_world*9+ending*7+keys_found*3)%40),ty=12+((current_world*13+ending*11)%40);map_put(tx,ty,T_CRYSTAL,3,C_FREE,TR_ANOMALY);say("A NEW ANOMALY JUST WROTE ITSELF INTO THE MAP.");}}
@@ -3372,6 +3379,7 @@ static void v10_title_input(u16 newk){
 #include "beast_home.h"
 #include "leash.h"
 #include "first_person.h"
+#include "living_world.h"
 /* Music follows the scene. Menus keep the scene's track playing. */
 static u8 lc_music_context(void){static u8 last=LC_SONG_TITLE;
  if(intro||v10_opening)return last=LC_SONG_TITLE;
@@ -3421,6 +3429,11 @@ void gba_main(void){u16 k,newk;
    if(newk&(KEY_A|KEY_START))cinema_end();
    else if(cinema_timer&&!--cinema_timer)cinema_end();
   }else{
+#ifndef HOST_QA
+   if(lw_request){lw_request=0;lw_enter();}
+   if(lw_active)lw_update(k,newk);else
+#endif
+   {
    if(fp_request){fp_request=0;fp_enter();}
    if(fp_active&&game_mode==MODE_SURFACE)fp_update(k,newk);
    else if(game_mode!=MODE_PAUSE&&!v11_gameover&&(newk&KEY_START))enter_pause();
@@ -3428,6 +3441,7 @@ void gba_main(void){u16 k,newk;
    else if(game_mode==MODE_SURFACE)update_surface(k,newk);
    else if(game_mode==MODE_BATTLE)update_battle(newk);
    else update_space(k,newk);
+   }
    if((frame&15)==0){state_tick();if(!buddy_quantum)quantum_workload_step();}
    if((frame&255)==0&&player_mp<max_mp)player_mp++;
    if(dialogue_timer)dialogue_timer--;
