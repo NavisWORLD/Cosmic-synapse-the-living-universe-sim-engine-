@@ -1,0 +1,228 @@
+[
+ {
+  "id": "arin",
+  "name": "Arin",
+  "lines": [
+   "Still here. Still hammering.",
+   "I make things. It is what I do.",
+   "That one."
+  ]
+ },
+ {
+  "id": "tattered_traveler",
+  "name": "Traveler",
+  "lines": [
+   "A hero will rise...",
+   "Or someone awake will. You are awake.",
+   "I would explain, but I am leaving."
+  ]
+ },
+ {
+  "id": "master_hollis",
+  "name": "Hollis",
+  "lines": [
+   "Eat something.",
+   "A crack is where the heat gets in.",
+   "Go on. The forge will wait."
+  ]
+ },
+ {
+  "id": "lord_ravenswood",
+  "name": "Ravenswood",
+  "lines": [
+   "Try the ale! It is... an experience.",
+   "My brother? Bring him home, smith."
+  ]
+ },
+ {
+  "id": "edric",
+  "name": "Edric",
+  "lines": [
+   "Footnote 14: I was terrified.",
+   "I have been about to leave for weeks.",
+   "It broke from the inside. Like us."
+  ]
+ },
+ {
+  "id": "bryn",
+  "name": "Bryn",
+  "lines": [
+   "I fear nothing. Except moths.",
+   "Is that a moth? Hold my shield.",
+   "Gate guard. I guard. Gates."
+  ]
+ },
+ {
+  "id": "quillan",
+  "name": "Quillan",
+  "lines": [
+   "I know four spells. All soup.",
+   "Soup solves more than you think.",
+   "Stand back. I am seasoning."
+  ]
+ },
+ {
+  "id": "hesper",
+  "name": "Hesper",
+  "lines": [
+   "Leave this place, glow-bearer.",
+   "...is there a butterfly on my wing?",
+   "Fight if you must. I will wait."
+  ]
+ },
+ {
+  "id": "forest_guardian",
+  "name": "Guardian",
+  "lines": [
+   "Courage. Wisdom. Heart. Alone.",
+   "None pass who pass alone."
+  ]
+ },
+ {
+  "id": "grumbleback",
+  "name": "Grumbleback",
+  "lines": [
+   "GRRMMBLE.",
+   "*sits on your map*",
+   "*follows you anyway*"
+  ]
+ },
+ {
+  "id": "spirit_harmony",
+  "name": "Harmony",
+  "lines": [
+   "Remember, you are never alone.",
+   "Breathe with them. All of them."
+  ]
+ },
+ {
+  "id": "dusk_keeper",
+  "name": "Dusk Keeper",
+  "lines": [
+   "In darkness lies the key to light.",
+   "Why ask me, when dusk is asking you?"
+  ]
+ },
+ {
+  "id": "tibbet",
+  "name": "Tibbet",
+  "lines": [
+   "WELCOME, TRAVELER!!",
+   "FOUR CRYSTALS! FOUR RIVERS! YAY!",
+   "oops. TOO LOUD? SORRY!!"
+  ]
+ },
+ {
+  "id": "rime",
+  "name": "Rime",
+  "lines": [
+   "...",
+   "*walks beside you in the snow*",
+   "Anger is cold. Be warmer."
+  ]
+ },
+ {
+  "id": "cinderwake",
+  "name": "Cinderwake",
+  "lines": [
+   "SHOW ME YOUR HEART!",
+   "Behold! My entrance! Again!",
+   "Forge, little flame. Anything."
+  ]
+ },
+ {
+  "id": "counterfeit",
+  "name": "Angel",
+  "lines": [
+   "You can rest now.",
+   "Nothing needs to move here.",
+   "Why does your beast growl at me?"
+  ]
+ },
+ {
+  "id": "thorne",
+  "name": "Thorne",
+  "lines": [
+   "Courage is your greatest weapon.",
+   "*cough* I am fine. I am old.",
+   "Carve it in stone, Sethra."
+  ]
+ },
+ {
+  "id": "sethra",
+  "name": "Sethra",
+  "lines": [
+   "I am not watching him. I am.",
+   "Be silent, snake. Leave us.",
+   "Six days. Then I get up."
+  ]
+ },
+ {
+  "id": "bramble_warden",
+  "name": "Bramble",
+  "lines": [
+   "I lost my way.",
+   "I am planting things now.",
+   "Light found me. I found you."
+  ]
+ },
+ {
+  "id": "fairy_host",
+  "name": "Fairy Host",
+  "lines": [
+   "Our paths will cross again soon.",
+   "Dance! No one can fail tonight!"
+  ]
+ },
+ {
+  "id": "dreamweaver",
+  "name": "Dreamweaver",
+  "lines": [
+   "~ la la ~ la ~",
+   "~ still here, still here ~"
+  ]
+ },
+ {
+  "id": "malakar",
+  "name": "Malakar",
+  "lines": [
+   "You are too late! ...that was loud.",
+   "Nothing leaves if nothing moves.",
+   "The seat was hers. Was."
+  ]
+ },
+ {
+  "id": "garden_guardian",
+  "name": "Gatekeeper",
+  "lines": [
+   "Not until the last days.",
+   "Go to your father. His time is full."
+  ]
+ },
+ {
+  "id": "star_frog",
+  "name": "Star Frog",
+  "lines": [
+   "Ribbit. That hat is mine. Keep it.",
+   "I have seen 12 dimensions. Meh."
+  ]
+ },
+ {
+  "id": "sock_merchant",
+  "name": "Sock Guy",
+  "lines": [
+   "Socks! Wet ones! Beasts go nuts!",
+   "Do not ask where I get them.",
+   "Rawr is accepted as payment."
+  ]
+ },
+ {
+  "id": "mote",
+  "name": "Your Beast",
+  "lines": [
+   "Rawr.",
+   "*sneezes, trips over you*",
+   "Still here. Still loud."
+  ]
+ }
+]

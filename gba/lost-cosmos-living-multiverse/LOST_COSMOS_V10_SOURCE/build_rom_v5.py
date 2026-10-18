@@ -13,7 +13,7 @@ def main():
     header=bytearray(0xC0)
     header[0:4]=bytes.fromhex('2e0000ea')
     header[4:0xA0]=NINTENDO_LOGO
-    header[0xA0:0xAC]=b'COSMOS V11.9'
+    header[0xA0:0xAC]=b'COSMOS V12.0'
     header[0xAC:0xB0]=b'ERL8'
     header[0xB0:0xB2]=b'01'
     header[0xB2]=0x96
@@ -25,6 +25,8 @@ def main():
     if size<65536: size=65536
     # V11.9: Acts II-V get a fixed 2 MB cartridge (see docs/V11_9_ACT2_MIRRORS.md).
     if size<2097152: size=2097152
+    # V12.0: the LIVING WORLD upgrade targets a 16 MB cartridge (real GBA carts go to 32 MB).
+    if size<16777216: size=16777216
     rom+=b'\xFF'*(size-len(rom))
     out=root/args.output
     out.write_bytes(rom)

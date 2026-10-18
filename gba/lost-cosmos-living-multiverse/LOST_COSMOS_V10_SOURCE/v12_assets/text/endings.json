@@ -1,0 +1,23 @@
+[
+ {
+  "id": "end_a",
+  "name": "Slightly Brighter",
+  "requirement": "Attune Malakar in Phase 4",
+  "summary": "The sea moves. Malakar walks off with his maps and lets a crab pass.",
+  "final_line": "It was brighter. Still here."
+ },
+ {
+  "id": "end_b",
+  "name": "Ash and Stone",
+  "requirement": "Strike Malakar with the Heart beam",
+  "summary": "Rivers flow but every corner sketch is gone. One light fewer.",
+  "final_line": "The forge. One light. An empty chair."
+ },
+ {
+  "id": "end_c",
+  "name": "Perfect Drawing",
+  "requirement": "Choose Rest; Sethra left with the Angel",
+  "summary": "All freezes into one flawless, colorful picture. Nothing moves again.",
+  "final_line": "Beautiful. Nothing moves. Nothing."
+ }
+]

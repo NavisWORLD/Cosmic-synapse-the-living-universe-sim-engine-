@@ -7,7 +7,8 @@ EXTRA=()
 [[ "$QA" == 1 ]] && EXTRA+=(-DQA_AUTORUN)
 [[ "${IMPORTED_BEAST:-0}" == 1 ]] && EXTRA+=(-DLC_IMPORTED_COMPANION)
 clang "${CFLAGS[@]}" "${EXTRA[@]}" -c lost_cosmos_v5.c -o game_v5.o
-ld.lld -T linker_v5.ld start_v5.o game_v5.o -o lost_cosmos_v5.elf
+clang "${CFLAGS[@]}" -c v12_art.c -o v12_art.o
+ld.lld -T linker_v5.ld start_v5.o game_v5.o v12_art.o -o lost_cosmos_v5.elf
 llvm-objcopy -O binary lost_cosmos_v5.elf payload_v5.bin
 python build_rom_v5.py --payload payload_v5.bin
 python verify_v5.py
