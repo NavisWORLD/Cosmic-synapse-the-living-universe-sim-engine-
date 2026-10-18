@@ -13,17 +13,24 @@
    into this record; the party roster, LCX1/LCM1 mailbox import and LC11 saves
    are untouched.
 
-   Persistence: SRAM 16384-16639 (previously unused by every V5-V11.9 save):
-   16384 'L','W',schema 1, version 0; 16388 world/flags; 16392 65 item counts;
-   16460 six 12-byte creature records (hunger, energy, mood, bond, hp, level,
-   xp u16, equip[4] as item+1); 16540 quest reward claimed bits (5 bytes);
-   16636 u32 additive checksum of 16384-16635. The block is shared by all
-   save slots (the V11 slot copier does not include it). Saves without the
+   Persistence (V12.1): SRAM 7936-8191, the free tail of the journaled main page,
+   so the journal banks now snapshot it. V12.0 used 16384-16639, which is inside
+   journal bank 1 and got overwritten by journal commits; V12.1 migrates a valid
+   V12.0 block once and never writes 16384. Offsets relative to LW_SRAM:
+   +0 'L','W',schema 1, version 0; +4 world/flags; +8 65 item counts;
+   +76 six 12-byte creature records (hunger, energy, mood, bond, hp, level,
+   xp u16, equip[4] as item+1); +156 quest reward claimed bits (5 bytes);
+   +252 u32 additive checksum of +0..+251. The block is shared by all
+   save slots: the V11 slot copier (LCM1, 1888-byte payload, 128 spare bytes) has
+   no room for 256 bytes without a format change, so it is still not included. Saves without the
    marker start fresh. */
 #ifndef LIVING_WORLD_STATE_H
 #define LIVING_WORLD_STATE_H
 typedef signed int s32;
-#define LW_SRAM 16384
+#define LW_SRAM 7936      /* V12.1: free tail of the journaled main page, after LCL1 7296..7815 */
+#define LW_SRAM_V120 16384 /* V12.0 location (inside journal bank 1): read once to migrate, never written */
+#define LW_WISP_TILE 512
+#define LW_NPC_TILE 528
 #define LW_N 6
 #define LW_W 512
 #define LW_H 256
@@ -48,6 +55,10 @@ static u8 lw_world=0,lw_focus=0,lw_page=0,lw_sel=0,lw_card=0,lw_dirty_art=1,lw_n
 static u16 lw_clock=0,lw_card_timer=0,lw_msg_timer=0;
 static s32 lw_px=256<<8,lw_py=160<<8,lw_wx=100<<8,lw_wy=60<<8,lw_wl[3];
 static s16 lw_camx=0,lw_camy=0;
+static LwBeast lw_npc;
+static u8 lw_pmoving=0,lw_pface=0,lw_arin_f=255,lw_wisp_f=255,lw_npc_f=255,lw_npc_w=255,lw_npc_beat=0,lw_npc_pal_dirty=1,lw_cast_f=0;
+static volatile u8 lw_migrated=0;
+static volatile u16 lw_npc_walk_frames=0,lw_sneezes=0,lw_yawns=0,lw_wisp_lunges=0;
 static char lw_msg[60];
 /* Read by the emulator test. */
 static volatile u16 lw_entries=0,lw_exits=0,lw_decisions=0,lw_dark_reacts=0,lw_items_used=0,lw_quests_done=0;

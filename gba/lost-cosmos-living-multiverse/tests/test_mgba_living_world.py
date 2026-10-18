@@ -22,7 +22,9 @@ def lw(emu):
     return dict(active=r("lw_active", width=1), card=r("lw_card", width=1), page=r("lw_page", width=1), world=r("lw_world", width=1),
                 entries=r("lw_entries", width=2), exits=r("lw_exits", width=2), decisions=r("lw_decisions", width=2),
                 dark=r("lw_dark_reacts", width=2), used=r("lw_items_used", width=2), moved=r("lw_moved_px", width=4),
-                quests_done=r("lw_quests_done", width=2), focus=r("lw_focus", width=1))
+                quests_done=r("lw_quests_done", width=2), focus=r("lw_focus", width=1),
+                npc_walk=r("lw_npc_walk_frames", width=2), sneezes=r("lw_sneezes", width=2), yawns=r("lw_yawns", width=2),
+                lunges=r("lw_wisp_lunges", width=2), migrated=r("lw_migrated", width=1))
 
 def disp(emu):
     return dict(dispcnt=emu.read16(0x04000000), bg0cnt=emu.read16(0x04000008), bg1cnt=emu.read16(0x0400000A))
@@ -73,6 +75,17 @@ def run(rom, elf, out):
             emu.step((), 60)
         rep["zeref_dark_reacts"] = lw(emu)["dark"]
         shot(emu, "lw_05_zeref_and_darkness.png")
+        emu.step(("RIGHT",), 12)
+        shot(emu, "lw_05b_arin_walking.png")
+        for _ in range(40):
+            v = lw(emu)
+            if v["npc_walk"] and v["sneezes"] and v["yawns"]:
+                break
+            emu.step((), 60)
+        rep["v12_1_forest_mote"] = {k: lw(emu)[k] for k in ("npc_walk", "sneezes", "yawns", "lunges")}
+        if not rep["v12_1_forest_mote"]["npc_walk"]:
+            raise RuntimeError(f"Mote never walked {rep['v12_1_forest_mote']}")
+        shot(emu, "lw_05c_mote_in_forest.png")
         tap(emu, "R"); tap(emu, "R"); shot(emu, "lw_06_focus_frost.png"); tap(emu, "L"); tap(emu, "L")
         tap(emu, "SELECT"); emu.step((), 30)
         if lw(emu)["world"] != 1:
@@ -87,10 +100,17 @@ def run(rom, elf, out):
             raise RuntimeError("using the first item did nothing")
         shot(emu, "lw_10_item_used.png")
         tap(emu, "DOWN", 4); shot(emu, "lw_11_items_lantern.png")
+        tap(emu, "DOWN", 2); shot(emu, "lw_11b_items_weapon_bank_b.png"); tap(emu, "DOWN", 1); shot(emu, "lw_11c_items_lantern_bank_b.png"); tap(emu, "UP", 7)
         tap(emu, "START"); emu.step((), 5); shot(emu, "lw_12_stats.png")
+        rep["stats_rows"] = [bh.ui_row(emu, r) for r in (15, 16, 17)]
+        if not any("QSEED DATA" in row for row in rep["stats_rows"]):
+            raise RuntimeError(f"STATS honest label row wrong {rep['stats_rows']}")
         tap(emu, "START"); emu.step((), 5); shot(emu, "lw_13_quests.png")
         tap(emu, "START"); emu.step((), 5); shot(emu, "lw_14_cast_zeref.png")
         tap(emu, "DOWN", 2); emu.step((), 5); shot(emu, "lw_15_cast_mote.png")
+        for i in range(6):
+            emu.step((), 16); shot(emu, f"lw_15_cast_mote_f{i}.png")
+        tap(emu, "UP", 2); emu.step((), 200); shot(emu, "lw_15b_cast_zeref_walk.png")
         tap(emu, "B"); emu.step((), 10); tap(emu, "B"); emu.step((), 30)
         s = lw(emu)
         if s["active"] or s["exits"] != 1:
@@ -101,11 +121,11 @@ def run(rom, elf, out):
         tap(emu, "RIGHT", 6); rep["after_exit_game_mode"] = emu.read_symbol("game_mode")
         rep["final"] = lw(emu)
     data = sav.read_bytes()
-    if data[16384:16387] != b"LW\x01":
-        raise RuntimeError("no LW block in SRAM")
+    if data[7936:7939] != b"LW\x01":
+        raise RuntimeError("no LW block at SRAM 7936 (V12.1)")
     if data[0:4] != b"LCV5":
         raise RuntimeError("V5 save header changed")
-    rep["sram_lw_block"] = data[16384:16640].hex()
+    rep["sram_lw_block"] = data[7936:8192].hex()
     rep["passed"] = True
     (out / "living_world_report.json").write_text(json.dumps(rep, indent=2) + "\n")
     print(json.dumps({k: rep[k] for k in ("suite", "rom_sha256", "life_10s", "zeref_dark_reacts", "passed")}, indent=2))

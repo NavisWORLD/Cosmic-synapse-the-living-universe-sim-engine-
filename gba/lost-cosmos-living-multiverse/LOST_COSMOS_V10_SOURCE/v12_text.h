@@ -70,6 +70,7 @@ static const V12Item V12_ITEMS[V12_ITEM_COUNT]={
  {"corner_sketch","CORNER SKT","A CART. TWO SEATS. ONE FILLED.",6,3,0,52,{0,0,0,0,0,0,0,0}},
  {"last_map","LAST MAP","MALAKAR'S. SHOWS WHERE YOU RESTED MOST.",6,3,0,53,{0,0,0,0,0,0,0,0}},
 };
+static const u8 V12_ITEM_BANK[V12_ITEM_COUNT]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 typedef struct{const char*name;const char*line;u8 trigger,action;}V12Mood;
 #define V12_TRIG_HUNGRY 0
 #define V12_TRIG_VERY_HUNGRY 1

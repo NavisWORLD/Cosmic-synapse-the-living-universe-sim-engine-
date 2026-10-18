@@ -54,7 +54,14 @@ static void lw_defaults(void){int i;
  {static const char*const s[9]={"healing_herbs","moon_berry","sunseed_snack","warm_ale","forge_lantern","tiny_scarf","hammer_blade","star_candy","wet_sock"};
   static const u8 n[9]={3,4,2,1,1,1,1,2,1};for(i=0;i<9;i++){int j=lw_item(s[i]);if(j>=0)lw_inv[j]=n[i];}}
  for(i=0;i<LW_N;i++){LwBeast*b=&lw_b[i];int j;b->hunger=(u8)(30+b->dna[16]);b->energy=(u8)(60+b->dna[17]);b->mood=(u8)(50+b->dna[18]);b->bond=(u8)(20+b->dna[19]);b->level=1;b->xp=0;for(j=0;j<4;j++)b->equip[j]=0;b->hp=(u8)lw_stat(b,0);}}
-static u32 lw_sum(void){u32 s=0x4C573132u;int i;for(i=0;i<252;i++)s=s*31u+SRAM[LW_SRAM+i];return s;}
+static u32 lw_sum_at(int base){u32 s=0x4C573132u;int i;for(i=0;i<252;i++)s=s*31u+SRAM[base+i];return s;}
+#define lw_sum() lw_sum_at(LW_SRAM)
+/* V12.1: V12.0 kept this block at 16384, inside journal bank 1. One-time migration:
+   if the new block is not valid and a valid V12.0 block survives there, copy it
+   (same bytes, same checksum rule). 16384 is never written again. */
+static int lw_valid_at(int base){u32 s;if(SRAM[base]!='L'||SRAM[base+1]!='W'||SRAM[base+2]!=1)return 0;
+ s=(u32)SRAM[base+252]|((u32)SRAM[base+253]<<8)|((u32)SRAM[base+254]<<16)|((u32)SRAM[base+255]<<24);return s==lw_sum_at(base);}
+static void lw_migrate(void){int i;if(lw_valid_at(LW_SRAM)||!lw_valid_at(LW_SRAM_V120))return;for(i=0;i<256;i++)SRAM[LW_SRAM+i]=SRAM[LW_SRAM_V120+i];lw_migrated=1;}
 static void lw_save(void){int i,o;
  for(i=0;i<256;i++)SRAM[LW_SRAM+i]=0;
  SRAM[LW_SRAM]='L';SRAM[LW_SRAM+1]='W';SRAM[LW_SRAM+2]=1;SRAM[LW_SRAM+3]=0;SRAM[LW_SRAM+4]=lw_world;
@@ -65,6 +72,7 @@ static void lw_save(void){int i,o;
  for(i=0;i<5;i++)SRAM[LW_SRAM+156+i]=lw_claimed[i];
  {u32 s=lw_sum();SRAM[LW_SRAM+252]=(u8)s;SRAM[LW_SRAM+253]=(u8)(s>>8);SRAM[LW_SRAM+254]=(u8)(s>>16);SRAM[LW_SRAM+255]=(u8)(s>>24);}}
 static int lw_load(void){int i,o;u32 s;
+ lw_migrate();
  if(SRAM[LW_SRAM]!='L'||SRAM[LW_SRAM+1]!='W'||SRAM[LW_SRAM+2]!=1)return 0;
  s=(u32)SRAM[LW_SRAM+252]|((u32)SRAM[LW_SRAM+253]<<8)|((u32)SRAM[LW_SRAM+254]<<16)|((u32)SRAM[LW_SRAM+255]<<24);
  if(s!=lw_sum())return 0;
@@ -90,6 +98,7 @@ static void lw_claim_quests(void){int q,j;
   lw_claimed[q>>3]|=(u8)(1u<<(q&7));lw_quests_done++;
   for(j=0;j<3;j++){int it=V12_QUESTS[q].reward[j];if(it>=0&&lw_inv[it]<99)lw_inv[it]++;}
   lw_say("QUEST REWARD: ",V12_QUESTS[q].name);}}
+static int lw_dist(const LwBeast*b,s32 x,s32 y);
 /* ---------- art upload ---------- */
 static void lw_upload_bg(void){int i;const u32*t=lw_world?v12_bg_cave_tiles:v12_bg_forest_tiles;const u16*m=lw_world?v12_bg_cave_map:v12_bg_forest_map;
  const u16*p=lw_world?v12_bg_cave_pal:v12_bg_forest_pal;int n=lw_world?V12_BG_CAVE_TILES:V12_BG_FOREST_TILES;
@@ -100,13 +109,27 @@ static void lw_upload_bg(void){int i;const u32*t=lw_world?v12_bg_cave_tiles:v12_
 static void lw_upload_obj_pals(void){int i,j;
  for(i=0;i<LW_N;i++)for(j=0;j<16;j++){OBJ_PALETTE[i*16+j]=LW_CRE_PAL[i][j];OBJ_PALETTE[(6+i)*16+j]=LW_COMP_PAL[i][j];}
  for(j=0;j<16;j++){OBJ_PALETTE[12*16+j]=v12_items_pal[j];OBJ_PALETTE[13*16+j]=v12_chr_arin_pal[j];}
- {static const u16 wp[16]={0,0x0000,0x0802,0x1004,0x1806,0x7C1F,0x2008,0x7FFF,0,0,0,0,0,0,0,0};for(j=0;j<16;j++)OBJ_PALETTE[14*16+j]=wp[j];}}
+ for(j=0;j<16;j++)OBJ_PALETTE[14*16+j]=v12_wisp_pal[j];
+ lw_npc_pal_dirty=1;}
 /* The darkness wisp: a procedural 16x16 shadow blob with two eyes (code art). */
-static void lw_upload_wisp(int phase){int ty,tx,y,x;volatile u32*d=LW_OBJ_TILES+496*8;
- for(ty=0;ty<2;ty++)for(tx=0;tx<2;tx++)for(y=0;y<8;y++){u32 w=0;for(x=0;x<8;x++){int px=tx*8+x-8,py=ty*8+y-8,r=px*px+py*py,c=0;
-  int rad=44+((phase&3)*6);if(r<rad)c=r<12?2:r<26?3:4;if(r<rad&&r>=rad-10&&((px+py+phase)&1))c=6;
-  if((py==-2)&&(px==-3||px==2))c=7;w|=(u32)c<<(4*x);}*d++=w;}}
-static void lw_upload_arin(void){lw_copy32(LW_OBJ_TILES+480*8,v12_chr_arin_tiles,16*8);}
+/* V12.1: Cosmo's wisp_dark sheet (32x32): drift 0-3, lunge 4-5 when close to Zeref. */
+static int lw_wisp_frame(int phase){if(lw_dist(&lw_b[0],lw_wx,lw_wy)<72)return 4+(phase&1);return phase&3;}
+static void lw_upload_wisp(int phase){int f=lw_wisp_frame(phase);if(f==lw_wisp_f)return;lw_wisp_f=(u8)f;if(f>=4)lw_wisp_lunges++;
+ lw_copy32(LW_OBJ_TILES+LW_WISP_TILE*8,v12_wisp_tiles+f*16*8,16*8);}
+/* V12.1: Arin idles on frames 0-5 and walks on 6-9 while the player moves. */
+static void lw_upload_arin(void){int f=lw_pmoving?6+(int)(((u32)lw_clock>>3)&3u):(int)(((u32)lw_clock>>4)%6u);
+ if(f==lw_arin_f)return;lw_arin_f=(u8)f;lw_copy32(LW_OBJ_TILES+480*8,v12_chr_arin_tiles+f*16*8,16*8);}
+/* V12.1: one cast member lives in each world: Mote (64x64) in the forest, Rime (32x32)
+   in the cave. Mote: idle 0-3, sneeze 4, yawn 5, walk 6-9. Humans: idle 0-5, walk 6-9. */
+static void lw_upload_npc(int force){int big=lw_world==0,f,i;const u32*t=big?v12_chr_mote_tiles:v12_chr_rime_tiles;const u16*p=big?v12_chr_mote_pal:v12_chr_rime_pal;
+ if(lw_npc_pal_dirty||force||lw_npc_w!=lw_world){for(i=0;i<16;i++)OBJ_PALETTE[15*16+i]=p[i];lw_npc_pal_dirty=0;}
+ if(lw_npc.moving)f=6+(int)(((u32)lw_clock>>3)&3u);
+ else if(big)f=lw_npc_beat==1?4:lw_npc_beat==2?5:(int)(((u32)lw_clock>>4)&3u);
+ else f=(int)(((u32)lw_clock>>4)%6u);
+ if(!force&&f==lw_npc_f&&lw_npc_w==lw_world)return;
+ if(f!=lw_npc_f){if(f==4&&big)lw_sneezes++;if(f==5&&big)lw_yawns++;if(f>=6)lw_npc_walk_frames++;}
+ lw_npc_f=(u8)f;lw_npc_w=lw_world;
+ lw_copy32(LW_OBJ_TILES+LW_NPC_TILE*8,t+f*(big?64:16)*8,(big?64:16)*8);}
 static void lw_upload_icon(int it){const V12Item*v=&V12_ITEMS[it];volatile u32*d=LW_OBJ_TILES+500*8;int i;
  for(i=0;i<64;i++)d[i]=0;
  if(v->sheet==0)lw_copy32(d,v12_icons_a+v->icon*32,32);
@@ -193,6 +216,13 @@ static void lw_tick_beast(int i){LwBeast*b=&lw_b[i];s32 vx,vy,ox=b->x,oy=b->y;in
  b->moving=(u8)(iabs((b->x>>8)-(ox>>8))+iabs((b->y>>8)-(oy>>8))>0);
  if(b->moving){lw_moved_px+=1;if(b->x!=ox)b->face=(u8)(b->x<ox);}
  if((lw_clock&511)==(u16)(i*32)&&b->moving){b->xp++;if(b->xp>=(u16)(b->level*20)){b->xp=0;if(b->level<99)b->level++;if(i==lw_focus)lw_say(LW_NAMES[i]," GREW A LEVEL.");}}}
+static void lw_tick_npc(void){LwBeast*n=&lw_npc;s32 ox=n->x,oy=n->y,gx,gy;
+ if(n->timer)n->timer--;else{u32 r=lw_rand(n);
+  if((r&3)==0){n->tx=n->x>>8;n->ty=n->y>>8;lw_npc_beat=(u8)(lw_world==0?1+((r>>3)&1):0);n->timer=(u16)(48+(r>>8)%40u);}
+  else{lw_npc_beat=0;lw_target(n,(int)((r>>4)%LW_W),(int)((r>>12)%LW_H));n->timer=(u16)(160+(r>>20)%120u);}}
+ gx=(n->tx<<8)-n->x;gy=(n->ty<<8)-n->y;
+ if(iabs(gx)>384)n->x+=signi(gx)*160;if(iabs(gy)>384)n->y+=signi(gy)*120;
+ n->moving=(u8)(n->x!=ox||n->y!=oy);if(n->x!=ox)n->face=(u8)(n->x<ox);}
 static void lw_tick_wisp(void){s32 x=lw_wl[0],y=lw_wl[1],z=lw_wl[2];
  x+=(10*(y-x))>>8;y+=(((x*((28<<8)-z))>>8)-y)>>8;z+=(((x*y)>>8)-((z*683)>>8))>>8;lw_wl[0]=x;lw_wl[1]=y;lw_wl[2]=z;
  /* the darkness drifts slowly toward Zeref, pushed around by its own attractor */
@@ -203,7 +233,7 @@ static void lw_tick_wisp(void){s32 x=lw_wl[0],y=lw_wl[1],z=lw_wl[2];
 static void lw_mode0(void){int i;
  lw_copy32((volatile u32*)0x06000000,(const u32*)lw_vram_save,0xA000/4);   /* repair what the mode-4 card overwrote */
  for(i=0;i<256;i++)BG_PALETTE[i]=lw_pal_save[i];
- lw_upload_bg();lw_upload_obj_pals();lw_upload_arin();lw_upload_wisp(0);lw_upload_creatures(1);
+ lw_upload_bg();lw_upload_obj_pals();lw_arin_f=lw_wisp_f=255;lw_upload_arin();lw_upload_wisp(0);lw_upload_creatures(1);lw_upload_npc(1);
  for(i=0;i<128;i++)OAM16[i*4]=0x0200;ui_clear();
  REG_DISPCNT=MODE0|BG0_ENABLE|BG1_ENABLE|OBJ_ENABLE|OBJ_1D_MAP;lw_card=0;}
 static void lw_card_show(void){int i;const u8*px=lw_world?v12_scene_cave_px:v12_scene_forest_px;const u16*p=lw_world?v12_scene_cave_pal:v12_scene_forest_pal;
@@ -220,6 +250,7 @@ static void lw_enter(void){int i;
  for(i=0;i<14;i++)lw_io_save[i]=lc_io_shadow[i];
  for(i=0;i<LW_N;i++){LwBeast*b=&lw_b[i];b->id=LW_IDS[i];lw_dna(b,b->id);
   b->x=(s32)(60+i*72)<<8;b->y=(s32)(80+(b->dna[20]<<2))<<8;b->tx=b->x>>8;b->ty=b->y>>8;b->timer=(u16)(20+i*15);b->trig=V12_TRIG_CURIOUS;b->action=V12_ACT_INVESTIGATE;b->found=0;b->since=0;b->frame=255;}
+ lw_npc.rng=0x4D4F5445u^QSEED[103];lw_npc.x=200<<8;lw_npc.y=120<<8;lw_npc.tx=200;lw_npc.ty=120;lw_npc.timer=30;lw_npc_beat=0;
  lw_wl[0]=QSEED[100]*64+1;lw_wl[1]=QSEED[101]*64+1;lw_wl[2]=QSEED[102]*96+256;lw_wx=440<<8;lw_wy=200<<8;
  if(!lw_load())lw_defaults();
  lw_claim_quests();
@@ -255,6 +286,7 @@ static void lw_update(u16 k,u16 newk){int i;
  {u8 night=(u8)((((u32)lw_clock/1800u)&1u));if(night!=lw_night){lw_night=night;lw_upload_bg();}}
  for(i=0;i<LW_N;i++)lw_tick_beast(i);
  lw_tick_wisp();
+ lw_tick_npc();
  if((lw_clock&1023)==0)lw_save();
  if(lw_page){int max=lw_page==1?lw_owned_count():lw_page==3?V12_QUEST_COUNT:lw_page==4?V12_CHAR_COUNT:1;
   if(newk&KEY_B){lw_page=0;ui_clear();lw_dirty_art=1;lc_sfx(SFX_CANCEL);return;}
@@ -269,8 +301,9 @@ static void lw_update(u16 k,u16 newk){int i;
  if(newk&KEY_SELECT){lw_world^=1;lw_upload_bg();lw_say(lw_world?"THE CRYSTAL CAVE.":"THE VIOLET FOREST.",0);lw_save();}
  if(newk&(KEY_L|KEY_R)){lw_focus=(u8)((u32)(lw_focus+((newk&KEY_R)?1:LW_N-1))%(u32)LW_N);lw_say("WATCHING ",LW_NAMES[lw_focus]);}
  {int run=(k&KEY_A)?0:1;s32 sp=(s32)(run?384:384);
-  if(k&KEY_LEFT)lw_px-=sp;if(k&KEY_RIGHT)lw_px+=sp;if(k&KEY_UP)lw_py-=sp;if(k&KEY_DOWN)lw_py+=sp;
-  lw_px=clampi(lw_px,16<<8,(LW_W-16)<<8);lw_py=clampi(lw_py,40<<8,(LW_H-4)<<8);}
+  {s32 opx=lw_px,opy=lw_py;
+  if(k&KEY_LEFT){lw_px-=sp;lw_pface=1;}if(k&KEY_RIGHT){lw_px+=sp;lw_pface=0;}if(k&KEY_UP)lw_py-=sp;if(k&KEY_DOWN)lw_py+=sp;
+  lw_px=clampi(lw_px,16<<8,(LW_W-16)<<8);lw_py=clampi(lw_py,40<<8,(LW_H-4)<<8);lw_pmoving=(u8)(opx!=lw_px||opy!=lw_py);}}
  if(newk&KEY_A){for(i=0;i<LW_N;i++)if(lw_dist(&lw_b[i],lw_px,lw_py)<40){LwBeast*b=&lw_b[i];
    int asleep=b->action==V12_ACT_NAP||b->action==V12_ACT_COLLAPSE_SLEEP;
    b->trig=asleep?V12_TRIG_WOKEN_UP:V12_TRIG_PETTED;b->action=V12_MOODS[b->trig].action;b->timer=120;
@@ -294,10 +327,13 @@ static void lw_hud(void){LwBeast*b=&lw_b[lw_focus];
  else lw_line(18,V12_MOODS[b->trig].name,14);}
 static void lw_draw_field(void){int i,o=0;
  REG_BG0HOFS=(u16)lw_camx;REG_BG0VOFS=(u16)lw_camy;
- lw_upload_creatures(lw_dirty_art);lw_dirty_art=0;
- if((lw_clock&7)==0)lw_upload_wisp(lw_clock>>3);
- lw_obj(o++,(lw_px>>8)-lw_camx-16,(lw_py>>8)-lw_camy-30,0,2,480,13,0,1);
- lw_obj(o++,(lw_wx>>8)-lw_camx-8,(lw_wy>>8)-lw_camy-8+((lw_clock>>4)&1),0,1,496,14,0,1);
+ lw_upload_creatures(lw_dirty_art);
+ if(lw_dirty_art){lw_arin_f=255;lw_wisp_f=255;lw_npc_pal_dirty=1;}
+ if((lw_clock&7)==0||lw_wisp_f==255)lw_upload_wisp(lw_clock>>3);
+ lw_upload_arin();lw_upload_npc(lw_dirty_art);lw_dirty_art=0;
+ lw_obj(o++,(lw_px>>8)-lw_camx-16,(lw_py>>8)-lw_camy-30,0,2,480,13,lw_pface,1);
+ lw_obj(o++,(lw_wx>>8)-lw_camx-16,(lw_wy>>8)-lw_camy-16+((lw_clock>>4)&1),0,2,LW_WISP_TILE,14,0,1);
+ {int nx=(lw_npc.x>>8)-lw_camx,ny=(lw_npc.y>>8)-lw_camy;if(lw_world==0)lw_obj(o++,nx-32,ny-60,0,3,LW_NPC_TILE,15,lw_npc.face,1);else lw_obj(o++,nx-16,ny-30,0,2,LW_NPC_TILE,15,lw_npc.face,1);}
  for(i=0;i<LW_N;i++){LwBeast*b=&lw_b[i];int sx=(b->x>>8)-lw_camx,sy=(b->y>>8)-lw_camy;
   int blink=b->action==V12_ACT_FLICKER&&((lw_clock>>2)&1);
   lw_obj(o++,b->face?sx+24:sx-56,sy-34,0,2,384+i*16,6+i,b->face,1);
@@ -314,17 +350,18 @@ static void lw_draw_page(void){int i,r;LwBeast*b=&lw_b[lw_focus];static const ch
    if(eq)ui_text(18,2+r,"E",9);ui_text(20,2+r,"X",13);ui_num(21,2+r,lw_inv[it],15);}
   {int it=lw_owned(lw_sel);if(it>=0){const V12Item*v=&V12_ITEMS[it];static const char*const cat[8]={"USE","FOOD","WEAPON","ARMOR","ACCESSORY","LANTERN","KEY","MATERIAL"};
    lw_wrap(11,v->desc,15,2);ui_text(1,14,cat[v->cat],13);
-   {static const char*const sn[8]={"HP","AT","DF","SP","FO","MO","HU","EN"};int c=8,j;for(j=0;j<8;j++)if(v->st[j]){ui_text(c,14,sn[j],13);if(v->st[j]<0){ui_text(c+2,14,"-",7);ui_num(c+3,14,-v->st[j],7);}else ui_num(c+2,14,v->st[j],9);c+=6;if(c>26)break;}}
+   {static const char*const sn[8]={"HP","AT","DF","SP","FO","MO","HU","EN"};int c=11,j;for(j=0;j<8;j++)if(v->st[j]){ui_text(c,14,sn[j],13);if(v->st[j]<0){ui_text(c+2,14,"-",7);ui_num(c+3,14,-v->st[j],7);}else ui_num(c+2,14,v->st[j],9);c+=6;if(c>26)break;}}
    ui_text(1,16,"A USE  L/R BEAST  B BACK",13);
    lw_upload_icon(it);
-   if(v->sheet==0)lw_obj(0,200,24,0,1,500,12,0,0);else if(v->sheet==1)lw_obj(0,192,24,1,2,500,12,0,0);else lw_obj(0,200,20,2,2,500,12,0,0);}}}
+   {int ip=V12_ITEM_BANK[it]?15:12;for(i=0;i<16;i++)OBJ_PALETTE[15*16+i]=v12_items_b_pal[i];lw_npc_pal_dirty=1;
+   if(v->sheet==0)lw_obj(0,200,24,0,1,500,ip,0,0);else if(v->sheet==1)lw_obj(0,192,24,1,2,500,ip,0,0);else lw_obj(0,200,20,2,2,500,ip,0,0);}}}}
  else if(lw_page==2){static const char*const sn[6]={"HP","ATK","DEF","SPD","FOCUS","LUCK"};static const char*const slot[4]={"WEAPON","ARMOR","ACCESS","LIGHT"};char id[12];int j;u32 v=b->id;
   for(j=0;j<6;j++){ui_text(1,2+j,sn[j],13);ui_num(8,2+j,lw_stat(b,j),15);}
   ui_text(1,8,"HP NOW",13);ui_num(8,8,b->hp,15);ui_text(14,2,"HUNGER",13);ui_num(22,2,b->hunger,15);ui_text(14,3,"ENERGY",13);ui_num(22,3,b->energy,15);
   ui_text(14,4,"MOOD",13);ui_num(22,4,b->mood,15);ui_text(14,5,"BOND",13);ui_num(22,5,b->bond,15);ui_text(14,6,"LEVEL",13);ui_num(22,6,b->level,15);ui_text(14,7,"ENTROPY",13);ui_num(22,7,b->entropy,15);
   for(j=0;j<4;j++){ui_text(1,10+j,slot[j],13);ui_text(8,10+j,b->equip[j]?V12_ITEMS[b->equip[j]-1].name:"-",15);}
   id[0]='I';id[1]='D';id[2]=' ';for(j=0;j<8;j++){u32 d=(v>>(28-4*j))&15;id[3+j]=(char)(d<10?'0'+d:'A'+d-10);}id[11]=0;ui_text(1,15,id,13);
-  ui_text(1,16,"DNA: RECORDED IBM QSEED WINDOW",13);ui_text(1,17,"LIFE: CLASSICAL LORENZ SIM",13);}
+  ui_text(1,16,"DNA: RECORDED IBM QSEED DATA",13);ui_text(1,17,"LIFE: CLASSICAL LORENZ SIM",13);}
  else if(lw_page==3){int start=(int)((u32)lw_sel/7u)*7;const V12Quest*q=&V12_QUESTS[lw_sel];static const char*const st[3]={"LOCKED","OPEN","DONE"};
   for(r=0;r<7&&start+r<V12_QUEST_COUNT;r++){int s=lw_quest_state(start+r);ui_text(1,2+r,start+r==lw_sel?">":" ",14);ui_text(2,2+r,"A",13);ui_num(3,2+r,V12_QUESTS[start+r].act,13);ui_text(5,2+r,V12_QUESTS[start+r].name,start+r==lw_sel?14:15);ui_text(23,2+r,st[s],s==2?9:s==1?14:13);}
   lw_wrap(10,q->summary,15,3);ui_text(1,13,"FROM",13);ui_text(6,13,q->giver,15);
@@ -332,7 +369,11 @@ static void lw_draw_page(void){int i,r;LwBeast*b=&lw_b[lw_focus];static const ch
   ui_text(1,16,"TRACKS THE NATIVE CAMPAIGN",13);}
  else if(lw_page==4){const V12Char*c=&V12_CHARS[lw_sel];int big=LW_CHR_BIG[lw_sel];
   ui_text(1,2,c->name,14);lw_wrap(4,c->look,15,3);lw_wrap(8,c->pose,13,3);ui_num(24,2,lw_sel+1,13);
-  lw_copy32(LW_OBJ_TILES,LW_CHR_TILES[lw_sel],big?512:128);for(i=0;i<16;i++)OBJ_PALETTE[15*16+i]=LW_CHR_PAL[lw_sel][i];
+  {int f,cyc=(int)(((u32)lw_clock>>4)%16u);
+   if(lw_sel==0)f=cyc<12?cyc:12+(cyc&3);                    /* Zeref: idle 0-5, 4-leg walk 6-11, react_dark 12-15 */
+   else if(big)f=cyc<10?cyc:(cyc&3);                         /* Mote: idle 0-3, sneeze 4, yawn 5, walk 6-9 */
+   else f=cyc<10?cyc:(cyc%6);                                /* humans: idle 0-5, walk 6-9 */
+   lw_cast_f=(u8)f;lw_copy32(LW_OBJ_TILES,LW_CHR_TILES[lw_sel]+f*(big?512:128),big?512:128);}for(i=0;i<16;i++)OBJ_PALETTE[15*16+i]=LW_CHR_PAL[lw_sel][i];
   lw_obj(0,big?168:184,96,0,big?3:2,0,15,0,0);lw_dirty_art=1;
   ui_text(1,17,"UP/DOWN CAST  B BACK",13);}}
 static void lw_render(void){if(lw_card)return;if(lw_page)lw_draw_page();else lw_draw_field();}
