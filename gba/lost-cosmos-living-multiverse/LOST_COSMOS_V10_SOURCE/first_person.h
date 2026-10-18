@@ -144,6 +144,7 @@ static int fp_project(int wx,int wy,int*sx,int*sy,int*scale){
  *sx=120+fp_div(FP_D*(xr>>6),zc>>6);*sy=80+fp_div(FP_D*(yd>>6),zc>>6);
  zpx=zc>>14;*scale=clampi(fp_div(FP_D*128,zpx),48,512);return 1;}
 
+static int fp_cst_bob(void);
 /* ---------- sprites ---------- */
 typedef struct { int z,sx,sy,scale; u16 tile; u8 pal,size,kind; u32 identity; } FpSprite;
 static void fp_put(int oi,const FpSprite*s){int S=s->size?32:16,h=(S*s->scale)>>8,cx=s->sx,cy=s->sy-(h>>1),inv=(int)(65536u/(u32)s->scale);
@@ -163,6 +164,7 @@ static void fp_sprites(void){FpSprite list[FP_MAX_SPRITES];int n=0,i,j;LcCreatur
   if(sp>=1&&sp<=8)n=fp_add(list,n,bx,by,(u16)(384+(sp-1)*24+mini(2,c->stage)*8+((frame>>4)&1)*4),(u8)(4+sp),0,1,c->identity);
   else if(lc_has_import_art(c))n=fp_add(list,n,bx,by,0,0,1,2,c->identity);
   else{u8 typ=(u8)(sp%EN_COUNT);n=fp_add(list,n,bx,by,(u16)(60+typ*4),(u8)(5+typ),0,1,c->identity);}
+  if(n)list[n-1].sy-=fp_cst_bob();  /* V12.2: CST arousal bob */
   if(n){fp_beast_sx=(s16)list[n-1].sx;fp_beast_sy=(s16)list[n-1].sy;fp_beast_scale=(s16)list[n-1].scale;}}
  if(fp_cam==FP_CAM_CAGE)n=fp_add(list,n,player.x,player.y,(u16)(576+(0*4+(player.anim&3))*4),0,0,0,0);
  if(V11_IS_ROOM){for(i=0;i<v11_npc_count;i++)n=fp_add(list,n,v11_npc_x[i],v11_npc_y[i],(u16)(128+i*16),14,1,0,0);}
@@ -171,11 +173,37 @@ static void fp_sprites(void){FpSprite list[FP_MAX_SPRITES];int n=0,i,j;LcCreatur
  for(i=1;i<n;i++){FpSprite t=list[i];j=i;while(j>0&&list[j-1].z>t.z){list[j]=list[j-1];j--;}list[j]=t;}
  for(i=0;i<n;i++)fp_put(i,&list[i]);}
 
+/* ---------- V12.2 CST-12 companion ----------
+   The beast beside you in the first-person view carries its own 12-D CST state
+   (cst12.h), seeded from its identity's QSEED window (Zeref bb-deada969 when no
+   party creature is active). Classical simulation seeded by recorded data.
+   Mood picks a decision each heartbeat: FOLLOW, PLAY (scampers ahead), HIDE
+   (drops behind you) or REST (sits and recovers); turbulence sways its path,
+   arousal sets its bob. Not saved. */
+static Cst12 fp_cst;static s32 fp_cl[3];static u32 fp_cst_id=0;
+static volatile u8 fp_cst_mode=0;static volatile u16 fp_cst_steps=0,fp_cst_decisions=0;
+static const char*const FP_CST_MODES[4]={"FOLLOW","PLAY","HIDE","REST"};
+static void fp_cst_seed(void){LcCreature*c=lc_party.count?&lc_party.slots[lc_party.active]:0;u32 id=c?c->identity:0xDEADA969u;
+ if(!id)id=0xDEADA969u;fp_cst_id=id;cst_seed_id(&fp_cst,id,fp_cl);fp_cst_mode=0;}
+static void fp_cst_tick(int walking){Cst12*s=&fp_cst;
+ cst_lorenz(s,&fp_cl[0],&fp_cl[1],&fp_cl[2]);
+ cst_step(s,cosmos.trust*16,cosmos.energy*12+(walking?1200:0),cosmos.curiosity*16,cosmos.avoid*16,s->coh,fp_cl[0],fp_cl[1]);
+ fp_cst_steps++;
+ if(cst_heartbeat(s)){int m=0;fp_cst_decisions++;
+  if(s->fear>2900)m=2;else if(cosmos.energy<40)m=3;else if(s->joy>2500&&s->mischief>1500)m=1;fp_cst_mode=(u8)m;
+  if(m==1&&cosmos.energy)cosmos.energy--;else if(m==3&&cosmos.energy<255)cosmos.energy++;}}
+/* forward / sideways offset for the companion, in pixels */
+/* kept within the original 40/14 px reach so the beast always stays beside you */
+static int fp_cst_ahead(void){int a=fp_cst_mode==1?41:fp_cst_mode==2?-18:fp_cst_mode==3?22:38;return a+(((fp_cst.joy-fp_cst.fear)*2)>>12);}
+static int fp_cst_side(void){return 14+((fp_cl[0]*cst_turb(&fp_cst))>>21);}
+static int fp_cst_bob(void){return (fp_sin(fp_cst.phase>>4)*(1+((fp_cst.ch[CST_AROUSAL]*3)>>12)))>>14;}
+
 /* ---------- mode ---------- */
 static void fp_beast_target(int*tx,int*ty){
  if(leash_autonomous()){*tx=cosmos.x;*ty=cosmos.y;return;} /* LEASH OFF: draw the beast where it really is */
- if(fp_cam==FP_CAM_EYE){*tx=player.x+((fp_fx*40+fp_rx*14)>>14);*ty=player.y+((fp_fy*40+fp_ry*14)>>14);}
- else{*tx=player.x+((fp_rx*16)>>14);*ty=player.y+((fp_ry*16)>>14);}}
+ {int a=fp_cst_ahead(),sd=fp_cst_side();  /* V12.2: CST decision + Lorenz sway */
+ if(fp_cam==FP_CAM_EYE){*tx=player.x+((fp_fx*a+fp_rx*sd)>>14);*ty=player.y+((fp_fy*a+fp_ry*sd)>>14);}
+ else{*tx=player.x+((fp_rx*(sd+2)+fp_fx*(a-40))>>14);*ty=player.y+((fp_ry*(sd+2)+fp_fy*(a-40))>>14);}}}
 static void fp_enter(void){static const u16 face_heading[4]={0,2048,3072,1024};int tx,ty;
  if(fp_active||game_mode!=MODE_SURFACE||cinema_active||intro||v108_credits_active)return;
  if(V11_IS_ROOM&&(v11_wild||v11_shop||v11_dialogue||v11_lore||v11_gameover))return;
@@ -185,6 +213,7 @@ static void fp_enter(void){static const u16 face_heading[4]={0,2048,3072,1024};i
  fp_phi[FP_CAM_EYE]=FP_PHI_EYE;fp_phi[FP_CAM_CAGE]=FP_PHI_CAGE;fp_zoom10=106;
  fp_sub_x=fp_sub_y=0;fp_walked=fp_turned=0;
  fp_fx=fp_sin(fp_heading);fp_fy=-fp_cos(fp_heading);fp_rx=fp_cos(fp_heading);fp_ry=fp_sin(fp_heading);
+ fp_cst_seed();
  fp_beast_target(&tx,&ty);fp_beast_x=tx*256;fp_beast_y=ty*256;
  fp_build();fp_cache_key=-1;
  BG_PALETTE[16]=BG_PALETTE[0];
@@ -211,6 +240,7 @@ static void fp_update(u16 k,u16 newk){int sp=0,run=(k&KEY_B)!=0,speed=run?3:2,dx
  if(dx||dy){int ox=player.x,oy=player.y;move_player(dx,dy,run);fp_walked=(u16)(fp_walked+iabs(player.x-ox)+iabs(player.y-oy));}
  else if(!sp)player.anim=0;
  if(player.hurt)player.hurt--;
+ fp_cst_tick(sp!=0);
  /* The beast keeps pace beside the player and never walks into a wall.
     With the leash off it keeps roaming and is drawn at its own position. */
  if(leash_autonomous()){leash_tick();fp_beast_x=cosmos.x*256;fp_beast_y=cosmos.y*256;return;}
@@ -225,5 +255,6 @@ static void fp_render(void){static const char*dir[4]={"N","E","S","W"};
  ui_text(11,0,V11_IS_ROOM?v11_short_world():location_name(),13);
  ui_text(28,0,dir[((fp_heading+512)>>10)&3],15);
  if(leash_autonomous()){ui_fill_rows(18,18,62,15);ui_text(1,18,"LEASH OFF",14);ui_text(11,18,"CELLS",13);ui_num(17,18,lf_rec.cells,15);ui_text(22,18,"SPOT",13);ui_num(27,18,lf_rec.pois,15);}
+ else{ui_fill_rows(18,18,62,15);ui_text(1,18,"CST",13);ui_text(5,18,CST_MOOD_NAMES[cst_top_mood(&fp_cst)],14);ui_text(14,18,FP_CST_MODES[fp_cst_mode&3],15);ui_text(22,18,"COH",13);ui_num(26,18,(fp_cst.coh*100)>>12,15);}
  ui_fill_rows(19,19,62,15);ui_text(1,19,"A CAM  L R TILT  SELECT MAP",15);}
 #endif

@@ -1,0 +1,41 @@
+{
+ "note": "char_<id>.pal is a copy of its shared palette; load the shared one once per world",
+ "groups": {
+  "char_shared_warm": [
+   "arin",
+   "hollis",
+   "thorne",
+   "sethra",
+   "quillan",
+   "cinderwake"
+  ],
+  "char_shared_cool": [
+   "edric",
+   "bryn",
+   "hesper",
+   "rime"
+  ],
+  "char_shared_dusk": [
+   "traveler",
+   "malakar",
+   "grumbleback",
+   "counterfeit"
+  ]
+ },
+ "palette": {
+  "arin": "char_shared_warm",
+  "hollis": "char_shared_warm",
+  "thorne": "char_shared_warm",
+  "sethra": "char_shared_warm",
+  "quillan": "char_shared_warm",
+  "cinderwake": "char_shared_warm",
+  "edric": "char_shared_cool",
+  "bryn": "char_shared_cool",
+  "hesper": "char_shared_cool",
+  "rime": "char_shared_cool",
+  "traveler": "char_shared_dusk",
+  "malakar": "char_shared_dusk",
+  "grumbleback": "char_shared_dusk",
+  "counterfeit": "char_shared_dusk"
+ }
+}
