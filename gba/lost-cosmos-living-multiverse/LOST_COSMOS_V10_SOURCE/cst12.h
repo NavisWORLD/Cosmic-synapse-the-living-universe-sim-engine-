@@ -26,7 +26,16 @@
    phase rate, entanglement couples a creature's coherence to the group,
    dominance biases toward bold actions, spectral_flatness / audio_psi /
    av_coherence feed curiosity. Those trait mappings are this port's
-   design choice, not something the site engine defines. */
+   design choice, not something the site engine defines.
+
+   V12.2b (Cory: "no fixed values, it's all emergence"): those eight
+   non-integrated channels are no longer frozen. They still START from the
+   creature's QSEED window, then each frame drift toward a target built from
+   the creature's own lived state (Hebbian strength, coherence, resonance,
+   Lorenz chaos, joy/fear, arousal, phase). Gain ramps from 0 over the first
+   512 frames (~8.5 s warm-up) to a slow 1/1024-per-frame-scale rate, and
+   every trait is clamped to 0.05..0.95 so nothing pins or diverges. See
+   cst_traits(). Still integer only, still never saved. */
 #ifndef CST12_H
 #define CST12_H
 #define CST_ONE 4096
@@ -38,6 +47,7 @@ typedef struct{
  u16 phase;                         /* 65536 = one turn */
  s16 joy,curio,fear,calm,mischief;  /* creatureMood(), Q12 */
  u16 beat_timer;                    /* heartbeat countdown, frames */
+ u16 age;                           /* V12.2b: frames since seed, warm-up ramp (never saved) */
 }Cst12;
 static volatile u32 cst_steps=0;    /* read by the emulator test */
 static volatile u16 cst_beats=0;
@@ -54,7 +64,7 @@ static void cst_seed(Cst12*s,const u8*dna,int entropy100){int k;
  s->avoid=410;                                                      /* .1 */
  s->hebb=(s32)(((1024+(dna[60]&31)*26))<<4);                       /* .25 + up to .2 */
  s->phase=(u16)(s->ch[CST_GEO_PHASE]<<4);
- s->beat_timer=50;}
+ s->beat_timer=50;s->age=0;}
 /* Seed from an identity alone: the same QSEED window and entropy rule as the
    Living World's lw_dna() (used by the first-person companion). L gets the
    Lorenz Q8 start values from window bytes 6..8. */
@@ -74,6 +84,7 @@ static void cst_lorenz(const Cst12*s,s32*px,s32*py,s32*pz){s32 x=*px,y=*py,z=*pz
 /* One 60 Hz step of stepCSTState. Targets (Q12) come from the game world:
    valence, arousal, curiosity, fear. group_coh is the mean coherence of the
    other creatures (entanglement coupling). lx,ly are the Lorenz Q8 state. */
+static void cst_traits(Cst12*s,int lx01); /* V12.2b, below */
 #define CST_K1 68   /* dt     */
 #define CST_K2 137  /* dt*2   */
 #define CST_K3 205  /* dt*3   */
@@ -102,7 +113,30 @@ static void cst_step(Cst12*s,int val_t,int aro_t,int cur_t,int fear_t,int group_
  /* creatureMood */
  s->joy=(s16)cst_c((s->reson*2458+s->coh*1638)>>12);s->curio=(s16)cst_c(s->cur);s->fear=(s16)cst_c(s->avoid);
  s->calm=(s16)(CST_ONE-cst_c(s->instab));s->mischief=(s16)cst_c((s->chaos*2458+s->cur*1638)>>12);
+ cst_traits(s,lx01);
  cst_steps++;}
+/* V12.2b emergent traits. t = target from experience; gain ramps with age. */
+static int cst_cl(int v){return v<205?205:v>3891?3891:v;}           /* .05 .. .95 */
+static void cst_tr(Cst12*s,int k,int t,int g){s->ch[k]=(s16)cst_cl(s->ch[k]+(((cst_cl(t)-s->ch[k])*g)>>16));}
+static void cst_traits(Cst12*s,int lx01){int g,a=s->age,h=cst_c((int)(s->hebb>>4)),ph;
+ if(a<512)s->age=(u16)(a+1);
+ g=(a*a)>>8;if(g>1024)g=1024;                                         /* quadratic ramp, max 1024/65536 */
+ /* calm, coherent lives grow heavier and slower */
+ cst_tr(s,CST_FREQ_MASS,(s->calm*2048+s->coh*1229+(CST_ONE-s->ch[CST_AROUSAL])*819)>>12,g);
+ /* geometric phase follows the accumulated phase (triangle, no wrap jump) */
+ ph=(int)(s->phase>>3);ph=ph>4096?8192-ph:ph;cst_tr(s,CST_GEO_PHASE,ph,g>>1);
+ /* spectral flatness: how noisy life feels (Lorenz chaos + instability) */
+ cst_tr(s,CST_SPEC_FLAT,(s->chaos*1638+s->instab*1229+cst_abs(lx01-2048)*1229)>>12,g);
+ /* phase velocity: arousal and mischief speed the inner clock */
+ cst_tr(s,CST_PHASE_VEL,(s->ch[CST_AROUSAL]*2048+s->mischief*2048)>>12,g);
+ /* entanglement: Hebbian bond strength fires-together-wires-together */
+ cst_tr(s,CST_ENTANGLE,(h*2458+s->coh*1638)>>12,g);
+ /* dominance: confidence = joy over fear, plus a little valence */
+ cst_tr(s,CST_DOMINANCE,2048+((s->joy-s->fear)*1638>>12)+((s->ch[CST_VALENCE]-2048)>>2),g);
+ /* audio_psi: inner resonance */
+ cst_tr(s,CST_AUDIO_PSI,(s->reson*3277+s->curio*819)>>12,g);
+ /* av_coherence: resonance and coherence agreeing */
+ cst_tr(s,CST_AV_COH,(s->reson*s->coh)>>12,g);}
 /* motionParams: speed multiplier (.75 + mischief*.5) slowed by frequency_mass,
    turbulence (chaos*.9 + instability*.3) and smoothing from coherence. Q12. */
 static int cst_speed(const Cst12*s){return ((3072+(s->mischief>>1))*(5120-(s->ch[CST_FREQ_MASS]>>1)))>>12;}
