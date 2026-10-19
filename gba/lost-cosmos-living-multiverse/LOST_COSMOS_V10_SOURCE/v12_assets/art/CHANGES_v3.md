@@ -33,3 +33,18 @@ Dry run of tools_v12/convert_v12.py (d8462353) on a scratch copy: exit 0, art by
 - **bg forest/cave**: palettes `bg_forest.*` / `bg_cave.*` (and the map/tileset PNG colours) retuned from `world_concept.jpg`: indigo night, violet canopy, moss, teal glow; deep-navy cave with cyan/blue crystals and violet rock.
   Same 512x256 maps, same slot roles. Tile counts unchanged: forest 188, cave 138.
 - Mode-4 scenes, scene palettes, mockup and contact sheets rebuilt. New preview: `preview/mote_forms_v3b_x3.png`.
+
+## v3c (00:55 CT) — shared human palettes (Phera-approved)
+- The 14 human/NPC sheets now share **3 palettes**, so any 2-3 walkers in a world use at most 3 OBJ palette slots:
+  - `char_shared_warm`: arin, hollis, thorne, sethra, quillan, cinderwake
+  - `char_shared_cool`: edric, bryn, hesper, rime
+  - `char_shared_dusk`: traveler, malakar, grumbleback, counterfeit
+- NEW `palettes/char_shared_{warm,cool,dusk}.pal/.json` and NEW `sprites/char_palette_map.json` (character -> shared palette).
+- Filenames unchanged: each `palettes/char_<id>.pal/.json` is an identical copy of its group palette, so convert_v12 works unmodified. In the ROM, load the shared palette once and point all members at that slot.
+- Mote forms keep their own palettes (unchanged).
+
+## v3d (01:00 CT) — Zeref rim light + Malakar tint
+- **creature_zeref** (same file/palette name, same 16-frame layout: idle 0-5, walk 6-11, react_dark 12-15): a 2px lavender rim light (outer px strongest) on the beanie and horns.
+  The fur edge is darkened ~28% for contrast. Bright pixels (eye stars, sparkles) are masked out, so the stars stay intact. The palette is regenerated under the same name.
+- **char_malakar**: skin/hood moved off cream-yellow to a cool grey within `char_shared_dusk` (the dusk palette is regenerated; the other dusk members look unchanged). The parchment map staff is kept.
+- NEW preview: `preview/zeref_rimlight_before_after_x3.png`.

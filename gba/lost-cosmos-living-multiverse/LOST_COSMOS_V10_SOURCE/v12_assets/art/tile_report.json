@@ -23,8 +23,8 @@
    ],
    "frame_count": 16,
    "tiles_total": 1024,
-   "tiles_unique": 357,
-   "bytes_4bpp": 11424,
+   "tiles_unique": 376,
+   "bytes_4bpp": 12032,
    "vram_one_frame_bytes": 2048,
    "palette": "creature_zeref.pal"
   },
@@ -375,7 +375,7 @@
    "palette": "char_mote_still_here.pal"
   },
   "char_arin": {
-   "category": "human/NPC v3",
+   "category": "human/NPC v3 (shared palette)",
    "size": "32x32",
    "frames": [
     "idle",
@@ -394,32 +394,11 @@
    "tiles_unique": 45,
    "bytes_4bpp": 1440,
    "vram_one_frame_bytes": 512,
-   "palette": "char_arin.pal"
-  },
-  "char_traveler": {
-   "category": "human/NPC v3",
-   "size": "32x32",
-   "frames": [
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "walk",
-    "walk",
-    "walk",
-    "walk"
-   ],
-   "frame_count": 10,
-   "tiles_total": 160,
-   "tiles_unique": 48,
-   "bytes_4bpp": 1536,
-   "vram_one_frame_bytes": 512,
-   "palette": "char_traveler.pal"
+   "palette": "char_arin.pal",
+   "shared_palette": "char_shared_warm"
   },
   "char_hollis": {
-   "category": "human/NPC v3",
+   "category": "human/NPC v3 (shared palette)",
    "size": "32x32",
    "frames": [
     "idle",
@@ -435,167 +414,14 @@
    ],
    "frame_count": 10,
    "tiles_total": 160,
-   "tiles_unique": 50,
-   "bytes_4bpp": 1600,
+   "tiles_unique": 49,
+   "bytes_4bpp": 1568,
    "vram_one_frame_bytes": 512,
-   "palette": "char_hollis.pal"
-  },
-  "char_edric": {
-   "category": "human/NPC v3",
-   "size": "32x32",
-   "frames": [
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "walk",
-    "walk",
-    "walk",
-    "walk"
-   ],
-   "frame_count": 10,
-   "tiles_total": 160,
-   "tiles_unique": 35,
-   "bytes_4bpp": 1120,
-   "vram_one_frame_bytes": 512,
-   "palette": "char_edric.pal"
-  },
-  "char_bryn": {
-   "category": "human/NPC v3",
-   "size": "32x32",
-   "frames": [
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "walk",
-    "walk",
-    "walk",
-    "walk"
-   ],
-   "frame_count": 10,
-   "tiles_total": 160,
-   "tiles_unique": 55,
-   "bytes_4bpp": 1760,
-   "vram_one_frame_bytes": 512,
-   "palette": "char_bryn.pal"
-  },
-  "char_quillan": {
-   "category": "human/NPC v3",
-   "size": "32x32",
-   "frames": [
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "walk",
-    "walk",
-    "walk",
-    "walk"
-   ],
-   "frame_count": 10,
-   "tiles_total": 160,
-   "tiles_unique": 43,
-   "bytes_4bpp": 1376,
-   "vram_one_frame_bytes": 512,
-   "palette": "char_quillan.pal"
-  },
-  "char_hesper": {
-   "category": "human/NPC v3",
-   "size": "32x32",
-   "frames": [
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "walk",
-    "walk",
-    "walk",
-    "walk"
-   ],
-   "frame_count": 10,
-   "tiles_total": 160,
-   "tiles_unique": 73,
-   "bytes_4bpp": 2336,
-   "vram_one_frame_bytes": 512,
-   "palette": "char_hesper.pal"
-  },
-  "char_grumbleback": {
-   "category": "human/NPC v3",
-   "size": "32x32",
-   "frames": [
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "walk",
-    "walk",
-    "walk",
-    "walk"
-   ],
-   "frame_count": 10,
-   "tiles_total": 160,
-   "tiles_unique": 63,
-   "bytes_4bpp": 2016,
-   "vram_one_frame_bytes": 512,
-   "palette": "char_grumbleback.pal"
-  },
-  "char_rime": {
-   "category": "human/NPC v3",
-   "size": "32x32",
-   "frames": [
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "walk",
-    "walk",
-    "walk",
-    "walk"
-   ],
-   "frame_count": 10,
-   "tiles_total": 160,
-   "tiles_unique": 59,
-   "bytes_4bpp": 1888,
-   "vram_one_frame_bytes": 512,
-   "palette": "char_rime.pal"
-  },
-  "char_cinderwake": {
-   "category": "human/NPC v3",
-   "size": "32x32",
-   "frames": [
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "idle",
-    "walk",
-    "walk",
-    "walk",
-    "walk"
-   ],
-   "frame_count": 10,
-   "tiles_total": 160,
-   "tiles_unique": 81,
-   "bytes_4bpp": 2592,
-   "vram_one_frame_bytes": 512,
-   "palette": "char_cinderwake.pal"
+   "palette": "char_hollis.pal",
+   "shared_palette": "char_shared_warm"
   },
   "char_thorne": {
-   "category": "human/NPC v3",
+   "category": "human/NPC v3 (shared palette)",
    "size": "32x32",
    "frames": [
     "idle",
@@ -614,10 +440,11 @@
    "tiles_unique": 34,
    "bytes_4bpp": 1088,
    "vram_one_frame_bytes": 512,
-   "palette": "char_thorne.pal"
+   "palette": "char_thorne.pal",
+   "shared_palette": "char_shared_warm"
   },
   "char_sethra": {
-   "category": "human/NPC v3",
+   "category": "human/NPC v3 (shared palette)",
    "size": "32x32",
    "frames": [
     "idle",
@@ -636,10 +463,172 @@
    "tiles_unique": 36,
    "bytes_4bpp": 1152,
    "vram_one_frame_bytes": 512,
-   "palette": "char_sethra.pal"
+   "palette": "char_sethra.pal",
+   "shared_palette": "char_shared_warm"
+  },
+  "char_quillan": {
+   "category": "human/NPC v3 (shared palette)",
+   "size": "32x32",
+   "frames": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "walk",
+    "walk",
+    "walk",
+    "walk"
+   ],
+   "frame_count": 10,
+   "tiles_total": 160,
+   "tiles_unique": 43,
+   "bytes_4bpp": 1376,
+   "vram_one_frame_bytes": 512,
+   "palette": "char_quillan.pal",
+   "shared_palette": "char_shared_warm"
+  },
+  "char_cinderwake": {
+   "category": "human/NPC v3 (shared palette)",
+   "size": "32x32",
+   "frames": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "walk",
+    "walk",
+    "walk",
+    "walk"
+   ],
+   "frame_count": 10,
+   "tiles_total": 160,
+   "tiles_unique": 81,
+   "bytes_4bpp": 2592,
+   "vram_one_frame_bytes": 512,
+   "palette": "char_cinderwake.pal",
+   "shared_palette": "char_shared_warm"
+  },
+  "char_edric": {
+   "category": "human/NPC v3 (shared palette)",
+   "size": "32x32",
+   "frames": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "walk",
+    "walk",
+    "walk",
+    "walk"
+   ],
+   "frame_count": 10,
+   "tiles_total": 160,
+   "tiles_unique": 35,
+   "bytes_4bpp": 1120,
+   "vram_one_frame_bytes": 512,
+   "palette": "char_edric.pal",
+   "shared_palette": "char_shared_cool"
+  },
+  "char_bryn": {
+   "category": "human/NPC v3 (shared palette)",
+   "size": "32x32",
+   "frames": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "walk",
+    "walk",
+    "walk",
+    "walk"
+   ],
+   "frame_count": 10,
+   "tiles_total": 160,
+   "tiles_unique": 55,
+   "bytes_4bpp": 1760,
+   "vram_one_frame_bytes": 512,
+   "palette": "char_bryn.pal",
+   "shared_palette": "char_shared_cool"
+  },
+  "char_hesper": {
+   "category": "human/NPC v3 (shared palette)",
+   "size": "32x32",
+   "frames": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "walk",
+    "walk",
+    "walk",
+    "walk"
+   ],
+   "frame_count": 10,
+   "tiles_total": 160,
+   "tiles_unique": 73,
+   "bytes_4bpp": 2336,
+   "vram_one_frame_bytes": 512,
+   "palette": "char_hesper.pal",
+   "shared_palette": "char_shared_cool"
+  },
+  "char_rime": {
+   "category": "human/NPC v3 (shared palette)",
+   "size": "32x32",
+   "frames": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "walk",
+    "walk",
+    "walk",
+    "walk"
+   ],
+   "frame_count": 10,
+   "tiles_total": 160,
+   "tiles_unique": 59,
+   "bytes_4bpp": 1888,
+   "vram_one_frame_bytes": 512,
+   "palette": "char_rime.pal",
+   "shared_palette": "char_shared_cool"
+  },
+  "char_traveler": {
+   "category": "human/NPC v3 (shared palette)",
+   "size": "32x32",
+   "frames": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "walk",
+    "walk",
+    "walk",
+    "walk"
+   ],
+   "frame_count": 10,
+   "tiles_total": 160,
+   "tiles_unique": 48,
+   "bytes_4bpp": 1536,
+   "vram_one_frame_bytes": 512,
+   "palette": "char_traveler.pal",
+   "shared_palette": "char_shared_dusk"
   },
   "char_malakar": {
-   "category": "human/NPC v3",
+   "category": "human/NPC v3 (shared palette)",
    "size": "32x32",
    "frames": [
     "idle",
@@ -658,10 +647,34 @@
    "tiles_unique": 50,
    "bytes_4bpp": 1600,
    "vram_one_frame_bytes": 512,
-   "palette": "char_malakar.pal"
+   "palette": "char_malakar.pal",
+   "shared_palette": "char_shared_dusk"
+  },
+  "char_grumbleback": {
+   "category": "human/NPC v3 (shared palette)",
+   "size": "32x32",
+   "frames": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "walk",
+    "walk",
+    "walk",
+    "walk"
+   ],
+   "frame_count": 10,
+   "tiles_total": 160,
+   "tiles_unique": 63,
+   "bytes_4bpp": 2016,
+   "vram_one_frame_bytes": 512,
+   "palette": "char_grumbleback.pal",
+   "shared_palette": "char_shared_dusk"
   },
   "char_counterfeit": {
-   "category": "human/NPC v3",
+   "category": "human/NPC v3 (shared palette)",
    "size": "32x32",
    "frames": [
     "idle",
@@ -680,7 +693,8 @@
    "tiles_unique": 86,
    "bytes_4bpp": 2752,
    "vram_one_frame_bytes": 512,
-   "palette": "char_counterfeit.pal"
+   "palette": "char_counterfeit.pal",
+   "shared_palette": "char_shared_dusk"
   },
   "items_16x16": {
    "category": "item icons",
@@ -873,7 +887,7 @@
   "zeref_forest": {
    "mode": 4,
    "size": "240x160",
-   "colors": 250,
+   "colors": 251,
    "bytes": 38400,
    "palette": "scene_zeref_forest.pal"
   },
@@ -886,11 +900,11 @@
   }
  },
  "totals": {
-  "sprite_tiles_unique": 4240,
-  "sprite_bytes": 135680,
+  "sprite_tiles_unique": 4258,
+  "sprite_bytes": 136256,
   "bg_tiles": 326,
   "bg_bytes": 10432,
   "scene_bytes": 76800,
-  "palettes": 37
+  "palettes": 40
  }
 }

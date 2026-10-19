@@ -24,7 +24,9 @@ def lw(emu):
                 dark=r("lw_dark_reacts", width=2), used=r("lw_items_used", width=2), moved=r("lw_moved_px", width=4),
                 quests_done=r("lw_quests_done", width=2), focus=r("lw_focus", width=1),
                 npc_walk=r("lw_npc_walk_frames", width=2), sneezes=r("lw_sneezes", width=2), yawns=r("lw_yawns", width=2),
-                lunges=r("lw_wisp_lunges", width=2), migrated=r("lw_migrated", width=1))
+                lunges=r("lw_wisp_lunges", width=2), migrated=r("lw_migrated", width=1),
+                cst_steps=r("cst_steps", width=4), cst_picks=r("lw_cst_picks", width=2), beats=r("lw_heartbeats", width=2),
+                walk_frames=r("lw_walk_frames", width=2), hud_scrolls=r("lw_hud_scrolls", width=2), cast_form=r("lw_cast_form", width=1))
 
 def disp(emu):
     return dict(dispcnt=emu.read16(0x04000000), bg0cnt=emu.read16(0x04000008), bg1cnt=emu.read16(0x0400000A))
@@ -68,6 +70,12 @@ def run(rom, elf, out):
         if d1["decisions"] <= d0["decisions"] or d1["moved"] <= d0["moved"]:
             raise RuntimeError(f"creatures did not live on their own {d0} {d1}")
         rep["life_10s"] = dict(decisions=d1["decisions"] - d0["decisions"], moved=d1["moved"] - d0["moved"])
+        # V12.2: the CST-12 core steps every frame for 6 creatures + 2 walkers, Zeref's heart beats,
+        # life-brain weights make decisions, and the two shared-palette walkers walk.
+        rep["v12_2_cst_10s"] = {k: d1[k] - d0[k] for k in ("cst_steps", "cst_picks", "beats", "walk_frames")}
+        c = rep["v12_2_cst_10s"]
+        if c["cst_steps"] < 600 * 6 or c["beats"] < 8 or c["walk_frames"] == 0:
+            raise RuntimeError(f"CST-12 life not running {c}")
         shot(emu, "lw_04_forest_after_10s.png")
         for _ in range(60):
             if lw(emu)["dark"]:
@@ -108,6 +116,14 @@ def run(rom, elf, out):
         tap(emu, "START"); emu.step((), 5); shot(emu, "lw_13_quests.png")
         tap(emu, "START"); emu.step((), 5); shot(emu, "lw_14_cast_zeref.png")
         tap(emu, "DOWN", 2); emu.step((), 5); shot(emu, "lw_15_cast_mote.png")
+        forms = []
+        for j, nm in enumerate(("linework", "wash", "still_here")):
+            tap(emu, "DOWN"); emu.step((), 5); shot(emu, f"lw_15_cast_mote_form{j+2}_{nm}.png")
+            forms.append(dict(form=lw(emu)["cast_form"], tiles=hashlib.sha256(bytes(emu.read_range(0x06010000, 2048))).hexdigest()))
+        rep["v12_2_mote_forms"] = forms
+        if len({f["tiles"] for f in forms}) != 3 or [f["form"] for f in forms] != [2, 3, 4]:
+            raise RuntimeError(f"Mote forms do not each show their own portrait {forms}")
+        tap(emu, "UP", 3); emu.step((), 5)
         for i in range(6):
             emu.step((), 16); shot(emu, f"lw_15_cast_mote_f{i}.png")
         tap(emu, "UP", 2); emu.step((), 200); shot(emu, "lw_15b_cast_zeref_walk.png")

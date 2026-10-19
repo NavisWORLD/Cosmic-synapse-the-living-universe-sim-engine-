@@ -41,7 +41,8 @@ def fp(emu):
                 beast_screen=[r("fp_beast_sx", width=2, signed=True), r("fp_beast_sy", width=2, signed=True)],
                 beast_scale=r("fp_beast_scale", width=2, signed=True),
                 beast_world=[r("fp_beast_x", width=4, signed=True) >> 8, r("fp_beast_y", width=4, signed=True) >> 8],
-                entries=r("fp_entries", width=2), exits=r("fp_exits", width=2))
+                entries=r("fp_entries", width=2), exits=r("fp_exits", width=2),
+                cst_steps=r("fp_cst_steps", width=2), cst_decisions=r("fp_cst_decisions", width=2), cst_mode=r("fp_cst_mode", width=1))
 
 
 def display(emu):
@@ -256,6 +257,10 @@ def run_case(rom, elf, out, label, save_src, record=False):
             raise RuntimeError(f"{label}: beast not beside the player ({seen}/{len(samples)} on screen, {near} near)")
         rep["walk"] = dict(moves=moves, samples=len(samples), beast_on_screen=seen, beast_within_64px=near,
                            walked_px=fp(emu)["walked"])
+        # V12.2: the companion's CST-12 state steps every frame and decides on heartbeats.
+        st = fp(emu); rep["walk"]["cst"] = dict(steps=st["cst_steps"], decisions=st["cst_decisions"], mode=st["cst_mode"], hud=bh.ui_row(emu, 18))
+        if st["cst_steps"] < 30 or st["cst_decisions"] < 1 or "CST" not in rep["walk"]["cst"]["hud"]:
+            raise RuntimeError(f"{label}: first-person CST-12 companion not running {rep['walk']['cst']}")
         # CAGE camera: the Beast Cage orbit; the hero is drawn too.
         emu.tap("A", hold=8, release=8); emu.step((), 10)
         if fp(emu)["cam"] != 1:
@@ -353,6 +358,12 @@ def run_case(rom, elf, out, label, save_src, record=False):
     if not any(r["identity"] == p["identity"] for r in recs):
         raise RuntimeError(f"{label}: Beast Home record missing from the save {recs}")
     rep["saved_records"] = recs
+    # V12.2b ecosystem bridge: the cartridge wrote an LCE1 experience record for the site.
+    import lc_ecosystem
+    lce = lc_ecosystem.parse_lce(exported.read_bytes())
+    if not lce or lce["cst_steps"] < 1:
+        raise RuntimeError(f"{label}: no valid LCE1 export record in the save")
+    rep["lce1"] = lce
     return rep
 
 
