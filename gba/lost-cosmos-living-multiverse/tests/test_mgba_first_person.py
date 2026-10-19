@@ -358,6 +358,12 @@ def run_case(rom, elf, out, label, save_src, record=False):
     if not any(r["identity"] == p["identity"] for r in recs):
         raise RuntimeError(f"{label}: Beast Home record missing from the save {recs}")
     rep["saved_records"] = recs
+    # V12.2b ecosystem bridge: the cartridge wrote an LCE1 experience record for the site.
+    import lc_ecosystem
+    lce = lc_ecosystem.parse_lce(exported.read_bytes())
+    if not lce or lce["cst_steps"] < 1:
+        raise RuntimeError(f"{label}: no valid LCE1 export record in the save")
+    rep["lce1"] = lce
     return rep
 
 

@@ -180,16 +180,17 @@ static void fp_sprites(void){FpSprite list[FP_MAX_SPRITES];int n=0,i,j;LcCreatur
    Mood picks a decision each heartbeat: FOLLOW, PLAY (scampers ahead), HIDE
    (drops behind you) or REST (sits and recovers); turbulence sways its path,
    arousal sets its bob. Not saved. */
+#include "ecosystem_bridge.h"
 static Cst12 fp_cst;static s32 fp_cl[3];static u32 fp_cst_id=0;
 static volatile u8 fp_cst_mode=0;static volatile u16 fp_cst_steps=0,fp_cst_decisions=0;
 static const char*const FP_CST_MODES[4]={"FOLLOW","PLAY","HIDE","REST"};
 static void fp_cst_seed(void){LcCreature*c=lc_party.count?&lc_party.slots[lc_party.active]:0;u32 id=c?c->identity:0xDEADA969u;
- if(!id)id=0xDEADA969u;fp_cst_id=id;cst_seed_id(&fp_cst,id,fp_cl);fp_cst_mode=0;}
+ if(!id)id=0xDEADA969u;fp_cst_id=id;cst_seed_id(&fp_cst,id,fp_cl);eb_apply_lcq(&fp_cst,id);fp_cst_mode=0;}
 static void fp_cst_tick(int walking){Cst12*s=&fp_cst;
  cst_lorenz(s,&fp_cl[0],&fp_cl[1],&fp_cl[2]);
  cst_step(s,cosmos.trust*16,cosmos.energy*12+(walking?1200:0),cosmos.curiosity*16,cosmos.avoid*16,s->coh,fp_cl[0],fp_cl[1]);
  fp_cst_steps++;
- if(cst_heartbeat(s)){int m=0;fp_cst_decisions++;
+ if(cst_heartbeat(s)){int m=0;fp_cst_decisions++;eb_on_beat(s,fp_cst_id);
   if(s->fear>2900)m=2;else if(cosmos.energy<40)m=3;else if(s->joy>2500&&s->mischief>1500)m=1;fp_cst_mode=(u8)m;
   if(m==1&&cosmos.energy)cosmos.energy--;else if(m==3&&cosmos.energy<255)cosmos.energy++;}}
 /* forward / sideways offset for the companion, in pixels */
