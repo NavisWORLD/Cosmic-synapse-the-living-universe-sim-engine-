@@ -75,7 +75,7 @@
   "name": "Guardian",
   "lines": [
    "Courage. Wisdom. Heart. Alone.",
-   "None pass who pass alone."
+   "Each of you, one test. Alone."
   ]
  },
  {
@@ -200,20 +200,20 @@
   ]
  },
  {
-  "id": "star_frog",
-  "name": "Star Frog",
+  "id": "frog",
+  "name": "Frog",
   "lines": [
-   "Ribbit. That hat is mine. Keep it.",
-   "I have seen 12 dimensions. Meh."
+   "Ribbit. That hat is yours now.",
+   "Do not ask about the hat."
   ]
  },
  {
-  "id": "sock_merchant",
-  "name": "Sock Guy",
+  "id": "old_pell",
+  "name": "Old Pell",
   "lines": [
-   "Socks! Wet ones! Beasts go nuts!",
-   "Do not ask where I get them.",
-   "Rawr is accepted as payment."
+   "37 days in this river. Forgive me.",
+   "I broke my brother's fiddle.",
+   "My socks have been wet a while."
   ]
  },
  {

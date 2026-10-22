@@ -22,9 +22,13 @@ static const u16*const LW_CRE_PAL[LW_N]={v12_cre_zeref_pal,v12_cre_kairo_pal,v12
 static const u32*const LW_COMP_TILES[LW_N]={v12_comp_zeref_tiles,v12_comp_kairo_tiles,v12_comp_frost_tiles,v12_comp_kitten_tiles,v12_comp_shardhowl_tiles,v12_comp_velvetcoil_tiles};
 static const u16*const LW_COMP_PAL[LW_N]={v12_comp_zeref_pal,v12_comp_kairo_pal,v12_comp_frost_pal,v12_comp_kitten_pal,v12_comp_shardhowl_pal,v12_comp_velvetcoil_pal};
 /* Cast gallery: same order as V12_CHARS (Zeref first; Zeref uses his creature art). */
-static const u32*const LW_CHR_TILES[V12_CHAR_COUNT]={v12_cre_zeref_tiles,v12_chr_arin_tiles,v12_chr_mote_tiles,v12_chr_mote_linework_tiles,v12_chr_mote_wash_tiles,v12_chr_mote_still_here_tiles,v12_chr_traveler_tiles,v12_chr_hollis_tiles,v12_chr_edric_tiles,v12_chr_bryn_tiles,v12_chr_quillan_tiles,v12_chr_hesper_tiles,v12_chr_grumbleback_tiles,v12_chr_rime_tiles,v12_chr_cinderwake_tiles,v12_chr_thorne_tiles,v12_chr_sethra_tiles,v12_chr_malakar_tiles,v12_chr_counterfeit_tiles};
-static const u16*const LW_CHR_PAL[V12_CHAR_COUNT]={v12_cre_zeref_pal,v12_chr_arin_pal,v12_chr_mote_pal,v12_chr_mote_linework_pal,v12_chr_mote_wash_pal,v12_chr_mote_still_here_pal,v12_chr_traveler_pal,v12_chr_hollis_pal,v12_chr_edric_pal,v12_chr_bryn_pal,v12_chr_quillan_pal,v12_chr_hesper_pal,v12_chr_grumbleback_pal,v12_chr_rime_pal,v12_chr_cinderwake_pal,v12_chr_thorne_pal,v12_chr_sethra_pal,v12_chr_malakar_pal,v12_chr_counterfeit_pal};
-static const u8 LW_CHR_BIG[V12_CHAR_COUNT]={1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0};
+/* V12.3: 5 Mote forms (Smudge, Linework, Shading, Wash, Ink) + 6 bible characters. The six have no
+   Cosmo portrait yet: they show a stand-in sheet and the CAST page says so (LW_CHR_STANDIN). */
+static const u32*const LW_CHR_TILES[V12_CHAR_COUNT]={v12_cre_zeref_tiles,v12_chr_arin_tiles,v12_chr_mote_tiles,v12_chr_mote_linework_tiles,v12_chr_mote_shading_tiles,v12_chr_mote_wash_tiles,v12_chr_mote_ink_tiles,v12_chr_traveler_tiles,v12_chr_hollis_tiles,v12_chr_edric_tiles,v12_chr_bryn_tiles,v12_chr_quillan_tiles,v12_chr_hesper_tiles,v12_chr_grumbleback_tiles,v12_chr_rime_tiles,v12_chr_cinderwake_tiles,v12_chr_thorne_tiles,v12_chr_sethra_tiles,v12_chr_malakar_tiles,v12_chr_counterfeit_tiles,v12_chr_edric_tiles,v12_chr_traveler_tiles,v12_chr_traveler_tiles,v12_chr_quillan_tiles,v12_chr_quillan_tiles,v12_chr_hesper_tiles};
+static const u16*const LW_CHR_PAL[V12_CHAR_COUNT]={v12_cre_zeref_pal,v12_chr_arin_pal,v12_chr_mote_pal,v12_chr_mote_linework_pal,v12_chr_mote_shading_pal,v12_chr_mote_wash_pal,v12_chr_mote_ink_pal,v12_chr_traveler_pal,v12_chr_hollis_pal,v12_chr_edric_pal,v12_chr_bryn_pal,v12_chr_quillan_pal,v12_chr_hesper_pal,v12_chr_grumbleback_pal,v12_chr_rime_pal,v12_chr_cinderwake_pal,v12_chr_thorne_pal,v12_chr_sethra_pal,v12_chr_malakar_pal,v12_chr_counterfeit_pal,v12_chr_edric_pal,v12_chr_traveler_pal,v12_chr_traveler_pal,v12_chr_quillan_pal,v12_chr_quillan_pal,v12_chr_hesper_pal};
+static const u8 LW_CHR_BIG[V12_CHAR_COUNT]={1,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+static const u8 LW_CHR_STANDIN[V12_CHAR_COUNT]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1};
+typedef char lw_chr_count_check[(V12_CHAR_COUNT==26)?1:-1];
 static int lw_streq(const char*a,const char*b){while(*a&&*a==*b){a++;b++;}return *a==*b;}
 static int lw_item(const char*id){int i;for(i=0;i<V12_ITEM_COUNT;i++)if(lw_streq(V12_ITEMS[i].id,id))return i;return -1;}
 static u32 lw_rand(LwBeast*b){u32 x=b->rng?b->rng:0x9E3779B9u;x^=x<<13;x^=x>>17;x^=x<<5;b->rng=x;return x;}
@@ -52,9 +56,14 @@ static int lw_stat(const LwBeast*b,int k){int v,i;
  return clampi(v,1,255);}
 static void lw_defaults(void){int i;
  for(i=0;i<V12_ITEM_COUNT;i++)lw_inv[i]=0;for(i=0;i<5;i++)lw_claimed[i]=0;
- {static const char*const s[9]={"healing_herbs","moon_berry","sunseed_snack","warm_ale","forge_lantern","tiny_scarf","hammer_blade","star_candy","wet_sock"};
+ {static const char*const s[9]={"healing_herbs","glowcap","sunseed_snack","warm_ale","forge_lantern","tiny_scarf","hammer_blade","star_shard","wet_sock"};
   static const u8 n[9]={3,4,2,1,1,1,1,2,1};for(i=0;i<9;i++){int j=lw_item(s[i]);if(j>=0)lw_inv[j]=n[i];}}
  for(i=0;i<LW_N;i++){LwBeast*b=&lw_b[i];int j;b->hunger=(u8)(30+b->dna[16]);b->energy=(u8)(60+b->dna[17]);b->mood=(u8)(50+b->dna[18]);b->bond=(u8)(20+b->dna[19]);b->level=1;b->xp=0;for(j=0;j<4;j++)b->equip[j]=0;b->hp=(u8)lw_stat(b,0);}}
+/* V12.3 layout 1: items 0..67 at +8..+75 (unchanged), items 68.. at +168 (free tail before the
+   checksum). Layout byte +3: 0 = V12.0-V12.2 ids, migrated once on load; 1 = V12.3 canon ids. */
+#define LW_LAYOUT 1
+static int lw_inv_at(int i){return i<68?LW_SRAM+8+i:LW_SRAM+168+(i-68);}
+typedef char lw_inv_fits[(V12_ITEM_COUNT<=68+80)?1:-1];
 static u32 lw_sum_at(int base){u32 s=0x4C573132u;int i;for(i=0;i<252;i++)s=s*31u+SRAM[base+i];return s;}
 #define lw_sum() lw_sum_at(LW_SRAM)
 /* V12.1: V12.0 kept this block at 16384, inside journal bank 1. One-time migration:
@@ -65,26 +74,32 @@ static int lw_valid_at(int base){u32 s;if(SRAM[base]!='L'||SRAM[base+1]!='W'||SR
 static void lw_migrate(void){int i;if(lw_valid_at(LW_SRAM)||!lw_valid_at(LW_SRAM_V120))return;for(i=0;i<256;i++)SRAM[LW_SRAM+i]=SRAM[LW_SRAM_V120+i];lw_migrated=1;}
 static void lw_save(void){int i,o;
  for(i=0;i<256;i++)SRAM[LW_SRAM+i]=0;
- SRAM[LW_SRAM]='L';SRAM[LW_SRAM+1]='W';SRAM[LW_SRAM+2]=1;SRAM[LW_SRAM+3]=0;SRAM[LW_SRAM+4]=lw_world;
- for(i=0;i<V12_ITEM_COUNT;i++)SRAM[LW_SRAM+8+i]=lw_inv[i];
+ SRAM[LW_SRAM]='L';SRAM[LW_SRAM+1]='W';SRAM[LW_SRAM+2]=1;SRAM[LW_SRAM+3]=LW_LAYOUT;SRAM[LW_SRAM+4]=lw_world;
+ for(i=0;i<V12_ITEM_COUNT;i++)SRAM[lw_inv_at(i)]=lw_inv[i];
  for(i=0;i<LW_N;i++){LwBeast*b=&lw_b[i];o=LW_SRAM+76+i*12;
   SRAM[o]=b->hunger;SRAM[o+1]=b->energy;SRAM[o+2]=b->mood;SRAM[o+3]=b->bond;SRAM[o+4]=b->hp;SRAM[o+5]=b->level;
   SRAM[o+6]=(u8)b->xp;SRAM[o+7]=(u8)(b->xp>>8);SRAM[o+8]=b->equip[0];SRAM[o+9]=b->equip[1];SRAM[o+10]=b->equip[2];SRAM[o+11]=b->equip[3];}
  for(i=0;i<5;i++)SRAM[LW_SRAM+156+i]=lw_claimed[i];
+ SRAM[LW_SRAM+164]=lw_end_d_flag;
  {u32 s=lw_sum();SRAM[LW_SRAM+252]=(u8)s;SRAM[LW_SRAM+253]=(u8)(s>>8);SRAM[LW_SRAM+254]=(u8)(s>>16);SRAM[LW_SRAM+255]=(u8)(s>>24);}}
 static int lw_load(void){int i,o;u32 s;
- lw_migrate();
+ lw_items_migrated=0;lw_migrate();
  if(SRAM[LW_SRAM]!='L'||SRAM[LW_SRAM+1]!='W'||SRAM[LW_SRAM+2]!=1)return 0;
  s=(u32)SRAM[LW_SRAM+252]|((u32)SRAM[LW_SRAM+253]<<8)|((u32)SRAM[LW_SRAM+254]<<16)|((u32)SRAM[LW_SRAM+255]<<24);
  if(s!=lw_sum())return 0;
  lw_world=SRAM[LW_SRAM+4]&1;
- for(i=0;i<V12_ITEM_COUNT;i++)lw_inv[i]=(u8)mini(99,SRAM[LW_SRAM+8+i]);
+ if(SRAM[LW_SRAM+3]==0){ /* V12.3: V12.2 save, item ids remapped (CHANGES_canon.md) */
+  for(i=0;i<V12_ITEM_COUNT;i++)lw_inv[i]=0;
+  for(i=0;i<V12_OLD_ITEM_COUNT;i++){int n=V12_ITEM_MIGRATE[i];lw_inv[n]=(u8)mini(99,lw_inv[n]+SRAM[LW_SRAM+8+i]);}
+  lw_items_migrated=1;}
+ else for(i=0;i<V12_ITEM_COUNT;i++)lw_inv[i]=(u8)mini(99,SRAM[lw_inv_at(i)]);
  for(i=0;i<LW_N;i++){LwBeast*b=&lw_b[i];int j;o=LW_SRAM+76+i*12;
   b->hunger=(u8)mini(100,SRAM[o]);b->energy=(u8)mini(100,SRAM[o+1]);b->mood=(u8)mini(100,SRAM[o+2]);b->bond=(u8)mini(100,SRAM[o+3]);
   b->level=(u8)clampi(SRAM[o+5],1,99);b->xp=(u16)(SRAM[o+6]|(SRAM[o+7]<<8));
-  for(j=0;j<4;j++){u8 e=SRAM[o+8+j];b->equip[j]=(u8)(e<=V12_ITEM_COUNT?e:0);}
+  for(j=0;j<4;j++){u8 e=SRAM[o+8+j];if(lw_items_migrated)e=(u8)(e&&e<=V12_OLD_ITEM_COUNT?V12_ITEM_MIGRATE[e-1]+1:0);b->equip[j]=(u8)(e<=V12_ITEM_COUNT?e:0);}
   b->hp=(u8)mini(lw_stat(b,0),SRAM[o+4]);}
  for(i=0;i<5;i++)lw_claimed[i]=SRAM[LW_SRAM+156+i];
+ lw_end_d_flag=(u8)(SRAM[LW_SRAM+164]&1);
  return 1;}
 /* ---------- quests: journal driven by the native campaign (cq_state) ---------- */
 static const u8 LW_ACT_Q0[4]={10,15,22,32},LW_ACT_QN[4]={5,7,10,7};
@@ -166,6 +181,14 @@ static void lw_obj(int i,int x,int y,int shape,int size,int tile,int pal,int hfl
 /* ---------- life ---------- */
 static int lw_dist(const LwBeast*b,s32 x,s32 y){int dx=(b->x-x)>>8,dy=(b->y-y)>>8;return iabs(dx)+iabs(dy);}
 static void lw_target(LwBeast*b,int x,int y){b->tx=clampi(x,24,LW_W-24);b->ty=clampi(y,40,LW_H-8);}
+/* V12.3: creature_moods synapse_mood. The trigger still sets the action; the spoken line comes from
+   a mood entry whose synapse_mood matches the creature's live CST-12 top mood (creatureMood), so
+   Zeref says what he actually feels. Prefer the trigger's own line when it already matches; else
+   the first matching entry among the CST-weighted triggers, rotating by the creature's RNG. */
+static int lw_synapse_line(LwBeast*b,int t){int top=cst_top_mood(&b->cst),k,n=0,c[V12_MOOD_COUNT];
+ if(V12_MOODS[t].synapse==top){lw_synapse_hits++;return t;}
+ for(k=0;k<V12_MOOD_COUNT;k++)if(V12_MOODS[k].synapse==top)c[n++]=k;
+ if(!n)return t;lw_synapse_swaps++;return c[lw_rand(b)%(u32)n];}
 static void lw_pick(int i){LwBeast*b=&lw_b[i];int t=-1,j,near_other=9999;
  int dark=lw_dist(b,lw_wx,lw_wy)<72,pl=lw_dist(b,lw_px,lw_py);
  for(j=0;j<LW_N;j++)if(j!=i)near_other=mini(near_other,lw_dist(b,lw_b[j].x,lw_b[j].y));
@@ -207,7 +230,7 @@ static void lw_pick(int i){LwBeast*b=&lw_b[i];int t=-1,j,near_other=9999;
   case V12_ACT_SIT_CHAIR:case V12_ACT_SIT_ALONE:{int j2=(int)(lw_rand(b)%(u32)LW_N);lw_target(b,(lw_b[j2].x>>8)+24,(lw_b[j2].y>>8));}break;
   default:b->tx=b->x>>8;b->ty=b->y>>8;break;}
  if(i==lw_focus)lw_say(LW_NAMES[i],": ");
- if(i==lw_focus){int n=0;const char*s=V12_MOODS[t].line;while(lw_msg[n])n++;while(*s&&n<84)lw_msg[n++]=*s++;lw_msg[n]=0;}
+ if(i==lw_focus){int n=0;const char*s=V12_MOODS[lw_synapse_line(b,t)].line;while(lw_msg[n])n++;while(*s&&n<84)lw_msg[n++]=*s++;lw_msg[n]=0;}
  if(i==0&&t==V12_TRIG_DARK_NEARBY)lw_dark_reacts++;}
 /* V12.2: CST Lorenz (rho modulated by arousal, x forced by quantum_entropy). */
 static void lw_lorenz(LwBeast*b,int speed){(void)speed;cst_lorenz(&b->cst,&b->lx,&b->ly,&b->lz);}
@@ -295,6 +318,16 @@ static void lw_card_show(void){int i;const u8*px=lw_world?v12_scene_cave_px:v12_
  for(i=0;i<256;i++)BG_PALETTE[i]=p[i];
  LW_REG16(0x04000020)=0x100;LW_REG16(0x04000022)=0;LW_REG16(0x04000024)=0;LW_REG16(0x04000026)=0x100;LW_REG32(0x04000028)=0;LW_REG32(0x0400002C)=0;
  REG_BG2CNT=0;REG_DISPCNT=4|BG2_ENABLE;lw_card=1;lw_card_timer=150;}
+/* V12.3 secret ending D 'The Passenger Seat' (bible 10). Requirement: Ending A + Bond 150 + all 12
+   Corner Sketches. The cartridge's crown ending (MEM_ENDING) stands for Ending A and bond tops out at
+   100 here, so: crown ending reached, Zeref bond 100, 12 corner_sketch. Unlocks once, grants last_map,
+   remembered at LW+164 bit0. */
+static volatile u8 lw_end_d=0;
+static int lw_end_d_ready(void){int cs=lw_item("corner_sketch");
+ return (cosmos.memory_flags&MEM_ENDING)&&lw_b[0].bond>=100&&cs>=0&&lw_inv[cs]>=12;}
+static void lw_check_end_d(void){if(lw_end_d||!lw_end_d_ready())return;lw_end_d=1;lw_end_d_flag=1;
+ {int lm=lw_item("last_map");if(lm>=0&&lw_inv[lm]<99)lw_inv[lm]++;}
+ lw_say("SECRET ENDING D: ",V12_ENDINGS[V12_END_D][1]);lw_save();}
 static void lw_seed_walkers(void){int i;static const u32 wid[2][LW_WALK_N]={{0x484F4C4Cu,0x45445249u},{0x54484F52u,0x54524156u}}; /* HOLL EDRI / THOR TRAV */
  for(i=0;i<LW_WALK_N;i++){LwBeast*n=&lw_walk[i];n->id=wid[lw_world&1][i];lw_dna(n,n->id);n->x=(s32)(120+i*200)<<8;n->y=(s32)(110+i*40)<<8;n->tx=n->x>>8;n->ty=n->y>>8;n->timer=(u16)(10+i*20);n->moving=0;lw_walk_f[i]=255;}}
 static void lw_enter(void){int i;
@@ -310,6 +343,7 @@ static void lw_enter(void){int i;
  if(!lw_load())lw_defaults();
  lw_seed_walkers();
  lw_claim_quests();
+ lw_end_d=lw_end_d_flag;lw_check_end_d();lw_end_d_flag=lw_end_d;
  lw_active=1;lw_entries++;lw_page=0;lw_sel=0;lw_focus=0;lw_px=240<<8;lw_py=150<<8;
  lw_card_show();lc_sfx(SFX_CONFIRM);
  if(!lw_msg_timer)lw_say("LIVING WORLD. CLASSICAL LIFE SEEDED BY RECORDED IBM DATA.",0);}
@@ -321,6 +355,64 @@ static void lw_exit(void){int i;
  for(i=0;i<1024;i++)lc_ui_shadow[i]=lw_ui_save[i];
  for(i=0;i<14;i++)lc_io_shadow[i]=lw_io_save[i];
  lc_sfx(SFX_CANCEL);}
+/* ---------- V12.3 boss battles (boss_battle.h logic + cartridge glue) ----------
+   Each tick at most one frame is streamed: one 2 KB block (64 tiles) by DMA3 into OBJ tiles 0..63.
+   Palette slot per boss: Grumbleback 9, Forest Guardian 10, Guardian Statues 11 (placeholder art).
+   Later phases are also drawn bigger with the affine double-size OBJ (1.0x, 1.25x, 1.5x). */
+#include "v12_boss.h"
+#include "boss_battle.h"
+static BossBattle lw_bt;
+static volatile u8 lw_bt_active=0,lw_bt_kind=0,lw_bt_result=0,lw_bt_lastdir=0;
+static volatile u16 lw_bt_dma_frames=0,lw_bt_wins=0,lw_bt_losses=0,lw_bt_starts=0;
+static volatile u32 lw_bt_dma_bytes=0;
+static const BBAnim*bb_anims(int k){return (const BBAnim*)(k==BB_GUARDIAN?V12_BOSS_GUARDIAN_ANIM:k==BB_STATUES?V12_BOSS_STATUE_ANIM:V12_BOSS_GRUMBLEBACK_ANIM);}
+static int lw_boss_of(int q){return q==2?BB_GUARDIAN:q==3?BB_GRUMBLEBACK:q==5?BB_STATUES:-1;}
+static void lw_dma3(volatile u32*dst,const u32*src,u32 words){LW_REG32(0x040000D4)=(u32)src;LW_REG32(0x040000D8)=(u32)dst;LW_REG32(0x040000DC)=words|0x84000000u;
+ lw_bt_dma_frames++;lw_bt_dma_bytes+=words*4u;}
+static const char*const LW_BT_NAME[BB_KINDS]={"GRUMBLEBACK","FOREST GUARDIAN","GUARDIAN STATUES"};
+static u8 lw_lane_up=0,lw_lane_arc=255,lw_lane_obj=0;
+static void lw_bt_start(int kind){int i;const u16*p=kind==BB_GRUMBLEBACK?v12_boss_grumbleback_pal:kind==BB_GUARDIAN?v12_boss_guardian_pal:v12_boss_statue_pal;
+ bb_start(&lw_bt,kind,LW_IDS[0]^((u32)QSEED[110+kind]<<8)^lw_clock);lw_bt_kind=(u8)kind;lw_bt_active=1;lw_bt_result=0;lw_bt_starts++;
+ for(i=0;i<16;i++)OBJ_PALETTE[(9+kind)*16+i]=p[i];
+ lw_lane_up=0;lw_lane_arc=255;
+ lw_copy32(LW_OBJ_TILES+384*8,LW_COMP_TILES[0],16*8);
+ for(i=0;i<128;i++)OAM16[i*4]=0x0200;ui_clear();lc_sfx(SFX_CONFIRM);}
+static void lw_bt_end(void){int i_unused_bt;lw_bt_active=0;lw_upload_obj_pals();lw_dirty_art=1;lw_page=3;ui_clear();
+ for(i_unused_bt=0;i_unused_bt<128;i_unused_bt++)OAM16[i_unused_bt*4]=0x0200;}
+static void lw_bt_update(u16 newk){int dir=(newk&KEY_LEFT)?-1:(newk&KEY_RIGHT)?1:0;
+ if(dir)lw_bt_lastdir=(u8)(dir<0);
+ if(lw_bt.state==BBS_WIN||lw_bt.state==BBS_LOSE){
+  if(!lw_bt_result){lw_bt_result=(u8)(lw_bt.state==BBS_WIN?1:2);if(lw_bt_result==1){lw_bt_wins++;lc_sfx(SFX_BEFRIEND);}else lw_bt_losses++;ui_clear();}
+  if(newk&(KEY_A|KEY_B))lw_bt_end();return;}
+ if(newk&KEY_B){lw_bt_end();return;}
+ bb_step(&lw_bt,dir,(newk&KEY_A)?1:0);}
+static void lw_bt_render(void){int i,o=0;BossBattle*b=&lw_bt;
+ {const u32*fr=b->kind==BB_GRUMBLEBACK?v12_boss_grumbleback_frames:b->kind==BB_GUARDIAN?v12_boss_guardian_frames:v12_boss_statue_frames;
+  if(bb_take_frame(b))lw_dma3(LW_OBJ_TILES,fr+(u32)b->frame*512u,512);}
+ if(b->kind!=BB_STATUES){
+  {int sc=256+b->phase*64,inv=(256*256)/sc;   /* affine group 0 */
+   OAM16[0*4+3]=(u16)inv;OAM16[1*4+3]=0;OAM16[2*4+3]=0;OAM16[3*4+3]=(u16)inv;
+   OAM16[0]=(u16)(((24-32)&255)|0x0300);OAM16[1]=(u16)(((120-64)&511)|(3u<<14));OAM16[2]=(u16)(0|(1u<<10)|((9+b->kind)<<12));}
+  lw_obj(1,104+(b->dodge?(lw_bt_lastdir?-28:28):0),118,0,2,384,6,0,0);o=2;}
+ else{ /* Cosmo lane art: warning tiles at OBJ 64..79 (4 frames x 4 tiles), arcs at 80..95 (one 64x32 frame) */
+  int st=b->swing,wf=st==0?0:st==1?1+((b->timer/6)&1):st==2?2:3,l,r;
+  if(!lw_lane_up){lw_copy32(LW_OBJ_TILES+64*8,v12_lane_warn,16*8);lw_lane_up=1;}
+  if(st>=1&&st<=4&&b->state==BBS_LANES){int af=st==4?2+(((12-b->timer)/3)&3):st>=2?2+((b->timer/6)&1):((b->timer/8)&1);
+   const u32*src=st==4?v12_lane_swing+(af-2)*256:v12_lane_tele+(af&3)*256;if(af!=lw_lane_arc){lw_copy32(LW_OBJ_TILES+80*8,src,256);lw_lane_arc=(u8)af;}}
+  lw_obj(0,88,0,0,3,0,11,0,0);o=1;
+  if(b->state==BBS_LANES)for(l=0;l<3;l++)if(b->lanes_mask&(1u<<l)){int x=72+l*32;
+   for(r=0;r<4;r++){lw_obj(o++,x,64+r*16,0,1,64+wf*4,11,0,0);lw_obj(o++,x+16,64+r*16,0,1,64+wf*4,11,1,0);}
+   if(st>=1&&st<=4)lw_obj(o++,x-16,st==4?88:72,1,3,80,11,0,0);}
+  lw_obj(o++,72+b->lane*32,124,0,2,384,6,0,0);lw_lane_obj=(u8)o;}
+ for(i=o;i<128;i++)OAM16[i*4]=0x0200;
+ ui_fill_rows(0,1,62,15);ui_fill_rows(16,19,62,15);
+ ui_text(1,0,LW_BT_NAME[b->kind],14);ui_text(20,0,"PHASE",13);ui_num(26,0,b->phase+1>b->nphases?b->nphases:b->phase+1,15);
+ ui_text(1,1,"ZEREF",13);for(i=0;i<BB_ZHP;i++)ui_text(7+i,1,i<b->zhp?"*":"-",i<b->zhp?9:13);
+ if(b->kind!=BB_STATUES){ui_text(15,1,"BOSS",13);for(i=0;i<BB_PHASE_HP;i++)ui_text(20+i,1,i<b->hp?"#":"-",14);}
+ else{ui_text(15,1,"SWEEPS",13);ui_num(22,1,b->sweeps,15);}
+ if(lw_bt_result){ui_text(1,16,lw_bt_result==1?(b->kind==BB_GRUMBLEBACK?"GRUMBLEBACK IS CALM. KITTEN CROWN!":b->kind==BB_GUARDIAN?"THE GUARDIAN BOWS. COURAGE.":"THE STATUES REST."):"ZEREF NEEDS A REST.",14);ui_text(1,18,"A/B BACK",13);}
+ else{ui_text(1,17,b->kind==BB_STATUES?"L/R CHANGE LANE. WATCH THE EYES.":b->state==BBS_ATTACK&&b->hit_ok==1?"NOW! PRESS A":"L/R DODGE  A STRIKE WHEN OPEN",b->hit_ok==1?14:13);
+  ui_text(1,18,"B FLEE",13);}}
 /* ---------- input ---------- */
 static void lw_use(int it){LwBeast*b=&lw_b[lw_focus];const V12Item*v=&V12_ITEMS[it];int slot=-1;
  if(!lw_inv[it]){lw_say("NONE LEFT.",0);return;}
@@ -339,6 +431,7 @@ static int lw_owned_count(void){int i,c=0;for(i=0;i<V12_ITEM_COUNT;i++)if(lw_inv
 static void lw_update(u16 k,u16 newk){int i;
  lw_clock++;
  if(lw_card){if(lw_card_timer)lw_card_timer--;if((newk&(KEY_A|KEY_START|KEY_B))||!lw_card_timer)lw_mode0();return;}
+ if(lw_bt_active){lw_bt_update(newk);return;}
  {u8 night=(u8)((((u32)lw_clock/1800u)&1u));if(night!=lw_night){lw_night=night;lw_upload_bg();}}
  for(i=0;i<LW_N;i++)lw_tick_beast(i);
  lw_tick_wisp();
@@ -346,11 +439,16 @@ static void lw_update(u16 k,u16 newk){int i;
  for(i=0;i<LW_WALK_N;i++)lw_tick_walk(i);
  if((lw_clock&1023)==0)lw_save();
  if(lw_page){int max=lw_page==1?lw_owned_count():lw_page==3?V12_QUEST_COUNT:lw_page==4?V12_CHAR_COUNT:1;
-  if(newk&KEY_B){lw_page=0;ui_clear();lw_dirty_art=1;lc_sfx(SFX_CANCEL);return;}
-  if(newk&KEY_START){lw_page=(u8)(lw_page>=4?1:lw_page+1);lw_sel=0;ui_clear();lw_dirty_art=1;lc_sfx(SFX_MOVE);return;}
+  if(lw_page!=5&&(newk&KEY_B)){lw_page=0;ui_clear();lw_dirty_art=1;lc_sfx(SFX_CANCEL);return;}
+  if(lw_page!=5&&(newk&KEY_START)){lw_page=(u8)(lw_page>=4?1:lw_page+1);lw_sel=0;ui_clear();lw_dirty_art=1;lc_sfx(SFX_MOVE);return;}
   if(newk&KEY_UP){lw_sel=(u8)(lw_sel?lw_sel-1:(max?max-1:0));ui_clear();}
   if(newk&KEY_DOWN){lw_sel=(u8)(max&&lw_sel+1<max?lw_sel+1:0);ui_clear();}
   if(newk&(KEY_L|KEY_R)){lw_focus=(u8)((u32)(lw_focus+((newk&KEY_R)?1:LW_N-1))%(u32)LW_N);ui_clear();}
+  if(lw_page==5){if(newk&KEY_B){lw_page=3;lw_sel=lw_scene_q;ui_clear();return;}
+   if(newk&(KEY_A|KEY_DOWN)){if(lw_scene_k+1<V12_QUEST_BOXN[lw_scene_q])lw_scene_k++;else{lw_page=3;lw_sel=lw_scene_q;}ui_clear();lw_scene_reads++;}
+   if((newk&KEY_UP)&&lw_scene_k)lw_scene_k--,ui_clear();return;}
+  if((newk&KEY_SELECT)&&lw_page==3&&V12_QUEST_BOXN[lw_sel]){lw_scene_q=lw_sel;lw_scene_k=0;lw_page=5;ui_clear();return;}
+  if((newk&KEY_A)&&lw_page==3&&lw_boss_of(lw_sel)>=0){lw_bt_start(lw_boss_of(lw_sel));return;}
   if((newk&KEY_A)&&lw_page==1){int it=lw_owned(lw_sel);if(it>=0)lw_use(it);ui_clear();}
   return;}
  if(newk&KEY_B){lw_exit();return;}
@@ -438,12 +536,15 @@ static void lw_draw_page(void){int i,r;LwBeast*b=&lw_b[lw_focus];static const ch
   for(r=0;r<7&&start+r<V12_QUEST_COUNT;r++){int s=lw_quest_state(start+r);ui_text(1,2+r,start+r==lw_sel?">":" ",14);ui_text(2,2+r,"A",13);ui_num(3,2+r,V12_QUESTS[start+r].act,13);ui_text(5,2+r,V12_QUESTS[start+r].name,start+r==lw_sel?14:15);ui_text(23,2+r,st[s],s==2?9:s==1?14:13);}
   lw_wrap(10,q->summary,15,3);ui_text(1,13,"FROM",13);ui_text(6,13,q->giver,15);
   ui_text(1,14,"REWARD",13);{int j,c=8;for(j=0;j<3;j++)if(q->reward[j]>=0){ui_text(c,14+(c>20),V12_ITEMS[q->reward[j]].name,15);c+=11;}}
-  ui_text(1,16,"TRACKS THE NATIVE CAMPAIGN",13);}
+  ui_text(1,16,q->biome,9);lw_wrapw(17,q->place,13,1,LW_TEXT_W,0);
+  if(V12_QUEST_BOXN[lw_sel])ui_text(17,18,"SEL SCENES",13);
+  if(lw_boss_of(lw_sel)>=0)ui_text(1,18,lw_quest_state(lw_sel)?"A FIGHT BOSS":"A PRACTICE BOSS",14);}
  else if(lw_page==4){const V12Char*c=&V12_CHARS[lw_sel];int big=LW_CHR_BIG[lw_sel];
   /* V12.2: bios are no longer cut at 3 lines; the pose wraps at 20 columns so it
      never runs under the portrait. */
   ui_text(1,2,c->name,14);lw_wrapw(3,c->look,15,8,LW_TEXT_W,0);lw_wrapw(11,c->pose,13,5,20,0);ui_num(24,2,lw_sel+1,13);
-  if(lw_sel>=2&&lw_sel<=5){static const char*const form[4]={"FORM 1 OF 4","FORM 2 OF 4","FORM 3 OF 4","FORM 4 OF 4"};ui_text(1,16,form[lw_sel-2],14);lw_cast_form=(u8)(lw_sel-1);}
+  if(lw_sel>=2&&lw_sel<2+V12_MOTE_FORMS){static const char*const form[V12_MOTE_FORMS]={"FORM 1 OF 5","FORM 2 OF 5","FORM 3 OF 5","FORM 4 OF 5","FORM 5 OF 5"};ui_text(1,16,form[lw_sel-2],14);lw_cast_form=(u8)(lw_sel-1);}
+  if(LW_CHR_STANDIN[lw_sel])ui_text(1,16,"STAND-IN ART",13);
   {int f,cyc=(int)(((u32)lw_clock>>4)%16u);
    if(lw_sel==0)f=cyc<12?cyc:12+(cyc&3);                    /* Zeref: idle 0-5, 4-leg walk 6-11, react_dark 12-15 */
    else if(big)f=cyc<10?cyc:(cyc&3);                         /* Mote: idle 0-3, sneeze 4, yawn 5, walk 6-9 */
@@ -451,6 +552,13 @@ static void lw_draw_page(void){int i,r;LwBeast*b=&lw_b[lw_focus];static const ch
    lw_cast_f=(u8)f;lw_copy32(LW_OBJ_TILES,LW_CHR_TILES[lw_sel]+f*(big?512:128),big?512:128);}for(i=0;i<16;i++)OBJ_PALETTE[15*16+i]=LW_CHR_PAL[lw_sel][i];
   lw_obj(0,big?168:184,96,0,big?3:2,0,15,0,0);lw_dirty_art=1;
   ui_text(1,17,"UP/DOWN CAST  B BACK",13);}}
-static void lw_render(void){if(lw_card)return;if(lw_page)lw_draw_page();else lw_draw_field();}
+static void lw_draw_scene(void){const V12Box*x=&V12_SCENE_BOX[V12_QUEST_BOX0[lw_scene_q]+lw_scene_k];int i;
+ for(i=0;i<128;i++)OAM16[i*4]=0x0200;ui_fill_rows(0,19,62,15);
+ ui_text(1,0,V12_QUESTS[lw_scene_q].name,14);ui_num(25,0,lw_scene_k+1,13);
+ ui_text(1,4,x->who,9);for(i=0;i<3;i++)ui_text(1,6+i,x->l[i],15);
+ if(V12_QUEST_BOSS[lw_scene_q][0]){ui_text(1,12,"BOSS",13);lw_wrapw(13,V12_QUEST_BOSS[lw_scene_q],15,2,LW_TEXT_W,0);
+  if(lw_boss_of(lw_scene_q)<0)ui_text(1,15,"BOSS ART PENDING: NOT FOUGHT YET",13);}
+ ui_text(1,18,"A NEXT  UP BACK  B QUESTS",13);}
+static void lw_render(void){if(lw_card)return;if(lw_bt_active){lw_bt_render();return;}if(lw_page==5)lw_draw_scene();else if(lw_page)lw_draw_page();else lw_draw_field();}
 #endif /* HOST_QA */
 #endif

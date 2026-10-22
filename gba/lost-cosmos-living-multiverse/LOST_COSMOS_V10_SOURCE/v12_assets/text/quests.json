@@ -8,6 +8,9 @@
   "reward_item_ids": [
    "warm_ale",
    "soup_simmer"
+  ],
+  "bible_steps": [
+   "2.1"
   ]
  },
  {
@@ -18,6 +21,9 @@
   "giver": "Tattered Traveler",
   "reward_item_ids": [
    "lamp_oil"
+  ],
+  "bible_steps": [
+   "2.2"
   ]
  },
  {
@@ -28,6 +34,9 @@
   "giver": "Forest Guardian",
   "reward_item_ids": [
    "calaminth"
+  ],
+  "bible_steps": [
+   "2.3"
   ]
  },
  {
@@ -39,6 +48,10 @@
   "reward_item_ids": [
    "sacred_crystal",
    "grumble_plush"
+  ],
+  "bible_steps": [
+   "2.4",
+   "2.5"
   ]
  },
  {
@@ -50,6 +63,9 @@
   "reward_item_ids": [
    "soup_thicken",
    "soup_season"
+  ],
+  "bible_steps": [
+   "2.6"
   ]
  },
  {
@@ -60,6 +76,10 @@
   "giver": "Edric Ravenswood",
   "reward_item_ids": [
    "climber_boots"
+  ],
+  "bible_steps": [
+   "2.7",
+   "2.8"
   ]
  },
  {
@@ -70,6 +90,9 @@
   "giver": "Sentinel Hesper",
   "reward_item_ids": [
    "sentinel_down"
+  ],
+  "bible_steps": [
+   "2.9"
   ]
  },
  {
@@ -79,7 +102,11 @@
   "summary": "A mirror shows fears that are not yours. Walk past them.",
   "giver": "Sentinel Hesper",
   "reward_item_ids": [
-   "edric_lantern"
+   "edric_lantern",
+   "kneaded_eraser"
+  ],
+  "bible_steps": [
+   "2.10"
   ]
  },
  {
@@ -91,6 +118,10 @@
   "reward_item_ids": [
    "silver_page",
    "rune_maul"
+  ],
+  "bible_steps": [
+   "2.11",
+   "2.12"
   ]
  },
  {
@@ -101,6 +132,12 @@
   "giver": "The Tree",
   "reward_item_ids": [
    "star_shard"
+  ],
+  "bible_steps": [
+   "2.13",
+   "2.14",
+   "2.15",
+   "2.16"
   ]
  },
  {
@@ -111,6 +148,9 @@
   "giver": "Spirit of Harmony",
   "reward_item_ids": [
    "harmony_shard"
+  ],
+  "bible_steps": [
+   "3.1"
   ]
  },
  {
@@ -121,6 +161,10 @@
   "giver": "Spirit of Harmony",
   "reward_item_ids": [
    "grove_honey"
+  ],
+  "bible_steps": [
+   "3.2",
+   "3.3"
   ]
  },
  {
@@ -130,7 +174,12 @@
   "summary": "Catch three petals: Wisdom, Courage, Unity.",
   "giver": "Spirit of Harmony",
   "reward_item_ids": [
-   "wisdom_petal"
+   "wisdom_petal",
+   "courage_petal",
+   "unity_petal"
+  ],
+  "bible_steps": [
+   "3.4"
   ]
  },
  {
@@ -140,8 +189,15 @@
   "summary": "Riddle a shooting star, walk into shadow, stage a show.",
   "giver": "Gateway Figures",
   "reward_item_ids": [
-   "star_candy",
+   "star_shard",
    "festival_fin"
+  ],
+  "bible_steps": [
+   "3.5",
+   "3.5a",
+   "3.5b",
+   "3.5c",
+   "3.6"
   ]
  },
  {
@@ -153,6 +209,11 @@
   "reward_item_ids": [
    "twilight_mark",
    "dusk_silk"
+  ],
+  "bible_steps": [
+   "3.7",
+   "3.8",
+   "3.9"
   ]
  },
  {
@@ -163,6 +224,9 @@
   "giver": "Tibbet",
   "reward_item_ids": [
    "crys_balance"
+  ],
+  "bible_steps": [
+   "3.10"
   ]
  },
  {
@@ -174,6 +238,9 @@
   "reward_item_ids": [
    "crys_clarity",
    "grotto_fur"
+  ],
+  "bible_steps": [
+   "3.11"
   ]
  },
  {
@@ -186,6 +253,9 @@
    "crys_passion",
    "ember_silk",
    "hearthsteel"
+  ],
+  "bible_steps": [
+   "3.12"
   ]
  },
  {
@@ -196,6 +266,9 @@
   "giver": "Tibbet",
   "reward_item_ids": [
    "crys_harmony"
+  ],
+  "bible_steps": [
+   "3.13"
   ]
  },
  {
@@ -207,6 +280,9 @@
   "reward_item_ids": [
    "frost_tea",
    "ember_pepper"
+  ],
+  "bible_steps": [
+   "3.14"
   ]
  },
  {
@@ -216,7 +292,10 @@
   "summary": "Step into Eldoria. Glowing trees. Dying crops.",
   "giver": "Tattered Traveler",
   "reward_item_ids": [
-   "moon_berry"
+   "glowcap"
+  ],
+  "bible_steps": [
+   "4.1"
   ]
  },
  {
@@ -227,6 +306,9 @@
   "giver": "Elder Thorne",
   "reward_item_ids": [
    "herb_poultice"
+  ],
+  "bible_steps": [
+   "4.2"
   ]
  },
  {
@@ -237,6 +319,9 @@
   "giver": "Elder Thorne",
   "reward_item_ids": [
    "crystal_lantern"
+  ],
+  "bible_steps": [
+   "4.3"
   ]
  },
  {
@@ -244,9 +329,14 @@
   "act": 4,
   "name": "The Forgotten",
   "summary": "A fear-fed wraith at the altar. Burn it with hope.",
-  "giver": "Elder Thorne",
+  "giver": "Statues of Eldoria",
   "reward_item_ids": [
    "heart_eldoria"
+  ],
+  "bible_steps": [
+   "4.4",
+   "4.5",
+   "4.6"
   ]
  },
  {
@@ -257,6 +347,10 @@
   "giver": "Sethra",
   "reward_item_ids": [
    "crocus_tea"
+  ],
+  "bible_steps": [
+   "4.7",
+   "4.8"
   ]
  },
  {
@@ -267,6 +361,10 @@
   "giver": "Guardians of Eldoria",
   "reward_item_ids": [
    "wooden_box"
+  ],
+  "bible_steps": [
+   "4.9",
+   "4.10"
   ]
  },
  {
@@ -274,10 +372,14 @@
   "act": 4,
   "name": "Hollow Grove",
   "summary": "What can be broken but never held? A promise.",
-  "giver": "Grove Spirit",
+  "giver": "Mischievous Spirit",
   "reward_item_ids": [
+   "crys_earth",
    "cave_moss",
    "leaf_hat"
+  ],
+  "bible_steps": [
+   "4.11"
   ]
  },
  {
@@ -285,9 +387,13 @@
   "act": 4,
   "name": "Bramble Warden",
   "summary": "Purify the despairing guardian. It joins you.",
-  "giver": "Grove Spirit",
+  "giver": "Mischievous Spirit",
   "reward_item_ids": [
    "mercy_branch"
+  ],
+  "bible_steps": [
+   "4.12",
+   "4.13"
   ]
  },
  {
@@ -298,6 +404,9 @@
   "giver": "Sethra",
   "reward_item_ids": [
    "nard_balm"
+  ],
+  "bible_steps": [
+   "4.14"
   ]
  },
  {
@@ -307,7 +416,11 @@
   "summary": "Not yet. Go home. Take the branch and spices.",
   "giver": "Garden Guardian",
   "reward_item_ids": [
+   "small_branch",
    "spice_pouch"
+  ],
+  "bible_steps": [
+   "4.15"
   ]
  },
  {
@@ -318,6 +431,11 @@
   "giver": "Elder Thorne",
   "reward_item_ids": [
    "thorne_tablet"
+  ],
+  "bible_steps": [
+   "4.16",
+   "4.17",
+   "4.18"
   ]
  },
  {
@@ -328,6 +446,9 @@
   "giver": "Sethra",
   "reward_item_ids": [
    "tiny_scarf"
+  ],
+  "bible_steps": [
+   "5.1"
   ]
  },
  {
@@ -338,6 +459,9 @@
   "giver": "Sethra",
   "reward_item_ids": [
    "flint_wick"
+  ],
+  "bible_steps": [
+   "5.2"
   ]
  },
  {
@@ -348,6 +472,9 @@
   "giver": "Bramble Warden",
   "reward_item_ids": [
    "pebble"
+  ],
+  "bible_steps": [
+   "5.3"
   ]
  },
  {
@@ -359,6 +486,10 @@
   "reward_item_ids": [
    "dream_lyre",
    "wet_sock"
+  ],
+  "bible_steps": [
+   "5.4",
+   "5.5"
   ]
  },
  {
@@ -370,28 +501,36 @@
   "reward_item_ids": [
    "dream_orb",
    "sunseed_lamp"
+  ],
+  "bible_steps": [
+   "5.6"
   ]
  },
  {
   "id": "q5_37",
   "act": 5,
   "name": "Road to the Edge",
-  "summary": "Day 6. Rattlecart to the Erased Margins. Beast rides shotgun.",
+  "summary": "Day 6. Rattlecart down the Empty Highway. Beast rides shotgun.",
   "giver": "Tattered Traveler",
   "reward_item_ids": [
-   "corner_sketch",
    "lighthouse"
+  ],
+  "bible_steps": [
+   "5.7"
   ]
  },
  {
   "id": "q5_38",
   "act": 5,
   "name": "Malakar Unflowing",
-  "summary": "The Stilled Sea. Four phases. An empty passenger seat.",
+  "summary": "Map Room: 12 Corner Sketches. Then Malakar, 4 phases.",
   "giver": "Malakar",
   "reward_item_ids": [
-   "twin_pistol",
-   "last_map"
+   "corner_sketch"
+  ],
+  "bible_steps": [
+   "5.8",
+   "5.9"
   ]
  },
  {
@@ -402,7 +541,11 @@
   "giver": "Master Hollis",
   "reward_item_ids": [
    "the_bear",
-   "void_jerky"
+   "golden_wheat"
+  ],
+  "bible_steps": [
+   "5.10",
+   "5.11"
   ]
  }
 ]

@@ -1,0 +1,1719 @@
+[
+ {
+  "quest_id": "q3_11",
+  "title": "Realm of Harmony",
+  "location": "Realm of Harmony",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Lush forest of vivid color, first color in the game. Glowing creatures drift like lit paper lanterns.",
+    "action": "Arin steps out of gray ink into color. Zeref's eyes fill with stars.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "It is... colored in."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "rawr!! (so many colors)"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "*sneezes a rainbow*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Clearing ringed by glowing moss. A tall spirit made of soft light lines, face like a calm sketch.",
+    "action": "The Wise Spirit of Harmony greets them. Villagers bring shards.",
+    "dialogue": [
+     {
+      "speaker": "Spirit of Harmony",
+      "text_lines": [
+       "Welcome, Still-Here one.",
+       "The realm has been",
+       "waiting."
+      ]
+     },
+     {
+      "speaker": "Spirit of Harmony",
+      "text_lines": [
+       "Take these Harmony Shards.",
+       "Hold one close to your",
+       "friend."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Like this?"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Same clearing. Above Mote's head, a tiny speech bubble pops in with a drawing of a sock.",
+    "action": "New mechanic: Mote's thoughts now appear as drawings in bubbles.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a sock]"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "You are thinking about",
+       "socks."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a drawing of",
+       "Arin]"
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "[bubble: a fish, a crown]"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "...both of you. Always."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref's first bubble: a fish wearing his own beanie.",
+  "reward_item_ids": [
+   "harmony_shard"
+  ]
+ },
+ {
+  "quest_id": "q3_12",
+  "title": "Grove in Chaos",
+  "location": "The Grove in Chaos",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Grove twisted into black brambles. Thorns cross-hatched so dense the page looks scratched out.",
+    "action": "Twelve villagers stand at the edge, too scared to go in alone.",
+    "dialogue": [
+     {
+      "speaker": "Spirit of Harmony",
+      "text_lines": [
+       "The grove forgot how to",
+       "breathe. Help it remember."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "How?"
+      ]
+     },
+     {
+      "speaker": "Spirit of Harmony",
+      "text_lines": [
+       "Hands. Twelve of them.",
+       "Breathe together."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Circle of twelve on moss inside the thorns. Breath ring pulses in the middle like a slow heartbeat.",
+    "action": "Large-scale Attunement: hold the breath ring in time with all 12.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "In... and out. Slower."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "hmmmm"
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*breathes in, forgets to",
+       "breathe out*"
+      ]
+     },
+     {
+      "speaker": "Villager",
+      "text_lines": [
+       "The vines! They are",
+       "letting go!"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Vines unwind, petals open gold. Three runes glow on the ground: protection, growth, illumination.",
+    "action": "The spirit's words. A hidden path opens past the runes.",
+    "dialogue": [
+     {
+      "speaker": "Spirit of Harmony",
+      "text_lines": [
+       "Remember. You are never",
+       "alone."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Never alone."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: twelve little",
+       "hands]"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Grove in Chaos",
+   "biome": "Whispering Woods",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Thorn tunnel, gaps open and close like slow teeth.",
+     "enemies": [
+      {
+       "name": "Stillborn Thornling",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Curls (1), spikes out (2), snaps shut (3)."
+       }
+      }
+     ],
+     "puzzle": "Walk only while the breath ring is on 'out'; thorns relax then.",
+     "loot_item_ids": [
+      "healing_herbs"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Bramble maze around three dim rune stones.",
+     "enemies": [
+      {
+       "name": "Shade Wisp",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Flicker (1), dives (2), pops in ink (3)."
+       }
+      }
+     ],
+     "puzzle": "Point at each rune in order: protection, growth, illumination.",
+     "loot_item_ids": [
+      "calaminth",
+      "grove_honey"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Heart of the grove: a tangle with twelve hand-shaped knots.",
+     "enemies": [],
+     "puzzle": "Boss room. Each freed villager joins the circle.",
+     "loot_item_ids": [
+      "cinnamon"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Grove in Chaos (Thorn Tangle)",
+    "mechanic": "Not a fight to win by hitting. Free villagers from thorns, then hold the 12-person breath ring to unwind the tangle.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Brambles creak inward and out, slow as a sleeper's chest."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-60%",
+      "transformation": "A knot of thorns the size of a house, twelve villagers stuck in its hatching.",
+      "attacks": [
+       {
+        "name": "Thorn Lash",
+        "telegraph": "A bramble pulls back, creaking",
+        "effect": "Line whip, knockback",
+        "animation": {
+         "frames": 3,
+         "description": "Pull back, whip, retract"
+        }
+       },
+       {
+        "name": "Bramble Wall",
+        "telegraph": "Ground ink-scribbles in a line",
+        "effect": "Wall cuts the arena in half",
+        "animation": {
+         "frames": 4,
+         "description": "Scribble, sprout, thicken, hold"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "60-25%",
+      "transformation": "The tangle grows up the trees and over the sky; the page darkens.",
+      "attacks": [
+       {
+        "name": "Thorn Rain",
+        "telegraph": "Canopy shakes, dust drifts down",
+        "effect": "Thorns fall in 3 lanes",
+        "animation": {
+         "frames": 4,
+         "description": "Shake, drop, drop, stick"
+        }
+       },
+       {
+        "name": "Choke Ring",
+        "telegraph": "Ring of thorns forms around the circle",
+        "effect": "Breath ring shrinks; keep rhythm",
+        "animation": {
+         "frames": 5,
+         "description": "Rise, close, tighten, pulse, hold"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "25-0%",
+      "transformation": "Every vine rears at once into a giant thorn-face with hollow eyes.",
+      "attacks": [
+       {
+        "name": "Scream of Brambles",
+        "telegraph": "Face opens, all sound drops",
+        "effect": "Breath rhythm speeds up 2x",
+        "animation": {
+         "frames": 4,
+         "description": "Open, roar lines, shake, settle"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 5,
+     "description": "Vines unwind, petals open, gold pollen rises, a bee flies out, grove breathes."
+    },
+    "defeat_line": "...ahhh.",
+    "id": "grove_tangle",
+    "canon": "bible 3.2 Grove in Chaos (12-person Attunement breath); grove encounter, Attunable, not a bible numbered boss",
+    "sprite_note": "Uses biome bramble tiles; no new big sprite needed beyond the thorn-face."
+   }
+  },
+  "zeref_moment": "Zeref exhales at last. The whole grove smells of honey.",
+  "reward_item_ids": [
+   "grove_honey"
+  ]
+ },
+ {
+  "quest_id": "q3_13",
+  "title": "The Petal Tree",
+  "location": "The Petal Tree",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Gnarled ancient tree, bark like crumpled paper. Iridescent petals drift down, each with one word.",
+    "action": "Arin looks up. Three petals glow brighter than the rest.",
+    "dialogue": [
+     {
+      "speaker": "Spirit of Harmony",
+      "text_lines": [
+       "Wisdom. Courage. Unity.",
+       "Catch all three."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Before they land?"
+      ]
+     },
+     {
+      "speaker": "Spirit of Harmony",
+      "text_lines": [
+       "Before they land."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Branches as platforms, wind lines drawn in pencil. A petal tumbles past the trunk.",
+    "action": "Short platforming: jump branch to branch, chase each petal on the wind.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Got Wisdom! Courage is",
+       "fast!"
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*leaps, catches Courage in",
+       "mouth*"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Zeref! Gently!"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Base of the tree, three petals glowing in Arin's palm. A crack opens in the trunk.",
+    "action": "Unity floats down on its own and lands on Mote's head.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a flower crown]"
+      ]
+     },
+     {
+      "speaker": "Spirit of Harmony",
+      "text_lines": [
+       "Unity never needs chasing."
+      ]
+     },
+     {
+      "speaker": "Spirit of Harmony",
+      "text_lines": [
+       "The Gateway waits inside."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref spits out the Courage petal. Unharmed. Proud.",
+  "reward_item_ids": [
+   "wisdom_petal",
+   "courage_petal",
+   "unity_petal"
+  ]
+ },
+ {
+  "quest_id": "q3_14",
+  "title": "Gateway of Trials",
+  "location": "Gateway of Trials, Portal of Symbols",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Wide plain inside the trunk, sky drawn in soft pencil. Three cloaked figures stand far apart.",
+    "action": "The Gateway Figures speak as one. Trials can be done in any order.",
+    "dialogue": [
+     {
+      "speaker": "Gateway Figures",
+      "text_lines": [
+       "The path you select will",
+       "reveal your greatest",
+       "strength,"
+      ]
+     },
+     {
+      "speaker": "Gateway Figures",
+      "text_lines": [
+       "and your greatest",
+       "weakness."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Then I pick... all of",
+       "them."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Trial of Wisdom: a crystal orb on a pillar, riddle written in light. Night sky above.",
+    "action": "Riddle: born of light in darkness, fleeting but eternal. Point at the sky.",
+    "dialogue": [
+     {
+      "speaker": "Crystal Orb",
+      "text_lines": [
+       "In the heart of darkness,",
+       "I am born of light."
+      ]
+     },
+     {
+      "speaker": "Crystal Orb",
+      "text_lines": [
+       "My existence is fleeting,",
+       "yet my impact is eternal."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "*points* A shooting star."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*chases it anyway*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Portal of Symbols: three trial marks burning on a stone ring. Color swirls into a forest clearing.",
+    "action": "After the Unity show (laughter, applause), the portal opens to an altar.",
+    "dialogue": [
+     {
+      "speaker": "Troupe Leader",
+      "text_lines": [
+       "They laughed! Together!"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Music next to stories. Who",
+       "knew."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a stage, a bow]"
+      ]
+     },
+     {
+      "speaker": "Gateway Figures",
+      "text_lines": [
+       "Go. The altar waits."
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "Gateway of Trials",
+   "biome": "Valley Fields (authored plain)",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Trial of Wisdom: orb pillar under a night sky.",
+     "enemies": [],
+     "puzzle": "Point at the shooting star when it crosses. Wrong points dim the orb.",
+     "loot_item_ids": [
+      "star_shard"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Trial of Unity: a stage with 6 slots and a bickering crowd.",
+     "enemies": [
+      {
+       "name": "Heckler Stray",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Puffs up (1), boos (2), sulks (3)."
+       }
+      }
+     ],
+     "puzzle": "Place musicians, artists, storytellers; neighbors must harmonize.",
+     "loot_item_ids": [
+      "festival_fin"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Trial of Courage: dark arena, shadows wearing your failures.",
+     "enemies": [],
+     "puzzle": "Boss room. You cannot hurt them; walk toward them.",
+     "loot_item_ids": [
+      "lamp_oil"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Shadows of Failure, Loss and Loneliness (Trial of Courage)",
+    "mechanic": "You cannot hurt them. Walk toward them; every step forward pushes back the dark. Stepping back lets them grow.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Three tall shadows sway, edges smudged, eyes two white dots."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-65%",
+      "transformation": "Three shadows Arin's height: Failure, Loss, Loneliness.",
+      "attacks": [
+       {
+        "name": "Whisper",
+        "telegraph": "A shadow leans in, text grays",
+        "effect": "Pushes Arin back 1 step",
+        "animation": {
+         "frames": 3,
+         "description": "Lean, whisper lines, push"
+        }
+       },
+       {
+        "name": "Smudge Grab",
+        "telegraph": "Ground darkens under you",
+        "effect": "Slows walking for 2s",
+        "animation": {
+         "frames": 4,
+         "description": "Pool, rise, grip, fade"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "65-30%",
+      "transformation": "They merge and double in height; the arena edges fold inward.",
+      "attacks": [
+       {
+        "name": "Wall of Doubt",
+        "telegraph": "Shadow arms spread wide",
+        "effect": "Wide sweep, sidestep and keep walking",
+        "animation": {
+         "frames": 5,
+         "description": "Spread, rise, sweep, sweep, return"
+        }
+       },
+       {
+        "name": "Lantern Snuff",
+        "telegraph": "Your lantern flickers 2x",
+        "effect": "Light drops; Mote's Glow refills",
+        "animation": {
+         "frames": 4,
+         "description": "Flicker, dim, out, glow back"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "30-0%",
+      "transformation": "One giant shadow filling the sky, only its eyes left white.",
+      "attacks": [
+       {
+        "name": "Lonely Dark",
+        "telegraph": "Companions fade from view",
+        "effect": "Walk alone 5 steps; Mote bubble guides",
+        "animation": {
+         "frames": 6,
+         "description": "Fade Bryn, fade Quillan, fade Edric, dark, bubble, step"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 4,
+     "description": "Each step cracks the shadow; light leaks through; it scatters into moths."
+    },
+    "defeat_line": "You kept walking.",
+    "id": "trial_shadows",
+    "canon": "bible 3.5b Trial of Courage; trial encounter, not a bible numbered boss"
+   }
+  },
+  "zeref_moment": "Zeref takes a bow on stage. Nobody asked. Big applause.",
+  "reward_item_ids": [
+   "star_shard",
+   "festival_fin"
+  ]
+ },
+ {
+  "quest_id": "q3_15",
+  "title": "The Twilight Gift",
+  "location": "Twilight Grove, Realm of Dreams",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Forest clearing, ancient stone altar glowing. A sudden gust bends every tree on the page.",
+    "action": "The altar's glow blows out. A voice whispers from nowhere.",
+    "dialogue": [
+     {
+      "speaker": "Voice",
+      "text_lines": [
+       "Seek the one who walks",
+       "among shadows,"
+      ]
+     },
+     {
+      "speaker": "Voice",
+      "text_lines": [
+       "and claim the gift that",
+       "only they may give."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*fur stands up, eyes",
+       "swirl*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Twilight grove: half the page day, half night, seam glowing purple-gold. A cloaked figure waits.",
+    "action": "The Dusk Keeper hands Arin a small box. Inside is a note.",
+    "dialogue": [
+     {
+      "speaker": "Dusk Keeper",
+      "text_lines": [
+       "Where shadows fall,",
+       "darkness rises."
+      ]
+     },
+     {
+      "speaker": "Dusk Keeper",
+      "text_lines": [
+       "Yet, in darkness lies the",
+       "key to light."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Then... *points at the",
+       "horizon* There. Twilight."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Realm of Dreams: lavender sky, playful creatures. A stone pedestal holds a map of four glowing spots.",
+    "action": "Twilight Mark glows blue-green on Arin's palm. Tibbet flutters in.",
+    "dialogue": [
+     {
+      "speaker": "Dusk Keeper",
+      "text_lines": [
+       "Dusk lives in your palm",
+       "now. Walk it well."
+      ]
+     },
+     {
+      "speaker": "Tibbet",
+      "text_lines": [
+       "Hi hi! Four crystals, four",
+       "rivers! I will show you!"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: four little",
+       "rivers]"
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref sits right on the twilight seam. Half day. Half night.",
+  "reward_item_ids": [
+   "twilight_mark",
+   "dusk_silk"
+  ]
+ },
+ {
+  "quest_id": "q3_16",
+  "title": "Crystal of Balance",
+  "location": "Heartwood Woods",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Heartwood Woods at misty dawn. Huge tree, runes carved in its bark, mist low on the ground.",
+    "action": "Tibbet reads the runes aloud, then hides behind Arin.",
+    "dialogue": [
+     {
+      "speaker": "Tibbet",
+      "text_lines": [
+       "Beware the Guardian of",
+       "Dawn's Whisper!"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Do we have to?"
+      ]
+     },
+     {
+      "speaker": "Tibbet",
+      "text_lines": [
+       "The Geonwater says yes."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Glade of dawn feathers. The Guardian, half human half beast, covered in swirling patterns.",
+    "action": "Riddle boss. Wrong answers summon dawn-feather adds.",
+    "dialogue": [
+     {
+      "speaker": "Guardian of Dawn",
+      "text_lines": [
+       "I speak without a mouth",
+       "and hear without ears."
+      ]
+     },
+     {
+      "speaker": "Guardian of Dawn",
+      "text_lines": [
+       "What am I?"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "An echo."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Crystal of Balance rises from roots. A dry river channel fills with clear water, rushing.",
+    "action": "Mote echoes the answer three times, quieter each time. Geonwater flows.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "ECHO! echo. echo..."
+      ]
+     },
+     {
+      "speaker": "Guardian of Dawn",
+      "text_lines": [
+       "...correct. Go well."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "rawr. rawr. rawr."
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "Heartwood Woods",
+   "biome": "Whispering Woods",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Misty root path; runes glow when you speak.",
+     "enemies": [
+      {
+       "name": "Dawn-Feather",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Fluffs (1), darts (2), drifts back (3)."
+       }
+      }
+     ],
+     "puzzle": "Answer rune riddles by Pointing at the right object.",
+     "loot_item_ids": [
+      "calaminth"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Echo hollow, every sound comes back late.",
+     "enemies": [
+      {
+       "name": "Stillborn Hare",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Freezes (1), hops (2), skids (3)."
+       }
+      }
+     ],
+     "puzzle": "Hum; follow the echo that returns first to find the path.",
+     "loot_item_ids": [
+      "healing_herbs",
+      "grove_honey"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Dawn glade under the rune tree.",
+     "enemies": [],
+     "puzzle": "Boss room.",
+     "loot_item_ids": [
+      "frost_tea"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Guardian of Dawn's Whisper",
+    "mechanic": "Riddle boss: a correct answer halves its Heart; a wrong one summons dawn-feather adds. Answering 'echo' resolves it.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Swirling patterns on its skin rotate slowly; breath makes mist rings."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-50%",
+      "transformation": "Half human, half beast, Arin's height x2, patterns turning like a dawn sky.",
+      "attacks": [
+       {
+        "name": "Dawn Feathers",
+        "telegraph": "Arms spread, feathers lift from patterns",
+        "effect": "Fan of 5 feathers",
+        "animation": {
+         "frames": 4,
+         "description": "Spread, lift, aim, fling"
+        }
+       },
+       {
+        "name": "Mist Step",
+        "telegraph": "Patterns go pale",
+        "effect": "Vanishes, reappears behind you",
+        "animation": {
+         "frames": 3,
+         "description": "Fade, gone, appear"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "50-0%",
+      "transformation": "It grows to tree height; patterns spill off its body and swirl around the glade.",
+      "attacks": [
+       {
+        "name": "Whisper Storm",
+        "telegraph": "Glade hushes, mist rises waist-high",
+        "effect": "Riddle text circles; wrong Point summons 2 adds",
+        "animation": {
+         "frames": 5,
+         "description": "Hush, rise, swirl, letters, settle"
+        }
+       },
+       {
+        "name": "Sunrise Beam",
+        "telegraph": "A gold line splits its chest",
+        "effect": "Beam sweeps half the glade",
+        "animation": {
+         "frames": 4,
+         "description": "Split, glow, sweep, close"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 4,
+     "description": "Patterns slow and still, it bows, dissolves into dawn mist, crystal remains."
+    },
+    "defeat_line": "Echo. Echo. echo.",
+    "id": "guardian_dawns_whisper",
+    "canon": "bible boss #6 (Heartwood Woods, Act III, Heart 2,000, 2 phases, Attunable riddle boss)"
+   }
+  },
+  "zeref_moment": "Zeref joins the echo: rawr, rawr, rawr, softer each time.",
+  "reward_item_ids": [
+   "crys_balance"
+  ]
+ },
+ {
+  "quest_id": "q3_17",
+  "title": "Crystal of Clarity",
+  "location": "Glacial Grotto",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Glacial Grotto: ice sculptures of past heroes, drips echoing, faint blue glow, deep navy shadows.",
+    "action": "Cold drains Light. Arin walks past frozen heroes holding frozen swords.",
+    "dialogue": [
+     {
+      "speaker": "Tibbet",
+      "text_lines": [
+       "Brrr. The Tigra sleeps",
+       "under here."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Who were they?"
+      ]
+     },
+     {
+      "speaker": "Tibbet",
+      "text_lines": [
+       "People who fought angry."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Frozen lake hall, ice pillars. Rime the Ice Wolf circles, breath freezing into pillars.",
+    "action": "Rime attacks. Dodge, never strike, for 30 seconds.",
+    "dialogue": [
+     {
+      "speaker": "Rime",
+      "text_lines": [
+       "GRRRAAH. Fight me!"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "I won't fight you with",
+       "anger."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*hisses, then sits down*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Rime turns to mist and touches a frozen pool. Crystal rises. Threads of light connect distant faces.",
+    "action": "Visions of fate's threads across worlds. The Tigra runs again.",
+    "dialogue": [
+     {
+      "speaker": "Rime",
+      "text_lines": [
+       "...you did not hit back."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "You were scared too."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a wolf, a",
+       "blanket]"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "Glacial Grotto",
+   "biome": "Glacial Grottos",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Hall of hero sculptures; ice floor shines.",
+     "enemies": [
+      {
+       "name": "Ice Wolf Pup",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Crouch (1), slide-bite (2), skid (3)."
+       }
+      }
+     ],
+     "puzzle": "Slide puzzle: push hero statues onto pressure ice.",
+     "loot_item_ids": [
+      "grotto_fur"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Dripping echo cave; each drip lights a tile.",
+     "enemies": [
+      {
+       "name": "Stillborn Fish",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Frozen leap (1), arc (2), shatter (3)."
+       }
+      }
+     ],
+     "puzzle": "Memorize the drip-light order; cold drains Light if slow.",
+     "loot_item_ids": [
+      "frost_tea",
+      "lamp_oil"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Frozen lake hall with ice pillars.",
+     "enemies": [],
+     "puzzle": "Boss room.",
+     "loot_item_ids": [
+      "healing_herbs"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "Rime, the Ice Wolf",
+    "mechanic": "Fierce at first. Never attack for 30 seconds while dodging and Agitation falls. Attacking resets the timer and enrages it.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Paces in a slow arc, breath frosting the air, ice hackles rise."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-50%",
+      "transformation": "A wolf twice Arin's size, fur like cracked ice, eyes pale blue.",
+      "attacks": [
+       {
+        "name": "Frost Breath",
+        "telegraph": "Chest swells, frost on muzzle",
+        "effect": "Cone of cold, drains Light",
+        "animation": {
+         "frames": 4,
+         "description": "Swell, open, breath, close"
+        }
+       },
+       {
+        "name": "Ice Pillars",
+        "telegraph": "Howls, floor cracks in a line",
+        "effect": "3 pillars burst in a line",
+        "animation": {
+         "frames": 5,
+         "description": "Howl, crack, burst, burst, burst"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "50-0%",
+      "transformation": "Rime grows huge as the hall; ice armor grows over its back like a glacier.",
+      "attacks": [
+       {
+        "name": "Glacier Charge",
+        "telegraph": "Lowers head, armor grinds",
+        "effect": "Charge across the lake, ice breaks behind",
+        "animation": {
+         "frames": 5,
+         "description": "Lower, grind, charge, slide, turn"
+        }
+       },
+       {
+        "name": "Blizzard Howl",
+        "telegraph": "Hall goes white at edges",
+        "effect": "Screen fogs, pillars rise at random",
+        "animation": {
+         "frames": 6,
+         "description": "Howl, fog, pillar, pillar, pillar, settle"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 5,
+     "description": "Armor cracks off, wolf shrinks, sighs, turns to mist, mist touches pool."
+    },
+    "defeat_line": "I won't fight you either.",
+    "id": "rime",
+    "canon": "bible boss #7 (Glacial Grotto, Act III, Heart 3,500, 2 phases, Attunable: never attack for 30s)"
+   }
+  },
+  "zeref_moment": "Zeref sits calmly in front of the angry wolf. It works.",
+  "reward_item_ids": [
+   "crys_clarity",
+   "grotto_fur"
+  ]
+ },
+ {
+  "quest_id": "q3_18",
+  "title": "Crystal of Passion",
+  "location": "Ember Caverns",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Ember Caverns: magma pools in thick gouache, obsidian platforms, shadows flicker on every wall.",
+    "action": "Heat drains Ink. A voice crackles from the magma.",
+    "dialogue": [
+     {
+      "speaker": "Cinderwake",
+      "text_lines": [
+       "To claim it, you must",
+       "ignite your true passion!"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "I... make things."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*tail tip glows like an",
+       "ember*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Obsidian anvil on an island of rock, flames rising around it. Cinderwake the Phoenix overhead.",
+    "action": "Phase 3: forge anything at the anvil while flames rise. Rhythm judged.",
+    "dialogue": [
+     {
+      "speaker": "Cinderwake",
+      "text_lines": [
+       "Show me your heart."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "*hammer* *hammer* *hammer*"
+      ]
+     },
+     {
+      "speaker": "Cinderwake",
+      "text_lines": [
+       "Not the item. The care."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "A mirror of black glass by the anvil. It shows Arin standing tall in firelight.",
+    "action": "Arin whispers to the mirror. The Euphra burns bright again.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "This is who I am."
+      ]
+     },
+     {
+      "speaker": "Cinderwake",
+      "text_lines": [
+       "Then burn on, little",
+       "smith."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a tiny hammer]"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "Ember Caverns",
+   "biome": "Ember Caverns",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Obsidian stepping stones over magma.",
+     "enemies": [
+      {
+       "name": "Ember Imp",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Glow (1), spit (2), cool (3)."
+       }
+      }
+     ],
+     "puzzle": "Platforms sink after 2 sec; heat drains Ink, move fast.",
+     "loot_item_ids": [
+      "ember_pepper"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Forge-shadow hall, flames cast moving shadows.",
+     "enemies": [
+      {
+       "name": "Shade",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Stretch (1), lunge (2), snap back (3)."
+       }
+      }
+     ],
+     "puzzle": "Stand in a shadow only when the flame dips; reach the bellows.",
+     "loot_item_ids": [
+      "ember_silk",
+      "hearthsteel"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Anvil island ringed by rising fire.",
+     "enemies": [],
+     "puzzle": "Boss room.",
+     "loot_item_ids": [
+      "golem_grease"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "Cinderwake, the Phoenix",
+    "mechanic": "A test of will. P1 wing sweeps, P2 Ink-draining heat rings, P3 forge any item at the anvil; rhythm accuracy is judged, not the item.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Hovers, wings beat slow, embers drift up from every feather."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-65%",
+      "transformation": "A phoenix with a wingspan wider than the anvil island.",
+      "attacks": [
+       {
+        "name": "Fire-Wing Sweep",
+        "telegraph": "Wing lifts high, glows white",
+        "effect": "Low sweep, jump over",
+        "animation": {
+         "frames": 4,
+         "description": "Lift, glow, sweep, fold"
+        }
+       },
+       {
+        "name": "Ember Dive",
+        "telegraph": "Screeches, circles once",
+        "effect": "Dives at your spot, fire puddle",
+        "animation": {
+         "frames": 5,
+         "description": "Screech, circle, dive, hit, rise"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "65-30%",
+      "transformation": "Flames double; wings now span the whole cavern ceiling.",
+      "attacks": [
+       {
+        "name": "Heat Rings",
+        "telegraph": "Body pulses orange 3x",
+        "effect": "Expanding rings drain Ink",
+        "animation": {
+         "frames": 4,
+         "description": "Pulse, ring, ring, ring"
+        }
+       },
+       {
+        "name": "Magma Rise",
+        "telegraph": "Pools bubble and spit",
+        "effect": "Magma floods low platforms",
+        "animation": {
+         "frames": 5,
+         "description": "Bubble, spit, rise, hold, fall"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "30-0%",
+      "transformation": "Cinderwake becomes pure flame, a fire-sun hanging over the anvil.",
+      "attacks": [
+       {
+        "name": "Show Me Your Heart",
+        "telegraph": "Flames rise around the anvil",
+        "effect": "Forge minigame; missed beats raise fire",
+        "animation": {
+         "frames": 6,
+         "description": "Rise, beat, beat, beat, judge, hush"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 5,
+     "description": "Flames shrink to a gentle bird, bows, drops a feather, crystal glows red."
+    },
+    "defeat_line": "This is who you are.",
+    "id": "cinderwake",
+    "canon": "bible boss #8 (Ember Caverns, Act III, Heart 4,000, 3 phases, Attunable test of will)"
+   }
+  },
+  "zeref_moment": "Zeref warms his paws at the phoenix. It allows this.",
+  "reward_item_ids": [
+   "crys_passion",
+   "ember_silk",
+   "hearthsteel"
+  ]
+ },
+ {
+  "quest_id": "q3_19",
+  "title": "Crystal of Harmony",
+  "location": "Celestial Peaks",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Celestial Peaks: stars sit on the ground like pebbles. Thin air. Violet and star-white.",
+    "action": "Arin climbs. Falling stars streak past. Pace slows in the thin air.",
+    "dialogue": [
+     {
+      "speaker": "Tibbet",
+      "text_lines": [
+       "The last crystal is on",
+       "top. Something waits."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Something nice?"
+      ]
+     },
+     {
+      "speaker": "Tibbet",
+      "text_lines": [
+       "...it looks nice."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Summit. A perfect white figure, beautiful, no flicker. The stars cast shadows. It casts none.",
+    "action": "The Counterfeit Angel offers rest. Mote hides behind Arin and growls.",
+    "dialogue": [
+     {
+      "speaker": "Counterfeit Angel",
+      "text_lines": [
+       "You are so tired. Rest",
+       "now. Nothing will hurt."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "grrrrr..."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Mote? You have never",
+       "growled."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: feet. no shadow]"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Summit after. Crystal of Harmony on a star-pebble cairn. A long dusk shadow falls across the peak.",
+    "action": "Arin uses Dusk Walk to give it a shadow, then strikes the shadow.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "In darkness lies the key."
+      ]
+     },
+     {
+      "speaker": "Counterfeit Angel",
+      "text_lines": [
+       "...we will meet again."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*stands on its fading",
+       "shadow*"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "Celestial Peaks",
+   "biome": "Celestial Peaks",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Switchback trail; stars like pebbles, some falling.",
+     "enemies": [
+      {
+       "name": "Falling Star",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Glints (1), streaks (2), crater (3)."
+       }
+      }
+     ],
+     "puzzle": "Point at a star's glint to read where it lands; dodge.",
+     "loot_item_ids": [
+      "star_shard"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Thin-air ledge, Twilight Shrine at the edge.",
+     "enemies": [
+      {
+       "name": "Counterfeit Lamplighter",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Holds lamp up (1), white flash (2), still (3)."
+       }
+      }
+     ],
+     "puzzle": "Dusk Walk the shrine; real lights cast shadows, fake ones do not.",
+     "loot_item_ids": [
+      "dusk_silk",
+      "sunseed_snack"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Summit cairn where stars touch the earth.",
+     "enemies": [],
+     "puzzle": "Boss room.",
+     "loot_item_ids": [
+      "healing_herbs"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Counterfeit Angel",
+    "mechanic": "Casts no shadow, untouchable. Its attacks heal you, then put you to sleep (Stilling). Smudge or Dusk Walk give it a shadow; hit the shadow.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Floats perfectly still. No flicker. That is the creepy part."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-65%",
+      "transformation": "A kind white figure, Arin's size, arms open. No shadow.",
+      "attacks": [
+       {
+        "name": "Gentle Light",
+        "telegraph": "Arms open, soft chime",
+        "effect": "HEALS you; fills Stilling meter",
+        "animation": {
+         "frames": 4,
+         "description": "Open, glow, wash, chime"
+        }
+       },
+       {
+        "name": "Lullaby",
+        "telegraph": "Screen edges soften",
+        "effect": "Controls slow for 3s",
+        "animation": {
+         "frames": 3,
+         "description": "Soften, sway, still"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "65-30%",
+      "transformation": "Grows tall as the peak, wings of white paper fan out behind it.",
+      "attacks": [
+       {
+        "name": "Rest Now",
+        "telegraph": "Wings fold around the arena",
+        "effect": "Sleep zone; Mote growl wakes you",
+        "animation": {
+         "frames": 5,
+         "description": "Fold, close, dim, hush, hold"
+        }
+       },
+       {
+        "name": "Perfect Rain",
+        "telegraph": "Stars around it go white",
+        "effect": "White motes freeze what they touch",
+        "animation": {
+         "frames": 4,
+         "description": "Whiten, lift, fall, freeze"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "30-0%",
+      "transformation": "A sky-sized white light; the whole page is becoming a finished drawing.",
+      "attacks": [
+       {
+        "name": "The Finished Drawing",
+        "telegraph": "Colors drain to flawless white",
+        "effect": "Stilling rises fast; Dusk Walk now",
+        "animation": {
+         "frames": 6,
+         "description": "Drain, outline, fill, freeze, frame, hush"
+        }
+       },
+       {
+        "name": "Halo Ring",
+        "telegraph": "Halo spins faster",
+        "effect": "Ring of light sweeps the summit",
+        "animation": {
+         "frames": 4,
+         "description": "Spin, grow, sweep, fade"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 5,
+     "description": "Long dusk shadow pins it; it cracks like glass, flees as white dust."
+    },
+    "defeat_line": "Rest... later... rest...",
+    "id": "counterfeit_angel",
+    "canon": "bible boss #9 (Celestial Peaks, Act III, Heart 5,000, 3 phases; first appearance; weakness shadow)",
+    "sprite_note": "Same sprite returns in Act V (Day 2) and as Malakar Phase 2; keep palette shared."
+   }
+  },
+  "zeref_moment": "Zeref growls with Mote. Two tiny growls, one big no.",
+  "reward_item_ids": [
+   "crys_harmony"
+  ]
+ },
+ {
+  "quest_id": "q3_20",
+  "title": "Rivers Remember",
+  "location": "The Four Rivers",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Heart chamber. The cracked Heart floats, four empty sockets glowing faintly. Edric holds his journal.",
+    "action": "Arin sets the four crystals: Balance, Clarity, Passion, Harmony.",
+    "dialogue": [
+     {
+      "speaker": "Edric",
+      "text_lines": [
+       "Geonwater. Tigra. Euphra.",
+       "Phison. All four."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Here goes."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*pushes last crystal in",
+       "with nose*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Montage: Pages from your own save. Frozen rivers start moving on each one at once.",
+    "action": "Every river in the Folio runs. Mote glows and grows: Wash rendering.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "rawr? RAWR!"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "You have colors now!"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a big Mote]"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "The Heart, mended. One hairline crack left, thin as a pencil line, glowing faintly.",
+    "action": "Edric notes it in his journal. Nobody says anything for a moment.",
+    "dialogue": [
+     {
+      "speaker": "Edric",
+      "text_lines": [
+       "Mostly mended."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Mostly is still here."
+      ]
+     },
+     {
+      "speaker": "Edric",
+      "text_lines": [
+       "Footnote: one crack stays."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref licks the Heart's crack. It does not heal. Still cute.",
+  "reward_item_ids": [
+   "frost_tea",
+   "ember_pepper"
+  ]
+ }
+]

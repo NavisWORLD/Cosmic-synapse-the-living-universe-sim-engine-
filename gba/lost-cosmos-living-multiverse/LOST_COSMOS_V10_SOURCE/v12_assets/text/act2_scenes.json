@@ -1,0 +1,1804 @@
+[
+ {
+  "quest_id": "q2_01",
+  "title": "Gather Fellowship",
+  "location": "Three Villages (Oakwood gate + 2 villages)",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Ravenswood hall at dusk. One candle. Ink-black rafters, paper-white map on a long table.",
+    "action": "Lord Ravenswood rolls out a map with three villages circled in ash.",
+    "dialogue": [
+     {
+      "speaker": "Lord Ravenswood",
+      "text_lines": [
+       "The Heart is cracked. You",
+       "cannot mend it alone. Find",
+       "Bryn Hale and Quillan"
+      ]
+     },
+     {
+      "speaker": "Lord Ravenswood",
+      "text_lines": [
+       "Sorrel."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "rawr."
+      ]
+     },
+     {
+      "speaker": "Lord Ravenswood",
+      "text_lines": [
+       "Yes. And the cat."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Oakwood gate, forest edge. Tall gray gate, one torch, moths circling it like a slow galaxy.",
+    "action": "Bryn stands guard, sword drawn, eyes locked on a single moth.",
+    "dialogue": [
+     {
+      "speaker": "Bryn",
+      "text_lines": [
+       "Do not move. It knows we",
+       "are here."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "It is a moth."
+      ]
+     },
+     {
+      "speaker": "Bryn",
+      "text_lines": [
+       "That is what it WANTS you",
+       "to think."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*eats moth*"
+      ]
+     },
+     {
+      "speaker": "Bryn",
+      "text_lines": [
+       "...I will follow that cat",
+       "anywhere."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Quillan's village kitchen. Steam, copper pots, a scorched star chart pinned over the stove.",
+    "action": "Quillan stirs a pot that hums. He offers a spoon to everyone.",
+    "dialogue": [
+     {
+      "speaker": "Quillan",
+      "text_lines": [
+       "I know four spells.",
+       "Simmer, Thicken, Season",
+       "and Serve. All soup."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Can soup fight the dark?"
+      ]
+     },
+     {
+      "speaker": "Quillan",
+      "text_lines": [
+       "Have you ever been sad",
+       "while holding warm soup?"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "rawr (no)"
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref eats the scary moth, then purrs at Bryn proudly.",
+  "reward_item_ids": [
+   "warm_ale",
+   "soup_simmer"
+  ]
+ },
+ {
+  "quest_id": "q2_02",
+  "title": "Whispers in Woods",
+  "location": "Edge of the Dense Forest",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Forest edge at night. Black trunks drawn in shaky ink, one path of pale moss, a tiny campfire.",
+    "action": "The Tattered Traveler warms his hands and speaks without looking up.",
+    "dialogue": [
+     {
+      "speaker": "Tattered Traveler",
+      "text_lines": [
+       "There is a city in these",
+       "woods. Hidden. Older than",
+       "the stars."
+      ]
+     },
+     {
+      "speaker": "Tattered Traveler",
+      "text_lines": [
+       "Or it is a really big",
+       "rock. Prophecy is hard."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*sniffs the dark*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Same campfire, other travelers. Faces are blank paper ovals, mouths just a thin line.",
+    "action": "Whispers overlap. Text appears as faint gray.",
+    "dialogue": [
+     {
+      "speaker": "Whisperer",
+      "text_lines": [
+       "The trees moved last",
+       "night."
+      ]
+     },
+     {
+      "speaker": "Whisperer",
+      "text_lines": [
+       "The trees moved INTO the",
+       "city."
+      ]
+     },
+     {
+      "speaker": "Whisperer",
+      "text_lines": [
+       "Bring oil. The dark there",
+       "drinks light."
+      ]
+     },
+     {
+      "speaker": "Tattered Traveler",
+      "text_lines": [
+       "Take this. Lamp Oil. You",
+       "will want to still be here",
+       "tomorrow."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Path entrance. Two wisps hover between trees, the only blue in a black frame.",
+    "action": "Arin fills the lantern. Mote tries to eat a wisp and sneezes stars.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "rawr! *achoo*"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Still here. Let's go."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref's eye stars swirl at the trees. He goes in first.",
+  "reward_item_ids": [
+   "lamp_oil"
+  ]
+ },
+ {
+  "quest_id": "q2_03",
+  "title": "Forest Guardian",
+  "location": "The Forest Guardian's Grove",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Wisps form a trail of blue dots through black forest. Roots look like sleeping hands.",
+    "action": "Follow the wisps. If you stray, they wait and blink impatiently.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "rawr? (are they friends)"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "They are... leading us."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*bats a wisp. it giggles*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Clearing with a stone figure taller than the trees. Moss beard, two lantern eyes.",
+    "action": "The Forest Guardian wakes. Dust and leaves fall from its shoulders.",
+    "dialogue": [
+     {
+      "speaker": "Forest Guardian",
+      "text_lines": [
+       "Three tests. Courage.",
+       "Wisdom. Strength of heart.",
+       "Each of you walks alone."
+      ]
+     },
+     {
+      "speaker": "Quillan",
+      "text_lines": [
+       "Is there a soup test?"
+      ]
+     },
+     {
+      "speaker": "Forest Guardian",
+      "text_lines": [
+       "...There is now."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Grove after tests. Dawn-gray light leaks through branches. Calaminth flowers glow faintly.",
+    "action": "The Guardian hands Arin a sprig of Calaminth and points at the cave.",
+    "dialogue": [
+     {
+      "speaker": "Forest Guardian",
+      "text_lines": [
+       "Your test is below. In the",
+       "cave. Something waits",
+       "there, and it is afraid."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "rawr. (me too. lets go)"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Wisp Trail",
+   "biome": "Whispering Woods",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Bent trail of moss stones; wisps hop ahead.",
+     "enemies": [
+      {
+       "name": "Moth Swarm",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Cloud tightens into a ball, then bursts outward in 3 frames."
+       }
+      }
+     ],
+     "puzzle": "Step only on stones a wisp just lit; others sink into ink.",
+     "loot_item_ids": [
+      "healing_herbs"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Hollow log tunnel, roots twitch as you pass.",
+     "enemies": [
+      {
+       "name": "Root Grabber",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Root coils (1), lashes (2), retracts with a dirt puff (3)."
+       }
+      }
+     ],
+     "puzzle": "Mote's glow scares roots back; keep Mote near to pass.",
+     "loot_item_ids": [
+      "glowcap",
+      "grove_honey"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Ring of mushrooms; wisps dance in a pattern.",
+     "enemies": [],
+     "puzzle": "Repeat the wisp dance: 4-step direction pattern.",
+     "loot_item_ids": [
+      "calaminth"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Forest Guardian (Test of Courage)",
+    "mechanic": "Charges in straight lines; stand your ground on the glowing ring and it veers.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Antlers of black branches sway; breath puffs blue."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-60%",
+      "transformation": "Ancient guardian of ink branches, antlered, wisps in its crown.",
+      "attacks": [
+       {
+        "name": "Antler Charge",
+        "telegraph": "Lowers head, hoof scrapes 2x, dust puff",
+        "effect": "Line dash, knockback",
+        "animation": {
+         "frames": 4,
+         "description": "Head down, scrape, lunge, skid stop"
+        }
+       },
+       {
+        "name": "Leaf Storm",
+        "telegraph": "Antlers shake, leaves rise",
+        "effect": "3 slow leaf projectiles",
+        "animation": {
+         "frames": 3,
+         "description": "Shake, leaves lift, fling"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "60-0%",
+      "transformation": "Antlers grow twice as wide, wisps caught in them glow like eyes.",
+      "attacks": [
+       {
+        "name": "Wisp Snare",
+        "telegraph": "Caught wisps flash red",
+        "effect": "Wisps fire at your last spot",
+        "animation": {
+         "frames": 4,
+         "description": "Antler glow, wisps detach, streak, pop"
+        }
+       },
+       {
+        "name": "Double Charge",
+        "telegraph": "Two hoof scrapes and a snort ring",
+        "effect": "Two dashes back to back",
+        "animation": {
+         "frames": 5,
+         "description": "Lower, lunge, turn, lunge, pant"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 4,
+     "description": "Kneels, antlers drop leaves, bows, steps aside for the next test."
+    },
+    "defeat_line": "You did not run. Pass.",
+    "id": "forest_guardian",
+    "canon": "bible 2.3 (ancient guardian, three tests); test encounter, Attunable, not a bible numbered boss",
+    "sprite_note": "Reuses Cosmo's Hollow Stag frames (bible gives the guardian no look, so the antlered ink-branch body can stay)."
+   }
+  },
+  "zeref_moment": "Zeref sits on the Guardian's foot. It lets him stay.",
+  "reward_item_ids": [
+   "calaminth"
+  ]
+ },
+ {
+  "quest_id": "q2_04",
+  "title": "Grumbleback",
+  "location": "The Hollow Cave",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Cave mouth: crystal teeth around a black throat. Faint purple light deep inside.",
+    "action": "Arin enters alone, except for the beasts, who refuse to be left.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "The Guardian said alone."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "rawr. (we are your alone)"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Deep chamber. A crystal on a stone stump, glowing. Huge mossy shape breathing in the dark.",
+    "action": "Grumbleback lunges. Fight or Block and Hum. The game nudges Hum.",
+    "dialogue": [
+     {
+      "speaker": "Grumbleback",
+      "text_lines": [
+       "GRRRRMMMMMM"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "hmmmm rawr hmmm"
+      ]
+     },
+     {
+      "speaker": "Grumbleback",
+      "text_lines": [
+       "...hmm?"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Same chamber, crystal light flooding. Ghostly ink hands painted over every wall.",
+    "action": "Arin touches the crystal: visions of the First Hands. Grumbleback blocks the exit.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "I saw them. The ones who",
+       "made all this."
+      ]
+     },
+     {
+      "speaker": "Grumbleback",
+      "text_lines": [
+       "*sits on the exit*"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Are you... coming with us?"
+      ]
+     },
+     {
+      "speaker": "Grumbleback",
+      "text_lines": [
+       "*sits on Arin*"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Hollow Cave",
+   "biome": "Hollow Groves",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Crystal stalactites drip light; floor tiles crack.",
+     "enemies": [
+      {
+       "name": "Crystal Bat",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Folds wings (1), dives (2), screech ring (3)."
+       }
+      }
+     ],
+     "puzzle": "Trap floor: cracked tiles fall after 1 sec. Follow the dry tiles.",
+     "loot_item_ids": [
+      "cave_moss"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Narrow gallery of beast nests and bones.",
+     "enemies": [
+      {
+       "name": "Shard Crawler",
+       "attack_animation": {
+        "frames": 4,
+        "description": "Curls up (1), rolls (2), bounces off wall (3), unrolls (4)."
+       }
+      },
+      {
+       "name": "Crystal Bat",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Dive and screech."
+       }
+      }
+     ],
+     "puzzle": "Push glow crystals into sockets to light the gallery.",
+     "loot_item_ids": [
+      "golem_grease",
+      "golden_wheat"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Echo pool. Your reflection moves late.",
+     "enemies": [],
+     "puzzle": "Hum at the pool: the echo opens a hidden crawlspace.",
+     "loot_item_ids": [
+      "crystal_lantern"
+     ]
+    },
+    {
+     "id": "r4",
+     "description": "Grumbleback's den: moss bed, a pile of stolen socks.",
+     "enemies": [],
+     "puzzle": "Boss room.",
+     "loot_item_ids": [
+      "wet_sock"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "Grumbleback, the Cave Beast",
+    "mechanic": "Attack it and Agitation rises; Block and Hum to drop Agitation. Attune at 0 to win kindly.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Huge mossy back rises and falls; one eye peeks from moss."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-70%",
+      "transformation": "Half hidden in dark, only eye and claws visible.",
+      "attacks": [
+       {
+        "name": "Dark Lunge",
+        "telegraph": "Eye glows, moss bristles",
+        "effect": "Lunge from shadow, big damage",
+        "animation": {
+         "frames": 4,
+         "description": "Eye flash, crouch, leap, land with dust"
+        }
+       },
+       {
+        "name": "Rock Swipe",
+        "telegraph": "Arm pulls back, dust falls",
+        "effect": "Wide arc swipe",
+        "animation": {
+         "frames": 3,
+         "description": "Wind up, swipe, follow through"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "70-35%",
+      "transformation": "Stands fully: twice as tall, crystals sprout on its back.",
+      "attacks": [
+       {
+        "name": "Crystal Quake",
+        "telegraph": "Rears up on hind legs, crystals glow",
+        "effect": "Falling stalactites in 3 lanes",
+        "animation": {
+         "frames": 5,
+         "description": "Rear, hang, slam, ripple, stalactites fall"
+        }
+       },
+       {
+        "name": "Roar",
+        "telegraph": "Mouth opens, sound lines",
+        "effect": "Pushback, cancels Hum",
+        "animation": {
+         "frames": 3,
+         "description": "Inhale, roar rings, close"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "35-0%",
+      "transformation": "Back crystals blaze, moss lifts like a mane. Scared, not angry.",
+      "attacks": [
+       {
+        "name": "Panic Roll",
+        "telegraph": "Curls into a ball, crystals spin",
+        "effect": "Bounces around arena 3 times",
+        "animation": {
+         "frames": 6,
+         "description": "Curl, spin, bounce, bounce, bounce, dizzy"
+        }
+       },
+       {
+        "name": "Sad Howl",
+        "telegraph": "Looks at its socks, eyes wet",
+        "effect": "Slows party; Hum here Attunes instantly",
+        "animation": {
+         "frames": 4,
+         "description": "Look down, sniff, howl up, sniffle"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 5,
+     "description": "Flops on its back, rolls over, nuzzles Arin, tiny butterfly lands on nose, it sneezes."
+    },
+    "defeat_line": "Grrmm. (you can stay)"
+   }
+  },
+  "zeref_moment": "Zeref climbs Grumbleback and sits on his head like a crown.",
+  "reward_item_ids": [
+   "sacred_crystal",
+   "grumble_plush"
+  ]
+ },
+ {
+  "quest_id": "q2_05",
+  "title": "The Others' Trials",
+  "location": "Three Trial Pages: Moth Page, Giant's Table, Temple Room",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Moth Glade: thousands of white moths on black bark, all wings opening at once.",
+    "action": "Play as Bryn. Hold your ground; moths swarm the lantern.",
+    "dialogue": [
+     {
+      "speaker": "Bryn",
+      "text_lines": [
+       "I am not scared. I am not",
+       "scared. I am VERY scared."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*watches, ready to eat*"
+      ]
+     },
+     {
+      "speaker": "Bryn",
+      "text_lines": [
+       "Still here. Still",
+       "standing."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "A giant's table under a hill. Bowl the size of a lake. The giant is round and sad-eyed.",
+    "action": "Play as Quillan. The giant wants soup. Riddle: what does it really want?",
+    "dialogue": [
+     {
+      "speaker": "Giant",
+      "text_lines": [
+       "HUNGRY."
+      ]
+     },
+     {
+      "speaker": "Quillan",
+      "text_lines": [
+       "Shared Soup. Not for you.",
+       "With you. Sit down, big",
+       "friend."
+      ]
+     },
+     {
+      "speaker": "Giant",
+      "text_lines": [
+       "...nobody ever sat with",
+       "me."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Ruined temple room, one candle, Edric's long shadow on the wall.",
+    "action": "Play as Edric. Admit the truth to the party.",
+    "dialogue": [
+     {
+      "speaker": "Edric",
+      "text_lines": [
+       "In the temple I was",
+       "scared. I hid. I let you",
+       "think I was brave."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "You came back. That's the",
+       "brave part."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "rawr (hug)"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Moth Page",
+   "biome": "Whispering Woods",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "White moths sleep on every trunk.",
+     "enemies": [
+      {
+       "name": "Moth Swarm",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Ball up, burst, reform."
+       }
+      }
+     ],
+     "puzzle": "Lower lantern to sneak; raise it to scatter. Wrong time wakes all.",
+     "loot_item_ids": [
+      "lamp_oil"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Spiral of trees closing tighter.",
+     "enemies": [
+      {
+       "name": "Dust Moth",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Wings open (1), dust cloud (2), fade (3)."
+       }
+      }
+     ],
+     "puzzle": "Walk the spiral without letting the lantern die.",
+     "loot_item_ids": [
+      "flint_wick"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Moth Swarm (Bryn's Trial of Courage)",
+    "mechanic": "Pulls light from lanterns. Stand still and brave to refill.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "A cloud of white moths circles the lantern, wing-dust glittering."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-50%",
+      "transformation": "A swarm as tall as Bryn, wings like torn paper.",
+      "attacks": [
+       {
+        "name": "Dust Wave",
+        "telegraph": "Wings fold back",
+        "effect": "Dust cone blinds screen edges",
+        "animation": {
+         "frames": 4,
+         "description": "Fold, beat, dust wave, settle"
+        }
+       },
+       {
+        "name": "Light Drain",
+        "telegraph": "Antennae point at lantern",
+        "effect": "Drains lantern meter",
+        "animation": {
+         "frames": 3,
+         "description": "Point, beam, gulp"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "50-0%",
+      "transformation": "The swarm doubles, curls around Bryn; wing spots look like eyes.",
+      "attacks": [
+       {
+        "name": "Swarm Surge",
+        "telegraph": "The cloud brightens in the middle",
+        "effect": "Spawns 4 small moths",
+        "animation": {
+         "frames": 5,
+         "description": "Glow, shiver, moths pour, flap, scatter"
+        }
+       },
+       {
+        "name": "Eye Flash",
+        "telegraph": "All eye spots open",
+        "effect": "Fear: input reverse 2s",
+        "animation": {
+         "frames": 3,
+         "description": "Close, open all eyes, flash"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 4,
+     "description": "Swarm thins to a few moths; one lands on Bryn's shoulder. She does not scream."
+    },
+    "defeat_line": "...you stayed. Go on.",
+    "id": "moth_swarm",
+    "canon": "bible 2.6: 'Bryn faces a swarm of moths'; trial encounter, not a bible boss"
+   }
+  },
+  "zeref_moment": "Zeref sits in the giant's bowl and gets soup on his beanie.",
+  "reward_item_ids": [
+   "soup_thicken",
+   "soup_season"
+  ]
+ },
+ {
+  "quest_id": "q2_06",
+  "title": "Citadel in Mist",
+  "location": "Cliffs, Citadel in the Mist, the Murals",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Cliff path over white mist. Thin rope bridges. Wind lines drawn like scratches.",
+    "action": "Climb and cross. Climber Boots unlock on the first ledge.",
+    "dialogue": [
+     {
+      "speaker": "Edric",
+      "text_lines": [
+       "Do not look down."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*looks down*"
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "rawr!! (so far!!)"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Ruined citadel: vines on crumbling statues, walls carved with murals pulsing faint blue.",
+    "action": "The Sacred Crystal glows. Symbols answer it one by one.",
+    "dialogue": [
+     {
+      "speaker": "Edric",
+      "text_lines": [
+       "The First Hands carved",
+       "these. Seven dark days.",
+       "And one panel left blank."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Blank. Like it hasn't",
+       "happened yet."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Giant doors, ten times Arin's height. Blue light pouring through the crack.",
+    "action": "The doors grind open. Grumbleback sits down in the doorway.",
+    "dialogue": [
+     {
+      "speaker": "Bryn",
+      "text_lines": [
+       "Is it a city?"
+      ]
+     },
+     {
+      "speaker": "Tattered Traveler",
+      "text_lines": [
+       "Told you. Probably not a",
+       "rock."
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Mist Cliffs",
+   "biome": "Cragstone Highlands / Ruined Citadels",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Rope bridge in fog, planks missing.",
+     "enemies": [
+      {
+       "name": "Cragstone Eagle",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Hovers (1), tucks wings (2), dives (3)."
+       }
+      }
+     ],
+     "puzzle": "Wind gusts every 3 sec; cross between them.",
+     "loot_item_ids": [
+      "climber_boots"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Sheer wall with handholds glowing faintly.",
+     "enemies": [
+      {
+       "name": "Rock Mite",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Clings (1), jumps (2), bites (3)."
+       }
+      }
+     ],
+     "puzzle": "Climb only holds that pulse with the crystal.",
+     "loot_item_ids": [
+      "frost_tea"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Mural corridor before the gate.",
+     "enemies": [
+      {
+       "name": "Guardian Statue",
+       "attack_animation": {
+        "frames": 4,
+        "description": "Eyes light (1), stone arm lifts (2), slam (3), dust (4)."
+       }
+      }
+     ],
+     "puzzle": "Hold the crystal to each mural in order of the Seven Dark Days.",
+     "loot_item_ids": [
+      "ink_pot"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Guardian Statues (Citadel Gate)",
+    "mechanic": "Statues of the First Hands wake at the doors. Hit each chest rune only while the crystal makes it glow.",
+    "idle_animation": {
+     "frames": 3,
+     "description": "Stone chest rune pulses slowly; mist pours off shoulders."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-65%",
+      "transformation": "One statue wakes waist-deep in mist.",
+      "attacks": [
+       {
+        "name": "Stone Palm",
+        "telegraph": "Hand shadow on ground",
+        "effect": "Slam where shadow was",
+        "animation": {
+         "frames": 4,
+         "description": "Raise, hover, slam, crack"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "65-30%",
+      "transformation": "Two more statues rise beside it; vines snap off.",
+      "attacks": [
+       {
+        "name": "Mist Breath",
+        "telegraph": "Cheeks of stone crack and glow",
+        "effect": "Fog hides arena 4s",
+        "animation": {
+         "frames": 4,
+         "description": "Crack, glow, exhale, fog"
+        }
+       },
+       {
+        "name": "Rune Beam",
+        "telegraph": "Chest rune brightens white",
+        "effect": "Sweeping beam left to right",
+        "animation": {
+         "frames": 5,
+         "description": "Charge, flare, sweep, sweep, cool"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "30-0%",
+      "transformation": "The three crack; blue light leaks from every seam.",
+      "attacks": [
+       {
+        "name": "Shatter Rain",
+        "telegraph": "Body pieces lift off",
+        "effect": "Stone chunks fall at random",
+        "animation": {
+         "frames": 6,
+         "description": "Pieces lift, spin, hover, fall, fall, regroup"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 5,
+     "description": "Statues kneel and crumble; runes float to the doors and the doors open."
+    },
+    "defeat_line": "The hands remember you.",
+    "id": "guardian_statues",
+    "canon": "bible 7.3 Ruined Citadels hazard 'guardian statues' + 2.7 crystal opens doors; gate encounter, not a bible boss"
+   }
+  },
+  "zeref_moment": "Zeref looks down the cliff, then leans out for more.",
+  "reward_item_ids": [
+   "climber_boots"
+  ]
+ },
+ {
+  "quest_id": "q2_07",
+  "title": "The Sentinel",
+  "location": "Citadel Atrium",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Citadel atrium: pillars lost in black. A cold wind visibly sweeps across the frame.",
+    "action": "Every lantern goes out. Only Mote and Zeref glow.",
+    "dialogue": [
+     {
+      "speaker": "Quillan",
+      "text_lines": [
+       "My soup went cold.",
+       "Instantly. That's illegal."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "*glows brighter* rawr"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "A hooded dark figure on a stair. Only the glow from the beasts outlines her.",
+    "action": "Choose Reason or Fight. Fight is short; she just waits.",
+    "dialogue": [
+     {
+      "speaker": "Dark Figure",
+      "text_lines": [
+       "Leave. This place eats the",
+       "lost."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "We aren't lost. We are",
+       "still here."
+      ]
+     },
+     {
+      "speaker": "Dark Figure",
+      "text_lines": [
+       "...everyone says that."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Hood falls back: woman with snow-white wings, piercing eyes. Lanterns relight blue.",
+    "action": "Hesper descends. A butterfly lands on her wing; she fails to stay serious.",
+    "dialogue": [
+     {
+      "speaker": "Sentinel Hesper",
+      "text_lines": [
+       "I am Hesper. I will guide",
+       "you through the trials."
+      ]
+     },
+     {
+      "speaker": "Sentinel Hesper",
+      "text_lines": [
+       "...is there a butterfly on",
+       "me?"
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*pounces on wing*"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Lightless Atrium",
+   "biome": "Ruined Citadels",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Pitch black hall; only glow radius visible.",
+     "enemies": [
+      {
+       "name": "Shade Wisp",
+       "attack_animation": {
+        "frames": 4,
+        "description": "Drifts (1), stretches (2), lunges (3), recoils (4)."
+       }
+      }
+     ],
+     "puzzle": "Keep the beasts close; glow radius is the map.",
+     "loot_item_ids": [
+      "sunseed_snack"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Stair of forgotten candles.",
+     "enemies": [],
+     "puzzle": "Relight candles with Mote's sneeze to reveal the stairs.",
+     "loot_item_ids": [
+      "star_shard"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "Sentinel Hesper (Reason or Fight)",
+    "mechanic": "She never truly attacks; she only waits. Choosing Reason ends it. Fighting just tires you.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Hooded, still; wings shift under the cloak; breath fogs."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-50%",
+      "transformation": "Hooded shape in the dark.",
+      "attacks": [
+       {
+        "name": "Cold Wind",
+        "telegraph": "Cloak flares out",
+        "effect": "Pushes you back, dims glow",
+        "animation": {
+         "frames": 3,
+         "description": "Cloak lifts, gust lines, settles"
+        }
+       },
+       {
+        "name": "Wing Guard",
+        "telegraph": "Wings rise under cloak",
+        "effect": "Blocks all hits 3s",
+        "animation": {
+         "frames": 3,
+         "description": "Wings lift, fold over, hold"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "50-0%",
+      "transformation": "Cloak tears; white wings spread full screen width.",
+      "attacks": [
+       {
+        "name": "Feather Wall",
+        "telegraph": "Wings spread wide, feathers glint",
+        "effect": "Ring of feathers stops you, no damage",
+        "animation": {
+         "frames": 5,
+         "description": "Spread, glint, feathers fly, ring, fade"
+        }
+       },
+       {
+        "name": "Patient Stare",
+        "telegraph": "She sits down",
+        "effect": "Nothing. She waits for you to stop.",
+        "animation": {
+         "frames": 2,
+         "description": "Sits, blinks"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 4,
+     "description": "Hood falls, she smiles, butterfly lands, she sneezes softly."
+    },
+    "defeat_line": "Enough. Walk with me."
+   }
+  },
+  "zeref_moment": "In the dark, Zeref's eyes are the last stars. He blinks.",
+  "reward_item_ids": [
+   "sentinel_down"
+  ]
+ },
+ {
+  "quest_id": "q2_08",
+  "title": "Hall of Whispers",
+  "location": "Hall of Whispers",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Long hall of black glass. Whispers float as faint text along the walls.",
+    "action": "Walk the hall. Whispers say things nobody in the party said.",
+    "dialogue": [
+     {
+      "speaker": "Whisper",
+      "text_lines": [
+       "you forgot to feed it"
+      ]
+     },
+     {
+      "speaker": "Whisper",
+      "text_lines": [
+       "you left the page blank"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Those aren't... mine."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "A huge mirror, silver frame of hands. It shows strangers, then the party alone.",
+    "action": "Boss: The Mirror That Isn't Yours. Walk toward companions' reflections.",
+    "dialogue": [
+     {
+      "speaker": "Mirror",
+      "text_lines": [
+       "Failure. Loss. Lonely.",
+       "Pick one."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "I won't let fear define",
+       "me."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "RAWR"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Mirror cracked, hall quiet. An old lantern on the floor where the mirror stood.",
+    "action": "Edric picks up his family lantern, thought lost.",
+    "dialogue": [
+     {
+      "speaker": "Edric",
+      "text_lines": [
+       "My father's lamp. The",
+       "mirror kept it."
+      ]
+     },
+     {
+      "speaker": "Sentinel Hesper",
+      "text_lines": [
+       "Fear keeps things. Courage",
+       "gives them back."
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "Hall of Whispers",
+   "biome": "Ruined Citadels",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Glass corridor; whispers slow you.",
+     "enemies": [
+      {
+       "name": "Whisper Shade",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Mouth opens (1), text spills (2), fades (3)."
+       }
+      }
+     ],
+     "puzzle": "Walk only when whispers stop; moving during a whisper pulls you back.",
+     "loot_item_ids": [
+      "dream_orb"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Room of small mirrors, each a different face.",
+     "enemies": [
+      {
+       "name": "Glass Mimic",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Copies your pose (1), cracks (2), shard throw (3)."
+       }
+      }
+     ],
+     "puzzle": "Break only mirrors that show nobody you know.",
+     "loot_item_ids": [
+      "nard_balm"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Mirror That Isn't Yours",
+    "mechanic": "Not a fight. Each phase, walk to a companion's reflection, dodging fear images.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Surface ripples like water; strangers' faces drift."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "Resolve 0-33%",
+      "transformation": "Mirror the size of a door.",
+      "attacks": [
+       {
+        "name": "Failure Image",
+        "telegraph": "Frame hands clench",
+        "effect": "Broken-hammer images fly at you",
+        "animation": {
+         "frames": 4,
+         "description": "Clench, image forms, fly, shatter"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "Resolve 33-66%",
+      "transformation": "Mirror grows to fill the wall; frame hands reach out.",
+      "attacks": [
+       {
+        "name": "Loss Echo",
+        "telegraph": "Reflections of friends fade",
+        "effect": "Companion reflections vanish briefly",
+        "animation": {
+         "frames": 4,
+         "description": "Faces fade, gone, flicker, back"
+        }
+       },
+       {
+        "name": "Grasping Hands",
+        "telegraph": "Frame hands twitch",
+        "effect": "Hands grab at your path",
+        "animation": {
+         "frames": 5,
+         "description": "Twitch, reach, grab, pull, release"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "Resolve 66-100%",
+      "transformation": "Mirror wraps the whole room; you stand inside it.",
+      "attacks": [
+       {
+        "name": "Lonely",
+        "telegraph": "Screen goes silent, all reflections leave",
+        "effect": "Walls close in until you say the line",
+        "animation": {
+         "frames": 6,
+         "description": "Reflections walk away, dark, close, close, close, crack"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 5,
+     "description": "Cracks from center, light leaks, shatters into floating silver dust."
+    },
+    "defeat_line": "...that wasn't yours. Go."
+   }
+  },
+  "zeref_moment": "Zeref sees no reflection of himself and rawrs at the mirror.",
+  "reward_item_ids": [
+   "edric_lantern"
+  ]
+ },
+ {
+  "quest_id": "q2_09",
+  "title": "Doubt Made Flesh",
+  "location": "Chamber of Illumination and Arena of Souls",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Chamber of tomes bound in liquid silver, each pulsing like a heartbeat.",
+    "action": "Riddle. Answer Light, a flame, or warmth.",
+    "dialogue": [
+     {
+      "speaker": "Tome",
+      "text_lines": [
+       "The more of me you give",
+       "away, the more of me there",
+       "is."
+      ]
+     },
+     {
+      "speaker": "Quillan",
+      "text_lines": [
+       "Soup?"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Light."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "*learns Beacon* rawr!!"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Round arena, stone seats full of faceless shadows. One figure rises in the center.",
+    "action": "Doubt Made Flesh wears Arin's own failures: abandoned pages, smudges.",
+    "dialogue": [
+     {
+      "speaker": "Doubt",
+      "text_lines": [
+       "You quit the page. You",
+       "smudged it out. You always",
+       "do."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "I came back to it."
+      ]
+     },
+     {
+      "speaker": "Doubt",
+      "text_lines": [
+       "For how long?"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Arena flooded with gold light. Mist where Doubt stood. A silver page floats.",
+    "action": "Declaration QTE: the light shatters Doubt.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "I'm still here."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "RAWR."
+      ]
+     },
+     {
+      "speaker": "Sentinel Hesper",
+      "text_lines": [
+       "The door beyond is open."
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Arena of Souls",
+   "biome": "Ruined Citadels",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Silver tome library, shelves breathing.",
+     "enemies": [
+      {
+       "name": "Ink Leech",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Stretches (1), latches (2), drains (3)."
+       }
+      }
+     ],
+     "puzzle": "Riddle of Light; wrong answers dim the room.",
+     "loot_item_ids": [
+      "silver_page"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Arena tunnels lined with smudged portraits.",
+     "enemies": [
+      {
+       "name": "Smudge",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Smear forward (1), splash (2), reform (3)."
+       }
+      },
+      {
+       "name": "Shade Wisp",
+       "attack_animation": {
+        "frames": 4,
+        "description": "Drift, lunge."
+       }
+      }
+     ],
+     "puzzle": "Restore smudged portraits by standing in Beacon light.",
+     "loot_item_ids": [
+      "hearthsteel",
+      "rune_maul"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "Doubt Made Flesh",
+    "mechanic": "Built from your Memory Ledger. Its hits shrink your Light; Declarations (QTE) restore it.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Shadow Arin shape flickers, smudges drip off it."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-70%",
+      "transformation": "Arin-sized shadow, your silhouette.",
+      "attacks": [
+       {
+        "name": "Your Own Swing",
+        "telegraph": "Copies your last attack pose",
+        "effect": "Repeats your last attack at you",
+        "animation": {
+         "frames": 4,
+         "description": "Copy pose, wind up, swing, smirk"
+        }
+       },
+       {
+        "name": "Smudge Out",
+        "telegraph": "Hand wipes the air",
+        "effect": "Erases part of the floor",
+        "animation": {
+         "frames": 3,
+         "description": "Raise, wipe, gone"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "70-35%",
+      "transformation": "Grows taller than the arena seats; abandoned pages orbit it.",
+      "attacks": [
+       {
+        "name": "Abandoned Pages",
+        "telegraph": "Pages stop orbiting and point",
+        "effect": "Pages fly at you, shrink Light",
+        "animation": {
+         "frames": 5,
+         "description": "Orbit, stop, aim, fly, shred"
+        }
+       },
+       {
+        "name": "Whisper Storm",
+        "telegraph": "Mouth opens too wide",
+        "effect": "Text attacks fill screen",
+        "animation": {
+         "frames": 4,
+         "description": "Open, words pour, fill, fade"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "35-0%",
+      "transformation": "Becomes a towering wall of every failure, eyes everywhere.",
+      "attacks": [
+       {
+        "name": "Ledger Crush",
+        "telegraph": "All eyes close",
+        "effect": "Two walls slam; Declare to survive",
+        "animation": {
+         "frames": 6,
+         "description": "Close, inhale, walls move, move, slam, open"
+        }
+       },
+       {
+        "name": "Light Theft",
+        "telegraph": "Grabs at your glow",
+        "effect": "Light meter to 1",
+        "animation": {
+         "frames": 4,
+         "description": "Reach, grab, pull, laugh"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 6,
+     "description": "Light cracks it, cracks spread, it screams silent, shatters, mist, floor glows."
+    },
+    "defeat_line": "...still here? ...fine."
+   }
+  },
+  "zeref_moment": "Zeref's eye stars spin; he stands between Arin and Doubt.",
+  "reward_item_ids": [
+   "silver_page",
+   "rune_maul"
+  ]
+ },
+ {
+  "quest_id": "q2_10",
+  "title": "Tree of Branches",
+  "location": "Door of Hope and Unity, Tree of Infinite Branches",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Door carved with linked hands. Behind it, radiant chamber, the only bright frame in Act II.",
+    "action": "The Door of Hope and Unity opens for the whole party at once.",
+    "dialogue": [
+     {
+      "speaker": "Sentinel Hesper",
+      "text_lines": [
+       "It opens only if you are",
+       "all here."
+      ]
+     },
+     {
+      "speaker": "Grumbleback",
+      "text_lines": [
+       "*is here*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Colossal tree, branches reaching off screen into stars. Bark glows with vein lines.",
+    "action": "Touch the bark: visions of battles and allies. Choose a path.",
+    "dialogue": [
+     {
+      "speaker": "The Tree",
+      "text_lines": [
+       "Each path you take will",
+       "ripple through time."
+      ]
+     },
+     {
+      "speaker": "The Tree",
+      "text_lines": [
+       "Bright. Shadowed. Winding.",
+       "Choose."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*climbs all three*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Tree roots over a dry riverbed. Star shard in a knot of bark.",
+    "action": "The Tree reveals the truth: the four rivers are stopping.",
+    "dialogue": [
+     {
+      "speaker": "The Tree",
+      "text_lines": [
+       "The Heart cracks because",
+       "the rivers stop. Wake all",
+       "four."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Then we go. Still here."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "rawr (still here)"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "Tree of Infinite Branches",
+   "biome": "Ruined Citadels (authored)",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Root tunnels with dry river channels.",
+     "enemies": [
+      {
+       "name": "Stillspawn",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Freezes (1), cracks (2), shard burst (3)."
+       }
+      }
+     ],
+     "puzzle": "Pour water from the last puddle to wake root lanterns.",
+     "loot_item_ids": [
+      "glowcap"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Branch vision room: three doorways of light.",
+     "enemies": [],
+     "puzzle": "Pick Bright, Shadowed, or Winding; sets Act III.",
+     "loot_item_ids": [
+      "star_shard"
+     ]
+    }
+   ],
+   "boss": null,
+   "no_boss_note": "Bible 2.13-2.16 has no fight here: the Tree reveals the truth. The Stilled Root (invented) is cut."
+  },
+  "zeref_moment": "Zeref tries to climb to infinity; gets one branch up, naps.",
+  "reward_item_ids": [
+   "star_shard"
+  ]
+ }
+]

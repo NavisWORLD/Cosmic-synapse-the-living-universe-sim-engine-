@@ -1,0 +1,275 @@
+[
+ {
+  "quest_id": "q2_01",
+  "act": 2,
+  "location": "Three Villages (Oakwood gate + 2 villages)",
+  "dungeon_name": null,
+  "biome": "Valley Fields"
+ },
+ {
+  "quest_id": "q2_02",
+  "act": 2,
+  "location": "Edge of the Dense Forest",
+  "dungeon_name": null,
+  "biome": "Whispering Woods"
+ },
+ {
+  "quest_id": "q2_03",
+  "act": 2,
+  "location": "The Forest Guardian's Grove",
+  "dungeon_name": "The Wisp Trail",
+  "biome": "Whispering Woods"
+ },
+ {
+  "quest_id": "q2_04",
+  "act": 2,
+  "location": "The Hollow Cave",
+  "dungeon_name": "The Hollow Cave",
+  "biome": "Hollow Groves"
+ },
+ {
+  "quest_id": "q2_05",
+  "act": 2,
+  "location": "Three Trial Pages: Moth Page, Giant's Table, Temple Room",
+  "dungeon_name": "The Moth Page",
+  "biome": "Whispering Woods"
+ },
+ {
+  "quest_id": "q2_06",
+  "act": 2,
+  "location": "Cliffs, Citadel in the Mist, the Murals",
+  "dungeon_name": "The Mist Cliffs",
+  "biome": "Cragstone Highlands / Ruined Citadels"
+ },
+ {
+  "quest_id": "q2_07",
+  "act": 2,
+  "location": "Citadel Atrium",
+  "dungeon_name": "The Lightless Atrium",
+  "biome": "Ruined Citadels"
+ },
+ {
+  "quest_id": "q2_08",
+  "act": 2,
+  "location": "Hall of Whispers",
+  "dungeon_name": "Hall of Whispers",
+  "biome": "Ruined Citadels"
+ },
+ {
+  "quest_id": "q2_09",
+  "act": 2,
+  "location": "Chamber of Illumination and Arena of Souls",
+  "dungeon_name": "The Arena of Souls",
+  "biome": "Ruined Citadels"
+ },
+ {
+  "quest_id": "q2_10",
+  "act": 2,
+  "location": "Door of Hope and Unity, Tree of Infinite Branches",
+  "dungeon_name": "Tree of Infinite Branches",
+  "biome": "Ruined Citadels (authored)"
+ },
+ {
+  "quest_id": "q3_11",
+  "act": 3,
+  "location": "Realm of Harmony",
+  "dungeon_name": null,
+  "biome": "Whispering Woods (authored: Realm of Harmony)"
+ },
+ {
+  "quest_id": "q3_12",
+  "act": 3,
+  "location": "The Grove in Chaos",
+  "dungeon_name": "The Grove in Chaos",
+  "biome": "Whispering Woods"
+ },
+ {
+  "quest_id": "q3_13",
+  "act": 3,
+  "location": "The Petal Tree",
+  "dungeon_name": null,
+  "biome": "Whispering Woods (authored)"
+ },
+ {
+  "quest_id": "q3_14",
+  "act": 3,
+  "location": "Gateway of Trials, Portal of Symbols",
+  "dungeon_name": "Gateway of Trials",
+  "biome": "Valley Fields (authored plain)"
+ },
+ {
+  "quest_id": "q3_15",
+  "act": 3,
+  "location": "Twilight Grove, Realm of Dreams",
+  "dungeon_name": null,
+  "biome": "Twilight Bands / Lavender Meadows"
+ },
+ {
+  "quest_id": "q3_16",
+  "act": 3,
+  "location": "Heartwood Woods",
+  "dungeon_name": "Heartwood Woods",
+  "biome": "Whispering Woods"
+ },
+ {
+  "quest_id": "q3_17",
+  "act": 3,
+  "location": "Glacial Grotto",
+  "dungeon_name": "Glacial Grotto",
+  "biome": "Glacial Grottos"
+ },
+ {
+  "quest_id": "q3_18",
+  "act": 3,
+  "location": "Ember Caverns",
+  "dungeon_name": "Ember Caverns",
+  "biome": "Ember Caverns"
+ },
+ {
+  "quest_id": "q3_19",
+  "act": 3,
+  "location": "Celestial Peaks",
+  "dungeon_name": "Celestial Peaks",
+  "biome": "Celestial Peaks"
+ },
+ {
+  "quest_id": "q3_20",
+  "act": 3,
+  "location": "The Four Rivers",
+  "dungeon_name": null,
+  "biome": "Stalled Riverlands"
+ },
+ {
+  "quest_id": "q4_21",
+  "act": 4,
+  "location": "Eldoria, Land of Luminous Leaves",
+  "dungeon_name": null,
+  "biome": "Whispering Woods (authored: Eldoria)"
+ },
+ {
+  "quest_id": "q4_22",
+  "act": 4,
+  "location": "Eldoria, Thorne's House",
+  "dungeon_name": null,
+  "biome": "Valley Fields (Eldoria village)"
+ },
+ {
+  "quest_id": "q4_23",
+  "act": 4,
+  "location": "Eldoria at Dawn",
+  "dungeon_name": null,
+  "biome": "Valley Fields (Eldoria village)"
+ },
+ {
+  "quest_id": "q4_24",
+  "act": 4,
+  "location": "Whispering Woods Ruins and Altar",
+  "dungeon_name": "Whispering Woods Ruins",
+  "biome": "Whispering Woods / Ruined Citadels"
+ },
+ {
+  "quest_id": "q4_25",
+  "act": 4,
+  "location": "Eldoria Fields",
+  "dungeon_name": null,
+  "biome": "Valley Fields"
+ },
+ {
+  "quest_id": "q4_26",
+  "act": 4,
+  "location": "Forest of Whispers, the Silent Gale Pool",
+  "dungeon_name": null,
+  "biome": "Whispering Woods"
+ },
+ {
+  "quest_id": "q4_27",
+  "act": 4,
+  "location": "The Hollow Grove",
+  "dungeon_name": "The Hollow Grove",
+  "biome": "Hollow Groves"
+ },
+ {
+  "quest_id": "q4_28",
+  "act": 4,
+  "location": "The Hollow Grove (depths)",
+  "dungeon_name": "The Hollow Grove",
+  "biome": "Hollow Groves"
+ },
+ {
+  "quest_id": "q4_29",
+  "act": 4,
+  "location": "Road to the Garden",
+  "dungeon_name": "Road to the Garden",
+  "biome": "Whispering Woods"
+ },
+ {
+  "quest_id": "q4_30",
+  "act": 4,
+  "location": "Gate of the Garden",
+  "dungeon_name": null,
+  "biome": "authored (no bible biome)"
+ },
+ {
+  "quest_id": "q4_31",
+  "act": 4,
+  "location": "Eldoria, Thorne's House",
+  "dungeon_name": null,
+  "biome": "Valley Fields (Eldoria village)"
+ },
+ {
+  "quest_id": "q5_32",
+  "act": 5,
+  "location": "Sethra's Tent outside Eldoria",
+  "dungeon_name": null,
+  "biome": "Valley Fields (dark)"
+ },
+ {
+  "quest_id": "q5_33",
+  "act": 5,
+  "location": "The Tigra",
+  "dungeon_name": null,
+  "biome": "Stalled Riverlands"
+ },
+ {
+  "quest_id": "q5_34",
+  "act": 5,
+  "location": "The Hidden Doorway",
+  "dungeon_name": "The Hidden Doorway",
+  "biome": "Lavender Meadows"
+ },
+ {
+  "quest_id": "q5_35",
+  "act": 5,
+  "location": "Realm of Dreams Festival",
+  "dungeon_name": null,
+  "biome": "Lavender Meadows"
+ },
+ {
+  "quest_id": "q5_36",
+  "act": 5,
+  "location": "Realm of Dreams Festival at Night",
+  "dungeon_name": null,
+  "biome": "Lavender Meadows"
+ },
+ {
+  "quest_id": "q5_37",
+  "act": 5,
+  "location": "Empty Highway to the Erased Margins",
+  "dungeon_name": null,
+  "biome": "Empty Highway / Erased Margins"
+ },
+ {
+  "quest_id": "q5_38",
+  "act": 5,
+  "location": "Malakar's Map Room and the Stilled Sea",
+  "dungeon_name": "The Stilled Sea",
+  "biome": "Erased Margins (Stilled Sea)"
+ },
+ {
+  "quest_id": "q5_39",
+  "act": 5,
+  "location": "Brindlemark Forge, the Eighth Page",
+  "dungeon_name": null,
+  "biome": "Valley Fields"
+ }
+]

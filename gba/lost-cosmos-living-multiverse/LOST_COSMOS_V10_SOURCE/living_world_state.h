@@ -70,7 +70,9 @@ static u8 lw_walk_f[LW_WALK_N]={255,255};
 static volatile u16 lw_walk_frames=0,lw_cst_picks=0,lw_heartbeats=0,lw_hud_scrolls=0;
 static volatile u8 lw_cast_form=0;
 static u8 lw_pmoving=0,lw_pface=0,lw_arin_f=255,lw_wisp_f=255,lw_npc_f=255,lw_npc_w=255,lw_npc_beat=0,lw_npc_pal_dirty=1,lw_cast_f=0;
-static volatile u8 lw_migrated=0;
+static u8 lw_end_d_flag=0,lw_scene_q=0;static u8 lw_scene_k=0;static volatile u16 lw_scene_reads=0;
+static volatile u8 lw_migrated=0,lw_items_migrated=0;
+static volatile u16 lw_synapse_hits=0,lw_synapse_swaps=0;
 static volatile u16 lw_npc_walk_frames=0,lw_sneezes=0,lw_yawns=0,lw_wisp_lunges=0;
 static char lw_msg[88]; /* V12.2: 3 lines of 28 (the HUD shows 2 and scrolls) */
 /* Read by the emulator test. */

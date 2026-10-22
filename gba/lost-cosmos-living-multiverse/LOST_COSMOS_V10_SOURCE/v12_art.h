@@ -64,10 +64,13 @@ extern const u32 v12_chr_mote_tiles[5120];
 extern const u16 v12_chr_mote_pal[16];
 extern const u32 v12_chr_mote_linework_tiles[5120];
 extern const u16 v12_chr_mote_linework_pal[16];
+extern const u32 v12_chr_mote_shading_tiles[5120];
+extern const u16 v12_chr_mote_shading_pal[16];
 extern const u32 v12_chr_mote_wash_tiles[5120];
 extern const u16 v12_chr_mote_wash_pal[16];
-extern const u32 v12_chr_mote_still_here_tiles[5120];
-extern const u16 v12_chr_mote_still_here_pal[16];
+extern const u32 v12_chr_mote_ink_tiles[5120];
+extern const u16 v12_chr_mote_ink_pal[16];
+#define V12_MOTE_FORMS 5
 extern const u16 v12_items_pal[16];
 extern const u16 v12_items_b_pal[16];
 #define V12_ITEMS_BANKED 1
@@ -90,5 +93,5 @@ extern const u8 v12_scene_forest_px[38400];
 extern const u16 v12_scene_forest_pal[256];
 extern const u8 v12_scene_cave_px[38400];
 extern const u16 v12_scene_cave_pal[256];
-#define V12_ART_BYTES 452384
+#define V12_ART_BYTES 472896
 #endif

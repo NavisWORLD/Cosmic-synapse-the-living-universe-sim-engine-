@@ -1,170 +1,191 @@
 [
- {
-  "id": "m_hungry",
-  "name": "Grumbletum",
-  "mood": "hungry",
-  "trigger": "hungry",
-  "idle_line": "My belly is doing the rawr now.",
-  "action": "seek_food"
- },
- {
-  "id": "m_starving",
-  "name": "Sock Hunt",
-  "mood": "desperate",
-  "trigger": "very_hungry",
-  "idle_line": "...is that a sock? I see a sock.",
-  "action": "raid_pack"
- },
- {
-  "id": "m_tired",
-  "name": "Dozy",
-  "mood": "sleepy",
-  "trigger": "tired",
-  "idle_line": "Five more cosmic minutes...",
-  "action": "nap"
- },
- {
-  "id": "m_wiped",
-  "name": "Flop",
-  "mood": "exhausted",
-  "trigger": "exhausted",
-  "idle_line": "*falls over on purpose*",
-  "action": "collapse_sleep"
- },
- {
-  "id": "m_curious",
-  "name": "Sniffsniff",
-  "mood": "curious",
-  "trigger": "curious",
-  "idle_line": "What is that? Can I lick it?",
-  "action": "investigate"
- },
- {
-  "id": "m_lonely",
-  "name": "Where U Go",
-  "mood": "lonely",
-  "trigger": "lonely",
-  "idle_line": "Hey. Hey. Are you still here?",
-  "action": "follow_player"
- },
- {
-  "id": "m_happy",
-  "name": "Wiggle",
-  "mood": "happy",
-  "trigger": "fed_and_rested",
-  "idle_line": "Still here! Still loud! RAWR!",
-  "action": "zoomies"
- },
- {
-  "id": "m_scared",
-  "name": "Hide Mode",
-  "mood": "scared",
-  "trigger": "dark_nearby",
-  "idle_line": "The dark looked at me. Rude.",
-  "action": "hide_behind"
- },
- {
-  "id": "m_brave",
-  "name": "Tiny Roar",
-  "mood": "brave",
-  "trigger": "enemy_near",
-  "idle_line": "I am HUGE. I am TERRIBLE. rawr.",
-  "action": "growl"
- },
- {
-  "id": "m_bored",
-  "name": "Meh",
-  "mood": "bored",
-  "trigger": "idle_long",
-  "idle_line": "I counted all the stars. Twice.",
-  "action": "dig"
- },
- {
-  "id": "m_playful",
-  "name": "Pounce",
-  "mood": "playful",
-  "trigger": "toy_near",
-  "idle_line": "Bet you cant catch me. Rawr!",
-  "action": "chase_toy"
- },
- {
-  "id": "m_sad",
-  "name": "Drizzle",
-  "mood": "sad",
-  "trigger": "bond_low",
-  "idle_line": "Rain inside my head again.",
-  "action": "sit_alone"
- },
- {
-  "id": "m_hopeful",
-  "name": "Rayface",
-  "mood": "hopeful",
-  "trigger": "light_near",
-  "idle_line": "Rainbows on my face. Warm.",
-  "action": "bask_light"
- },
- {
-  "id": "m_spooked",
-  "name": "Static",
-  "mood": "creepy",
-  "trigger": "stilling_near",
-  "idle_line": "Things stopped moving. I hate it.",
-  "action": "freeze_stare"
- },
- {
-  "id": "m_proud",
-  "name": "Show Off",
-  "mood": "proud",
-  "trigger": "item_found",
-  "idle_line": "Look what I found! Mine. Ours.",
-  "action": "present_item"
- },
- {
-  "id": "m_cuddly",
-  "name": "Lean",
-  "mood": "affectionate",
-  "trigger": "petted",
-  "idle_line": "*leans on you with all its weight*",
-  "action": "nuzzle"
- },
- {
-  "id": "m_grumpy",
-  "name": "Hmph",
-  "mood": "grumpy",
-  "trigger": "woken_up",
-  "idle_line": "Who turned the sun on. Who.",
-  "action": "glare"
- },
- {
-  "id": "m_dreamy",
-  "name": "Stargaze",
-  "mood": "dreamy",
-  "trigger": "night",
-  "idle_line": "Twelve dimensions up there. Hi.",
-  "action": "stargaze"
- },
- {
-  "id": "m_mourning",
-  "name": "Empty Chair",
-  "mood": "grieving",
-  "trigger": "friend_lost",
-  "idle_line": "I will sit here a while. OK?",
-  "action": "sit_chair"
- },
- {
-  "id": "m_hiccup",
-  "name": "Hic",
-  "mood": "silly",
-  "trigger": "drank_ale",
-  "idle_line": "*hic* I am a dragon *hic*",
-  "action": "stumble"
- },
- {
-  "id": "m_quantum",
-  "name": "Undecided",
-  "mood": "uncertain",
-  "trigger": "leaning_roll",
-  "idle_line": "I am two things. Maybe three.",
-  "action": "flicker"
- }
+  {
+    "id": "m_hungry",
+    "name": "Grumbletum",
+    "mood": "hungry",
+    "trigger": "hungry",
+    "idle_line": "My belly is doing the rawr now.",
+    "action": "seek_food",
+    "synapse_mood": "calm"
+  },
+  {
+    "id": "m_starving",
+    "name": "Sock Hunt",
+    "mood": "desperate",
+    "trigger": "very_hungry",
+    "idle_line": "...is that a sock? I see a sock.",
+    "action": "raid_pack",
+    "synapse_mood": "fear"
+  },
+  {
+    "id": "m_tired",
+    "name": "Dozy",
+    "mood": "sleepy",
+    "trigger": "tired",
+    "idle_line": "Five more cosmic minutes...",
+    "action": "nap",
+    "synapse_mood": "calm"
+  },
+  {
+    "id": "m_wiped",
+    "name": "Flop",
+    "mood": "exhausted",
+    "trigger": "exhausted",
+    "idle_line": "*falls over on purpose*",
+    "action": "collapse_sleep",
+    "synapse_mood": "calm"
+  },
+  {
+    "id": "m_curious",
+    "name": "Sniffsniff",
+    "mood": "curious",
+    "trigger": "curious",
+    "idle_line": "What is that? Can I lick it?",
+    "action": "investigate",
+    "synapse_mood": "curiosity"
+  },
+  {
+    "id": "m_lonely",
+    "name": "Where U Go",
+    "mood": "lonely",
+    "trigger": "lonely",
+    "idle_line": "Hey. Hey. Are you still here?",
+    "action": "follow_player",
+    "synapse_mood": "fear"
+  },
+  {
+    "id": "m_happy",
+    "name": "Wiggle",
+    "mood": "happy",
+    "trigger": "fed_and_rested",
+    "idle_line": "Still here! Still loud! RAWR!",
+    "action": "zoomies",
+    "synapse_mood": "joy"
+  },
+  {
+    "id": "m_scared",
+    "name": "Hide Mode",
+    "mood": "scared",
+    "trigger": "dark_nearby",
+    "idle_line": "The dark looked at me. Rude.",
+    "action": "hide_behind",
+    "synapse_mood": "fear"
+  },
+  {
+    "id": "m_brave",
+    "name": "Tiny Roar",
+    "mood": "brave",
+    "trigger": "enemy_near",
+    "idle_line": "I am HUGE. I am TERRIBLE. rawr.",
+    "action": "growl",
+    "synapse_mood": "mischief"
+  },
+  {
+    "id": "m_bored",
+    "name": "Meh",
+    "mood": "bored",
+    "trigger": "idle_long",
+    "idle_line": "I counted all the stars. Twice.",
+    "action": "dig",
+    "synapse_mood": "curiosity"
+  },
+  {
+    "id": "m_playful",
+    "name": "Pounce",
+    "mood": "playful",
+    "trigger": "toy_near",
+    "idle_line": "Bet you cant catch me. Rawr!",
+    "action": "chase_toy",
+    "synapse_mood": "mischief"
+  },
+  {
+    "id": "m_sad",
+    "name": "Drizzle",
+    "mood": "sad",
+    "trigger": "bond_low",
+    "idle_line": "Rain inside my head again.",
+    "action": "sit_alone",
+    "synapse_mood": "fear"
+  },
+  {
+    "id": "m_hopeful",
+    "name": "Rayface",
+    "mood": "hopeful",
+    "trigger": "light_near",
+    "idle_line": "Rainbows on my face. Warm.",
+    "action": "bask_light",
+    "synapse_mood": "joy"
+  },
+  {
+    "id": "m_spooked",
+    "name": "Static",
+    "mood": "creepy",
+    "trigger": "stilling_near",
+    "idle_line": "Things stopped moving. I hate it.",
+    "action": "freeze_stare",
+    "synapse_mood": "fear"
+  },
+  {
+    "id": "m_proud",
+    "name": "Show Off",
+    "mood": "proud",
+    "trigger": "item_found",
+    "idle_line": "Look what I found! Mine. Ours.",
+    "action": "present_item",
+    "synapse_mood": "joy"
+  },
+  {
+    "id": "m_cuddly",
+    "name": "Lean",
+    "mood": "affectionate",
+    "trigger": "petted",
+    "idle_line": "*leans on you with all its weight*",
+    "action": "nuzzle",
+    "synapse_mood": "joy"
+  },
+  {
+    "id": "m_grumpy",
+    "name": "Hmph",
+    "mood": "grumpy",
+    "trigger": "woken_up",
+    "idle_line": "Who turned the sun on. Who.",
+    "action": "glare",
+    "synapse_mood": "mischief"
+  },
+  {
+    "id": "m_dreamy",
+    "name": "Stargaze",
+    "mood": "dreamy",
+    "trigger": "night",
+    "idle_line": "Twelve dimensions up there. Hi.",
+    "action": "stargaze",
+    "synapse_mood": "joy"
+  },
+  {
+    "id": "m_mourning",
+    "name": "Empty Chair",
+    "mood": "grieving",
+    "trigger": "friend_lost",
+    "idle_line": "I will sit here a while. OK?",
+    "action": "sit_chair",
+    "synapse_mood": "fear"
+  },
+  {
+    "id": "m_hiccup",
+    "name": "Hic",
+    "mood": "silly",
+    "trigger": "drank_ale",
+    "idle_line": "*hic* I am a dragon *hic*",
+    "action": "stumble",
+    "synapse_mood": "mischief"
+  },
+  {
+    "id": "m_quantum",
+    "name": "Undecided",
+    "mood": "uncertain",
+    "trigger": "leaning_roll",
+    "idle_line": "I am two things. Maybe three.",
+    "action": "flicker",
+    "synapse_mood": "curiosity"
+  }
 ]

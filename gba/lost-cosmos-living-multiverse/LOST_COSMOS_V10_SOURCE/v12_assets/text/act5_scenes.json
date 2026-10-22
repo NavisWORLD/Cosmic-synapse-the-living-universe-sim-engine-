@@ -1,0 +1,960 @@
+[
+ {
+  "quest_id": "q5_32",
+  "title": "The Tent",
+  "location": "Sethra's Tent outside Eldoria",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Day 1. Every Page dark but never total. A small tent outside Eldoria, one candle inside.",
+    "action": "The Stilling hits Mote: 6 fps, Bond dimmed, bubbles gray scribbles.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: gray scribble]"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Mote? ...it's okay."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*presses close to Mote*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Inside the tent. Sethra sits on a blanket, knees up, Thorne's tablets beside her.",
+    "action": "Sit with her. Nothing else is required. Stay as long as you want.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "You don't have to say",
+       "anything."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "*sits*"
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "...thank you."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Same tent, much later. Candle burned low. A tiny scarf wrapped around Mote's neck.",
+    "action": "Sethra ties a tiny scarf on Mote before Arin goes.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "He made this. For a cat he",
+       "never had."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: gray scribble]"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Thank you. Still here."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref sits so long the candle burns out. He stays.",
+  "reward_item_ids": [
+   "tiny_scarf"
+  ]
+ },
+ {
+  "quest_id": "q5_33",
+  "title": "Up to Her Neck",
+  "location": "The Tigra",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Day 2. The cold Tigra. Sethra stands up to her neck in the river, silent, mourning.",
+    "action": "Arin finds her at the shore, flint and wick in hand for a fire.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Sethra! The water is",
+       "freezing!"
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "I know."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*paces the shore, mewing*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "A dazzling kind figure on the water. Perfect white light, no flicker. Its feet make no shadow.",
+    "action": "The Counterfeit Angel calls. Choice: point at its feet, or let her go.",
+    "dialogue": [
+     {
+      "speaker": "Counterfeit Angel",
+      "text_lines": [
+       "Your mourning has been",
+       "heard. Come out now."
+      ]
+     },
+     {
+      "speaker": "Counterfeit Angel",
+      "text_lines": [
+       "Food is ready. Nothing",
+       "hurts."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "*points* It has no shadow!"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Shore at dusk. Sethra wrapped in a blanket by a small fire, skin cold as grass. Mote glows faint.",
+    "action": "She comes out (if she went, Dusk Walk its feet into twilight to save her). Warm her with Mote's Glow.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "It was so kind. It was",
+       "lying."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: gray scribble]"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Stay by Mote. Stay warm."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref swims out to Sethra. Very angry about it. Brave.",
+  "reward_item_ids": [
+   "flint_wick"
+  ]
+ },
+ {
+  "quest_id": "q5_34",
+  "title": "Hidden Doorway",
+  "location": "The Hidden Doorway",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Day 3. Dark forest. The Bramble Warden, green and gentle now, plants seeds as it walks.",
+    "action": "The Warden leads them to a door between two entwined ancient trees.",
+    "dialogue": [
+     {
+      "speaker": "Bramble Warden",
+      "text_lines": [
+       "I found my way. Now I show",
+       "you one."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Where does it go?"
+      ]
+     },
+     {
+      "speaker": "Bramble Warden",
+      "text_lines": [
+       "Somewhere still night. A",
+       "good night."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Doorway of twisted bark, lavender light leaking from the cracks. Music, faintly.",
+    "action": "Arin pushes the door open.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "Do you hear that?"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Laughing."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: gray scribble]"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Realm of Dreams: rolling hills under swirling galaxies, chiming fairy lights. A different night.",
+    "action": "They step in. Laughter and music. The dark here feels warm.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "It is still night here."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "But a different kind."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*eyes fill with galaxies*"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Hidden Doorway",
+   "biome": "Lavender Meadows",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Path to the doorway; the dark forest under Stilling.",
+     "enemies": [
+      {
+       "name": "Counterfeit Light",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Hovers (1), white flash (2), still (3)."
+       }
+      }
+     ],
+     "puzzle": "Counterfeit Lights offer rest; walk past, never stop on their glow.",
+     "loot_item_ids": [
+      "lamp_oil"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Entwined trees, bark door with root locks.",
+     "enemies": [],
+     "puzzle": "The Warden opens one root per seed you help it plant.",
+     "loot_item_ids": [
+      "small_branch"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Lavender slope inside, dream drift inverts controls slowly.",
+     "enemies": [
+      {
+       "name": "Dream Stray",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Bounces (1), spins (2), giggles (3)."
+       }
+      }
+     ],
+     "puzzle": "Follow fairy chimes; drift flips left and right.",
+     "loot_item_ids": [
+      "pebble",
+      "dream_orb"
+     ]
+    }
+   ],
+   "boss": null,
+   "no_boss_note": "Bible 5.3 has no fight here: the Warden leads you through the doorway. No boss (none invented)."
+  },
+  "zeref_moment": "Zeref's eyes match the swirling galaxies exactly.",
+  "reward_item_ids": [
+   "pebble"
+  ]
+ },
+ {
+  "quest_id": "q5_35",
+  "title": "The Festival",
+  "location": "Realm of Dreams Festival",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Day 4. A huge tree hung with lanterns, a grand stage, tiny glowing fairies everywhere.",
+    "action": "The Fairy Host invites them to the festival. The Dreamweaver plays a lyre.",
+    "dialogue": [
+     {
+      "speaker": "Fairy Host",
+      "text_lines": [
+       "Guests! Grieving guests!",
+       "Come dance!"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "I don't know how."
+      ]
+     },
+     {
+      "speaker": "Fairy Host",
+      "text_lines": [
+       "Good. Nobody does."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Dance floor of moss under lanterns. Rhythm prompts float up like fireflies. No fail state.",
+    "action": "Rhythm mini-game. You cannot fail.",
+    "dialogue": [
+     {
+      "speaker": "Dreamweaver",
+      "text_lines": [
+       "Dance. You cannot do it",
+       "wrong."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*dances on the wrong beat*"
+      ]
+     },
+     {
+      "speaker": "Dreamweaver",
+      "text_lines": [
+       "See? Perfect."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Storytelling circle by the stage. A young woman, then Arin, then Sethra. Flipbook pages float.",
+    "action": "Sharing of Tales: Arin's Tale from the Memory Ledger. Sethra tells Thorne's.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "My father... laughed at",
+       "his own cough."
+      ]
+     },
+     {
+      "speaker": "Old Fairy",
+      "text_lines": [
+       "Malakar used to come here."
+      ]
+     },
+     {
+      "speaker": "Old Fairy",
+      "text_lines": [
+       "With someone. They always",
+       "sat together."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref dances off-beat all night. Declared best dancer.",
+  "reward_item_ids": [
+   "dream_lyre",
+   "wet_sock"
+  ]
+ },
+ {
+  "quest_id": "q5_36",
+  "title": "Gift of Dreams",
+  "location": "Realm of Dreams Festival at Night",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Day 5. Festival stage at dawn. The fairies hand the Dreamweaver a carved wooden flute.",
+    "action": "The Dreamweaver plays the flute once, softly.",
+    "dialogue": [
+     {
+      "speaker": "Dreamweaver",
+      "text_lines": [
+       "A flute! For me?"
+      ]
+     },
+     {
+      "speaker": "Fairy Host",
+      "text_lines": [
+       "For all of us."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: gray scribble]"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Glowing orbs float down from the galaxy sky into every open hand, including Mote's paw.",
+    "action": "Dream Orbs, pieces of True Light.",
+    "dialogue": [
+     {
+      "speaker": "Dreamweaver",
+      "text_lines": [
+       "May it inspire you on your",
+       "journeys."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "They're warm."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*tries to eat one*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Orbs released: they burst like shooting stars, landing on every Page as new Surviving Lights.",
+    "action": "Mote's Stilling breaks. It shakes itself like a wet dog. Color returns.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "*shakes* RAWR!!"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: Arin, Sethra,",
+       "everyone]"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Welcome back."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref gets shaken dry by Mote. He is not wet. Still mad.",
+  "reward_item_ids": [
+   "dream_orb",
+   "sunseed_lamp"
+  ]
+ },
+ {
+  "quest_id": "q5_37",
+  "title": "Road to the Edge",
+  "location": "Empty Highway to the Erased Margins",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Day 6. Empty Highway: two-lane road, night blue, sodium orange lights that never get closer.",
+    "action": "The Tattered Traveler hands over the Rattlecart keys.",
+    "dialogue": [
+     {
+      "speaker": "Tattered Traveler",
+      "text_lines": [
+       "The edge of the Folio.",
+       "Drive until the road ends."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "You are not coming?"
+      ]
+     },
+     {
+      "speaker": "Tattered Traveler",
+      "text_lines": [
+       "I am the road. Kind of."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Inside the Rattlecart. Mote in the passenger seat, Zeref on the dash, headlights on the dark road.",
+    "action": "Longest drive in the game. Mote points at places from your Memory Ledger.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: the Hollow Cave]"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: Thorne's chair]"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "I remember too."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Road ends at the Erased Margins: half-drawn terrain, pencil lines, eraser crumbs as boulders.",
+    "action": "A lighthouse stands where the road stops. Its light is warm and flickers.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "A real light. It flickers."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*rides shotgun with head",
+       "out window*"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a tower by a sea]"
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref rides shotgun with his head out the window.",
+  "reward_item_ids": [
+   "lighthouse"
+  ]
+ },
+ {
+  "quest_id": "q5_38",
+  "title": "Malakar Unflowing",
+  "location": "Malakar's Map Room and the Stilled Sea",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Malakar's Map Room: tower on a Stilled Sea frozen mid-wave. Thousands of maps, floor to ceiling.",
+    "action": "Optional: collect 12 Corner Sketches. Early maps show a cart, two seats, one filled.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "A cart. Two seats."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "In the later ones... no",
+       "cart."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: an empty seat]"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Night. Stilled Sea arena. Malakar, calm, folds the whole beach like a map.",
+    "action": "The final boss: Malakar, the Unflowing. Four phases.",
+    "dialogue": [
+     {
+      "speaker": "Malakar",
+      "text_lines": [
+       "Rivers take things away.",
+       "You know they do."
+      ]
+     },
+     {
+      "speaker": "Malakar",
+      "text_lines": [
+       "You were there when the",
+       "old man's chair went",
+       "empty."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*growls at the folds*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Shoreline after. An old two-seat cart, Malakar in one seat. The passenger seat is empty.",
+    "action": "Phase 4, not a fight: Attune (breathe, Point), Strike, or Rest (only if Sethra went).",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "*points at the empty seat*"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "That one."
+      ]
+     },
+     {
+      "speaker": "Malakar",
+      "text_lines": [
+       "...*cries for the first",
+       "time*"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Stilled Sea",
+   "biome": "Erased Margins (Stilled Sea)",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Map Room stairs, maps drift down like snow.",
+     "enemies": [
+      {
+       "name": "Paper Shade",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Unfold (1), slice (2), refold (3)."
+       }
+      }
+     ],
+     "puzzle": "Collect Corner Sketches: Point at each map with a cart.",
+     "loot_item_ids": [
+      "corner_sketch"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Hall of later maps, all corners blank.",
+     "enemies": [
+      {
+       "name": "Counterfeit",
+       "attack_animation": {
+        "frames": 3,
+        "description": "White flash (1), freeze ray (2), still (3)."
+       }
+      }
+     ],
+     "puzzle": "Dusk Walk the hall; counterfeits gain shadows and can be hit.",
+     "loot_item_ids": [
+      "dream_orb",
+      "kneaded_eraser"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Frozen wave shore, half-drawn ground.",
+     "enemies": [
+      {
+       "name": "Stillborn Wave",
+       "attack_animation": {
+        "frames": 4,
+        "description": "Rise (1), freeze (2), crash (3), set (4)."
+       }
+      }
+     ],
+     "puzzle": "Ground is unfinished: Draw Mode a path before you step.",
+     "loot_item_ids": [
+      "ink_pot",
+      "sunseed_snack"
+     ]
+    },
+    {
+     "id": "r4",
+     "description": "The Stilled Sea beach at night.",
+     "enemies": [],
+     "puzzle": "Boss room.",
+     "loot_item_ids": [
+      "healing_herbs"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "Malakar, the Unflowing",
+    "mechanic": "P1 fold the arena, Draw Mode bridges. P2 perfect light, Dusk Walk to the seam and strike his shadow. P3 Arin freezes, control Mote alone. P4 Attune, Strike or Rest.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Stands calm by the frozen sea, maps rustling under his arm, cloak never moving."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-70%",
+      "transformation": "The Cartographer: a tall calm man; the whole beach creases and folds like his map.",
+      "attacks": [
+       {
+        "name": "Compass Needles",
+        "telegraph": "Raises a compass, needles spin",
+        "effect": "3 needles fly at you",
+        "animation": {
+         "frames": 4,
+         "description": "Raise, spin, aim, throw"
+        }
+       },
+       {
+        "name": "Fold",
+        "telegraph": "The ground creases with a line",
+        "effect": "Platforms flip; Draw Mode bridges",
+        "animation": {
+         "frames": 5,
+         "description": "Crease, lift, fold, flip, flat"
+        }
+       },
+       {
+        "name": "Paper Wall",
+        "telegraph": "Edge of the page curls",
+        "effect": "Walls slide in from the sides",
+        "animation": {
+         "frames": 4,
+         "description": "Curl, slide, slide, stop"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "70-40%",
+      "transformation": "The Counterfeit: he becomes perfect white light, sky-high, beautiful, shadowless, untouchable.",
+      "attacks": [
+       {
+        "name": "Offer of Rest",
+        "telegraph": "Screen softens, colors brighten",
+        "effect": "Fills Stilling; Dusk Walk to the seam",
+        "animation": {
+         "frames": 5,
+         "description": "Soften, brighten, glow, hush, hold"
+        }
+       },
+       {
+        "name": "Perfect Light",
+        "telegraph": "He opens his arms wide",
+        "effect": "White beam freezes what it hits",
+        "animation": {
+         "frames": 4,
+         "description": "Open, gather, beam, fade"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "40-0%",
+      "transformation": "The Unflowing: a gigantic tide of stillness. Arin freezes into a drawing; the Mote crosses alone.",
+      "attacks": [
+       {
+        "name": "Stilled Wave",
+        "telegraph": "A frozen wave rises over the horizon",
+        "effect": "Wave crushes a lane; Mote dodges",
+        "animation": {
+         "frames": 6,
+         "description": "Rise, tower, tip, fall, freeze, crack"
+        }
+       },
+       {
+        "name": "Total Still",
+        "telegraph": "The sea goes silent, all color drains",
+        "effect": "Mote slows; use Echoes, keep moving",
+        "animation": {
+         "frames": 5,
+         "description": "Silence, drain, slow, slow, spark"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 4,
+      "hp_threshold": "none",
+      "transformation": "The Empty Seat: not a fight. Malakar sits small in an old two-seat cart; the seat is empty.",
+      "attacks": [
+       {
+        "name": "The Slowest Breath",
+        "telegraph": "His chest rises once, very slow",
+        "effect": "Attune: match a 1-minute breath",
+        "animation": {
+         "frames": 6,
+         "description": "In, hold, out, in, hold, out"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 6,
+     "description": "Attune: tears fall, one wave moves, then another, sea flows, he walks off, lets a crab pass."
+    },
+    "defeat_line": "...that one. Yes.",
+    "id": "malakar",
+    "canon": "bible boss #13 (The Stilled Sea, Act V, 4 phases per bible Section 9; Attunable in Phase 4; final boss)",
+    "ending_ids": [
+     "end_a",
+     "end_b",
+     "end_c",
+     "end_d"
+    ],
+    "sprite_note": "P3: Mote's Spark fires at Ink stage (scripted if not); Arin stands with 1 Heart; a butterfly lands on Malakar. P4 Attune -> end_a/end_d, Strike -> end_b, Rest -> end_c."
+   }
+  },
+  "zeref_moment": "Zeref hops into the empty seat. Then gets out. Not his.",
+  "reward_item_ids": [
+   "corner_sketch"
+  ]
+ },
+ {
+  "quest_id": "q5_39",
+  "title": "Rest / 8th Page",
+  "location": "Brindlemark Forge, the Eighth Page",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Day 7. Rest. The world quiet, not frozen. Rivers move slowly. Grumbleback, Rime, the Warden.",
+    "action": "A playable day where nothing is required. Visit anyone.",
+    "dialogue": [
+     {
+      "speaker": "Grumbleback",
+      "text_lines": [
+       "*sits on Arin*"
+      ]
+     },
+     {
+      "speaker": "Rime",
+      "text_lines": [
+       "*lies by the river, calm*"
+      ]
+     },
+     {
+      "speaker": "Bramble Warden",
+      "text_lines": [
+       "I am planting things."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Day 8, Brindlemark forge at night, one light. The horizon is slightly brighter. Mote asleep in the cart.",
+    "action": "The ending plays (A canon). Master Hollis by the forge. The bear falls on Malakar.",
+    "dialogue": [
+     {
+      "speaker": "Master Hollis",
+      "text_lines": [
+       "It was brighter."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Still here."
+      ]
+     },
+     {
+      "speaker": "Malakar",
+      "text_lines": [
+       "*holds the teddy bear a",
+       "long time*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "A blank sheet of paper fills the screen. One prompt: Draw the next page.",
+    "action": "The Eighth Page: draw anything. It becomes your Folio cover.",
+    "dialogue": [
+     {
+      "speaker": "The Page",
+      "text_lines": [
+       "Draw the next page."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "*picks up the charcoal*"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: Arin + Mote +",
+       "Zeref]"
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref draws the first line on the 8th Page. It is a paw.",
+  "reward_item_ids": [
+   "the_bear",
+   "golden_wheat"
+  ]
+ }
+]

@@ -224,53 +224,36 @@
   "art_note": "Droopy striped sock, single drip falling, beast bite marks"
  },
  {
-  "id": "moon_berry",
-  "name": "Moon Berry",
-  "description": "Glows in the mouth. Burps light.",
-  "category": "food",
-  "rarity": "common",
-  "stat": {
-   "hunger": 12,
-   "energy": 5
-  },
-  "art_note": "Moon Berry: tiny snack, 16x16, soft pastel on black, one shine dot"
+  "id": "glowcap",
+  "name": "Glowcap",
+  "description": "Glowing mushroom. Brewed into potions.",
+  "category": "material",
+  "rarity": "uncommon",
+  "stat": {},
+  "art_note": "Glowcap: small glowing icon, 16x16, charcoal outline"
  },
  {
   "id": "cave_moss",
-  "name": "Cave Moss",
-  "description": "Grumbleback's snack. Chewy. Damp.",
+  "name": "Moss",
+  "description": "Grumbleback's favorite. Damp. Chewy.",
   "category": "food",
   "rarity": "common",
   "stat": {
    "hunger": 18,
    "mood": -2
   },
-  "art_note": "Cave Moss: tiny snack, 16x16, soft pastel on black, one shine dot"
+  "art_note": "Moss: small glowing vial or bundle, 16x16, charcoal outline"
  },
  {
-  "id": "void_jerky",
-  "name": "Void Jerky",
-  "description": "Dried nothing. Weirdly filling.",
+  "id": "golden_wheat",
+  "name": "Golden Wheat",
+  "description": "Garran's field, grown back. Filling.",
   "category": "food",
   "rarity": "uncommon",
   "stat": {
-   "hunger": 30,
-   "mood": -3
+   "hp": 20
   },
-  "art_note": "Void Jerky: tiny snack, 16x16, soft pastel on black, one shine dot"
- },
- {
-  "id": "star_candy",
-  "name": "Star Candy",
-  "description": "Sugar from a dead star. Hyper mode.",
-  "category": "food",
-  "rarity": "uncommon",
-  "stat": {
-   "energy": 20,
-   "mood": 6,
-   "hunger": 5
-  },
-  "art_note": "Star Candy: tiny snack, 16x16, soft pastel on black, one shine dot"
+  "art_note": "Golden Wheat: small glowing vial or bundle, 16x16, charcoal outline"
  },
  {
   "id": "frost_tea",
@@ -320,8 +303,8 @@
  },
  {
   "id": "rune_maul",
-  "name": "Rune Maul",
-  "description": "Cragstone head. Hums when it hits.",
+  "name": "Cragstone Maul",
+  "description": "Heavy swings stagger Golems.",
   "category": "weapon",
   "rarity": "uncommon",
   "stat": {
@@ -343,16 +326,15 @@
   "art_note": "Hearthsteel: 32x16 side view, soot-black metal, one bright edge glint"
  },
  {
-  "id": "twin_pistol",
-  "name": "Twin Pistol",
-  "description": "Two barrels, one rebel heart. Bang bang.",
+  "id": "fiddle_bow",
+  "name": "Fiddle-Bow",
+  "description": "Arrows play notes. 3 notes: Chorus.",
   "category": "weapon",
   "rarity": "rare",
   "stat": {
-   "atk": 12,
-   "spd": 3
+   "atk": 22
   },
-  "art_note": "Two crossed pistols, red and white grips, cosmic sparks"
+  "art_note": "Fiddle-Bow: small glowing icon, 16x16, charcoal outline"
  },
  {
   "id": "mercy_branch",
@@ -451,7 +433,7 @@
  {
   "id": "climber_boots",
   "name": "Climb Boots",
-  "description": "Cragstone grip. Mist can't trip you.",
+  "description": "Cragstone Climber set. Climbs cost less Ink.",
   "category": "armor",
   "rarity": "uncommon",
   "stat": {
@@ -725,5 +707,52 @@
   "rarity": "legendary",
   "stat": {},
   "art_note": "Last Map: 16x16 relic, pulsing 2-frame glow, gold or crystal hue"
+ },
+ {
+  "id": "kneaded_eraser",
+  "name": "Kneaded Eraser",
+  "description": "Erases Counterfeit smudges. 3x dmg.",
+  "category": "weapon",
+  "rarity": "uncommon",
+  "stat": {
+   "atk": 8
+  },
+  "art_note": "Kneaded Eraser: small glowing icon, 16x16, charcoal outline"
+ },
+ {
+  "id": "courage_petal",
+  "name": "Petal: Cour",
+  "description": "One word on a petal: Courage.",
+  "category": "key",
+  "rarity": "key",
+  "stat": {},
+  "art_note": "Petal: Cour: small glowing icon, 16x16, charcoal outline"
+ },
+ {
+  "id": "unity_petal",
+  "name": "Petal: Unity",
+  "description": "One word on a petal: Unity.",
+  "category": "key",
+  "rarity": "key",
+  "stat": {},
+  "art_note": "Petal: Unity: small glowing icon, 16x16, charcoal outline"
+ },
+ {
+  "id": "crys_earth",
+  "name": "Crys:Earth",
+  "description": "Marks the path to the garden.",
+  "category": "key",
+  "rarity": "key",
+  "stat": {},
+  "art_note": "Crys:Earth: small glowing icon, 16x16, charcoal outline"
+ },
+ {
+  "id": "small_branch",
+  "name": "Small Branch",
+  "description": "From the garden gate. Plant it.",
+  "category": "key",
+  "rarity": "key",
+  "stat": {},
+  "art_note": "Small Branch: small glowing icon, 16x16, charcoal outline"
  }
 ]

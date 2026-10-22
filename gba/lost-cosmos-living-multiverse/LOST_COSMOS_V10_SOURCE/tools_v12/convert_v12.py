@@ -63,14 +63,16 @@ for c in CRE:
     q=palrgb('companion_'+COMP[c]); img,w,h=indexed(A/'sprites'/f'companion_{COMP[c]}.png',q)
     total+=emit_u32(f'v12_comp_{c}_tiles',frames4(img,w,h,32,32)); total+=emit_u16(f'v12_comp_{c}_pal',pal16('companion_'+COMP[c]))
 CH=['arin','traveler','hollis','edric','bryn','quillan','hesper','grumbleback','rime','cinderwake','thorne','sethra','malakar','counterfeit']
-MO=['mote','mote_linework','mote_wash','mote_still_here']
+# V12.3: 5 Mote Renderings (bible 4.6). Sprite file char_mote_still_here.png is the Ink form -> symbol mote_ink.
+MO=[('mote','mote'),('mote_linework','mote_linework'),('mote_shading','mote_shading'),('mote_wash','mote_wash'),('mote_ink','mote_still_here')]
 for c in CH:
     p=palrgb('char_'+c); img,w,h=indexed(A/'sprites'/f'char_{c}.png',p)
     total+=emit_u32(f'v12_chr_{c}_tiles',frames4(img,w,h,32,32)); total+=emit_u16(f'v12_chr_{c}_pal',pal16('char_'+c))
 H.append(f'#define V12_CHR_FRAMES {Image.open(A/"sprites"/"char_arin.png").size[0]//32}')
-for c in MO:
-    p=palrgb('char_'+c); img,w,h=indexed(A/'sprites'/f'char_{c}.png',p)
-    total+=emit_u32(f'v12_chr_{c}_tiles',frames4(img,w,h,64,64)); total+=emit_u16(f'v12_chr_{c}_pal',pal16('char_'+c))
+for c,fn in MO:
+    p=palrgb('char_'+fn); img,w,h=indexed(A/'sprites'/f'char_{fn}.png',p)
+    total+=emit_u32(f'v12_chr_{c}_tiles',frames4(img,w,h,64,64)); total+=emit_u16(f'v12_chr_{c}_pal',pal16('char_'+fn))
+H.append('#define V12_MOTE_FORMS 5')
 ip=palrgb('items'); total+=emit_u16('v12_items_pal',pal16('items'))
 total+=emit_u16('v12_items_b_pal',pal16('items_b'))
 def raw4(path):
@@ -124,10 +126,17 @@ def up(s,n=None):
 def cs(s): return '"'+s.replace('\\','\\\\').replace('"','\\"')+'"'
 I=json.load(open(T/'items.json')); M=json.load(open(T/'creature_moods.json')); Q=json.load(open(T/'quests.json'))
 CHJ=json.load(open(T/'characters.json')); N=json.load(open(T/'npc_lines.json')); E=json.load(open(T/'endings.json'))
+# V12.3 canon pass (CHANGES_canon.md): renamed ids keep their old icon; new bible items
+# reuse the closest existing icon until Cosmo draws them (ICON_PLACEHOLDER, flagged).
+ALIAS={'glowcap':'moon_berry','golden_wheat':'void_jerky','fiddle_bow':'twin_pistol'}
+ICON_PLACEHOLDER={'kneaded_eraser':'ink_pot','courage_petal':'wisdom_petal','unity_petal':'wisdom_petal','crys_earth':'crys_balance','small_branch':'mercy_branch'}
+CHJ=list({c['id']:c for c in CHJ}.values())  # Emeth's characters.json lists mote_ink twice; keep one
 ids=[i['id'] for i in I]; icon={}
 for k,v in enumerate(order['items_16x16']): icon[v]=(0,k)
 for k,v in enumerate(order['weapons_32x16']): icon[v]=(1,k)
 for k,v in enumerate(order['lanterns_16x24']): icon[v]=(2,k)
+for a,b in list(ALIAS.items())+list(ICON_PLACEHOLDER.items()):
+    if b in icon: icon[a]=icon[b]
 CAT={'consumable':0,'food':1,'weapon':2,'armor':3,'accessory':4,'lantern':5,'key':6,'material':7}
 RAR={'common':0,'uncommon':1,'rare':2,'legendary':3,'unique':3,'epic':2}
 S=['hp','atk','def','spd','focus','mood','hunger','energy']
@@ -139,20 +148,29 @@ for it in I:
     if it['id'] not in icon: print('WARN no icon',it['id'],file=sys.stderr)
     o.append(' {%s,%s,%s,%d,%d,%d,%d,{%s}},'%(cs(it['id']),cs(up(it['name'],14)),cs(up(it['description'],56)),CAT[it['category']],RAR.get(it.get('rarity','common'),0),sh,ic,','.join(str(max(-128,min(127,int(st.get(k,0))))) for k in S)))
 o.append('};')
+OLD=[i['id'] for i in json.load(open(R/'tools_v12'/'v12_2_items'/'items_v12_2.json'))]
+REN={'moon_berry':'glowcap','void_jerky':'golden_wheat','twin_pistol':'fiddle_bow','star_candy':'star_shard'}
+o.append(f'#define V12_OLD_ITEM_COUNT {len(OLD)}')
+o.append('/* V12.3 save migration: V12.2 item index -> V12.3 index (renames + star_candy merged into star_shard) */')
+o.append('static const u8 V12_ITEM_MIGRATE[V12_OLD_ITEM_COUNT]={'+','.join(str(ids.index(REN.get(x,x))) for x in OLD)+'};')
 PM=json.load(open(A/'sprites'/'items_palette_map.json'))['bank']
+for a,b in list(ALIAS.items())+list(ICON_PLACEHOLDER.items()):
+    if b in PM: PM[a]=PM[b]
 o.append('static const u8 V12_ITEM_BANK[V12_ITEM_COUNT]={'+','.join('1' if PM.get(it['id'],'A')=='B' else '0' for it in I)+'};')
 ACT=sorted({m['action'] for m in M}); TRG=[m['trigger'] for m in M]
-o.append('typedef struct{const char*name;const char*line;u8 trigger,action;}V12Mood;')
+SYN=['joy','curiosity','fear','calm','mischief']  # = cst_top_mood order
+o.append('typedef struct{const char*name;const char*line;u8 trigger,action,synapse;}V12Mood;')
 o+= [f'#define V12_TRIG_{t.upper()} {i}' for i,t in enumerate(TRG)]
 o+= [f'#define V12_ACT_{a.upper()} {i}' for i,a in enumerate(ACT)]
 o.append(f'#define V12_MOOD_COUNT {len(M)}'); o.append(f'#define V12_ACT_COUNT {len(ACT)}')
 o.append('static const char*const V12_ACT_NAMES[V12_ACT_COUNT]={'+','.join(cs(up(a.replace('_',' '),14)) for a in ACT)+'};')
-o.append('static const V12Mood V12_MOODS[V12_MOOD_COUNT]={'+','.join('{%s,%s,%d,%d}'%(cs(up(m['name'],14)),cs(up(m['idle_line'],56)),i,ACT.index(m['action'])) for i,m in enumerate(M))+'};')
-o.append('typedef struct{const char*name;const char*summary;const char*giver;u8 act;s8 reward[3];}V12Quest;')
+o.append('static const V12Mood V12_MOODS[V12_MOOD_COUNT]={'+','.join('{%s,%s,%d,%d,%d}'%(cs(up(m['name'],14)),cs(up(m['idle_line'],56)),i,ACT.index(m['action']),SYN.index(m.get('synapse_mood','calm'))) for i,m in enumerate(M))+'};')
+LOC={l['quest_id']:l for l in json.load(open(T/'quest_locations.json'))}
+o.append('typedef struct{const char*name;const char*summary;const char*giver;u8 act;s8 reward[3];const char*biome;const char*place;}V12Quest;')
 o.append(f'#define V12_QUEST_COUNT {len(Q)}'); o.append('static const V12Quest V12_QUESTS[V12_QUEST_COUNT]={')
 for q in Q:
     rw=[ids.index(r) for r in q.get('reward_item_ids',[]) if r in ids][:3]; rw+=[-1]*(3-len(rw))
-    o.append(' {%s,%s,%s,%d,{%d,%d,%d}},'%(cs(up(q['name'],26)),cs(up(q['summary'],84)),cs(up(q.get('giver',''),20)),q['act'],*rw))
+    L=LOC.get(q['id'],{}); o.append(' {%s,%s,%s,%d,{%d,%d,%d},%s,%s},'%(cs(up(q['name'],26)),cs(up(q['summary'],84)),cs(up(q.get('giver',''),20)),q['act'],*rw,cs(up(L.get('biome',''),28)),cs(up(L.get('location',''),56))))
 o.append('};')
 o.append('typedef struct{const char*name;const char*look;const char*pose;}V12Char;')
 o.append(f'#define V12_CHAR_COUNT {len(CHJ)}')
@@ -162,6 +180,31 @@ lines=[(up(n['name'],16),up(l,56)) for n in N for l in n['lines']]
 o.append(f'#define V12_NPC_LINE_COUNT {len(lines)}')
 o.append('static const char*const V12_NPC_LINES[V12_NPC_LINE_COUNT][2]={'+','.join('{%s,%s}'%(cs(a),cs(b)) for a,b in lines)+'};')
 o.append('static const char*const V12_ENDINGS[%d][2]={'%len(E)+','.join('{%s,%s}'%(cs(up(e['name'],20)),cs(up(e['final_line'],56))) for e in E)+'};')
+o.append(f'#define V12_ENDING_COUNT {len(E)}')
+o.append('static const u8 V12_ENDING_SECRET[V12_ENDING_COUNT]={'+','.join('1' if e.get('secret') else '0' for e in E)+'};')
+o.append('static const char*const V12_ENDING_REQ[V12_ENDING_COUNT]={'+','.join(cs(up(e.get('requirement',''),56)) for e in E)+'};')
+for k,e in enumerate(E): o.append(f"#define V12_{e['id'].upper()} {k}")
+# V12.3: Emeth's scene dialogue for Acts II-V (act2..act5_scenes.json), one box = speaker + up to 3 lines
+SC={}
+for a in (2,3,4,5):
+    for q in json.load(open(T/f'act{a}_scenes.json')): SC[q['quest_id']]=q
+boxes=[];qi=[]
+for q in Q:
+    sq=SC.get(q['id']);first=len(boxes)
+    if sq:
+        for bt in sq['scene_beats']:
+            for d in bt['dialogue']:
+                tl=[up(t,28) for t in d['text_lines']][:3]; tl+=['']*(3-len(tl)); boxes.append((up(d['speaker'],20),tl))
+    bo=(sq or {}).get('boss') or ((sq or {}).get('dungeon') or {}).get('boss') if sq else None
+    bn=bo.get('name','') if isinstance(bo,dict) else (bo or '')
+    qi.append((first,len(boxes)-first,up(bn,40)))
+o.append(f'#define V12_SCENE_BOX_COUNT {len(boxes)}')
+o.append('typedef struct{const char*who;const char*l[3];}V12Box;')
+o.append('static const V12Box V12_SCENE_BOX[V12_SCENE_BOX_COUNT]={'+','.join('{%s,{%s,%s,%s}}'%(cs(w),*[cs(x) for x in tl]) for w,tl in boxes)+'};')
+o.append('static const u16 V12_QUEST_BOX0[V12_QUEST_COUNT]={'+','.join(str(a) for a,_,_ in qi)+'};')
+o.append('static const u8 V12_QUEST_BOXN[V12_QUEST_COUNT]={'+','.join(str(b) for _,b,_ in qi)+'};')
+o.append('static const char*const V12_QUEST_BOSS[V12_QUEST_COUNT]={'+','.join(cs(c) for _,_,c in qi)+'};')
+print('scene boxes',len(boxes))
 o.append('#endif')
 (R/'v12_text.h').write_text('\n'.join(o)+'\n')
 print('art bytes',total,'items',len(I),'moods',len(M),'quests',len(Q),'chars',len(CHJ),'npc lines',len(lines))

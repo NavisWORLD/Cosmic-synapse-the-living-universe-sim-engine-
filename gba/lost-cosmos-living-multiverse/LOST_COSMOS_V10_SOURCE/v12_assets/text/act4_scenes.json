@@ -1,0 +1,1546 @@
+[
+ {
+  "quest_id": "q4_21",
+  "title": "Luminous Leaves",
+  "location": "Eldoria, Land of Luminous Leaves",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Portal opens onto towering trees with glowing leaves. Light falls in green-gold flakes.",
+    "action": "The Tattered Traveler steps through first, then Arin and the beasts.",
+    "dialogue": [
+     {
+      "speaker": "Tattered Traveler",
+      "text_lines": [
+       "Eldoria. Land of Luminous",
+       "Leaves."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "It is beautiful."
+      ]
+     },
+     {
+      "speaker": "Tattered Traveler",
+      "text_lines": [
+       "Look down."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Village fields below the trees. Crops gray and bent, sky darkening like a smudge spreading.",
+    "action": "Withering crops (Stills). Villagers stare at the sky.",
+    "dialogue": [
+     {
+      "speaker": "Farmer",
+      "text_lines": [
+       "The leaves glow. The wheat",
+       "dies. Every day darker."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a sad wheat",
+       "stalk]"
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*sniffs a gray stalk*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Edge of the forest. A glowcap patch shines under the roots, the only bright thing near the fields.",
+    "action": "The Traveler hands Arin a glowcap and points to the biggest house.",
+    "dialogue": [
+     {
+      "speaker": "Tattered Traveler",
+      "text_lines": [
+       "Eat this. Then find the",
+       "elder."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "You are not coming?"
+      ]
+     },
+     {
+      "speaker": "Tattered Traveler",
+      "text_lines": [
+       "I am always coming. Later."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref bats a glowing leaf. It sticks to his beanie.",
+  "reward_item_ids": [
+   "glowcap"
+  ]
+ },
+ {
+  "quest_id": "q4_22",
+  "title": "Elder Thorne",
+  "location": "Eldoria, Thorne's House",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Thorne's house: low beams, warm hearth, carved tablets on shelves. A big chair by the fire.",
+    "action": "Elder Thorne, sturdy and gray, rises to greet them. He coughs.",
+    "dialogue": [
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "Welcome. A curse sits on",
+       "our land. *cough*"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Are you all right?"
+      ]
+     },
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "Old men cough. It is a",
+       "hobby."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Corner of the room. Sethra at the window, mending a net, eyes on her father the whole time.",
+    "action": "Sethra pretends she is not watching. She is watching.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "He says that every time."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "You are worried."
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "I am mending a net."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Hearth close-up. Thorne hands Arin a poultice wrapped in leaves, hands steady, voice not.",
+    "action": "Thorne tells the curse: it started at the old altar in the woods.",
+    "dialogue": [
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "Take this. For the road.",
+       "For the ruins."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: Thorne, a heart]"
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*curls up in Thorne's big",
+       "chair*"
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref claims Thorne's chair. Thorne lets him. Remember this.",
+  "reward_item_ids": [
+   "herb_poultice"
+  ]
+ },
+ {
+  "quest_id": "q4_23",
+  "title": "Supplies at Dawn",
+  "location": "Eldoria at Dawn",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Eldoria at dawn. Mist on gray fields, birds silent. A rope coil and herb baskets by the door.",
+    "action": "Gather healing herbs and rope before setting out.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "Herbs from the garden.",
+       "Rope from the barn."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Got it."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*brings one sock instead*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Thorne holds Arin's lantern up to a crystal on his shelf. Light pours in, clean and white-blue.",
+    "action": "Thorne infuses the lantern: the Crystal Lantern. A big Light upgrade.",
+    "dialogue": [
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "Remember, courage is your",
+       "greatest weapon."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "And this lantern?"
+      ]
+     },
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "That helps. A little."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Village gate. Sethra and Thorne side by side, small against the dark trees.",
+    "action": "Sethra waves. Thorne coughs, then waves harder to hide it.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "Come back. He likes",
+       "visitors."
+      ]
+     },
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "I like YOU visiting.",
+       "*cough*"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a lantern, very",
+       "bright]"
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref stares into the new lantern. Stars swirl back at him.",
+  "reward_item_ids": [
+   "crystal_lantern"
+  ]
+ },
+ {
+  "quest_id": "q4_24",
+  "title": "The Forgotten",
+  "location": "Whispering Woods Ruins and Altar",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Ruins in the Whispering Woods. Two great statues with vines, eyes carved shut. Murals pulse blue.",
+    "action": "The statues speak in one voice. A dialogue choice; every honest one works.",
+    "dialogue": [
+     {
+      "speaker": "Statues of Eldoria",
+      "text_lines": [
+       "State your purpose."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "To help the people here."
+      ]
+     },
+     {
+      "speaker": "Statues of Eldoria",
+      "text_lines": [
+       "...honest. Enter."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Old altar in a sunken ring of stone. A wraith with dark grasping tendrils, fed on fear for centuries.",
+    "action": "The Forgotten rises. Low Light makes it hit harder.",
+    "dialogue": [
+     {
+      "speaker": "The Forgotten",
+      "text_lines": [
+       "Your fear smells sweet,",
+       "little lantern."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "I believe in the power of",
+       "hope."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*puffs up to twice his",
+       "size*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "A glowing crystal rises from the altar. Its beam punches through the ruins into the sky.",
+    "action": "The land blooms. The Guardians of Eldoria wake and thank them.",
+    "dialogue": [
+     {
+      "speaker": "Guardian of Eldoria",
+      "text_lines": [
+       "Long we slept. Thank you,",
+       "Still-Here one."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "The crops?"
+      ]
+     },
+     {
+      "speaker": "Guardian of Eldoria",
+      "text_lines": [
+       "Already turning green."
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "Whispering Woods Ruins",
+   "biome": "Whispering Woods / Ruined Citadels",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Statue gate, carved murals pulse faint blue.",
+     "enemies": [
+      {
+       "name": "Guardian Statue",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Eyes light (1), halberd swing (2), reset (3)."
+       }
+      }
+     ],
+     "puzzle": "Answer the statues honestly; then walk the safe mural lane.",
+     "loot_item_ids": [
+      "herb_poultice"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Collapsed hall, trap floors under moss.",
+     "enemies": [
+      {
+       "name": "Shade",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Stretch (1), lunge (2), snap back (3)."
+       }
+      }
+     ],
+     "puzzle": "Crystal Lantern reveals the true floor; fake tiles drop.",
+     "loot_item_ids": [
+      "lamp_oil",
+      "ink_pot"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Fear corridor: whispers make shadows longer.",
+     "enemies": [
+      {
+       "name": "Fear Tendril",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Rises (1), grabs (2), drags (3)."
+       }
+      }
+     ],
+     "puzzle": "Keep Light above half or tendrils double.",
+     "loot_item_ids": [
+      "healing_herbs"
+     ]
+    },
+    {
+     "id": "r4",
+     "description": "The old altar in a sunken stone ring.",
+     "enemies": [],
+     "puzzle": "Boss room.",
+     "loot_item_ids": [
+      "calaminth"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Forgotten",
+    "mechanic": "Your fear makes it stronger: low Light means it hits harder. Keep Light up; finish with the Crystal Lantern beam.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Ragged wraith sways over the altar, tendrils curling like smoke ink."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-65%",
+      "transformation": "A wraith twice Arin's height, a face that is mostly hollow.",
+      "attacks": [
+       {
+        "name": "Grasping Tendrils",
+        "telegraph": "Ground shadows twitch",
+        "effect": "3 tendrils grab; mash to escape",
+        "animation": {
+         "frames": 4,
+         "description": "Twitch, rise, grab, pull"
+        }
+       },
+       {
+        "name": "Fear Whisper",
+        "telegraph": "Text goes gray, it leans in",
+        "effect": "Drains Light",
+        "animation": {
+         "frames": 3,
+         "description": "Lean, whisper, retreat"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "65-30%",
+      "transformation": "It feeds: swells to fill the altar ring, tendrils climb every pillar.",
+      "attacks": [
+       {
+        "name": "Pillar Grab",
+        "telegraph": "Pillars darken top to bottom",
+        "effect": "Tendrils drop from above",
+        "animation": {
+         "frames": 5,
+         "description": "Darken, drip, drop, grab, lift"
+        }
+       },
+       {
+        "name": "Nightmare Bloom",
+        "telegraph": "Body opens like a dark flower",
+        "effect": "Arena dims, it hits harder",
+        "animation": {
+         "frames": 4,
+         "description": "Open, bloom, dim, close"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "30-0%",
+      "transformation": "A dark storm the size of the ruins, a thousand faces of old fears in it.",
+      "attacks": [
+       {
+        "name": "Centuries of Fear",
+        "telegraph": "Every face screams silently",
+        "effect": "Wave of tendrils fills the floor",
+        "animation": {
+         "frames": 6,
+         "description": "Faces, scream, wave, wave, wave, recede"
+        }
+       },
+       {
+        "name": "Eclipse",
+        "telegraph": "Lantern light flickers",
+        "effect": "Lantern dims; hold beam to answer",
+        "animation": {
+         "frames": 5,
+         "description": "Flicker, dim, dark, charge, burst"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 6,
+     "description": "Lantern beam pierces it, faces fade one by one, smoke unravels, altar glows, crystal rises, birds."
+    },
+    "defeat_line": "...hope... burns...",
+    "id": "the_forgotten",
+    "canon": "bible boss #10 (Whispering Woods ruins, Act IV, Heart 5,500, 3 phases; fear-fed wraith; finisher Crystal Lantern beam)"
+   }
+  },
+  "zeref_moment": "Zeref puffs up at a wraith 100 times his size. Wins.",
+  "reward_item_ids": [
+   "heart_eldoria"
+  ]
+ },
+ {
+  "quest_id": "q4_25",
+  "title": "But Not Him",
+  "location": "Eldoria Fields",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Eldoria fields, green again. Wheat sways gold. Children run between rows.",
+    "action": "The village celebrates. Arin runs to Thorne's house.",
+    "dialogue": [
+     {
+      "speaker": "Farmer",
+      "text_lines": [
+       "Green! All of it! Look!"
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*rolls in the wheat*"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: a big party]"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Thorne's house, same chair, same hearth. Thorne smaller in it now. He coughs and does not stop.",
+    "action": "The curse is gone. Thorne is still sick.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "But... the curse broke."
+      ]
+     },
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "It was never the curse,",
+       "child."
+      ]
+     },
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "I am just old. And tired."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Window at dusk. Sethra and Arin outside. A crocus in a cup on the sill, half open.",
+    "action": "Sethra tells of a Tree of Mercy and its Oil. Thorne says no. She goes anyway.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "A Tree of Mercy. Its oil",
+       "eases all pain."
+      ]
+     },
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "I do not want it, Sethra."
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "I know. I am going."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref leaves the party to sit by Thorne's feet. Quietly.",
+  "reward_item_ids": [
+   "crocus_tea"
+  ]
+ },
+ {
+  "quest_id": "q4_26",
+  "title": "Silent Gales",
+  "location": "Forest of Whispers, the Silent Gale Pool",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Forest of Whispers. Mischievous spirits swap map markers; trees lean in like they're listening.",
+    "action": "The Guardians of Eldoria give Arin a carved wooden box with a poem.",
+    "dialogue": [
+     {
+      "speaker": "Guardian of Eldoria",
+      "text_lines": [
+       "Where shadows fall, yet",
+       "light prevails,"
+      ]
+     },
+     {
+      "speaker": "Guardian of Eldoria",
+      "text_lines": [
+       "seek the reflection of the",
+       "silent gales."
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "A riddle. Of course."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "A quiet pool at the forest edge, flat as glass. Reeds drawn in single pencil strokes.",
+    "action": "Sit Down by the pool. Wait. Do nothing.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "We wait?"
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "We wait."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*falls asleep in 2",
+       "seconds*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Wind ripples the pool. In the reflection, a path of glowing stones leads into the trees.",
+    "action": "The hidden path is only in the reflection. Walk it by watching the water.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: glowing stones]"
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "The silent gales. There."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Still here. Let's go."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref sleeps through the riddle. Wakes up at the answer.",
+  "reward_item_ids": [
+   "wooden_box"
+  ]
+ },
+ {
+  "quest_id": "q4_27",
+  "title": "Hollow Grove",
+  "location": "The Hollow Grove",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Stone door in a hill. Inside, a cavern lit by blue-green mushrooms; stepping stones cross a dark lake.",
+    "action": "Arin crosses stone by stone. The water is deep and black.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "Do not fall in."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Why?"
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "I do not know. Just do",
+       "not."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Middle of the lake. A mischievous spirit circles, made of glowcap light and giggles.",
+    "action": "The spirit asks its riddle. A frog on a stone watches.",
+    "dialogue": [
+     {
+      "speaker": "Mischievous Spirit",
+      "text_lines": [
+       "What can be broken, but",
+       "never held?"
+      ]
+     },
+     {
+      "speaker": "Mischievous Spirit",
+      "text_lines": [
+       "What can be given, but",
+       "never sold?"
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "A promise."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Far shore pedestal of root and stone. The Crystal of Earth glows; a line of light points onward.",
+    "action": "The spirit gives the crystal. The frog gives Zeref a leaf hat.",
+    "dialogue": [
+     {
+      "speaker": "Mischievous Spirit",
+      "text_lines": [
+       "Correct! Boring! Take it!"
+      ]
+     },
+     {
+      "speaker": "Frog",
+      "text_lines": [
+       "ribbit. *offers leaf hat*"
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*wears leaf hat over",
+       "beanie*"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Hollow Grove",
+   "biome": "Hollow Groves",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Stone door hall, mushroom light flickers.",
+     "enemies": [
+      {
+       "name": "Root Grabber",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Root coils (1), lashes (2), retracts (3)."
+       }
+      }
+     ],
+     "puzzle": "Light mushrooms in pairs to open the door.",
+     "loot_item_ids": [
+      "glowcap"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Underground lake of stepping stones.",
+     "enemies": [
+      {
+       "name": "Stillborn Fish",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Frozen leap (1), arc (2), splash (3)."
+       }
+      }
+     ],
+     "puzzle": "Stones sink when a spirit giggles; step on the quiet ones.",
+     "loot_item_ids": [
+      "cave_moss"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Spirit's island in the lake.",
+     "enemies": [],
+     "puzzle": "Riddle room: Point at a promise (two linked hands mural).",
+     "loot_item_ids": [
+      "grove_honey"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Mischievous Spirit (Riddle of the Hollow Grove)",
+    "mechanic": "Mostly a riddle. Wrong answers make it split into tricks; Point at the promise mural to answer.",
+    "idle_animation": {
+     "frames": 3,
+     "description": "Ball of glowcap light bobs and giggles, little arms waving."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-50%",
+      "transformation": "A giggling light the size of a lantern.",
+      "attacks": [
+       {
+        "name": "Marker Swap",
+        "telegraph": "Giggles twice",
+        "effect": "Swaps your map marker; path hides",
+        "animation": {
+         "frames": 3,
+         "description": "Giggle, spin, swap"
+        }
+       },
+       {
+        "name": "Splash Trick",
+        "telegraph": "Hovers over water",
+        "effect": "Splash knocks you off a stone",
+        "animation": {
+         "frames": 3,
+         "description": "Hover, drop, splash"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "50-0%",
+      "transformation": "It splits into a dozen lights over the whole lake, all giggling.",
+      "attacks": [
+       {
+        "name": "Which One?",
+        "telegraph": "All lights blink in turn",
+        "effect": "Find the real spirit by its echo",
+        "animation": {
+         "frames": 5,
+         "description": "Blink, blink, blink, hide, giggle"
+        }
+       },
+       {
+        "name": "Stone Shuffle",
+        "telegraph": "Stones glow and hum",
+        "effect": "Stones swap places",
+        "animation": {
+         "frames": 4,
+         "description": "Glow, lift, swap, set"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 4,
+     "description": "Lights merge, it sighs, bows, the crystal floats to the pedestal."
+    },
+    "defeat_line": "Fine! A promise! Correct!",
+    "id": "mischievous_spirit",
+    "canon": "bible 4.11 mischievous spirit riddle; riddle encounter, not a bible numbered boss",
+    "sprite_note": "Small sprite; Act II scale-down on purpose (a riddle, not a fight)."
+   }
+  },
+  "zeref_moment": "Zeref wears the frog's leaf hat over his beanie. Two hats.",
+  "reward_item_ids": [
+   "crys_earth",
+   "cave_moss",
+   "leaf_hat"
+  ]
+ },
+ {
+  "quest_id": "q4_28",
+  "title": "Bramble Warden",
+  "location": "The Hollow Grove (depths)",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Hollow Grove depths. Thorn walls, roots like grasping fingers, one huge shape weeping sap.",
+    "action": "The Bramble Warden, a forest guardian twisted by despair, blocks the way.",
+    "dialogue": [
+     {
+      "speaker": "Bramble Warden",
+      "text_lines": [
+       "Go back. There is no way",
+       "through. There is no way."
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "It is so sad."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*mews softly at it*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Same depths, Crystal Lantern light reveals a mossy green guardian under the black thorns.",
+    "action": "Light reveals its true form. Attune: speak to it.",
+    "dialogue": [
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "I can help you find your",
+       "way back."
+      ]
+     },
+     {
+      "speaker": "Bramble Warden",
+      "text_lines": [
+       "...I lost my way."
+      ]
+     },
+     {
+      "speaker": "Bramble Warden",
+      "text_lines": [
+       "*cries a rain of leaves*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Underbrush clearing. Twisted shadow creatures pour in; Warden and Arin stand back to back.",
+    "action": "Wave fight beside the Warden. Win with a combined 'unleash' combo.",
+    "dialogue": [
+     {
+      "speaker": "Bramble Warden",
+      "text_lines": [
+       "Together, little one."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Together! Now!"
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: Mote + Warden, a",
+       "big star]"
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "The Hollow Grove",
+   "biome": "Hollow Groves",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Thorn wall tunnel, roots grab at heels.",
+     "enemies": [
+      {
+       "name": "Root Grabber",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Root coils (1), lashes (2), retracts (3)."
+       }
+      }
+     ],
+     "puzzle": "Burn thorn walls with lantern beam; roots regrow in 5 sec.",
+     "loot_item_ids": [
+      "healing_herbs"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Despair hollow; flowers here all droop.",
+     "enemies": [
+      {
+       "name": "Stillborn Thornling",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Curls (1), spikes (2), snaps (3)."
+       }
+      }
+     ],
+     "puzzle": "Lift each drooped flower with Mote's Glow to open roots.",
+     "loot_item_ids": [
+      "calaminth",
+      "glowcap"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Warden's thicket.",
+     "enemies": [],
+     "puzzle": "Boss room.",
+     "loot_item_ids": [
+      "grove_honey"
+     ]
+    },
+    {
+     "id": "r4",
+     "description": "Shadows in the Underbrush: arena clearing.",
+     "enemies": [
+      {
+       "name": "Twisted Shade",
+       "attack_animation": {
+        "frames": 4,
+        "description": "Hunch (1), leap (2), claw (3), fade (4)."
+       }
+      }
+     ],
+     "puzzle": "Wave fight with the Warden; fill the unleash meter together.",
+     "loot_item_ids": [
+      "herb_poultice"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Bramble Warden",
+    "mechanic": "Thorn walls and root grabs. Light reveals its true form; Attune with the line to purify it. It then fights beside you.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Huge thorn body hunches, shoulders shaking with slow sobs, sap drips."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-65%",
+      "transformation": "A thorn guardian three times Arin's height, face hidden by brambles.",
+      "attacks": [
+       {
+        "name": "Thorn Wall",
+        "telegraph": "Arms raise, ground scribbles",
+        "effect": "Walls box you in",
+        "animation": {
+         "frames": 4,
+         "description": "Raise, scribble, sprout, lock"
+        }
+       },
+       {
+        "name": "Root Grab",
+        "telegraph": "Roots twitch under you",
+        "effect": "Holds you 2s",
+        "animation": {
+         "frames": 3,
+         "description": "Twitch, burst, grip"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "65-30%",
+      "transformation": "It roots into the grove; the whole thicket becomes its body.",
+      "attacks": [
+       {
+        "name": "Thicket Crush",
+        "telegraph": "Walls creak inward",
+        "effect": "Arena shrinks",
+        "animation": {
+         "frames": 5,
+         "description": "Creak, lean, close, close, hold"
+        }
+       },
+       {
+        "name": "Despair Spores",
+        "telegraph": "Black buds swell",
+        "effect": "Spores slow and dim Light",
+        "animation": {
+         "frames": 4,
+         "description": "Swell, burst, drift, settle"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 3,
+      "hp_threshold": "30-0%",
+      "transformation": "Thorns fall away in the light: a towering green guardian, crying, half free.",
+      "attacks": [
+       {
+        "name": "Lost Roar",
+        "telegraph": "Head lifts, leaves shiver",
+        "effect": "Shockwave knockback",
+        "animation": {
+         "frames": 4,
+         "description": "Lift, shiver, roar, ring"
+        }
+       },
+       {
+        "name": "Last Thorns",
+        "telegraph": "Old thorns glow black",
+        "effect": "Final thorn rain; hold lantern up",
+        "animation": {
+         "frames": 5,
+         "description": "Glow, lift, aim, fall, crumble"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 5,
+     "description": "Last thorns drop, moss blooms green, it kneels, cries leaves, stands beside you."
+    },
+    "defeat_line": "I lost my way. Not now.",
+    "id": "bramble_warden",
+    "canon": "bible boss #11 (Hollow Grove, Act IV, Heart 6,000, 3 phases, Attunable: 'I can help you find your way back'); then joins for bible 4.13 wave"
+   }
+  },
+  "zeref_moment": "Zeref rides on the Warden's head into the wave fight.",
+  "reward_item_ids": [
+   "mercy_branch"
+  ]
+ },
+ {
+  "quest_id": "q4_29",
+  "title": "Stilled Serpent",
+  "location": "Road to the Garden",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Road to the Garden, deep forest. A serpent of gray stillness coils across the path, eyes like coins.",
+    "action": "The Stilled Serpent strikes and bites Sethra.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "Ah! It bit me!"
+      ]
+     },
+     {
+      "speaker": "Stilled Serpent",
+      "text_lines": [
+       "Your family's mistakes",
+       "taste old, Sethra."
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*hisses at it*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Same road, the bite spreading gray up Sethra's arm. The serpent talks in a soft human voice.",
+    "action": "It rubs in her family's old mistakes. Arin fights phase 1.",
+    "dialogue": [
+     {
+      "speaker": "Stilled Serpent",
+      "text_lines": [
+       "Your father failed. You",
+       "will too."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "Don't listen to it!"
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "...I am listening. For",
+       "now."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Same road. Sethra stands, chin up. Player now controls Sethra; command words glow.",
+    "action": "Sethra, not Arin, ends it. She commands it silent. The wound fades.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "Be silent. And leave."
+      ]
+     },
+     {
+      "speaker": "Stilled Serpent",
+      "text_lines": [
+       "...hsss..."
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "I said leave."
+      ]
+     }
+    ]
+   }
+  ],
+  "dungeon": {
+   "name": "Road to the Garden",
+   "biome": "Whispering Woods",
+   "rooms": [
+    {
+     "id": "r1",
+     "description": "Forest road; whispering spirits swap your markers.",
+     "enemies": [
+      {
+       "name": "Mischievous Spirit",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Giggle (1), swap (2), vanish (3)."
+       }
+      }
+     ],
+     "puzzle": "Follow the Crystal of Earth's light line, not the map markers.",
+     "loot_item_ids": [
+      "healing_herbs"
+     ]
+    },
+    {
+     "id": "r2",
+     "description": "Sunken road, stilled puddles like gray glass.",
+     "enemies": [
+      {
+       "name": "Stillborn Snake",
+       "attack_animation": {
+        "frames": 3,
+        "description": "Coil (1), strike (2), freeze (3)."
+       }
+      }
+     ],
+     "puzzle": "Puddles freeze you on touch; hop the ones that ripple.",
+     "loot_item_ids": [
+      "nard_balm",
+      "calaminth"
+     ]
+    },
+    {
+     "id": "r3",
+     "description": "Fallen tree crossing, the serpent's nest.",
+     "enemies": [],
+     "puzzle": "Boss room.",
+     "loot_item_ids": [
+      "herb_poultice"
+     ]
+    }
+   ],
+   "boss": {
+    "name": "The Stilled Serpent",
+    "mechanic": "Bites, poisons, speaks in a human voice. Phase 2: control Sethra; pick command words in QTEs to silence it.",
+    "idle_animation": {
+     "frames": 4,
+     "description": "Coils shift in slow figure-eights, tongue tasting the air, scales flat gray."
+    },
+    "phases": [
+     {
+      "phase": 1,
+      "hp_threshold": "100-50%",
+      "transformation": "A road-long serpent, coiled tight around the fallen tree.",
+      "attacks": [
+       {
+        "name": "Poison Bite",
+        "telegraph": "Head pulls back, jaw opens",
+        "effect": "Bite, poison drains Heart",
+        "animation": {
+         "frames": 4,
+         "description": "Pull, open, strike, recoil"
+        }
+       },
+       {
+        "name": "Tail Sweep",
+        "telegraph": "Rattle of stilled scales",
+        "effect": "Sweeps the road low",
+        "animation": {
+         "frames": 4,
+         "description": "Rattle, swing, sweep, curl"
+        }
+       },
+       {
+        "name": "Old Words",
+        "telegraph": "It speaks a human sentence",
+        "effect": "Mocks; Sethra's courage drops",
+        "animation": {
+         "frames": 3,
+         "description": "Rise, speak, smile"
+        }
+       }
+      ]
+     },
+     {
+      "phase": 2,
+      "hp_threshold": "50-0%",
+      "transformation": "It rears up taller than the trees, coils around the whole road; voice gets louder.",
+      "attacks": [
+       {
+        "name": "Constrict",
+        "telegraph": "Coils tighten around arena",
+        "effect": "Arena shrinks; pick words fast",
+        "animation": {
+         "frames": 5,
+         "description": "Tighten, tighten, squeeze, hold, release"
+        }
+       },
+       {
+        "name": "Family Ghosts",
+        "telegraph": "Gray faces in its scales",
+        "effect": "Wrong word choices heal it",
+        "animation": {
+         "frames": 5,
+         "description": "Faces, speak, speak, speak, fade"
+        }
+       }
+      ]
+     }
+    ],
+    "defeat_animation": {
+     "frames": 5,
+     "description": "Silenced, it shrinks, coils loosen, slides away into the leaves, bite fades."
+    },
+    "defeat_line": "...hsss... silent...",
+    "id": "stilled_serpent",
+    "canon": "bible boss #12 (Road to the garden, Act IV, Heart 4,500, 2 phases; P2 player is Sethra, word-choice QTEs)"
+   }
+  },
+  "zeref_moment": "Zeref sits on Sethra's lap the whole way after the bite.",
+  "reward_item_ids": [
+   "nard_balm"
+  ]
+ },
+ {
+  "quest_id": "q4_30",
+  "title": "Gate of Garden",
+  "location": "Gate of the Garden",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Gate of an ancient garden, walls of living vines. A Tree of Mercy beyond, dripping golden oil.",
+    "action": "Sethra kneels at the gate and puts dust on her head.",
+    "dialogue": [
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "Please. For my father."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "*kneels beside her*"
+      ]
+     },
+     {
+      "speaker": "Zeref",
+      "text_lines": [
+       "*kneels too, sort of*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "A tall guardian of the garden appears, robed in leaves, face kind and very still.",
+    "action": "The Garden Guardian gives the answer.",
+    "dialogue": [
+     {
+      "speaker": "Garden Guardian",
+      "text_lines": [
+       "The oil cannot be given",
+       "now. Not until the last",
+       "days."
+      ]
+     },
+     {
+      "speaker": "Garden Guardian",
+      "text_lines": [
+       "Go to your father. His",
+       "time is complete."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "Close-up: Sethra's hands holding a small branch and a pouch of spices.",
+    "action": "Gift: a small branch and spices: nard, crocus, calaminth, cinnamon.",
+    "dialogue": [
+     {
+      "speaker": "Garden Guardian",
+      "text_lines": [
+       "Take these. Plant one.",
+       "Brew the rest."
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "...thank you."
+      ]
+     },
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "[bubble: Thorne's chair]"
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref sniffs the spices and sneezes a single star.",
+  "reward_item_ids": [
+   "small_branch",
+   "spice_pouch"
+  ]
+ },
+ {
+  "quest_id": "q4_31",
+  "title": "Six Days",
+  "location": "Eldoria, Thorne's House",
+  "scene_beats": [
+   {
+    "id": "b1",
+    "setting": "Thorne's house over six days. Tea steam, a branch planted in a pot, Thorne smiling in his chair.",
+    "action": "Six quiet optional days: tea, plant the branch, listen to his stories.",
+    "dialogue": [
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "When I was young, the",
+       "river sang."
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "Drink your tea, Father."
+      ]
+     },
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "I am drinking. I am",
+       "talking. Both."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b2",
+    "setting": "Tablet Stone by the hearth. Sethra carves; her hand shakes. Arin's hand over hers.",
+    "action": "Tablet tutorial: Stone and Earth, so his life survives any flood or fire.",
+    "dialogue": [
+     {
+      "speaker": "Elder Thorne",
+      "text_lines": [
+       "Carve my life. Stone and",
+       "earth."
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "My hand... I can't..."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "*guides the stylus, one",
+       "finger pointing*"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b3",
+    "setting": "The empty room. The chair. The camera stays a beat too long. Then the sun, moon, stars go dark.",
+    "action": "Thorne dies, quietly, off-screen. Mote climbs onto the empty chair and stays.",
+    "dialogue": [
+     {
+      "speaker": "Mote",
+      "text_lines": [
+       "..."
+      ]
+     },
+     {
+      "speaker": "Sethra",
+      "text_lines": [
+       "..."
+      ]
+     },
+     {
+      "speaker": "Arin",
+      "text_lines": [
+       "..."
+      ]
+     }
+    ]
+   }
+  ],
+  "zeref_moment": "Zeref climbs up next to Mote on the empty chair. Stays too.",
+  "reward_item_ids": [
+   "thorne_tablet"
+  ]
+ }
+]

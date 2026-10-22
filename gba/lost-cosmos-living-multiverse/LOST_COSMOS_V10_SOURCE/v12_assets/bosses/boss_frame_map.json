@@ -1,0 +1,1904 @@
+{
+ "boss_forest_guardian": {
+  "palette": "palettes/boss_forest_guardian.pal",
+  "frame_size": [
+   64,
+   64
+  ],
+  "bpp": 4,
+  "sheet": "sprites/boss_forest_guardian.png",
+  "sheet_grid": {
+   "cols": 8,
+   "rows": 8,
+   "one_animation_per_row": true
+  },
+  "animations": {
+   "p1_idle": {
+    "row": 0,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "sway_l",
+      "x": 0,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "breath_in",
+      "x": 64,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "sway_r",
+      "x": 128,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "breath_out",
+      "x": 192,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 64
+   },
+   "p1_antler_charge": {
+    "row": 1,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_head_down",
+      "x": 0,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "windup_scrape",
+      "x": 64,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_lunge",
+      "x": 128,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_skid_stop",
+      "x": 192,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash",
+      "x": 256,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 209
+   },
+   "p1_leaf_storm": {
+    "row": 2,
+    "frame_count": 5,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_shake",
+      "x": 0,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "windup_leaves_lift",
+      "x": 64,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_fling",
+      "x": 128,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "hit_flash",
+      "x": 192,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "recovery",
+      "x": 256,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 320,
+    "tiles_unique_with_flips": 123
+   },
+   "grow_p1_to_p2": {
+    "row": 3,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "flinch",
+      "x": 0,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "antlers_spread",
+      "x": 64,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "wisps_caught",
+      "x": 128,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "cosmic_roar",
+      "x": 192,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 128
+   },
+   "p2_idle": {
+    "row": 4,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "sway_l",
+      "x": 0,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "breath_in",
+      "x": 64,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "sway_r",
+      "x": 128,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "breath_out",
+      "x": 192,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 96
+   },
+   "p2_wisp_snare": {
+    "row": 5,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_antler_glow",
+      "x": 0,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "windup_wisps_detach",
+      "x": 64,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_streak",
+      "x": 128,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_pop",
+      "x": 192,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash",
+      "x": 256,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 108
+   },
+   "p2_double_charge": {
+    "row": 6,
+    "frame_count": 7,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_lower_snort",
+      "x": 0,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_lunge_1",
+      "x": 64,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_turn",
+      "x": 128,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_lunge_2",
+      "x": 192,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "strike_pant",
+      "x": 256,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "hit_flash",
+      "x": 320,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 6,
+      "name": "recovery",
+      "x": 384,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 448,
+    "tiles_unique_with_flips": 217
+   },
+   "defeat": {
+    "row": 7,
+    "frame_count": 5,
+    "frames": [
+     {
+      "index": 0,
+      "name": "kneel",
+      "x": 0,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "antlers_drop_leaves",
+      "x": 64,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "bow",
+      "x": 128,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "fade_to_wisps",
+      "x": 192,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "gone",
+      "x": 256,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 320,
+    "tiles_unique_with_flips": 175
+   }
+  },
+  "total_frames": 41,
+  "tiles_total": 2624,
+  "tiles_unique_with_flips": 850,
+  "tiles_unique_nonblank": 849,
+  "rom_bytes_unique_4bpp": 27200,
+  "vram_per_frame_bytes": 2048,
+  "vram_per_frame_tiles": 64,
+  "vram_double_buffer_bytes": 4096,
+  "obj_vram_share_double_buffer": "12.5% of 32KB"
+ },
+ "boss_grumbleback": {
+  "palette": "palettes/boss_grumbleback.pal",
+  "frame_size": [
+   64,
+   64
+  ],
+  "bpp": 4,
+  "sheet": "sprites/boss_grumbleback.png",
+  "sheet_grid": {
+   "cols": 8,
+   "rows": 13,
+   "one_animation_per_row": true
+  },
+  "animations": {
+   "p1_idle": {
+    "row": 0,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "back_rise",
+      "x": 0,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "peek",
+      "x": 64,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "back_fall",
+      "x": 128,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "settle",
+      "x": 192,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 168
+   },
+   "p1_dark_lunge": {
+    "row": 1,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_eye_flash",
+      "x": 0,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "windup_crouch",
+      "x": 64,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_leap",
+      "x": 128,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_land_dust",
+      "x": 192,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash",
+      "x": 256,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 223
+   },
+   "p1_rock_swipe": {
+    "row": 2,
+    "frame_count": 5,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_pull_back",
+      "x": 0,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_swipe",
+      "x": 64,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_follow_through",
+      "x": 128,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "hit_flash",
+      "x": 192,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "recovery",
+      "x": 256,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 320,
+    "tiles_unique_with_flips": 195
+   },
+   "grow_p1_to_p2": {
+    "row": 3,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "stir",
+      "x": 0,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "rise",
+      "x": 64,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "crystals_sprout",
+      "x": 128,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "stand_full",
+      "x": 192,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 166
+   },
+   "p2_idle": {
+    "row": 4,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "breathe_1",
+      "x": 0,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "breathe_2",
+      "x": 64,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "breathe_3",
+      "x": 128,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "breathe_4",
+      "x": 192,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 159
+   },
+   "p2_crystal_quake": {
+    "row": 5,
+    "frame_count": 7,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_rear",
+      "x": 0,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "windup_hang",
+      "x": 64,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_slam",
+      "x": 128,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_ripple",
+      "x": 192,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "strike_stalactites",
+      "x": 256,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "hit_flash",
+      "x": 320,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 6,
+      "name": "recovery",
+      "x": 384,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 448,
+    "tiles_unique_with_flips": 312
+   },
+   "p2_roar": {
+    "row": 6,
+    "frame_count": 5,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_inhale",
+      "x": 0,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_roar_rings",
+      "x": 64,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_close",
+      "x": 128,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "hit_flash",
+      "x": 192,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "recovery",
+      "x": 256,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 320,
+    "tiles_unique_with_flips": 183
+   },
+   "grow_p2_to_p3": {
+    "row": 7,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "shudder",
+      "x": 0,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "crystals_blaze",
+      "x": 64,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "mane_lifts",
+      "x": 128,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "scared_stance",
+      "x": 192,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 167
+   },
+   "p3_idle": {
+    "row": 8,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "tremble_1",
+      "x": 0,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "tremble_2",
+      "x": 64,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "tremble_3",
+      "x": 128,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "tremble_4",
+      "x": 192,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 189
+   },
+   "p3_panic_roll": {
+    "row": 9,
+    "frame_count": 8,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_curl",
+      "x": 0,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_spin",
+      "x": 64,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_bounce_1",
+      "x": 128,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_bounce_2",
+      "x": 192,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "strike_bounce_3",
+      "x": 256,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "strike_dizzy",
+      "x": 320,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 6,
+      "name": "hit_flash",
+      "x": 384,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 7,
+      "name": "recovery",
+      "x": 448,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 512,
+    "tiles_unique_with_flips": 330
+   },
+   "p3_sad_howl": {
+    "row": 10,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_look_at_socks",
+      "x": 0,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "telegraph_sniff",
+      "x": 64,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_howl_up",
+      "x": 128,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "recovery_sniffle",
+      "x": 192,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash_slow_wave",
+      "x": 256,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 228
+   },
+   "hum_calm": {
+    "row": 11,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "hum_heard",
+      "x": 0,
+      "y": 704,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "eyes_close",
+      "x": 64,
+      "y": 704,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "moss_settles",
+      "x": 128,
+      "y": 704,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "agitation_zero",
+      "x": 192,
+      "y": 704,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 188
+   },
+   "defeat_attuned": {
+    "row": 12,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "flop_on_back",
+      "x": 0,
+      "y": 768,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "roll_over",
+      "x": 64,
+      "y": 768,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "nuzzle_arin",
+      "x": 128,
+      "y": 768,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "butterfly_lands",
+      "x": 192,
+      "y": 768,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "sneeze",
+      "x": 256,
+      "y": 768,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "zeref_crown",
+      "x": 320,
+      "y": 768,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 195
+   }
+  },
+  "total_frames": 67,
+  "tiles_total": 4288,
+  "tiles_unique_with_flips": 1758,
+  "tiles_unique_nonblank": 1757,
+  "rom_bytes_unique_4bpp": 56256,
+  "vram_per_frame_bytes": 2048,
+  "vram_per_frame_tiles": 64,
+  "vram_double_buffer_bytes": 4096,
+  "obj_vram_share_double_buffer": "12.5% of 32KB"
+ },
+ "boss_guardian_statues": {
+  "palette": "palettes/boss_guardian_statues.pal",
+  "frame_size": [
+   64,
+   64
+  ],
+  "bpp": 4,
+  "sheet": "sprites/boss_guardian_statues.png",
+  "sheet_grid": {
+   "cols": 8,
+   "rows": 11,
+   "one_animation_per_row": true
+  },
+  "source": "Emeth act2_scenes q2_06 guardian_statues (canon) + Studio board 04_guardian_statues.jpg",
+  "animations": {
+   "p1_idle": {
+    "row": 0,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "rune_dim",
+      "x": 0,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "rune_pulse",
+      "x": 64,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "rune_bright",
+      "x": 128,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "mist_pour",
+      "x": 192,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 181,
+    "note": "Emeth lists a 3f idle; drawn as a 4f loop for the 4-8 frame spec (frame 3 can be skipped)."
+   },
+   "p1_stone_palm": {
+    "row": 1,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_raise",
+      "x": 0,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "windup_hover",
+      "x": 64,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_slam",
+      "x": 128,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_crack",
+      "x": 192,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash",
+      "x": 256,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 110
+   },
+   "grow_p1_to_p2": {
+    "row": 2,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "mist_recedes",
+      "x": 0,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "rise_full",
+      "x": 64,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "vines_snap",
+      "x": 128,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "three_wake",
+      "x": 192,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 145
+   },
+   "p2_idle": {
+    "row": 3,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "rune_dim",
+      "x": 0,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "rune_pulse",
+      "x": 64,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "rune_bright",
+      "x": 128,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "mist_pour",
+      "x": 192,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 144
+   },
+   "p2_mist_breath": {
+    "row": 4,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_cheek_crack",
+      "x": 0,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "windup_glow",
+      "x": 64,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_exhale",
+      "x": 128,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_fog",
+      "x": 192,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash",
+      "x": 256,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 152
+   },
+   "p2_rune_beam": {
+    "row": 5,
+    "frame_count": 7,
+    "frames": [
+     {
+      "index": 0,
+      "name": "windup_charge",
+      "x": 0,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "telegraph_flare_white",
+      "x": 64,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_sweep_1",
+      "x": 128,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_sweep_2",
+      "x": 192,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "cool",
+      "x": 256,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "hit_flash",
+      "x": 320,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 6,
+      "name": "recovery",
+      "x": 384,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 448,
+    "tiles_unique_with_flips": 127
+   },
+   "p2_halberd_sweep": {
+    "row": 6,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_eyes_violet",
+      "x": 0,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "windup_overhead",
+      "x": 64,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_swing",
+      "x": 128,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_follow",
+      "x": 192,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash",
+      "x": 256,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 171,
+    "note": "Board-sourced attack (Studio panel 2/3); not in Emeth text yet. Pairs with lane art."
+   },
+   "grow_p2_to_p3": {
+    "row": 7,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "first_crack",
+      "x": 0,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "seams_split",
+      "x": 64,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "light_leaks",
+      "x": 128,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "cracked_stance",
+      "x": 192,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 103
+   },
+   "p3_idle": {
+    "row": 8,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "seam_glow_1",
+      "x": 0,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "seam_glow_2",
+      "x": 64,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "seam_glow_3",
+      "x": 128,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "seam_glow_4",
+      "x": 192,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 154
+   },
+   "p3_shatter_rain": {
+    "row": 9,
+    "frame_count": 8,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_pieces_lift",
+      "x": 0,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_spin",
+      "x": 64,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_hover",
+      "x": 128,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_fall_1",
+      "x": 192,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "strike_fall_2",
+      "x": 256,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "regroup",
+      "x": 320,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 6,
+      "name": "hit_flash",
+      "x": 384,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 7,
+      "name": "recovery",
+      "x": 448,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 512,
+    "tiles_unique_with_flips": 258
+   },
+   "defeat": {
+    "row": 10,
+    "frame_count": 5,
+    "frames": [
+     {
+      "index": 0,
+      "name": "kneel",
+      "x": 0,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "crumble",
+      "x": 64,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "runes_float",
+      "x": 128,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "runes_to_doors",
+      "x": 192,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "doors_open",
+      "x": 256,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 320,
+    "tiles_unique_with_flips": 226
+   }
+  },
+  "total_frames": 58,
+  "tiles_total": 3712,
+  "tiles_unique_with_flips": 1115,
+  "rom_bytes_unique_4bpp": 35680,
+  "vram_per_frame_tiles": 64,
+  "vram_per_frame_bytes": 2048,
+  "vram_double_buffer_bytes": 4096,
+  "obj_vram_share_double_buffer": "12.5% of 32KB"
+ },
+ "boss_guardian_statues_lane": {
+  "palette": "palettes/boss_guardian_statues.pal",
+  "bpp": 4,
+  "view": "top-down",
+  "assets": {
+   "lane_warning_tile_16": {
+    "sheet": "sprites/boss_guardian_statues_lane_lane_warning_tile_16.png",
+    "frame_size": [
+     16,
+     16
+    ],
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "dim",
+      "x": 0,
+      "y": 0,
+      "w": 16,
+      "h": 16
+     },
+     {
+      "index": 1,
+      "name": "warn",
+      "x": 16,
+      "y": 0,
+      "w": 16,
+      "h": 16
+     },
+     {
+      "index": 2,
+      "name": "warn_bright",
+      "x": 32,
+      "y": 0,
+      "w": 16,
+      "h": 16
+     },
+     {
+      "index": 3,
+      "name": "imminent",
+      "x": 48,
+      "y": 0,
+      "w": 16,
+      "h": 16
+     }
+    ],
+    "tiles_total": 16,
+    "tiles_unique_with_flips": 16,
+    "rom_bytes": 512,
+    "vram_per_frame_bytes": 128,
+    "usage": "BG or OBJ 16x16 (2x2 tiles). Paint across every tile of a lane that is about to be swept. Arc frames 64x32 can be OBJ (64x32 shape) or flipped V for sweeps from the other side."
+   },
+   "halberd_sweep_telegraph_64x32": {
+    "sheet": "sprites/boss_guardian_statues_lane_halberd_sweep_telegraph_64x32.png",
+    "frame_size": [
+     64,
+     32
+    ],
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "arc_ghost_1",
+      "x": 0,
+      "y": 0,
+      "w": 64,
+      "h": 32
+     },
+     {
+      "index": 1,
+      "name": "arc_ghost_2",
+      "x": 64,
+      "y": 0,
+      "w": 64,
+      "h": 32
+     },
+     {
+      "index": 2,
+      "name": "arc_pulse_1",
+      "x": 128,
+      "y": 0,
+      "w": 64,
+      "h": 32
+     },
+     {
+      "index": 3,
+      "name": "arc_pulse_2",
+      "x": 192,
+      "y": 0,
+      "w": 64,
+      "h": 32
+     }
+    ],
+    "tiles_total": 128,
+    "tiles_unique_with_flips": 42,
+    "rom_bytes": 1344,
+    "vram_per_frame_bytes": 1024
+   },
+   "halberd_sweep_swing_64x32": {
+    "sheet": "sprites/boss_guardian_statues_lane_halberd_sweep_swing_64x32.png",
+    "frame_size": [
+     64,
+     32
+    ],
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "swing_25",
+      "x": 0,
+      "y": 0,
+      "w": 64,
+      "h": 32
+     },
+     {
+      "index": 1,
+      "name": "swing_50",
+      "x": 64,
+      "y": 0,
+      "w": 64,
+      "h": 32
+     },
+     {
+      "index": 2,
+      "name": "swing_75",
+      "x": 128,
+      "y": 0,
+      "w": 64,
+      "h": 32
+     },
+     {
+      "index": 3,
+      "name": "swing_100",
+      "x": 192,
+      "y": 0,
+      "w": 64,
+      "h": 32
+     },
+     {
+      "index": 4,
+      "name": "afterimage_1",
+      "x": 256,
+      "y": 0,
+      "w": 64,
+      "h": 32
+     },
+     {
+      "index": 5,
+      "name": "afterimage_2",
+      "x": 320,
+      "y": 0,
+      "w": 64,
+      "h": 32
+     }
+    ],
+    "tiles_total": 192,
+    "tiles_unique_with_flips": 74,
+    "rom_bytes": 2368,
+    "vram_per_frame_bytes": 1024,
+    "usage": "Anchor the arc center (32,30) on the statue in its lane. Use hflip for right-to-left. The blade leads the arc."
+   }
+  },
+  "timing_hints_60fps": {
+   "lane_size": "16 px (2 tiles) per lane; arena 3 lanes per statue in phase 1 and 3x3 with all 3 statues in phase 2-3",
+   "sequence": [
+    "warning tile dim (frame 0) 12f",
+    "warning warn/warn_bright alternating every 6f for 36f while telegraph arc_ghost_1/2 alternate every 8f",
+    "statue p2_halberd_sweep telegraph_eyes_violet + windup_overhead (6f each) sync with arc_pulse_1/2 for the last 12f",
+    "warning tile imminent 8f",
+    "swing_25..swing_100 at 3f each (12f active, hitbox live from swing_50 to swing_100)",
+    "afterimage_1/2 at 4f each (no hitbox); statue hit_flash on contact; recovery 12f"
+   ],
+   "total_cycle_frames": "~ 12+36+12+8+12+8+12 = 100f (1.67s); phase 3 shorten warning to 24f",
+   "readability": "Always show >= 40f of warning before the first live hitbox frame; never sweep two adjacent lanes on the same beat in phase 1; leave one safe lane each beat.",
+   "sound_sync": "scrape SFX at windup_overhead, whoosh at swing_50"
+  }
+ }
+}
