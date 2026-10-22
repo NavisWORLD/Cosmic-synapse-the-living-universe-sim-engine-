@@ -19,7 +19,7 @@ def tile(px,w,x0,y0):
         for x in range(8): v|=(px[(y0+y)*w+x0+x]&15)<<(4*x)
         out.append(v)
     return out
-for bid,sym in [('boss_grumbleback','grumbleback'),('boss_forest_guardian','guardian'),('boss_guardian_statues','statue')]:
+for bid,sym in [('boss_grumbleback','grumbleback'),('boss_forest_guardian','guardian'),('boss_guardian_statues','statue'),('boss_moth_swarm','moth')]:
     m=M[bid]; im=Image.open(B/f'{bid}.png'); assert im.mode=='P'; w,h=im.size; px=im.tobytes()
     words=[];anims=[];names=[];n=0
     for an,a in m['animations'].items():

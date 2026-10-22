@@ -117,13 +117,13 @@ def run(rom, elf, out):
         tap(emu, "START"); emu.step((), 5); shot(emu, "lw_14_cast_zeref.png")
         tap(emu, "DOWN", 2); emu.step((), 5); shot(emu, "lw_15_cast_mote.png")
         forms = []
-        for j, nm in enumerate(("linework", "wash", "still_here")):
+        for j, nm in enumerate(("linework", "shading", "wash", "ink")):
             tap(emu, "DOWN"); emu.step((), 5); shot(emu, f"lw_15_cast_mote_form{j+2}_{nm}.png")
             forms.append(dict(form=lw(emu)["cast_form"], tiles=hashlib.sha256(bytes(emu.read_range(0x06010000, 2048))).hexdigest()))
         rep["v12_2_mote_forms"] = forms
-        if len({f["tiles"] for f in forms}) != 3 or [f["form"] for f in forms] != [2, 3, 4]:
+        if len({f["tiles"] for f in forms}) != 4 or [f["form"] for f in forms] != [2, 3, 4, 5]:
             raise RuntimeError(f"Mote forms do not each show their own portrait {forms}")
-        tap(emu, "UP", 3); emu.step((), 5)
+        tap(emu, "UP", 4); emu.step((), 5)
         for i in range(6):
             emu.step((), 16); shot(emu, f"lw_15_cast_mote_f{i}.png")
         tap(emu, "UP", 2); emu.step((), 200); shot(emu, "lw_15b_cast_zeref_walk.png")

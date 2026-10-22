@@ -364,7 +364,26 @@ def run_case(rom, elf, out, label, save_src, record=False):
     if not lce or lce["cst_steps"] < 1:
         raise RuntimeError(f"{label}: no valid LCE1 export record in the save")
     rep["lce1"] = lce
+    if SITE_LC and label == "cage" and not lce.get("lcq_applied"):
+        raise RuntimeError(f"{label}: the site's LCQ1 (SIMULATED Rigetti growth) was not applied by the cartridge {lce}")
     return rep
+
+
+# V12.3: optional site round trip. SITE_LC = path to the site's lib/companion/lc-ecosystem.mjs; the
+# cage save then gets the LCQ1 the site builds from a SIMULATED Rigetti diary tick (injectLatestGrowth),
+# and the cartridge must report it applied (LCE1 flags bit0).
+import os, subprocess
+SITE_LC = os.environ.get("SITE_LC")
+def site_inject(sav, meta):
+    js = ("import {injectLatestGrowth} from %s;import {parseSave} from %s;import {readFileSync,writeFileSync} from 'node:fs';"
+          "const s=new Uint8Array(readFileSync(process.argv[1]));"
+          "const recent=[{tick:7,growth_source:{kind:'deterministic-fallback',simulated:false}},"
+          "{tick:6,growth_source:{kind:'rigetti-qvm-simulated',simulated:true,job_id:'qvm-test',counts:{'000':40,'001':30,'010':20,'011':10,'100':50,'101':26,'110':60,'111':20}}}];"
+          "const r=injectLatestGrowth(s,parseSave(s).publicId,recent);if(!r.lcq1)process.exit(3);writeFileSync(process.argv[1],r.save);console.log(JSON.stringify(r.lcq1));") % (json.dumps("file://" + SITE_LC), json.dumps("file://" + SITE_LC.replace("lc-ecosystem.mjs", "lcx1.mjs")))
+    p = subprocess.run(["node", "--input-type=module", "-e", js, str(sav)], capture_output=True, text=True)
+    if p.returncode:
+        raise RuntimeError(f"site LCQ1 inject failed {p.stderr}")
+    return json.loads(p.stdout)
 
 
 def run(rom, elf, out, cases, record=False):
@@ -373,6 +392,8 @@ def run(rom, elf, out, cases, record=False):
                   controller_only=True, memory_writes=False, savestates=False, passed=False)
     if "cage" in cases:
         report["cage_meta"] = bh.charlet_save(out / "cage_src.sav")
+        if SITE_LC:
+            report["cage_lcq1_site"] = site_inject(out / "cage_src.sav", report["cage_meta"])
         report["cage"] = run_case(rom, elf, out, "cage", out / "cage_src.sav", record)
     if "starter" in cases:
         report["starter_meta"] = bh.starter_save(out / "starter_src.sav")

@@ -1900,5 +1900,1009 @@
    "readability": "Always show >= 40f of warning before the first live hitbox frame; never sweep two adjacent lanes on the same beat in phase 1; leave one safe lane each beat.",
    "sound_sync": "scrape SFX at windup_overhead, whoosh at swing_50"
   }
+ },
+ "boss_moth_swarm": {
+  "palette": "palettes/boss_moth_swarm.pal",
+  "frame_size": [
+   64,
+   64
+  ],
+  "bpp": 4,
+  "sheet": "sprites/boss_moth_swarm.png",
+  "sheet_grid": {
+   "cols": 8,
+   "rows": 8,
+   "one_animation_per_row": true
+  },
+  "source": "Emeth act2_scenes q2_05 moth_swarm (canon, 2 phases) + Studio board 03_moth_swarm.jpg (look only)",
+  "notes": [
+   "Lantern prop is baked into the frames at bottom centre (x 27-37, y 38-62); Phera can mask it if the arena already has one.",
+   "Phase 2 shows the canon \"wing spots look like eyes\" as the swarm curling into a giant moth shape (board panel 3)."
+  ],
+  "animations": {
+   "p1_idle": {
+    "row": 0,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "circle_0",
+      "x": 0,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "circle_1",
+      "x": 64,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "circle_2",
+      "x": 128,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "circle_3",
+      "x": 192,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 128
+   },
+   "p1_dust_wave": {
+    "row": 1,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_wings_fold",
+      "x": 0,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "windup_beat",
+      "x": 64,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_dust_wave",
+      "x": 128,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "settle",
+      "x": 192,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash",
+      "x": 256,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 181
+   },
+   "p1_light_drain": {
+    "row": 2,
+    "frame_count": 5,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_antennae_point",
+      "x": 0,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_beam",
+      "x": 64,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_gulp",
+      "x": 128,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "hit_flash",
+      "x": 192,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "recovery",
+      "x": 256,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 320,
+    "tiles_unique_with_flips": 148
+   },
+   "grow_p1_to_p2": {
+    "row": 3,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "swarm_doubles",
+      "x": 0,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "whirl",
+      "x": 64,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "curl_tight",
+      "x": 128,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "eye_spots_form",
+      "x": 192,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 168
+   },
+   "p2_idle": {
+    "row": 4,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "hover_0",
+      "x": 0,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "hover_1",
+      "x": 64,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "hover_2",
+      "x": 128,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "hover_3",
+      "x": 192,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 198
+   },
+   "p2_swarm_surge": {
+    "row": 5,
+    "frame_count": 7,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_center_glow",
+      "x": 0,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "windup_shiver",
+      "x": 64,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_moths_pour",
+      "x": 128,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "strike_flap",
+      "x": 192,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "scatter",
+      "x": 256,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "hit_flash",
+      "x": 320,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 6,
+      "name": "recovery",
+      "x": 384,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 448,
+    "tiles_unique_with_flips": 291
+   },
+   "p2_eye_flash": {
+    "row": 6,
+    "frame_count": 5,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_close",
+      "x": 0,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_open_all_eyes",
+      "x": 64,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_flash",
+      "x": 128,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "hit_flash",
+      "x": 192,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "recovery",
+      "x": 256,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 320,
+    "tiles_unique_with_flips": 259
+   },
+   "defeat": {
+    "row": 7,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "swarm_thins",
+      "x": 0,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "few_moths",
+      "x": 64,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "one_descends",
+      "x": 128,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "lands_and_stays",
+      "x": 192,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 78
+   }
+  },
+  "total_frames": 39,
+  "tiles_total": 2496,
+  "tiles_unique_with_flips": 930,
+  "rom_bytes_unique_4bpp": 29760,
+  "vram_per_frame_tiles": 64,
+  "vram_per_frame_bytes": 2048,
+  "vram_double_buffer_bytes": 4096,
+  "obj_vram_share_double_buffer": "12.5% of 32KB"
+ },
+ "boss_grove_tangle": {
+  "id": "grove_tangle",
+  "palette": "palettes/boss_grove_tangle.pal",
+  "frame_size": [
+   64,
+   64
+  ],
+  "bpp": 4,
+  "sheet": "sprites/boss_grove_tangle.png",
+  "sheet_grid": {
+   "cols": 8,
+   "rows": 11,
+   "one_animation_per_row": true
+  },
+  "source": "Emeth act3_scenes q3_12 grove_tangle (canon) + Studio board 01_thorn_tangle.jpg",
+  "notes": [
+   "P1 shows 5 of the 12 trapped villagers at 64px; the rest are implied (Phera may want them as separate 16x16 actors)."
+  ],
+  "canon_vs_board": [
+   "Canon P3 eyes are hollow; the board glows them violet. Drawn as dark hollows with a violet glow inside.",
+   "The board shows Arin and the villagers. Arin is omitted (not in boss sprites), and the villagers are drawn as small faces in the P1 knot only."
+  ],
+  "animations": {
+   "p1_idle": {
+    "row": 0,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "creak_0",
+      "x": 0,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "creak_1",
+      "x": 64,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "creak_2",
+      "x": 128,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "creak_3",
+      "x": 192,
+      "y": 0,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 139
+   },
+   "p1_thorn_lash": {
+    "row": 1,
+    "frame_count": 5,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_pull_back",
+      "x": 0,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_whip",
+      "x": 64,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "retract",
+      "x": 128,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "hit_flash",
+      "x": 192,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "recovery",
+      "x": 256,
+      "y": 64,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 320,
+    "tiles_unique_with_flips": 178
+   },
+   "p1_bramble_wall": {
+    "row": 2,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_scribble",
+      "x": 0,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_sprout",
+      "x": 64,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_thicken",
+      "x": 128,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "hold",
+      "x": 192,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash",
+      "x": 256,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 128,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 178
+   },
+   "grow_p1_to_p2": {
+    "row": 3,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "climb",
+      "x": 0,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "over_trees",
+      "x": 64,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "sky_cover",
+      "x": 128,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "page_darkens",
+      "x": 192,
+      "y": 192,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 203
+   },
+   "p2_idle": {
+    "row": 4,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "creak_0",
+      "x": 0,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "creak_1",
+      "x": 64,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "creak_2",
+      "x": 128,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "creak_3",
+      "x": 192,
+      "y": 256,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 207
+   },
+   "p2_thorn_rain": {
+    "row": 5,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_shake",
+      "x": 0,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_drop_1",
+      "x": 64,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_drop_2",
+      "x": 128,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "stick",
+      "x": 192,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash",
+      "x": 256,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 320,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 273
+   },
+   "p2_choke_ring": {
+    "row": 6,
+    "frame_count": 7,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_rise",
+      "x": 0,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_close",
+      "x": 64,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_tighten",
+      "x": 128,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "pulse",
+      "x": 192,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hold",
+      "x": 256,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "hit_flash",
+      "x": 320,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 6,
+      "name": "recovery",
+      "x": 384,
+      "y": 384,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 448,
+    "tiles_unique_with_flips": 304
+   },
+   "grow_p2_to_p3": {
+    "row": 7,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "vines_rear",
+      "x": 0,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "knot_upward",
+      "x": 64,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "face_forms",
+      "x": 128,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "hollow_eyes_open",
+      "x": 192,
+      "y": 448,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 237
+   },
+   "p3_idle": {
+    "row": 8,
+    "frame_count": 4,
+    "frames": [
+     {
+      "index": 0,
+      "name": "glare_0",
+      "x": 0,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "glare_1",
+      "x": 64,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "glare_2",
+      "x": 128,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "glare_3",
+      "x": 192,
+      "y": 512,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 8,
+    "loop": true,
+    "tiles_total": 256,
+    "tiles_unique_with_flips": 241
+   },
+   "p3_scream_of_brambles": {
+    "row": 9,
+    "frame_count": 6,
+    "frames": [
+     {
+      "index": 0,
+      "name": "telegraph_face_opens",
+      "x": 0,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "strike_roar_lines",
+      "x": 64,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "strike_shake",
+      "x": 128,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "settle",
+      "x": 192,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "hit_flash",
+      "x": 256,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 5,
+      "name": "recovery",
+      "x": 320,
+      "y": 576,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 384,
+    "tiles_unique_with_flips": 317
+   },
+   "defeat": {
+    "row": 10,
+    "frame_count": 5,
+    "frames": [
+     {
+      "index": 0,
+      "name": "vines_unwind",
+      "x": 0,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 1,
+      "name": "petals_open",
+      "x": 64,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 2,
+      "name": "gold_pollen",
+      "x": 128,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 3,
+      "name": "bee_flies_out",
+      "x": 192,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     },
+     {
+      "index": 4,
+      "name": "grove_breathes",
+      "x": 256,
+      "y": 640,
+      "w": 64,
+      "h": 64
+     }
+    ],
+    "fps_suggest": 12,
+    "loop": false,
+    "tiles_total": 320,
+    "tiles_unique_with_flips": 245
+   }
+  },
+  "total_frames": 55,
+  "tiles_total": 3520,
+  "tiles_unique_with_flips": 1610,
+  "rom_bytes_unique_4bpp": 51520,
+  "vram_per_frame_tiles": 64,
+  "vram_per_frame_bytes": 2048,
+  "vram_double_buffer_bytes": 4096,
+  "obj_vram_share_double_buffer": "12.5% of 32KB"
  }
 }

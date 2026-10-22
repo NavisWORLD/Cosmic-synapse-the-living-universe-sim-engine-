@@ -6,6 +6,8 @@
    animation plays and the boss enters its next phase (bigger, faster attacks).
      Grumbleback v2.1: 3 phases, ends calm (hum_calm -> defeat_attuned: the kitten-crown moment).
      Forest Guardian:  2 phases, ends with defeat.
+     Moth Swarm (Cosmo, 2 phases): the storm is its grow animation; the lantern is baked into every
+     frame (bottom centre), so the arena draws none of its own.
    Guardian Statues (Ruined Citadels hazard, CHANGES_canon.md; Cosmo's 58-frame sheet + lane art):
    no HP to hit. Three 32 px lanes. Each sweep follows Cosmo's timing hints (60 fps): warning dim 12f,
    warn 36f (24f in phase 3), statue windup 12f, imminent 8f, swing 12f (hitbox live on its last 9f),
@@ -15,7 +17,7 @@
    Controls: LEFT/RIGHT dodge (sprite bosses) or change lane (statues), A strike in the open window. */
 #ifndef BOSS_BATTLE_H
 #define BOSS_BATTLE_H
-enum{BB_GRUMBLEBACK=0,BB_GUARDIAN=1,BB_STATUES=2,BB_KINDS=3};
+enum{BB_GRUMBLEBACK=0,BB_GUARDIAN=1,BB_STATUES=2,BB_MOTH=3,BB_KINDS=4};
 enum{BBS_IDLE=0,BBS_ATTACK,BBS_GROW,BBS_FINALE,BBS_LANES,BBS_WIN,BBS_LOSE};
 #define BB_PHASE_HP 3
 #define BB_ZHP 6
@@ -24,13 +26,13 @@ typedef struct{u8 kind,state,phase,nphases,hp,zhp,anim,afr,finale,dodge,struck,h
  u16 hits_landed,hits_taken,dodges,grows,anims_played,frame_changes,sweeps_done;u8 pad_[2];}BossBattle;
 typedef struct{u8 first,count,div,loop;}BBAnim;
 /* phase tables, indices into the V12_BOSS_*_ANIM lists (v12_boss.h) */
-static const u8 BB_IDLE[3][3]={{0,4,8},{0,4,0},{0,3,8}};
-static const u8 BB_ATK[2][3][2]={{{1,2},{5,6},{9,10}},{{1,2},{5,6},{0,0}}};
-static const u8 BB_GROW[3][2]={{3,7},{3,0},{2,7}};
-static const u8 BB_FIN[3][2]={{11,12},{7,7},{10,10}};
+static const u8 BB_IDLE[4][3]={{0,4,8},{0,4,0},{0,3,8},{0,4,0}};
+static const u8 BB_ATK[4][3][2]={{{1,2},{5,6},{9,10}},{{1,2},{5,6},{0,0}},{{6,6},{6,6},{6,6}},{{1,2},{5,6},{0,0}}};
+static const u8 BB_GROW[4][2]={{3,7},{3,0},{2,7},{3,0}};
+static const u8 BB_FIN[4][2]={{11,12},{7,7},{10,10},{7,7}};
 #define BB_ST_SWEEP 6
 static const u8 BB_ST_LEN[7]={12,36,12,8,12,8,12}; /* dim warn windup imminent swing after recovery */
-static const u8 BB_NPH[3]={3,2,3};
+static const u8 BB_NPH[4]={3,2,3,2};
 static u32 bb_rand(BossBattle*b){u32 x=b->rng?b->rng:0x2545F491u;x^=x<<13;x^=x>>17;x^=x<<5;b->rng=x;return x;}
 static const BBAnim*bb_anims(int kind);
 static void bb_play(BossBattle*b,int a){b->anim=(u8)a;b->afr=0;b->tick=0;b->anims_played++;b->struck=0;b->hit_ok=0;}

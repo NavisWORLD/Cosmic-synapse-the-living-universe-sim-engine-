@@ -43,6 +43,17 @@ static const V12BossAnim V12_BOSS_STATUE_ANIM[11]={{0,4,7,1},{4,6,5,0},{10,4,5,0
 #define BA_STATUE_P3_IDLE 8
 #define BA_STATUE_P3_SHATTER_RAIN 9
 #define BA_STATUE_DEFEAT 10
+extern const u32 v12_boss_moth_frames[19968];extern const u16 v12_boss_moth_pal[16];
+#define V12_BOSS_MOTH_FRAMES 39
+static const V12BossAnim V12_BOSS_MOTH_ANIM[8]={{0,4,7,1},{4,6,5,0},{10,5,5,0},{15,4,5,0},{19,4,7,1},{23,7,5,0},{30,5,5,0},{35,4,5,0}};
+#define BA_MOTH_P1_IDLE 0
+#define BA_MOTH_P1_DUST_WAVE 1
+#define BA_MOTH_P1_LIGHT_DRAIN 2
+#define BA_MOTH_GROW_P1_TO_P2 3
+#define BA_MOTH_P2_IDLE 4
+#define BA_MOTH_P2_SWARM_SURGE 5
+#define BA_MOTH_P2_EYE_FLASH 6
+#define BA_MOTH_DEFEAT 7
 extern const u32 v12_lane_warn[128];
 extern const u32 v12_lane_tele[1024];
 extern const u32 v12_lane_swing[1536];

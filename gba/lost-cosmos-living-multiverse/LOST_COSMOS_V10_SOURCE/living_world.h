@@ -72,6 +72,15 @@ static u32 lw_sum_at(int base){u32 s=0x4C573132u;int i;for(i=0;i<252;i++)s=s*31u
 static int lw_valid_at(int base){u32 s;if(SRAM[base]!='L'||SRAM[base+1]!='W'||SRAM[base+2]!=1)return 0;
  s=(u32)SRAM[base+252]|((u32)SRAM[base+253]<<8)|((u32)SRAM[base+254]<<16)|((u32)SRAM[base+255]<<24);return s==lw_sum_at(base);}
 static void lw_migrate(void){int i;if(lw_valid_at(LW_SRAM)||!lw_valid_at(LW_SRAM_V120))return;for(i=0;i<256;i++)SRAM[LW_SRAM+i]=SRAM[LW_SRAM_V120+i];lw_migrated=1;}
+/* V12.3 fix: the LW block lives in the tail of the journaled 8 KiB page, but cold boot restores
+   that page from the latest committed journal bank, which was snapshotted at the last game save:
+   Living World progress made after that save was lost on every reboot (V12.1-V12.2). Now each LW
+   save also patches its 256 bytes into the latest valid bank and re-seals that bank (commit byte
+   cleared first, set last). Game state in the bank is untouched; no new bank is committed. */
+static void lw_journal_patch(void){int b=journal_latest();unsigned i,m,dst;if(b<0)return;
+ m=JOURNAL_META+(unsigned)b*64;dst=(unsigned)(b+1)*JOURNAL_BYTES;SRAM[m+15]=0;
+ for(i=0;i<256;i++)SRAM[dst+LW_SRAM+i]=SRAM[LW_SRAM+i];
+ journal_write32(m+8,journal_crc(dst));SRAM[m+15]=0xa8;lw_journal_patches++;}
 static void lw_save(void){int i,o;
  for(i=0;i<256;i++)SRAM[LW_SRAM+i]=0;
  SRAM[LW_SRAM]='L';SRAM[LW_SRAM+1]='W';SRAM[LW_SRAM+2]=1;SRAM[LW_SRAM+3]=LW_LAYOUT;SRAM[LW_SRAM+4]=lw_world;
@@ -81,7 +90,8 @@ static void lw_save(void){int i,o;
   SRAM[o+6]=(u8)b->xp;SRAM[o+7]=(u8)(b->xp>>8);SRAM[o+8]=b->equip[0];SRAM[o+9]=b->equip[1];SRAM[o+10]=b->equip[2];SRAM[o+11]=b->equip[3];}
  for(i=0;i<5;i++)SRAM[LW_SRAM+156+i]=lw_claimed[i];
  SRAM[LW_SRAM+164]=lw_end_d_flag;
- {u32 s=lw_sum();SRAM[LW_SRAM+252]=(u8)s;SRAM[LW_SRAM+253]=(u8)(s>>8);SRAM[LW_SRAM+254]=(u8)(s>>16);SRAM[LW_SRAM+255]=(u8)(s>>24);}}
+ {u32 s=lw_sum();SRAM[LW_SRAM+252]=(u8)s;SRAM[LW_SRAM+253]=(u8)(s>>8);SRAM[LW_SRAM+254]=(u8)(s>>16);SRAM[LW_SRAM+255]=(u8)(s>>24);}
+ lw_journal_patch();}
 static int lw_load(void){int i,o;u32 s;
  lw_items_migrated=0;lw_migrate();
  if(SRAM[LW_SRAM]!='L'||SRAM[LW_SRAM+1]!='W'||SRAM[LW_SRAM+2]!=1)return 0;
@@ -365,13 +375,13 @@ static BossBattle lw_bt;
 static volatile u8 lw_bt_active=0,lw_bt_kind=0,lw_bt_result=0,lw_bt_lastdir=0;
 static volatile u16 lw_bt_dma_frames=0,lw_bt_wins=0,lw_bt_losses=0,lw_bt_starts=0;
 static volatile u32 lw_bt_dma_bytes=0;
-static const BBAnim*bb_anims(int k){return (const BBAnim*)(k==BB_GUARDIAN?V12_BOSS_GUARDIAN_ANIM:k==BB_STATUES?V12_BOSS_STATUE_ANIM:V12_BOSS_GRUMBLEBACK_ANIM);}
-static int lw_boss_of(int q){return q==2?BB_GUARDIAN:q==3?BB_GRUMBLEBACK:q==5?BB_STATUES:-1;}
+static const BBAnim*bb_anims(int k){return (const BBAnim*)(k==BB_GUARDIAN?V12_BOSS_GUARDIAN_ANIM:k==BB_STATUES?V12_BOSS_STATUE_ANIM:k==BB_MOTH?V12_BOSS_MOTH_ANIM:V12_BOSS_GRUMBLEBACK_ANIM);}
+static int lw_boss_of(int q){return q==2?BB_GUARDIAN:q==3?BB_GRUMBLEBACK:q==4?BB_MOTH:q==5?BB_STATUES:-1;}
 static void lw_dma3(volatile u32*dst,const u32*src,u32 words){LW_REG32(0x040000D4)=(u32)src;LW_REG32(0x040000D8)=(u32)dst;LW_REG32(0x040000DC)=words|0x84000000u;
  lw_bt_dma_frames++;lw_bt_dma_bytes+=words*4u;}
-static const char*const LW_BT_NAME[BB_KINDS]={"GRUMBLEBACK","FOREST GUARDIAN","GUARDIAN STATUES"};
+static const char*const LW_BT_NAME[BB_KINDS]={"GRUMBLEBACK","FOREST GUARDIAN","GUARDIAN STATUES","MOTH SWARM"};
 static u8 lw_lane_up=0,lw_lane_arc=255,lw_lane_obj=0;
-static void lw_bt_start(int kind){int i;const u16*p=kind==BB_GRUMBLEBACK?v12_boss_grumbleback_pal:kind==BB_GUARDIAN?v12_boss_guardian_pal:v12_boss_statue_pal;
+static void lw_bt_start(int kind){int i;const u16*p=kind==BB_GRUMBLEBACK?v12_boss_grumbleback_pal:kind==BB_GUARDIAN?v12_boss_guardian_pal:kind==BB_MOTH?v12_boss_moth_pal:v12_boss_statue_pal;
  bb_start(&lw_bt,kind,LW_IDS[0]^((u32)QSEED[110+kind]<<8)^lw_clock);lw_bt_kind=(u8)kind;lw_bt_active=1;lw_bt_result=0;lw_bt_starts++;
  for(i=0;i<16;i++)OBJ_PALETTE[(9+kind)*16+i]=p[i];
  lw_lane_up=0;lw_lane_arc=255;
@@ -387,7 +397,7 @@ static void lw_bt_update(u16 newk){int dir=(newk&KEY_LEFT)?-1:(newk&KEY_RIGHT)?1
  if(newk&KEY_B){lw_bt_end();return;}
  bb_step(&lw_bt,dir,(newk&KEY_A)?1:0);}
 static void lw_bt_render(void){int i,o=0;BossBattle*b=&lw_bt;
- {const u32*fr=b->kind==BB_GRUMBLEBACK?v12_boss_grumbleback_frames:b->kind==BB_GUARDIAN?v12_boss_guardian_frames:v12_boss_statue_frames;
+ {const u32*fr=b->kind==BB_GRUMBLEBACK?v12_boss_grumbleback_frames:b->kind==BB_GUARDIAN?v12_boss_guardian_frames:b->kind==BB_MOTH?v12_boss_moth_frames:v12_boss_statue_frames;
   if(bb_take_frame(b))lw_dma3(LW_OBJ_TILES,fr+(u32)b->frame*512u,512);}
  if(b->kind!=BB_STATUES){
   {int sc=256+b->phase*64,inv=(256*256)/sc;   /* affine group 0 */
@@ -410,8 +420,8 @@ static void lw_bt_render(void){int i,o=0;BossBattle*b=&lw_bt;
  ui_text(1,1,"ZEREF",13);for(i=0;i<BB_ZHP;i++)ui_text(7+i,1,i<b->zhp?"*":"-",i<b->zhp?9:13);
  if(b->kind!=BB_STATUES){ui_text(15,1,"BOSS",13);for(i=0;i<BB_PHASE_HP;i++)ui_text(20+i,1,i<b->hp?"#":"-",14);}
  else{ui_text(15,1,"SWEEPS",13);ui_num(22,1,b->sweeps,15);}
- if(lw_bt_result){ui_text(1,16,lw_bt_result==1?(b->kind==BB_GRUMBLEBACK?"GRUMBLEBACK IS CALM. KITTEN CROWN!":b->kind==BB_GUARDIAN?"THE GUARDIAN BOWS. COURAGE.":"THE STATUES REST."):"ZEREF NEEDS A REST.",14);ui_text(1,18,"A/B BACK",13);}
- else{ui_text(1,17,b->kind==BB_STATUES?"L/R CHANGE LANE. WATCH THE EYES.":b->state==BBS_ATTACK&&b->hit_ok==1?"NOW! PRESS A":"L/R DODGE  A STRIKE WHEN OPEN",b->hit_ok==1?14:13);
+ if(lw_bt_result){ui_text(1,16,lw_bt_result==1?(b->kind==BB_GRUMBLEBACK?"CALM NOW. A KITTEN CROWN!":b->kind==BB_GUARDIAN?"THE GUARDIAN BOWS.":b->kind==BB_MOTH?"MOTHS REST ON THE LANTERN.":"THE STATUES REST."):"ZEREF NEEDS A REST.",14);ui_text(1,18,"A/B BACK",13);}
+ else{ui_text(1,17,b->kind==BB_STATUES?"L/R LANE. WATCH THE EYES.":b->state==BBS_ATTACK&&b->hit_ok==1?"NOW! PRESS A":"L/R DODGE. A WHEN OPEN",b->hit_ok==1?14:13);
   ui_text(1,18,"B FLEE",13);}}
 /* ---------- input ---------- */
 static void lw_use(int it){LwBeast*b=&lw_b[lw_focus];const V12Item*v=&V12_ITEMS[it];int slot=-1;
